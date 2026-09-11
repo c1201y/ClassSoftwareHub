@@ -1,0 +1,58 @@
+# 自动打包并发布到 GitHub Pages
+# 作用：每次你（或协作者）把改动 push 到 main 分支，GitHub 会自动
+#       安装依赖 → 打包成单文件 HTML → 发布到 Pages，无需本地打包。
+# 文件位置必须是：仓库根目录 /.github/workflows/deploy.yml
+#
+# 首次使用前记得：仓库 Settings → Pages → Source 选「GitHub Actions」。
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]      # 推送到 main 分支时自动触发
+  workflow_dispatch:      # 也可以在 Actions 页面点按钮手动跑一次
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只跑一个部署，新的提交会取消排队中的旧任务
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 取出源码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 打包单文件 HTML
+        run: npm run build:single
+
+      - name: 上传打包结果
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 发布到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

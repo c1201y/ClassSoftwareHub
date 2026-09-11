@@ -1,0 +1,13 @@
+# 以下内容不参与 git 提交（上传仓库时会自动忽略）
+
+# 依赖包：别人 clone 下来跑 npm install 会自动生成，不需要传
+node_modules
+
+# 打包产物：由 npm run build / build:single 生成，不需要传
+dist
+
+# 本地环境/缓存/系统杂项
+*.local
+.vite
+.DS_Store
+Thumbs.db
