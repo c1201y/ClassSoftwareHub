@@ -1,0 +1,31 @@
+{
+  "id": "VirusDetector",
+  "name": "反银狐病毒浏览器插件VirusDetector",
+  "icon": "https://avatars.githubusercontent.com/u/238968503?s=60&v=4",
+  "category": "system",
+  "tagline": "检测网页是否含银狐木马的浏览器插件",
+  "description": "由 B 站 UP 主「酪酪肽酪酪」制作的浏览器插件，用来检测当前网页是否被植入银狐木马病毒，并提示正确的官方网址，防止老师从假冒站点下载到木马安装包，向黑产网页宣战！",
+  "version": "2.5.2",
+  "size": "0.1 MB",
+  "system": "浏览器（Chrome/Edge 等）",
+  "website": "https://www.bilibili.com/video/BV1B5Kj6bEmk/",
+  "github": "https://github.com/Lolitide/VirusDetector",
+  "downloads": [
+    {
+      "platform": "123云盘",
+      "note": "123云盘提取码：jlgt",
+      "url": "https://1829353051.share.123pan.cn/123pan/wabZjv-TQyQv?pwd=jlgt#"
+    },
+    {
+      "platform": "百度网盘",
+      "note": "百度网盘提取码: idh7",
+      "url": "https://pan.baidu.com/s/1bOHJkkYiZWWbAR8EXXmYBA?pwd=idh7"
+    },
+    {
+      "platform": "夸克网盘",
+      "note": "夸克网盘提取码：6Vqn",
+      "url": "https://pan.quark.cn/s/780c4d00d7c8"
+    }
+  ],
+  "sort": 39
+}

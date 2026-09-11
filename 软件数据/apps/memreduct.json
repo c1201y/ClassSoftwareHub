@@ -1,0 +1,22 @@
+{
+  "id": "memreduct",
+  "name": "MemReduct",
+  "icon": "https://img.32r.com/logo/201116/202011161631543933.png",
+  "category": "system",
+  "tagline": "体积小巧的内存清理工具，老电脑救星",
+  "description": "MemReduct 是一款体积极小、开源免费的内存清理工具，直接调用 Windows 原生内存管理接口，可一键释放工作集、系统缓存、待机内存等。启动快、占用低、常驻后台几乎无感，适合内存吃紧的教室电脑和老旧机器日常清一清。",
+  "version": "3.5.2",
+  "size": "373 KB",
+  "system": "Windows 7 ~ 11（32/64 位）",
+  "website": "https://www.henrypp.org/product/memreduct",
+  "github": "https://github.com/henrypp/memreduct",
+  "downloads": [
+    {
+      "platform": "Windows x64 安装版",
+      "note": "官方安装包，Github链接有时链接不稳定",
+      "size": "373 KB",
+      "url": "https://github.com/henrypp/memreduct/releases/download/v.3.5.2/memreduct-3.5.2-setup.exe"
+    }
+  ],
+  "sort": 0
+}

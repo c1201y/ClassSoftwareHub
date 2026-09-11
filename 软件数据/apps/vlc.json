@@ -1,0 +1,35 @@
+{
+  "id": "vlc",
+  "name": "VLC media player",
+  "icon": "https://images-eds-ssl.xboxlive.com/image?url=4rt9.lXDC4H_93laV1_eHHFT949fUipzkiFOBH3fAiZZUCdYojwUyX2aTonS1aIwMrx6NUIsHfUHSLzjGJFxxiJK_HEPrjdesdyeQIKBd8CBvNetP6BxGK.pnI6V6UrP..SFKuYcvjaTTLsMfla_EO_Eyc658MMDVP0xiKCnUoo-&format=source",
+  "category": "other",
+  "tagline": "开源万能播放器，几乎什么格式都能播",
+  "description": "VLC 是 VideoLAN 出品的开源免费播放器，几乎支持所有音视频格式（mp4、mkv、rmvb、flv、ts 等），自带解码器，不用额外装解码包；还支持字幕、倍速、截屏、录制、投屏与网络串流。教室放视频、放听力材料、播奇怪格式的课件视频都很省心，无广告、无捆绑。",
+  "version": "3.0.23",
+  "size": "46 MB",
+  "system": "Windows 7 ~ 11（32 / 64 位）",
+  "website": "https://www.videolan.org/vlc/",
+  "store": "https://apps.microsoft.com/detail/xpdm1zw6815mqm",
+  "notice": "VLC 的安装包文件名里带版本号，官方升级后旧链接会失效（页面可能提示 404）。推荐用 Microsoft Store 版（自动更新），或走官网下载页。",
+  "downloads": [
+    {
+      "platform": "Windows 64 位安装版",
+      "note": "推荐；常规 64 位系统选这个",
+      "size": "46 MB",
+      "url": "https://download.videolan.org/vlc/last/win64/vlc-3.0.23-win64.exe"
+    },
+    {
+      "platform": "Windows 32 位安装版",
+      "note": "老机器 / 32 位系统用",
+      "size": "41 MB",
+      "url": "https://download.videolan.org/vlc/last/win32/vlc-3.0.23-win32.exe"
+    },
+    {
+      "platform": "官网下载页",
+      "note": "始终能找到最新版",
+      "size": "网页",
+      "url": "https://www.videolan.org/vlc/download-windows.html"
+    }
+  ],
+  "sort": 52
+}

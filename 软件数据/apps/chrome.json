@@ -1,0 +1,21 @@
+{
+  "id": "chrome",
+  "name": "Google Chrome",
+  "icon": "https://www.google.cn/chrome/static/images/chrome-logo-m100.svg",
+  "category": "schedule",
+  "tagline": "谷歌 Chrome 离线安装包下载",
+  "description": "Google Chrome 官方浏览器的离线安装包下载入口。网络环境不好、或者要给一批电脑装机时，用离线包比在线安装省事得多。Chrome 兼容性好、扩展丰富，是教室电脑上的常用浏览器。",
+  "version": "跟随官网",
+  "size": "未知",
+  "system": "Windows 10+",
+  "website": "https://www.google.cn/chrome/",
+  "downloads": [
+    {
+      "platform": "该应用更新频繁，故引导至官网下载",
+      "note": "如果使用 edge 浏览器打开，收到 edge 浏览器挽留小广告的就是正版！",
+      "url": "https://www.google.cn/chrome/"
+    }
+  ],
+  "sort": 20,
+  "维护备注": "唯一英文标识，如 'myapp'（决定网址 #/download/myapp）\n图标图片链接，没有就留 ''\n分类：system / schedule / teaching / other          tagline: 'x 正版下载',\n版本号，不知道留 ''\n体积，不知道留 ''\n官网，没有留 ''\nGitHub 仓库，没有留 ''\n系统限制：支持的操作系统/平台，不知道就留 ''（详情页显示\"待补充\"）"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "firefox",
+  "name": "Firefox 火狐浏览器",
+  "icon": "https://store-images.s-microsoft.com/image/apps.7279.14473293538384797.bcb417dc-ffbe-444e-9589-e6a25f04ad52.156eed19-aa35-4e69-96a7-c11abd7f887d?h=134",
+  "category": "schedule",
+  "tagline": "注重隐私的开源浏览器（提供 MSI 安装包）",
+  "description": "Firefox 由 Mozilla 打造，开源免费、注重用户隐私和数据安全，支持 Windows、macOS、Linux 全平台。这里提供 64 位 MSI 安装包，方便给教室电脑静默安装或批量部署。",
+  "version": "跟随官网",
+  "size": "391.8 MB",
+  "system": "Windows 7 ~ 11、macOS、Linux",
+  "website": "https://www.mozilla.org/zh-CN/firefox/",
+  "downloads": [
+    {
+      "platform": "通过 Microsoft Store 下载",
+      "url": "https://apps.microsoft.com/detail/9nzvdkpmr9rd?hl=zh-Hans&gl=US"
+    },
+    {
+      "platform": "该应用更新频繁，其他版本下载故引导至官网",
+      "url": "https://www.firefox.com/zh-CN/download/all/desktop-release/"
+    }
+  ],
+  "sort": 28
+}

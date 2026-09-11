@@ -1,0 +1,20 @@
+{
+  "id": "diskgenius",
+  "name": "DiskGenius",
+  "icon": "https://ts1.tc.mm.bing.net/th/id/OIP-C.2vFw6BHgZ39fhVnJpH0TKQAAAA?w=108&h=108&c=1&bgcl=5523ff&r=0&o=7&dpr=2&pid=ImgRC&rm=3",
+  "category": "system",
+  "tagline": "分区管理 / 数据恢复 / 坏道检测",
+  "description": "DiskGenius 是一款功能强大的磁盘分区管理工具，支持分区管理、数据恢复、坏道检测、系统迁移等功能。免费版已足够日常维护使用，解压即用，是电教委员维护班级电脑硬盘的必备工具。",
+  "version": "6.2.0",
+  "size": "37.1 MB+",
+  "system": "Windows 2000+",
+  "website": "https://www.diskgenius.cn/",
+  "downloads": [
+    {
+      "platform": "官方下载",
+      "note": "磁盘管理软件涉及数据安全，官方建议始终使用最新版本。不要将软件下载安装到要恢复数据的分区！",
+      "url": "https://www.diskgenius.cn/download.php"
+    }
+  ],
+  "sort": 38
+}

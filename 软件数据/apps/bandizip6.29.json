@@ -1,0 +1,20 @@
+{
+  "id": "bandizip6.29",
+  "name": "Bandizip 6.29",
+  "icon": "https://pc3.gtimg.com/softmgr/logo/48/10268_48_1775185920.jpg",
+  "category": "system",
+  "tagline": "Bandizip 最后一个无广告的官方免费版",
+  "description": "Bandizip 是一款界面美观、功能强大的压缩软件，支持多种压缩格式并内置图片预览，压缩和解压速度都很快。6.29 是最后一个官方无广告的免费版本，之后的版本开始加入广告，建议电教委员把这个版本收好，装了就一直用。",
+  "version": "6.29",
+  "size": "约 7 MB",
+  "system": "Windows 7 ~ 11",
+  "website": "https://www.bandisoft.com/",
+  "downloads": [
+    {
+      "platform": "Windows 安装版",
+      "note": "最后一个官方无广告版，强烈推荐收藏",
+      "url": "http://it.bandisoft.com/bandizip/dl.php?old"
+    }
+  ],
+  "sort": 36
+}

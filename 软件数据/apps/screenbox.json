@@ -1,0 +1,19 @@
+{
+  "id": "screenbox",
+  "name": "Screenbox",
+  "icon": "https://store-images.s-microsoft.com/image/apps.27252.14412253091153471.48adf666-dcc9-44d1-95e6-206f697e816d.5cf5d0d2-01e6-4c17-bb43-9f1cb0bbb7ec?h=170",
+  "category": "other",
+  "tagline": "Fluent Design 开源播放器，基于 LibVLC 全格式硬解",
+  "description": "一款专为 Windows 10/11 设计的开源媒体播放器，界面采用微软 Fluent Design 设计语言，底层基于 LibVLC，解码能力强，支持 4K / HDR / AV1 等格式硬解，观感和 Win11 系统界面统一，放视频很舒服。",
+  "version": "上次更新日期  2026/8/18",
+  "size": "222.5 MB",
+  "system": "Windows 10/11",
+  "github": "https://github.com/huynhsontung/Screenbox",
+  "downloads": [
+    {
+      "platform": "通过 Microsoft Store 下载",
+      "url": "https://apps.microsoft.com/detail/9ntsnmsvcb5l?hl=zh-CN&gl=CN"
+    }
+  ],
+  "sort": 9
+}

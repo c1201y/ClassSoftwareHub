@@ -1,0 +1,32 @@
+{
+  "id": "icc-ce",
+  "name": "ICC-CE",
+  "icon": "https://ts4.tc.mm.bing.net/th/id/OIP-C.ubO6mUEw2mBvl2YxUB7CigHaHa?w=108&h=108&c=1&bgcl=c4655a&r=0&o=7&dpr=2&pid=ImgRC&rm=3",
+  "category": "teaching",
+  "tagline": "课堂评价互动工具（加减分 / 随机抽选 / 计时）",
+  "description": "ICC-CE 是面向课堂教学评价的辅助工具，功能涵盖课堂表现评分、小组竞赛积分、随机抽选、计时器等，帮助老师即时给予反馈、提升课堂参与度，让课堂互动和纪律管理都更轻松。",
+  "version": "1.8.0.4",
+  "size": "62 MB+",
+  "system": "Windows 10/11（x64）",
+  "website": "https://www.iccce.dpdns.org/",
+  "github": "https://github.com/InkCanvasForClass/community",
+  "downloads": [
+    {
+      "platform": "InkCanvasForClass.CE.1.8.0.4-x64.Setup.exe",
+      "url": "https://github.com/InkCanvasForClass/community/releases/download/1.8.0.4/InkCanvasForClass.CE.1.8.0.4-x64.Setup.exe"
+    },
+    {
+      "platform": "InkCanvasForClass.CE.1.8.0.4-x64.zip",
+      "url": "https://github.com/InkCanvasForClass/community/releases/download/1.8.0.4/InkCanvasForClass.CE.1.8.0.4-x64.zip"
+    },
+    {
+      "platform": "InkCanvasForClass.CE.1.8.0.4.Setup.exe",
+      "url": "https://github.com/InkCanvasForClass/community/releases/download/1.8.0.4/InkCanvasForClass.CE.1.8.0.4.Setup.exe"
+    },
+    {
+      "platform": "InkCanvasForClass.CE.1.8.0.4.zip",
+      "url": "https://github.com/InkCanvasForClass/community/releases/download/1.8.0.4/InkCanvasForClass.CE.1.8.0.4.zip"
+    }
+  ],
+  "sort": 7
+}

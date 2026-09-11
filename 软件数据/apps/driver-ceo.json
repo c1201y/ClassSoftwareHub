@@ -1,0 +1,34 @@
+{
+  "id": "driver-ceo",
+  "name": "驱动总裁",
+  "icon": "https://tse4-mm.cn.bing.net/th/id/OIP-C.QPYPX3j55HcEJYBA3PDzLQAAAA?w=120&h=120&c=7&r=0&o=7&pid=1.7&rm=3",
+  "category": "system",
+  "tagline": "免费不限速的驱动安装工具（在线版 + 万能网卡/离线版）",
+  "description": "驱动总裁由系统总裁开发，集在线与离线双模式的硬件驱动安装工具，支持台式机、笔记本以及 Mac 的 Boot Camp 自动匹配驱动，能轻松解决装完系统后没网卡驱动、没显卡驱动等问题。「万能网卡版」自带离线驱动包，装系统后没网也能先把网卡驱动打上，再联网装其余驱动，是重装系统后的救场工具。",
+  "version": "2.20.0.8",
+  "size": "26.5 MB（在线版）/ 663 MB（万能网卡版）",
+  "system": "Windows XP ~ 11（也可在 PE 下运行）",
+  "website": "https://www.sysceo.com/dc",
+  "notice": "驱动总裁的下载直链文件名里带版本号，官方一更新旧链接就会失效；如果点不开，请走下面的官网下载页。",
+  "downloads": [
+    {
+      "platform": "在线版（26.5 MB）",
+      "note": "官方直链；安装时联网自动匹配最新驱动",
+      "size": "26.5 MB",
+      "url": "https://dl.360simg.com/software_installer_download/DrvCeooLinstaller_1029_53d5d.exe"
+    },
+    {
+      "platform": "万能网卡版（离线包）",
+      "note": "663 MB；没网时也能装网卡驱动，点开是官网下载页",
+      "size": "官网页面",
+      "url": "https://www.sysceo.com/software-softwarei-id-245.html"
+    },
+    {
+      "platform": "官网下载页",
+      "note": "还有网卡绿色版、离线精简版等",
+      "size": "网页",
+      "url": "https://www.sysceo.com/dc"
+    }
+  ],
+  "sort": 51
+}

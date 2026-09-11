@@ -1,0 +1,19 @@
+{
+  "id": "dism-gui",
+  "name": "Dism 图形界面",
+  "icon": "https://store-images.s-microsoft.com/image/apps.7808.14081807280554970.bc9e26e4-5168-4fc1-a644-1f4c12670ef8.351176fa-352c-4b2d-9557-2548b252bedf?h=134",
+  "category": "system",
+  "tagline": "微软商店里的系统优化与 DISM 图形工具",
+  "description": "把 DISM 等系统命令图形化的小工具（UWP 版本），不用记命令就能修复系统映像、清理组件、管理 Windows 系统，装在教室电脑上应急修系统很方便。",
+  "version": "跟随商店更新",
+  "size": "17.3 MB",
+  "system": "Windows 10+",
+  "website": "https://apps.microsoft.com/detail/9p90zdp3f501?hl=zh-CN&gl=CN",
+  "downloads": [
+    {
+      "platform": "通过 Microsoft Store 下载",
+      "url": "https://apps.microsoft.com/detail/9p90zdp3f501?hl=zh-CN&gl=CN"
+    }
+  ],
+  "sort": 37
+}

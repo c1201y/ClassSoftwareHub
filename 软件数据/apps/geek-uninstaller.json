@@ -1,0 +1,23 @@
+{
+  "id": "geek-uninstaller",
+  "name": "Geek Uninstaller",
+  "icon": "https://ts4.tc.mm.bing.net/th/id/ODF.ytgfeSURamIxStoRL-3p_w?w=32&h=32&qlt=90&pcl=fffffa&r=0&o=6&pid=1.2",
+  "category": "system",
+  "tagline": "单文件免安装的深度卸载工具，清残留很干净",
+  "description": "Geek Uninstaller 是一款口碑极佳的 Windows 卸载工具，单文件绿色版、免安装。卸载时先调用软件自带的卸载程序，完了自动扫描并清除残留的文件、文件夹和注册表项；遇到装不干净、卸不掉的顽固软件还能强制删除，是给教室电脑「大扫除」的利器。",
+  "version": "1.5.4.180",
+  "size": "3.04 MB",
+  "system": "Windows 7 ~ 11",
+  "website": "https://geekuninstaller.com/",
+  "github": "https://www.bilibili.com/video/BV1GJ411x7h7/?spm_id_from=333.1245.recommend_more_video.0&trackid=web_related_0.router-related-2479604-6dnm7.1787986736249.950",
+  "downloads": [
+    {
+      "platform": "Windows 单文件版",
+      "note": "官方直链，有时候不稳定",
+      "size": "3.04 MB",
+      "url": "https://geekuninstaller.com/geek.zip"
+    }
+  ],
+  "sort": 1,
+  "维护备注": "闭源软件，无 GitHub"
+}

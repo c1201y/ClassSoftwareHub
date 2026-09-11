@@ -1,0 +1,31 @@
+{
+  "id": "classwidgets2",
+  "name": "Class Widgets 2",
+  "icon": "https://ts1.tc.mm.bing.net/th/id/ODF.kfPOG12cGFCHf5t8EvY7MQ?w=32&h=32&qlt=93&pcl=fffffa&r=0&o=6&pid=1.2",
+  "category": "teaching",
+  "tagline": "小组件风格的桌面课表，支持多周课表与考试倒计时",
+  "description": "Class Widgets 2 把课表做成桌面小组件，界面清爽现代。支持灵活排课、多周课表切换和考试倒计时，放在教室电脑桌面常驻显示，一眼就能看到下节课是什么，是 ClassIsland 之外的另一种课表方案。",
+  "version": "2.0.0.2",
+  "size": "101 MB+",
+  "system": "Windows 10/11、macOS（x64 / ARM64）",
+  "github": "https://github.com/RinLit-233-shiroko/Class-Widgets-2",
+  "downloads": [
+    {
+      "platform": "Windows",
+      "note": "ClassWidgets-2-Windows.zip",
+      "size": "101 MB",
+      "url": "https://github.com/RinLit-233-shiroko/Class-Widgets-2/releases/download/2.0.0.2/ClassWidgets-2-Windows.zip"
+    },
+    {
+      "platform": "MacOS x64",
+      "size": "441 MB",
+      "url": "https://github.com/RinLit-233-shiroko/Class-Widgets-2/releases/download/2.0.0.2/ClassWidgets-2-macOS-X64.dmg"
+    },
+    {
+      "platform": "MacOS Arm64",
+      "size": "421 MB",
+      "url": "https://github.com/RinLit-233-shiroko/Class-Widgets-2/releases/download/2.0.0.2/ClassWidgets-2-macOS-ARM64.dmg"
+    }
+  ],
+  "sort": 3
+}

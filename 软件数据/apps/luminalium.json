@@ -1,0 +1,21 @@
+{
+  "id": "luminalium",
+  "name": "Luminalium",
+  "icon": "https://cdn.jsdelivr.net/gh/SECTL/Luminalium@default/icons/logo.svg",
+  "category": "teaching",
+  "tagline": "开源演示批注助手（荧素万演），希沃课堂助手的开源替代",
+  "description": "Luminalium 是一款开源的演示与批注助手，定位为希沃课堂助手的替代方案。内置丰富的手写笔功能，笔宽、颜色、透明度都能调，支持 COM 画笔与内置渲染画笔切换，界面和交互可自由定制，适合喜欢折腾、想要更自由选择的老师。",
+  "version": "1.4.1.0 Momokan",
+  "size": "438 MB",
+  "system": "Windows 10/11（x64）",
+  "github": "https://github.com/SECTL/Luminalium",
+  "downloads": [
+    {
+      "platform": "Windows    ",
+      "note": "GitHub 直链 ",
+      "size": "438 MB",
+      "url": "https://github.com/SECTL/Luminalium/releases/download/v1.4.1.0/lumn1410_release_windows_x86_64.zip"
+    }
+  ],
+  "sort": 6
+}

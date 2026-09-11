@@ -1,0 +1,18 @@
+{
+  "id": "microsoft-edge",
+  "name": "Microsoft Edge",
+  "icon": "https://ts3.tc.mm.bing.net/th/id/OIP-C.jpJ_nRsuWnOpLIHCQ9QonAHaHa?w=108&h=108&c=1&bgcl=963369&r=0&o=7&dpr=2&pid=ImgRC&rm=3",
+  "category": "schedule",
+  "tagline": "微软官方浏览器（附企业版 MSI 离线包）",
+  "description": "Microsoft Edge 是基于 Chromium 的现代化浏览器，与 Windows 系统深度集成，支持扩展、集锦、垂直标签页等功能。这里提供企业版离线安装包（MSI 格式），适合教室大屏批量部署，或在没有网络的机器上安装。",
+  "version": "跟随官网",
+  "system": "Windows 7 ~ 11、macOS、Linux",
+  "website": "https://www.microsoft.com/zh-cn/edge",
+  "downloads": [
+    {
+      "platform": "通过 Microsoft Store 下载",
+      "url": "https://apps.microsoft.com/detail/xpfftq037jwmhs?gl=CN&hl=zh-CN"
+    }
+  ],
+  "sort": 25
+}

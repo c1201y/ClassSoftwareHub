@@ -1,0 +1,22 @@
+{
+  "id": "HEUKMSActivator",
+  "name": "Heu_Kms_Activator激活工具",
+  "icon": "https://www.aichunjing.com/d/file/2025-03-16/30e0bc7654b243e1136e99979faac56f.png",
+  "category": "system",
+  "tagline": "Windows / Office 激活工具（HEU KMS）",
+  "description": "HEU KMS Activator 是国内常用的 Windows 与 Office 激活工具，提供 KMS 激活、数字许可证等多种方式，图形界面操作简单。建议仅用于个人学习与测试环境，教学等正式场合请使用正版授权。",
+  "version": "64.04.0",
+  "size": "4.88 MB",
+  "system": "Windows XP+",
+  "github": "https://github.com/zbezj/HEU_KMS_Activator/",
+  "downloads": [
+    {
+      "platform": "Download",
+      "note": "该应用下载容易被 Windows Defender 给报毒，请提前关闭 Windows Defender 实时保护",
+      "size": "4.88 MB",
+      "url": "https://github.com/zbezj/HEU_KMS_Activator/releases/download/64.0.0/HEU_KMS_Activator_v64.0.0.rar"
+    }
+  ],
+  "sort": 21,
+  "维护备注": "唯一英文标识，如 'myapp'（决定网址 #/download/myapp）\n图标图片链接，没有就留 ''\n分类：system / schedule / teaching / other          tagline: 'x 正版下载',\n版本号，不知道留 ''\n体积，不知道留 ''\n官网，没有留 ''\nGitHub 仓库，没有留 ''\n系统限制：支持的操作系统/平台，不知道就留 ''（详情页显示\"待补充\"）"
+}

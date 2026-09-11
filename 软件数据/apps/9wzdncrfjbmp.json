@@ -1,0 +1,20 @@
+{
+  "id": "9wzdncrfjbmp",
+  "name": "Microsoft Store",
+  "icon": "https://store-images.s-microsoft.com/image/apps.23920.9007199266252480.ef650c0b-5855-42e5-95aa-16fe9d95c138.a336dde8-771a-4160-a7dc-b2f0cc3f4b6b?h=170",
+  "category": "schedule",
+  "tagline": "微软应用商店，正版软件一键装",
+  "description": "直达微软官方的应用商店（Microsoft Store）。商店里的软件都经过微软审核、由商店统一更新，装完不用自己盯版本；不少常用的免费软件在商店里都有正版版本，适合教室里图省事的装机方式。",
+  "version": "上次更新日期  2026/8/28",
+  "size": "132.4 MB",
+  "system": "Windows 10 +",
+  "website": "https://apps.microsoft.com/detail/9wzdncrfjbmp?hl=zh-CN&gl=CN",
+  "downloads": [
+    {
+      "platform": "Download",
+      "url": "https://apps.microsoft.com/detail/9wzdncrfjbmp?hl=zh-CN&gl=CN"
+    }
+  ],
+  "sort": 12,
+  "维护备注": "唯一英文标识，如 'myapp'（决定网址 #/download/myapp）\n图标图片链接，没有就留 ''\n分类：system / schedule / teaching / other\n版本号，不知道留 ''\n体积，不知道留 ''\n官网，没有留 ''\nGitHub 仓库，没有留 ''\n系统限制：支持的操作系统/平台，不知道就留 ''（详情页显示\"待补充\"）"
+}

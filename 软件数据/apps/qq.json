@@ -1,0 +1,20 @@
+{
+  "id": "qq",
+  "name": "QQ",
+  "icon": "https://ts1.tc.mm.bing.net/th/id/OIP-C.vAfIO_n4xCHQMfn1ga7mQwHaHa?w=108&h=108&c=1&bgcl=4184f9&r=0&o=7&dpr=2&pid=ImgRC&rm=3",
+  "category": "schedule",
+  "tagline": "QQ Windows 版官方下载",
+  "description": "QQ Windows 版官方安装包，支持消息、文件传输、屏幕共享、远程协助等功能。教室里收发课件、传大文件都很方便，遇到老师电脑出问题还能用远程协助应急帮一把。",
+  "version": "官网",
+  "size": "未知",
+  "system": "Windows 7+",
+  "website": "https://im.qq.com/index/#/",
+  "downloads": [
+    {
+      "platform": "该应用更新频繁，故引导至官网下载",
+      "url": "https://im.qq.com/index/#/"
+    }
+  ],
+  "sort": 17,
+  "维护备注": "唯一英文标识，如 'myapp'（决定网址 #/download/myapp）\n图标图片链接，没有就留 ''\n分类：system / schedule / teaching / other          tagline: 'x 正版下载',\n版本号，不知道留 ''\n体积，不知道留 ''\n官网，没有留 ''\nGitHub 仓库，没有留 ''\n系统限制：支持的操作系统/平台，不知道就留 ''（详情页显示\"待补充\"）"
+}

@@ -1,0 +1,28 @@
+{
+  "id": "todesk",
+  "name": "ToDesk 远程控制",
+  "icon": "https://tse2-mm.cn.bing.net/th/id/OIP-C.4mfqF40daBM46zyM6mMOAQAAAA?w=135&h=150&c=7&r=0&o=7&pid=1.7&rm=3",
+  "category": "other",
+  "tagline": "国产远程控制软件，远程帮老师/同学修电脑",
+  "description": "ToDesk 是国内常用的远程控制软件，个人版免费，连接稳定、延迟低，支持文件传输、远程打印、手机远控电脑等。电教委员可以装一个：坐在自己位置上就能远程帮老师关投影、装软件、排查教室电脑问题，不用来回跑教室。",
+  "version": "5.x（以安装时官网版本为准）",
+  "size": "约 30 MB",
+  "system": "Windows / macOS / Linux / Android / iOS",
+  "website": "https://www.todesk.com/",
+  "notice": "这里给的是 ToDesk 官网「始终最新」的在线安装器直链（安装时会联网取最新版）。如果要离线安装包，请走下面的官网下载页按版本下载。",
+  "downloads": [
+    {
+      "platform": "Windows 在线安装器",
+      "note": "推荐；官方直链，始终指向最新版",
+      "size": "约 30 MB",
+      "url": "https://dl.todesk.com/official/ToDesk_Installer.exe"
+    },
+    {
+      "platform": "官网下载页",
+      "note": "需要离线安装包或其它系统版本时来这里",
+      "size": "网页",
+      "url": "https://www.todesk.com/download.html"
+    }
+  ],
+  "sort": 49
+}

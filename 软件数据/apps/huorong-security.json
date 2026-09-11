@@ -1,0 +1,18 @@
+{
+  "id": "huorong-security",
+  "name": "火绒安全软件",
+  "icon": "https://cdn-www.huorong.cn/Public/Uploads/uploadfile/images/20240301/b1icon13.svg",
+  "category": "system",
+  "tagline": "轻量无弹窗的安全软件，教室大屏防护首选",
+  "description": "火绒安全软件把反病毒、主动防御和防火墙三大模块整合在一起，占用资源极低、没有广告弹窗，还能有效拦截流氓软件和各种弹窗推广。给教室大屏装一个，既安静又省心。",
+  "version": "6",
+  "system": "Windows 7+",
+  "website": "https://www.huorong.cn/",
+  "downloads": [
+    {
+      "platform": "该应用更新频繁，故引导至官网下载",
+      "url": "https://www.huorong.cn/"
+    }
+  ],
+  "sort": 24
+}

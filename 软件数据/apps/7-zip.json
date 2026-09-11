@@ -1,0 +1,46 @@
+{
+  "id": "7-zip",
+  "name": "7-Zip",
+  "icon": "https://ts2.tc.mm.bing.net/th/id/ODF.tW1DZ4ND3pOb43W0A2d2fQ?w=32&h=32&qlt=90&pcl=fffffa&r=0&o=6&pid=1.2",
+  "category": "system",
+  "tagline": "开源免费、压缩率高、无广告的解压软件",
+  "description": "7-Zip 是一款开源免费的文件压缩 / 解压软件，压缩率高、解压速度快，支持 7z、ZIP、RAR、ISO 等多种格式。轻量纯净、无广告无捆绑，是教室大屏上的必备工具。",
+  "version": "26.02",
+  "size": "1.6 MB",
+  "system": "Windows XP ~ 11",
+  "website": "https://www.7-zip.org/",
+  "github": "https://github.com/ip7z/7zip",
+  "downloads": [
+    {
+      "platform": "Windows 64位 安装版",
+      "note": "64位系统推荐",
+      "size": "1.6 MB",
+      "url": "https://www.7-zip.org/a/7z2602-x64.exe"
+    },
+    {
+      "platform": "Windows 32位 安装版",
+      "note": "32位系统使用",
+      "size": "1.2 MB",
+      "url": "https://www.7-zip.org/a/7z2602.exe"
+    },
+    {
+      "platform": "Windows 64位 Github源 安装版",
+      "note": "64位系统推荐",
+      "size": "1.29 MB",
+      "url": "https://github.com/ip7z/7zip/releases/download/26.02/7z2602-x64.msi"
+    },
+    {
+      "platform": "Linux x64",
+      "url": "https://github.com/ip7z/7zip/releases/download/26.02/7z2602-linux-x64.tar.xz"
+    },
+    {
+      "platform": "Linux x86",
+      "url": "https://github.com/ip7z/7zip/releases/download/26.02/7z2602-linux-x86.tar.xz"
+    },
+    {
+      "platform": "Linux Arm64",
+      "url": "https://github.com/ip7z/7zip/releases/download/26.02/7z2602-linux-arm64.tar.xz"
+    }
+  ],
+  "sort": 35
+}

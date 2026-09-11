@@ -1,0 +1,33 @@
+{
+  "id": "vcredist-aio",
+  "name": "微软常用运行库合集",
+  "icon": "https://tse3-mm.cn.bing.net/th/id/OIP-C.Vo1hbTqt06UElgWs9GO2pwAAAA?w=100&h=100&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3",
+  "category": "system",
+  "tagline": "一键补全 VC++ 运行库，专治「缺少 msvcp140.dll / vcruntime140.dll」",
+  "description": "遇到「计算机中丢失 msvcp140.dll」「应用程序无法正常启动 0xc000007b」这类报错，绝大多数是系统缺少 Visual C++ 运行库造成的。本合集（VisualCppRedist AIO，由 abbodi1406 在 GitHub 开源维护）收录了 2005 至 2022 全系列 Microsoft Visual C++ Redistributable，一键自动检测安装/修复，是装机与补全 DLL 最省心的方案。运行后按提示安装即可，无需勾选版本。",
+  "version": "0.105.0",
+  "size": "17 MB ~ 31 MB",
+  "system": "Windows Vista ~ 11（x86 / x64 / ARM64）",
+  "github": "https://github.com/abbodi1406/vcredist",
+  "downloads": [
+    {
+      "platform": "x86 + x64 合集",
+      "note": "推荐；32/64 位系统通用，一次装全",
+      "size": "30.7 MB",
+      "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.105.0/VisualCppRedist_AIO_x86_x64.exe"
+    },
+    {
+      "platform": "仅 32 位（x86）",
+      "note": "老机器 / 只要 32 位运行库时用",
+      "size": "17.8 MB",
+      "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.105.0/VisualCppRedist_AIO_x86only.exe"
+    },
+    {
+      "platform": "ARM64",
+      "note": "ARM 设备（骁龙本等）选这个",
+      "size": "19.3 MB",
+      "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.105.0/VisualCppRedist_AIO-arm64.exe"
+    }
+  ],
+  "sort": 42
+}

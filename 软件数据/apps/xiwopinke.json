@@ -1,0 +1,26 @@
+{
+  "id": "xiwopinke",
+  "name": "希沃品课",
+  "icon": "https://imlizhi-store-https.seewo.com/12f46683065e40e5b6d5db8a8b1cbab2",
+  "category": "schedule",
+  "tagline": "希沃品课官方正版下载",
+  "description": "希沃品课是希沃出品的课堂互动与教学工具，方便老师在课堂上组织互动、推送学习资源。这里提供官方正版下载入口，避免从第三方渠道下载到带捆绑的版本。",
+  "version": "1.2.43.7298",
+  "size": "340 MB",
+  "system": "Windows 10 +",
+  "website": "https://e.seewo.com/#/",
+  "downloads": [
+    {
+      "platform": "Windows 教师端",
+      "size": "340 MB",
+      "url": "https://cstore-public.seewo.com/pinco-ota/seewoPincoTeacher_1.2.43.7298(20250930112805).exe"
+    },
+    {
+      "platform": "Windows 小组端",
+      "size": "163 MB",
+      "url": "https://cstore-public.seewo.com/pinco-ota/seewoPincoGroupSetup_1.2.38.1673.exe"
+    }
+  ],
+  "sort": 15,
+  "维护备注": "唯一英文标识，如 'myapp'（决定网址 #/download/myapp）\n图标图片链接，没有就留 ''\n分类：system / schedule / teaching / other\n版本号，不知道留 ''\n体积，不知道留 ''\n官网，没有留 ''\nGitHub 仓库，没有留 ''\n系统限制：支持的操作系统/平台，不知道就留 ''（详情页显示\"待补充\"）"
+}

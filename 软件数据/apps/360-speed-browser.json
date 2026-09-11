@@ -1,0 +1,25 @@
+{
+  "id": "360-speed-browser",
+  "name": "360极速浏览器",
+  "icon": "https://p2.ssl.qhimg.com//dm/72_72_100/t01e07b53460b856918.png",
+  "category": "schedule",
+  "tagline": "Chromium 内核的极速浏览器，支持 Chrome 扩展",
+  "description": "360 极速浏览器基于 Chromium 内核，启动速度快、浏览流畅，支持 Chrome 扩展，适合教室大屏日常上网使用。提供 64 位和 32 位版本，按电脑情况选一个装即可。",
+  "version": "23.1.1253.64",
+  "size": "144 MB",
+  "system": "Windows XP +",
+  "website": "https://browser.360.cn/ee/",
+  "downloads": [
+    {
+      "platform": "Windows 64位 官方下载",
+      "note": "64位版本，推荐配置较好的电脑使用",
+      "url": "http://sedl.360tpcdn.com/cse/360csex_23.1.1253.64.exe"
+    },
+    {
+      "platform": "Windows 32位 官方下载",
+      "note": "32位版本，适合老旧电脑",
+      "url": "https://down.360safe.com/cse/360cse_13.5.2044.0.exe"
+    }
+  ],
+  "sort": 26
+}

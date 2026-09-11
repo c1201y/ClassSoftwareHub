@@ -1,0 +1,20 @@
+{
+  "id": "WPS",
+  "name": "WPS Office",
+  "icon": "https://ts3.tc.mm.bing.net/th/id/OSAAS.7CC8BBB60799D19E4D663503A3BEF8F2?w=52&h=52&c=17&rs=1&r=0&o=6&dpr=1.1&pid=TechQna",
+  "category": "schedule",
+  "tagline": "WPS Office 官方正版下载",
+  "description": "WPS Office 官方安装包。体积小、启动快，文字 / 表格 / 演示三件套齐全，兼容微软 Office 的文档格式，教室电脑上打开课件、做表格、看文档都很顺手，个人版免费使用。",
+  "version": "跟随官网",
+  "size": "未知",
+  "system": "Windows 7+",
+  "website": "https://www.wps.cn/",
+  "downloads": [
+    {
+      "platform": "该应用更新频繁，故引导至官网下载",
+      "url": "https://www.wps.cn/"
+    }
+  ],
+  "sort": 19,
+  "维护备注": "唯一英文标识，如 'myapp'（决定网址 #/download/myapp）\n图标图片链接，没有就留 ''\n分类：system / schedule / teaching / other          tagline: 'x 正版下载',\n版本号，不知道留 ''\n体积，不知道留 ''\n官网，没有留 ''\nGitHub 仓库，没有留 ''\n系统限制：支持的操作系统/平台，不知道就留 ''（详情页显示\"待补充\"）"
+}

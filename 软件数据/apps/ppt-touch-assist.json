@@ -1,0 +1,21 @@
+{
+  "id": "ppt-touch-assist",
+  "name": "PPT Touch Assist",
+  "icon": "https://cdn.jsdelivr.net/gh/RinLit-233-shiroko/PowerPoint-Touch-Assist@main/img/logo.png",
+  "category": "teaching",
+  "tagline": "触控屏 PPT 授课小助手",
+  "description": "专为触控屏教学场景设计的 PPT 辅助工具，弥补了原生 PowerPoint 在触控交互上的不足，翻页、批注等操作更适合手指和触控笔，简单、轻量、上手即用，配合教室触摸大屏上课很顺手。",
+  "version": "1.2.0",
+  "size": "46.5 MB",
+  "system": "Windows 10/11（需触控屏）",
+  "github": "https://github.com/RinLit-233-shiroko/PowerPoint-Touch-Assist",
+  "downloads": [
+    {
+      "platform": "Windows 安装版",
+      "note": "需要触控屏或带触控的教室大屏",
+      "size": "46.5 MB",
+      "url": "https://github.com/RinLit-233-shiroko/PowerPoint-Touch-Assist/releases/download/Release1.2/v1.2.PowerPoint_Touch_Assist.zip"
+    }
+  ],
+  "sort": 5
+}

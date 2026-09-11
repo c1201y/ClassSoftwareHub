@@ -1,0 +1,36 @@
+{
+  "id": "snipaste",
+  "name": "Snipaste",
+  "icon": "https://store-images.s-microsoft.com/image/apps.25543.14503356220976813.6529113a-95e4-4700-808f-6c91cac3e590.fa86b8ea-8644-48ca-9ae9-b35b06e3a5af?h=170",
+  "category": "other",
+  "tagline": "截图 + 贴图神器，截完能钉在屏幕最上层",
+  "description": "一款轻量级截图与屏幕贴图工具，由国内独立开发者打造。最大特色是「贴图」——截完的图可以直接钉在屏幕最上层当参考，同时支持像素级精准截图、屏幕取色和丰富的标注工具（矩形、箭头、文字、马赛克等），备课、做课件时贴素材特别顺手。",
+  "version": "2.11.3",
+  "size": "41.3 MB",
+  "system": "Windows 7 ~ 11、Linux、macOS",
+  "website": "https://www.snipaste.com/",
+  "downloads": [
+    {
+      "platform": "通过 Microsoft Store 下载",
+      "url": "https://apps.microsoft.com/detail/9p1wxpkb68kx?hl=zh-CN&gl=CN"
+    },
+    {
+      "platform": "Windows x86 ",
+      "note": "适用于 32 位系统",
+      "url": "https://download.snipaste.com/archives/Snipaste-2.11.3-x86.zip"
+    },
+    {
+      "platform": "Windows ARM ",
+      "url": "https://download.snipaste.com/archives/Snipaste-2.11.3-arm64.zip"
+    },
+    {
+      "platform": "Linux",
+      "url": "https://download.snipaste.com/archives/Snipaste-2.11.3-x86_64.AppImage"
+    },
+    {
+      "platform": "macOS",
+      "url": "https://download.snipaste.com/archives/Snipaste-2.11.3.dmg"
+    }
+  ],
+  "sort": 10
+}
