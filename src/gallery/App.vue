@@ -114,7 +114,7 @@ import WinAutoSuggestBox from '../components/WinAutoSuggestBox.vue';
 import WinToolTipService from '../components/WinToolTipService.vue';
 import WelcomeDialog from './WelcomeDialog.vue';
 import { syncHolidayTheme, isHolidaySeason, type HolidayTheme } from './holidayTheme';
-import { trackVisit } from './visitor';
+import { trackVisit, hasTracked } from './visitor';
 import appIcon from '../assets/AppIcon.ico';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from '../components/i18n/index';
@@ -340,8 +340,15 @@ const removeNavigationAfterEach = router.afterEach((to, from, failure) => {
 const removeNavigationErrorHandler = router.onError(() => releaseNavigation());
 // ── 访问量统计：每次路由切换上报一次（含首屏），覆盖全站所有页面 ────────
 // 计数动作放在应用根组件，而非设置页组件 —— 否则只有打开设置页才会累加访问量。
+// 去重键 = 路由名 + 详情页 id：`/` 会重定向到 `/home`，按路径去重会被算成两页。
+const visitKey = (r: { name?: unknown; params?: unknown }) => {
+  const name = typeof r.name === 'string' ? r.name : '';
+  const params = (r.params ?? {}) as Record<string, unknown>;
+  const id = String(params.id ?? '');
+  return id ? `${name}:${id}` : name;
+};
 const removeVisitTrackingAfterEach = router.afterEach((to, _from, failure) => {
-  if (!failure) trackVisit(to.fullPath);
+  if (!failure) trackVisit(visitKey(to), to.fullPath);
 });
 
 provide('themeSetting', themeSetting);
@@ -509,8 +516,13 @@ onMounted(() => {
   isHostedInUwpWebView.value = Boolean(
     (window as unknown as { __WINUI_ON_WEB_UWP_APP__?: boolean }).__WINUI_ON_WEB_UWP_APP__
   );
-  // 首屏兜底上报一次（与路由 afterEach 去重，不会重复计数）
-  trackVisit(route.fullPath);
+  // 首屏兜底：路由 afterEach 通常已上报；若极端情况下没报，等路由解析完再补一次。
+  // 用 setTimeout 延后，确保此时路由已解析（否则 route.name 为空会和真实 key 对不上、重复计数）。
+  window.setTimeout(() => {
+    if (hasTracked()) return;
+    const current = router.currentRoute.value;
+    trackVisit(visitKey(current), current.fullPath);
+  }, 300);
   syncNavigationFreezeState(isNavigationFrozen.value);
   postUwpSetting('theme', themeSetting.value);
   postUwpSetting('material', materialSetting.value);
