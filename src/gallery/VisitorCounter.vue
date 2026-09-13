@@ -18,9 +18,9 @@ import { onMounted, ref } from 'vue';
 // 三个域名共用同一 Worker 地址，后台 KV 自动把各域名的访问累加成一个总数，
 // 解决不蒜子(busuanzi)按域名分别统计、各域名数字对不上的问题。
 //
-// ⚠️ 把下面的 API_BASE 改成你部署好的 Worker 地址
-//    （部署后在 stats-worker 的 Dashboard 页底部也能看到该地址）。
-const API_BASE = 'https://datastatistics.3763902702.workers.dev';
+// ⚠️ 把下面的 API_BASE 改成你部署好的 Worker 地址（国内 .workers.dev 被墙，用自定义域名）。
+//    在 Cloudflare 后台把这个 Worker 绑到 service.132614.xyz（自定义域）即可。
+const API_BASE = 'https://service.132614.xyz';
 
 const pv = ref<number | null>(null);
 const uv = ref<number | null>(null);
