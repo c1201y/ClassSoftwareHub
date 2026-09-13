@@ -71,3 +71,30 @@ jobs:
           webdav_upload_path: "/网站/"
           files: ./dist/index.html
           fail_on_unmatched_files: true
+
+  upload-to-ftp:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 下载构建产物
+        uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+          path: ./dist
+
+      - name: 上传单文件站点到 FTP 服务器
+        # 单文件打包产物 dist/ 下只有 index.html（CSS/JS/图片全部内联），
+        # 直接把 dist/ 目录镜像到 FTP 根目录即可。
+        # 凭据通过仓库 Secrets 注入（不写进本文件）：
+        #   FTP_SERVER = 149.88.74.95
+        #   FTP_USERNAME = ser761153303305
+        #   FTP_PASSWORD = q0kmn5b00iR3
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
+          protocol: ftp
+          local-dir: ./dist/
+          server-dir: /
