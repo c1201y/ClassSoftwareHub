@@ -114,6 +114,7 @@ import WinAutoSuggestBox from '../components/WinAutoSuggestBox.vue';
 import WinToolTipService from '../components/WinToolTipService.vue';
 import WelcomeDialog from './WelcomeDialog.vue';
 import { syncHolidayTheme, isHolidaySeason, type HolidayTheme } from './holidayTheme';
+import { trackVisit } from './visitor';
 import appIcon from '../assets/AppIcon.ico';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from '../components/i18n/index';
@@ -337,6 +338,11 @@ const removeNavigationAfterEach = router.afterEach((to, from, failure) => {
   releaseNavigation();
 });
 const removeNavigationErrorHandler = router.onError(() => releaseNavigation());
+// ── 访问量统计：每次路由切换上报一次（含首屏），覆盖全站所有页面 ────────
+// 计数动作放在应用根组件，而非设置页组件 —— 否则只有打开设置页才会累加访问量。
+const removeVisitTrackingAfterEach = router.afterEach((to, _from, failure) => {
+  if (!failure) trackVisit(to.fullPath);
+});
 
 provide('themeSetting', themeSetting);
 provide('materialSetting', materialSetting);
@@ -503,6 +509,8 @@ onMounted(() => {
   isHostedInUwpWebView.value = Boolean(
     (window as unknown as { __WINUI_ON_WEB_UWP_APP__?: boolean }).__WINUI_ON_WEB_UWP_APP__
   );
+  // 首屏兜底上报一次（与路由 afterEach 去重，不会重复计数）
+  trackVisit(route.fullPath);
   syncNavigationFreezeState(isNavigationFrozen.value);
   postUwpSetting('theme', themeSetting.value);
   postUwpSetting('material', materialSetting.value);
@@ -519,6 +527,7 @@ onBeforeUnmount(() => {
   removeNavigationBeforeEach();
   removeNavigationAfterEach();
   removeNavigationErrorHandler();
+  removeVisitTrackingAfterEach();
   document.getElementById('app')?.removeAttribute('inert');
   document.getElementById('app')?.removeAttribute('aria-busy');
   systemThemeQuery.removeEventListener('change', onSystemThemeChange);
