@@ -38,6 +38,15 @@ jobs:
         with:
           path: dist
 
+      - name: 上传站点产物（供 OpenList / FTP 步骤复用）
+        # 用普通 artifact 而非 Pages artifact：download-artifact@v4 解压后
+        # 文件结构可预期（./dist/index.html），避免 Pages 专用 artifact
+        # 解包路径不一致导致单文件 glob 匹配不到。
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: dist
+
   deploy-github-pages:
     needs: build
     runs-on: ubuntu-latest
@@ -56,7 +65,7 @@ jobs:
       - name: 下载构建产物
         uses: actions/download-artifact@v4
         with:
-          name: github-pages
+          name: site
           path: ./dist
 
       - name: 只上传单文件 HTML 到 OpenList WebDAV
@@ -79,7 +88,7 @@ jobs:
       - name: 下载构建产物
         uses: actions/download-artifact@v4
         with:
-          name: github-pages
+          name: site
           path: ./dist
 
       - name: 上传单文件站点到 FTP 服务器
