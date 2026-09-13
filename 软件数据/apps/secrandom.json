@@ -1,0 +1,53 @@
+{
+  "id": "secrandom",
+  "name": "SecRandom",
+  "icon": "https://raw.githubusercontent.com/SECTL/SecRandom/master/SecRandom/Assets/AppLogo.png",
+  "category": "teaching",
+  "tagline": "公平随机点名 / 抽签 / 分组，让抽取告别争议",
+  "description": "SecRandom 是一款基于「动态权重」的公平随机抽取工具，专门面向课堂点名、抽签、分组等场景，由 SECTL 开发并开源（GPL-3.0）。它支持按名单范围、小组、性别、人数进行点名，提供「奖池」和「名单」两种抽签模式，还有悬浮窗「闪抽」让抽取几乎不打断课堂节奏；摄像头就绪的教室还可以开启可选的人脸抽取。名单与分组支持完整导入导出，每次抽取都有历史记录可复盘，结果可语音播报，并支持通过 IPC / URL 被脚本或外部工具调用。安全与数据方面提供密码、TOTP、USB 等多重验证，以及备份与恢复。v3.0.0 起新增插件系统与插件市场、Omni TTS 语音（可接 OpenAI、小米 MiMo 等，支持音色克隆）以及倒计时 / 秒表 / 时钟计时器。",
+  "version": "3.0.0-alpha.2",
+  "size": "160 MB+",
+  "system": "Windows 10/11（x86 / x64 / ARM64）、Linux、macOS、Android",
+  "website": "https://secrandom.sectl.top/",
+  "github": "https://github.com/SECTL/SecRandom",
+  "notice": "当前提供的 v3.0.0-alpha.2 为官方「Alpha 早期预览版」，功能未经完整测试、不保证稳定，官方明确建议不要用在关键场景。日常使用建议到官网或 GitHub Releases 下载最新正式版。该软件更新频繁，直链容易失效，请以官网为准。",
+  "downloads": [
+    {
+      "platform": "Windows x64 安装版",
+      "note": "主流 64 位系统，推荐下载这个",
+      "size": "160.0 MB",
+      "url": "https://github.com/SECTL/SecRandom/releases/download/v3.0.0-alpha.2/SecRandom-v3.0.0-alpha.2-win-x64-setup.exe"
+    },
+    {
+      "platform": "Windows x64 便携版",
+      "note": "免安装，解压即用（完整版）",
+      "size": "252.7 MB",
+      "url": "https://github.com/SECTL/SecRandom/releases/download/v3.0.0-alpha.2/SecRandom-v3.0.0-alpha.2-win-x64-portable-full.zip"
+    },
+    {
+      "platform": "Windows x86 安装版",
+      "note": "适用于老旧 32 位系统",
+      "size": "129.6 MB",
+      "url": "https://github.com/SECTL/SecRandom/releases/download/v3.0.0-alpha.2/SecRandom-v3.0.0-alpha.2-win-x86-setup.exe"
+    },
+    {
+      "platform": "Windows ARM64 安装版",
+      "note": "适用于 Windows on ARM 设备",
+      "size": "127.6 MB",
+      "url": "https://github.com/SECTL/SecRandom/releases/download/v3.0.0-alpha.2/SecRandom-v3.0.0-alpha.2-win-arm64-setup.exe"
+    },
+    {
+      "platform": "Android ARM64",
+      "note": "安卓手机 / 平板（APK 安装包）",
+      "size": "113.5 MB",
+      "url": "https://github.com/SECTL/SecRandom/releases/download/v3.0.0-alpha.2/SecRandom-v3.0.0-alpha.2-android-arm64.apk"
+    },
+    {
+      "platform": "全部平台 / 最新版本",
+      "note": "网页：GitHub Releases 发布页，Linux / macOS 及其他架构请到这里下载",
+      "url": "https://github.com/SECTL/SecRandom/releases"
+    }
+  ],
+  "sort": 8,
+  "维护备注": "信息采集于 2026-09-13。官网 https://secrandom.sectl.top/（仓库 homepage 写的是 secrandom.sectl.cn，两个域名都可能用）；GitHub SECTL/SecRandom（GPL-3.0，约 165 stars，默认分支 master）。版本号 v3.0.0-alpha.2 为 2026-08-16 发布的 prerelease；撰写时最新正式版为 v2.3.100（2026-06-27），如需换成正式版，把 version 与 downloads 的 tag 一并改为 2.3.100 / v2.3.100 即可。图标取自仓库 SecRandom/Assets/AppLogo.png（128×128 PNG，raw 链接已实测可访问）。"
+}
