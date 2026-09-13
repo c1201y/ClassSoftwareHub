@@ -35,7 +35,14 @@ onMounted(async () => {
   // 本地预览走只读 /api/stats，避免把开发访问算进线上计数；线上走 /api/hit 正常 +1。
   // credentials: 'include' 用于携带 Worker 域下的去重 Cookie（跨域 UV 去重需要）。
   const path = isLocal ? '/api/stats' : '/api/hit';
-  const url = API_BASE + path;
+  // 把真实来源域名与页面路径一并传给统计端：
+  // 请求实际发往 service.132614.xyz/api/hit，若不显式带上，Worker 会把“统计接口自己”误当成来源。
+  // 用 query 参数（而非自定义请求头）以免触发跨域预检（preflight）。
+  const params = new URLSearchParams({
+    host: location.hostname,
+    page: location.pathname + location.hash,
+  });
+  const url = API_BASE + path + '?' + params.toString();
   let ok = false;
   async function loadOnce() {
     try {
