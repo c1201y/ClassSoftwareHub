@@ -1,0 +1,22 @@
+{
+  "id": "seewo-assistant",
+  "name": "希沃课堂助手",
+  "icon": "https://ts2.tc.mm.bing.net/th/id/OIP-C.qgw6ICv5s8k08zfenUmQJAAAAA?w=108&h=108&c=1&bgcl=ae6748&r=0&o=7&dpr=2&pid=ImgRC&rm=3",
+  "category": "teaching",
+  "tagline": "希沃官方出品的 PPT 授课辅助工具",
+  "description": "希沃官方出品的 PPT 播放辅助工具，为 PowerPoint 和 WPS 添加类似希沃白板5 的便捷翻页按钮，并支持手机扫码连接，实现手机远程翻页和传屏。讲课时不用一直守在电脑前，站在讲台下面也能切换课件。",
+  "version": "0.0.3.1309",
+  "size": "164 MB",
+  "system": "Windows 10/11",
+  "website": "https://e.seewo.com/#/",
+  "downloads": [
+    {
+      "platform": "Windows 安装版",
+      "note": "希沃课堂助手（教师端），支持 Win10/11",
+      "size": "164 MB",
+      "url": "https://cstore-pub-cos-seewo-report-tx.seewo.com/seewo-report_uwizpymphhulnhlwhxqwpmmwxihhihhh?sign=q-sign-algorithm%3Dsha1%26q-ak%3DAKIDJUXMxJRLzPaeMp20jDSTFl23pLcdPwDF%26q-sign-time%3D1782895047%3B2098255047%26q-key-time%3D1782895047%3B2098255047%26q-header-list%3Dhost%26q-url-param-list%3Dresponse-content-disposition%26q-signature%3Dc4a971f3265fb805ed934b00fde98d6a628fdc0b&response-content-disposition=attachment%3Bfilename%3D%22SeewoIwbAssistant_0.0.3.1309.exe%22%3Bfilename%2A%3Dutf-8%27%27SeewoIwbAssistant_0.0.3.1309.exe"
+    }
+  ],
+  "sort": 4,
+  "维护备注": "商业软件，无 GitHub"
+}

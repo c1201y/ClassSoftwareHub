@@ -1,0 +1,20 @@
+{
+  "id": "class-optimizer",
+  "name": "班级优化大师",
+  "icon": "https://care.seewo.com/favicon.ico",
+  "category": "schedule",
+  "tagline": "希沃出品的课堂管理与评价工具",
+  "description": "班级优化大师是希沃生态中的课堂管理工具，通过加分减分、随机点名、小组评比等方式对学生进行多维度评价，帮助老师活跃课堂氛围、管理课堂纪律，也是希沃生态里的重要教学工具。",
+  "version": "2.1.0.3820",
+  "size": "148 MB",
+  "system": "Windows 7 ~ 11",
+  "website": "http://care.seewo.com/",
+  "downloads": [
+    {
+      "platform": "Windows 官方下载",
+      "note": "官网源获取下载",
+      "url": "http://care.seewo.com/pc/download"
+    }
+  ],
+  "sort": 33
+}

@@ -1,0 +1,20 @@
+{
+  "id": "officetoolplus",
+  "name": "Office Tool Plus",
+  "icon": "https://www.officetool.plus/images/office-tool-plus-logo-large.webp",
+  "category": "schedule",
+  "tagline": "微软 Office 图形化部署与安装工具",
+  "description": "Office Tool Plus 把微软官方的 Office 部署工具（ODT）做成了图形界面，可以自由选择 Office 版本、组件和语言下载安装，也提供多种激活相关的管理功能。给教室电脑装 Office 时不用去啃一堆命令行，点几下就完事。",
+  "version": "跟随官网",
+  "size": "未知",
+  "system": "Windows 7+",
+  "website": "https://www.officetool.plus/zh-cn/",
+  "downloads": [
+    {
+      "platform": "该应用有多条下载镜像源，推荐官网下载",
+      "url": "https://www.officetool.plus/zh-cn/introduction/download.html"
+    }
+  ],
+  "sort": 18,
+  "维护备注": "唯一英文标识，如 'myapp'（决定网址 #/download/myapp）\n图标图片链接，没有就留 ''\n分类：system / schedule / teaching / other          tagline: 'x 正版下载',\n版本号，不知道留 ''\n体积，不知道留 ''\n官网，没有留 ''\nGitHub 仓库，没有留 ''\n系统限制：支持的操作系统/平台，不知道就留 ''（详情页显示\"待补充\"）"
+}

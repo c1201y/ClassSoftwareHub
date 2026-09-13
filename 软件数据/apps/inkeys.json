@@ -1,0 +1,31 @@
+{
+  "id": "inkeys",
+  "name": "智绘教 Inkeys",
+  "icon": "https://soft-img.30405.com/2026/0727/07271532002464.png?resize=p_5,w_128",
+  "category": "teaching",
+  "tagline": "丝滑流畅的屏幕批注工具",
+  "description": "智绘教 Inkeys 是一款适用于 Windows 的屏幕批注工具，拥有丝滑流畅的高性能画笔、丰富强大的功能和不少贴心小设计，适用于触控屏和普通 PC。上课时直接在屏幕或课件上圈画讲解很方便，是希沃课堂助手、Luminalium 之外的又一优秀批注工具。",
+  "version": "20260713a",
+  "size": "26.8 MB",
+  "system": "Windows 7+",
+  "website": "https://www.inkeys.top/",
+  "github": "https://github.com/Alan-CRL/Inkeys",
+  "downloads": [
+    {
+      "platform": "x64",
+      "note": "Github 下载源",
+      "url": "https://github.com/Alan-CRL/Inkeys/releases/download/20260713a/Inkeys20260713a-x64.zip"
+    },
+    {
+      "platform": "x86",
+      "note": "Github 下载源",
+      "url": "https://github.com/Alan-CRL/Inkeys/releases/download/20260713a/Inkeys20260713a-x86.zip"
+    },
+    {
+      "platform": "Arm64",
+      "note": "Github 下载源",
+      "url": "https://github.com/Alan-CRL/Inkeys/releases/download/20260713a/Inkeys20260713a-arm64.zip"
+    }
+  ],
+  "sort": 34
+}

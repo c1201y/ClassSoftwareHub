@@ -1,0 +1,19 @@
+{
+  "id": "360-safe-guard-speed",
+  "name": "360安全卫士极速版",
+  "icon": "https://p5.ssl.qhimg.com/dm/72_72_100/t018465913d6e100407.png",
+  "category": "system",
+  "tagline": "永久免费、无弹窗广告的纯净版安全卫士",
+  "description": "360 安全卫士极速版主打「永久免费、无弹窗广告」，聚焦简单操作与纯净视觉体验，是 360 安全卫士的一次革新。保留了系统修复、垃圾清理、软件管家等核心功能，去掉了烦人的广告弹窗，教室里用着清爽不少。",
+  "version": "15.0.3.1005",
+  "size": "90 MB",
+  "system": "Windows 7 ~ 11",
+  "website": "https://www.360.cn/",
+  "downloads": [
+    {
+      "platform": "该应用更新频繁，故引导至官网下载",
+      "url": "https://weishi.360.cn/jisu/?eqid=8b0a07e1000940fe00000004646da182"
+    }
+  ],
+  "sort": 27
+}

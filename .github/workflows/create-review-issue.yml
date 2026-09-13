@@ -1,0 +1,70 @@
+name: Create Review Issue
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'submissions/*.json'
+
+jobs:
+  create-issue:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: 找出本次新增的草稿文件
+        id: find
+        run: |
+          NEW_FILES=$(git diff --diff-filter=A --name-only HEAD~1 HEAD -- 'submissions/*.json' || true)
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$NEW_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: 为每个草稿创建 Issue
+        if: steps.find.outputs.files != ''
+        uses: actions/github-script@v7
+        env:
+          FILES: ${{ steps.find.outputs.files }}
+        with:
+          script: |
+            const fs = require('fs')
+            const files = process.env.FILES.split('\n').map(s => s.trim()).filter(Boolean)
+            for (const file of files) {
+              if (!fs.existsSync(file)) continue
+              const data = JSON.parse(fs.readFileSync(file, 'utf8'))
+              const conflictHint = data._原始ID冲突
+                ? `\n> ⚠️ **注意**：\`软件数据/apps/${data.id}.json\` 已存在，通过前需先处理冲突。`
+                : ''
+              const body = [
+                `**提交文件**：\`${file}\``,
+                `**软件 ID**：\`${data.id}\``,
+                `**分类**：\`${data.category}\``,
+                `**提交时间**：${data._提交时间}`,
+                conflictHint,
+                '',
+                '<details><summary>查看完整 JSON</summary>',
+                '',
+                '```json',
+                JSON.stringify(data, null, 2),
+                '```',
+                '',
+                '</details>',
+                '',
+                '---',
+                '**审核操作**：',
+                '- 打上 `approved` 标签 → 自动合并到 `软件数据/apps/`',
+                '- 打上 `rejected` 标签 → 删除草稿，关闭 Issue',
+              ].join('\n')
+
+              await github.rest.issues.create({
+                ...context.repo,
+                title: `[待审核] ${data.name} (${data.id})`,
+                body,
+                labels: ['待审核']
+              })
+            }

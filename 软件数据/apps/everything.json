@@ -1,0 +1,28 @@
+{
+  "id": "everything",
+  "name": "Everything",
+  "icon": "https://www.voidtools.com/favicon.ico",
+  "category": "system",
+  "tagline": "秒搜全盘的极速文件搜索工具",
+  "description": "Everything 能在数秒内索引并搜索整块硬盘上的数百万个文件，占用资源极低、搜索速度极快，是电教委员翻找课件、安装包、素材的必备神器。永久免费，请认准官网下载。",
+  "version": "1.4.1.1032",
+  "size": "1.3 MB+",
+  "system": "Windows 7 ~ 11",
+  "website": "https://www.voidtools.com/zh-cn/",
+  "github": "https://github.com/voidtools/Everything",
+  "downloads": [
+    {
+      "platform": "Windows 64位 安装版",
+      "note": "推荐安装版，会自动添加右键菜单",
+      "size": "1.5 MB",
+      "url": "https://www.voidtools.com/Everything-1.4.1.1032.x64.msi"
+    },
+    {
+      "platform": "Windows 64位 便携版",
+      "note": "便携版，解压即用，不写入注册表",
+      "size": "1.3 MB",
+      "url": "https://www.voidtools.com/Everything-1.4.1.1032.x64.zip"
+    }
+  ],
+  "sort": 32
+}

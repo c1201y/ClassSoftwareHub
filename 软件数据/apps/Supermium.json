@@ -1,0 +1,26 @@
+{
+  "id": "Supermium",
+  "name": "Supermium",
+  "icon": "https://img.pcsoft.com.cn/soft/202605/134937-69fad6712a6a6.jpg",
+  "category": "schedule",
+  "tagline": "让老系统也能用上新版 Chromium 的浏览器",
+  "description": "Supermium 是一款基于 Chromium 的浏览器，专门针对旧版 Windows（如 Win7、Win8.1）做了兼容优化，让老系统也能跑上较新的 Chromium 内核。教室里的老机器如果装不了新版 Chrome 或 Edge，可以试试它。",
+  "version": "144.0.7559.256 R5",
+  "size": "110 MB+",
+  "system": "Windows 7+",
+  "github": "https://github.com/win32ss/supermium",
+  "downloads": [
+    {
+      "platform": "Windwos 64 位",
+      "size": "124 MB",
+      "url": "https://github.com/win32ss/supermium/releases/download/v144-r5/supermium_144_64_setup.exe"
+    },
+    {
+      "platform": "Windows 32 位",
+      "size": "110 MB",
+      "url": "https://github.com/win32ss/supermium/releases/download/v144-r5/supermium_144_32_setup.exe"
+    }
+  ],
+  "sort": 22,
+  "维护备注": "唯一英文标识，如 'myapp'（决定网址 #/download/myapp）\n图标图片链接，没有就留 ''\n分类：system / schedule / teaching / other          tagline: 'x 正版下载',\n版本号，不知道留 ''\n体积，不知道留 ''\n官网，没有留 ''\nGitHub 仓库，没有留 ''\n系统限制：支持的操作系统/平台，不知道就留 ''（详情页显示\"待补充\"）"
+}

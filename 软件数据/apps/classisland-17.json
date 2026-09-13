@@ -1,0 +1,40 @@
+{
+  "id": "classisland-17",
+  "name": "ClassIsland（1.7 版）",
+  "icon": "https://cdn.jsdelivr.net/gh/ClassIsland/ClassIsland@master/ClassIsland/Assets/AppLogo.png",
+  "category": "teaching",
+  "tagline": "经典 1.7 系列（兼容旧插件，安装在教室电脑的课表工具）",
+  "description": "ClassIsland 是一款教室大屏 / 班级电脑用的课表与信息展示工具，可在屏幕角落常驻显示当前课程、上下课提醒、天气与自定义组件。这里提供的是 1.7 系列（最后版本 1.7.106.2），适合需要兼容旧插件、或仍在用 1.7 的教室电脑。注意：1.7 版不提供 exe 安装包，下载后解压压缩包、运行文件夹里的 ClassIsland.exe 即可；若已装 2.x 版请先卸载，两个大版本不能共存。",
+  "version": "1.7.106.2",
+  "size": "60 MB ~ 121 MB",
+  "system": "Windows 10/11（x86 / x64 / ARM64）",
+  "website": "https://classisland.tech/",
+  "github": "https://github.com/ClassIsland/ClassIsland",
+  "downloads": [
+    {
+      "platform": "Windows x64 完整版",
+      "note": "推荐；需先装 .NET 8 运行时；解压后运行 ClassIsland.exe",
+      "size": "61.2 MB",
+      "url": "https://github.com/ClassIsland/ClassIsland/releases/download/1.7.106.2/ClassIsland_app_windows_x64_full_folder.zip"
+    },
+    {
+      "platform": "Windows x64 独立版",
+      "note": "自带 .NET 运行时，无需额外安装（体积更大）",
+      "size": "120.9 MB",
+      "url": "https://github.com/ClassIsland/ClassIsland/releases/download/1.7.106.2/ClassIsland_app_windows_x64_selfContained_folder.zip"
+    },
+    {
+      "platform": "Windows x86（32 位）完整版",
+      "note": "32 位系统用",
+      "size": "60.5 MB",
+      "url": "https://github.com/ClassIsland/ClassIsland/releases/download/1.7.106.2/ClassIsland_app_windows_x86_full_folder.zip"
+    },
+    {
+      "platform": "Windows ARM64 完整版",
+      "note": "ARM 设备（骁龙本等）用",
+      "size": "60.5 MB",
+      "url": "https://github.com/ClassIsland/ClassIsland/releases/download/1.7.106.2/ClassIsland_app_windows_arm64_full_folder.zip"
+    }
+  ],
+  "sort": 46
+}

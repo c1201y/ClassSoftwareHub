@@ -1,0 +1,19 @@
+{
+  "id": "easy-pdf",
+  "name": "Easy PDF",
+  "icon": "https://store-images.s-microsoft.com/image/apps.12156.14469075154290609.fdf68dd1-44b5-46ad-bd5c-8db7f4fc1547.ed841955-a203-4e78-8429-c10e181cf8b8?h=170",
+  "category": "other",
+  "tagline": "轻量 PDF 阅读 / 合并 / 拆分 / 转换",
+  "description": "一款轻量级的 PDF 处理工具，主打简单易用，阅读、合并、拆分和格式转换这些日常需求都能覆盖，不用为了看几个 PDF 去装几百兆的专业软件，教室电脑上装一个够用了。",
+  "version": "上次更新日期  2026/8/7",
+  "size": "269.7 MB",
+  "system": "Windows 10/11",
+  "website": "https://apps.microsoft.com/detail/9p02klsbznmn?hl=zh-CN&gl=CN",
+  "downloads": [
+    {
+      "platform": "通过 Microsoft Store 下载",
+      "url": "https://apps.microsoft.com/detail/9p02klsbznmn?hl=zh-CN&gl=CN"
+    }
+  ],
+  "sort": 8
+}

@@ -1,0 +1,28 @@
+{
+  "id": "winmemorycleaner",
+  "name": "Windows Memory Cleaner",
+  "icon": "https://cdn.jsdelivr.net/gh/IgorMundstein/WinMemoryCleaner@main/docs/assets/images/win-memory-cleaner.png",
+  "category": "system",
+  "tagline": "开源轻量的内存清理小工具，一键释放被占用的内存",
+  "description": "Windows Memory Cleaner 是一款开源免费的内存清理工具，基于 Windows 原生 API 实现，可清理待机内存（Standby List）、工作集、系统缓存、已修改页面列表等，支持设置自动清理阈值、开机自启与全局快捷键。单个 exe、体积极小、无广告、不常驻后台服务，适合教室 / 办公电脑日常释放内存。",
+  "version": "3.0.8",
+  "size": "0.5 MB",
+  "system": "Windows 7 ~ 11（32 / 64 位）",
+  "website": "https://winmemorycleaner.com/",
+  "github": "https://github.com/IgorMundstein/WinMemoryCleaner",
+  "downloads": [
+    {
+      "platform": "单文件 exe",
+      "note": "推荐；下载后直接运行（建议右键管理员运行）",
+      "size": "0.46 MB",
+      "url": "https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/3.0.8/WinMemoryCleaner.exe"
+    },
+    {
+      "platform": "压缩包",
+      "note": "含 exe + 校验文件",
+      "size": "0.22 MB",
+      "url": "https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/3.0.8/WinMemoryCleaner.zip"
+    }
+  ],
+  "sort": 45
+}

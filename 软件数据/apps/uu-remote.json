@@ -1,0 +1,28 @@
+{
+  "id": "uu-remote",
+  "name": "UU 远程（网易）",
+  "icon": "https://images-eds-ssl.xboxlive.com/image?url=4rt9.lXDC4H_93laV1_eHM0OYfiFeMI2p9MWie0CvL99U4GA1gf6_kayTt_kBblFwHwo8BW8JXlqfnYxKPmmBXLW6UXVgyMcBgDjRrbSmRx2YaFESoVn9cNxtclJttNF.5qlZCqvoOZ7fvZu9MWBCFvjbxgtBX0rAW22W5XVjlI-&format=source",
+  "category": "other",
+  "tagline": "网易免费远程控制软件，4K/144 帧、超低延迟",
+  "description": "UU 远程是网易出品的免费远程控制软件，自研传输协议，主打低延迟高画质（支持 4K / 144 帧），可远程控制电脑、手机远控电脑、手机远控手机，也支持机身文件互传与手柄直连。和 ToDesk 类似，适合电教远程协助维护教室电脑。目前个人使用免费。",
+  "version": "最新版（官网自动更新）",
+  "size": "约 40 MB",
+  "system": "Windows / macOS / Android / iOS",
+  "website": "https://uuyc.163.com/",
+  "store": "https://apps.microsoft.com/detail/xpfg34g49rcsft",
+  "downloads": [
+    {
+      "platform": "Windows 安装包",
+      "note": "推荐；网易官方下载接口，点了直接下最新版安装包",
+      "size": "约 40 MB",
+      "url": "https://api.nrd.nie.163.com/api/v1/release/dl/1?channel=gwqd"
+    },
+    {
+      "platform": "官网下载页",
+      "note": "还有 macOS / 手机端下载",
+      "size": "网页",
+      "url": "https://uuyc.163.com/download/"
+    }
+  ],
+  "sort": 50
+}

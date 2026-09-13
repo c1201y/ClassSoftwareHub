@@ -1,0 +1,49 @@
+/* ════════════════════════════════════════════════════════════════════
+   节日皮肤主题色（补丁样式）
+   · 中秋 = 青色 #0F566C（配深色模式）
+   · 国庆 = 中国红 #C31D1D（配浅色模式）
+   配色模式由 App.vue 的 applyTheme 切换；这里只覆盖 Accent 相关变量。
+   本文件须在 theme.css 之后引入（App.vue 里已按此顺序 @import）。
+   ════════════════════════════════════════════════════════════════════ */
+
+/* 选择器用 .holiday-skin + 节日类两个 class，确保压过 theme.css 里的
+   html.theme-dark / html.theme-light（同优先级时顺序不稳） */
+
+/* ── 中秋节：青色 ───────────────────────────────────────────────── */
+html.holiday-skin.holiday-midautumn {
+  --accent-base: #0F566C;
+  --accent: #0F566C;
+  --accent-hover: rgba(15, 86, 108, 0.90);
+  --accent-pressed: rgba(15, 86, 108, 0.80);
+  --accent-aa-fill: #0A3D4C;
+  --accent-aa-text: #FFFFFF;
+  --accent-text: #FFFFFF;
+  --accent-text-secondary: rgba(255, 255, 255, 0.70);
+  --accent-text-fill-color-primary: #52B6CE;
+  --AccentFillColorDefaultBrush: #0F566C;
+  --AccentFillColorSecondaryBrush: rgba(15, 86, 108, 0.90);
+  --AccentFillColorTertiaryBrush: rgba(15, 86, 108, 0.80);
+  --SystemFillColorAttentionBrush: #0F566C;
+}
+
+/* 分类角标在深色模式默认是亮蓝，换成配套的亮青 */
+html.holiday-skin.holiday-midautumn .category-badge {
+  color: #52B6CE;
+}
+
+/* ── 国庆节：中国红 ─────────────────────────────────────────────── */
+html.holiday-skin.holiday-nationalday {
+  --accent-base: #C31D1D;
+  --accent: #C31D1D;
+  --accent-hover: rgba(195, 29, 29, 0.90);
+  --accent-pressed: rgba(195, 29, 29, 0.80);
+  --accent-aa-fill: #9E1717;
+  --accent-aa-text: #FFFFFF;
+  --accent-text: #FFFFFF;
+  --accent-text-secondary: rgba(255, 255, 255, 0.70);
+  --accent-text-fill-color-primary: #9E1717;
+  --AccentFillColorDefaultBrush: #C31D1D;
+  --AccentFillColorSecondaryBrush: rgba(195, 29, 29, 0.90);
+  --AccentFillColorTertiaryBrush: rgba(195, 29, 29, 0.80);
+  --SystemFillColorAttentionBrush: #C31D1D;
+}

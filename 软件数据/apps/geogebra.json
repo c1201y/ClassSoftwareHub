@@ -1,0 +1,35 @@
+{
+  "id": "geogebra",
+  "name": "GeoGebra 经典（数学绘图）",
+  "icon": "https://store-images.microsoft.com/image/apps.27233.9007199266244643.adf01f4e-e4ac-49d7-88d3-d524d2674fdb.90d48d4d-3d93-4c91-9acd-b3931e8c3142",
+  "category": "teaching",
+  "tagline": "免费开源的数学绘图工具（函数、几何、统计、3D）",
+  "description": "GeoGebra 是面向数学教学的免费开源动态数学软件，把几何、代数、表格、图形、统计和微积分整合在一起。画函数图像、做几何演示、动态验证定理都很方便，还支持 3D 绘图与在线课件（GeoGebra 资源站有大量现成课件可直接用）。支持 Windows / macOS / Linux / 网页 / 手机端。",
+  "version": "6.0.929.3",
+  "size": "68 MB ~ 134 MB",
+  "system": "Windows / macOS / Linux，另有网页版与手机版",
+  "website": "https://www.geogebra.org/download?lang=zh-CN",
+  "notice": "下面的两个安装包链接是 GeoGebra 官方的「始终最新版」地址，会自动指向当前最新版本，不会过期。",
+  "store": "https://apps.microsoft.com/detail/9wzdncrfj48n",
+  "downloads": [
+    {
+      "platform": "Classic 6 自动更新版",
+      "note": "推荐；官方「始终最新」安装包，装了以后能自动更新",
+      "size": "134 MB",
+      "url": "https://download.geogebra.org/package/win-autoupdate"
+    },
+    {
+      "platform": "Classic 5 安装版",
+      "note": "旧版界面，兼容老课件；同样是官方最新地址",
+      "size": "69 MB",
+      "url": "https://download.geogebra.org/package/win"
+    },
+    {
+      "platform": "官网下载页",
+      "note": "可选 Classic 套件、几何、3D 等不同应用",
+      "size": "网页",
+      "url": "https://www.geogebra.org/download?lang=zh-CN"
+    }
+  ],
+  "sort": 48
+}

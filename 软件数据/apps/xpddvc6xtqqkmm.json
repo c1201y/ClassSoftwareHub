@@ -1,0 +1,24 @@
+{
+  "id": "xpddvc6xtqqkmm",
+  "name": "哔哩哔哩 PC 客户端",
+  "icon": "https://images-eds-ssl.xboxlive.com/image?url=4rt9.lXDC4H_93laV1_eHHFT949fUipzkiFOBH3fAiZZUCdYojwUyX2aTonS1aIwMrx6NUIsHfUHSLzjGJFxxuuj.ku6DU7DpevDlTx30eb2rz4LC3mrThQciGHOeJTty.ikEL.NSXU8JoEkqgdccp5jECoMz7JskFErSDSwNOw-&format=source&h=134",
+  "category": "schedule",
+  "tagline": "B站官方 PC 客户端（大屏看视频更舒服）",
+  "description": "哔哩哔哩官方 PC 客户端，相比网页端更充分地利用大屏优势，内容呈现更沉浸。番剧、直播、动态等功能齐全，适合在教室大屏上播放教学视频和优质课程内容。",
+  "version": "1.18.0",
+  "size": "198 MB",
+  "system": "Windows 7+",
+  "website": "https://app.bilibili.com/",
+  "downloads": [
+    {
+      "platform": "通过 Microsoft Store 下载",
+      "url": "https://apps.microsoft.com/detail/xpddvc6xtqqkmm?launch=true&mode=full&hl=zh-CN&gl=CN&ocid=bingwebsearch"
+    },
+    {
+      "platform": "Windows",
+      "note": "官网下载页面",
+      "url": "https://dl.hdslb.com/mobile/fixed/bili_win/bili_win-install.exe?v=1.18.0-3&spm_id_from=333.47.b_646f776e6c6f61642d6c696e6b.9"
+    }
+  ],
+  "sort": 29
+}

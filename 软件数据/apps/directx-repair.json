@@ -1,0 +1,39 @@
+{
+  "id": "directx-repair",
+  "name": "DirectX 修复工具",
+  "icon": "https://tse1-mm.cn.bing.net/th/id/OIP-C.p4S0PHhWRAFe4f878z_RswAAAA?w=198&h=180&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3",
+  "category": "system",
+  "tagline": "一键检测修复 DirectX / C++ 运行库缺失",
+  "description": "DirectX 修复工具（DirectX Repair）由国内作者 VBcom 开发，是解决「缺少 d3dx9_43.dll 等 dll 导致程序无法启动」「游戏提示缺少 DirectX 组件」等问题的常用工具。可一键检测并修复 DirectX 组件，同时支持 C++ 运行库的检测与安装。推荐下载「增强版」：体积比标准版小，且自带离线数据包，断网也能完成修复。压缩包解压后运行其中的 exe 即可，纯绿色免安装。",
+  "version": "4.4.0.36953",
+  "size": "116 MB（7z）/ 198 MB（zip）",
+  "system": "Windows XP ~ 11（32 / 64 位）",
+  "website": "https://www.zysoftware.top/post/10.html",
+  "downloads": [
+    {
+      "platform": "增强版（蓝奏云）",
+      "note": "推荐；自带离线数据包，断网也能修复。官方发布页：zysoftware.top/post/10.html",
+      "size": "116 MB",
+      "url": "https://zhangyue667.lanzouh.com/DirectXRepairEnhanced"
+    },
+    {
+      "platform": "标准版（蓝奏云）",
+      "note": "体积更小；C++ 组件需联网下载",
+      "size": "30.7 MB",
+      "url": "https://zhangyue667.lanzouh.com/DirectXRepair"
+    },
+    {
+      "platform": "增强版（百度网盘）",
+      "note": "提取码：rty6；蓝奏云打不开时用这个",
+      "size": "198 MB",
+      "url": "https://pan.baidu.com/s/1CcqrsALafsSf4OCGC2FlXA?pwd=rty6"
+    },
+    {
+      "platform": "官方发布页",
+      "note": "作者 VBcom 官网，可查最新版号与校验值（还有在线修复版等）",
+      "size": "官网页面",
+      "url": "https://www.zysoftware.top/post/10.html"
+    }
+  ],
+  "sort": 41
+}
