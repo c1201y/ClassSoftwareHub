@@ -19,32 +19,40 @@ export const visitorState = reactive<{
   offline: false,
 });
 
-// 同一路径连续只计一次：根组件挂载与路由钩子可能都会触发一次，用它去重，避免重复计数。
-let lastTrackedPath = '';
+// 同一页面连续只计一次：根组件挂载与路由钩子可能都会触发一次，用它去重，避免重复计数。
+// 用「稳定页面标识」而非路径：`/` 会重定向到 `/home`，若按路径去重会被算成两页。
+let lastKey = '';
+
+/** 是否已经有任意一次成功上报（供根组件判断是否需要首屏兜底）。 */
+export function hasTracked(): boolean {
+  return lastKey !== '';
+}
 
 /**
  * 上报一次页面浏览（PV +1），并把最新数字写进共享状态。
  * 在应用根组件挂载时、以及每次路由切换后调用，从而覆盖全站所有页面。
- * @param path 站内路由路径（如 `/`、`/settings`、`/download/xxx`）
+ * @param key  稳定的页面标识（路由名 + 详情页 id），用于去重
+ * @param page 展示/统计用的路径（如 `/`、`/settings`、`/download/xxx`）
  */
-export function trackVisit(path: string): void {
-  const page = path || '/';
-  if (page === lastTrackedPath) return;
-  lastTrackedPath = page;
+export function trackVisit(key: string, page: string): void {
+  const pageKey = key || page || '/';
+  if (pageKey === lastKey) return;
+  lastKey = pageKey;
 
   const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
   // 本地预览走只读 /api/stats，避免把开发访问算进线上计数；线上走 /api/hit 正常 +1。
   // 用 query 参数把「真实来源域名 + 真实页面」带给统计端，否则 Worker 会把统计接口自己当成来源
   // （请求实际发往 service.132614.xyz/api/hit）。用 query 而非自定义请求头，避免跨域预检。
+  // `_` 为时间戳，强制绕过任何浏览器/边缘缓存 —— 否则同页面第二次访问会命中缓存、不计数。
   // credentials: 'include' 用于携带 Worker 域下的去重 Cookie（跨域 UV / 在线去重需要）。
   const endpoint = isLocal ? '/api/stats' : '/api/hit';
-  const params = new URLSearchParams({ host: location.hostname, page });
+  const params = new URLSearchParams({ host: location.hostname, page: page || '/', _: String(Date.now()) });
   const url = API_BASE + endpoint + '?' + params.toString();
 
   let ok = false;
   const loadOnce = async () => {
     try {
-      const res = await fetch(url, { credentials: 'include' });
+      const res = await fetch(url, { credentials: 'include', cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       visitorState.pv = typeof data.pv === 'number' ? data.pv : null;
@@ -60,8 +68,8 @@ export function trackVisit(path: string): void {
   };
   void loadOnce();
   // 首次失败：4 秒后重试一次（应对 Worker 冷启动 / 偶发网络抖动）。
-  // 期间若用户已切到别的页面（lastTrackedPath 变了）则不再重试，避免把计数补到错误的页面上。
+  // 期间若用户已切到别的页面（lastKey 变了）则不再重试，避免把计数补到错误的页面上。
   window.setTimeout(() => {
-    if (!ok && lastTrackedPath === page) void loadOnce();
+    if (!ok && lastKey === pageKey) void loadOnce();
   }, 4000);
 }
