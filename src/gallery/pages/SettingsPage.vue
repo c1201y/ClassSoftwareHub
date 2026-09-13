@@ -42,7 +42,8 @@
             <!-- 节日皮肤（补丁模块，见 src/gallery/holidayTheme.ts；不要可整块删掉） -->
             <WinExpander
               :Header="$t('text.holiday-skin')"
-              :Description="$t('text.holiday-skin-desc')">
+              :Description="$t('text.holiday-skin-desc')"
+              Height="70">
               <WinToggleSwitch
                 :IsOn="holidaySkinEnabled"
                 :OnContent="$t('text.on')"
@@ -113,6 +114,17 @@
               </ul>
               <div v-else class="credits-empty">{{ credits.empty }}</div>
             </div>
+
+            <!-- 访问量 + 稳定运行时长：独立板块，放在鸣谢下方；文字跟随主题（深白/浅黑） -->
+            <div class="visitor-stat-card">
+              <div class="visitor-stat-title">访问量</div>
+              <VisitorCounter class="visitor-stat-counter" />
+              <!-- 站点运行时长：起始日见下方 SITE_LAUNCH_DATE，改日期只改那一处 -->
+              <div class="visitor-stat-uptime">
+                <span class="visitor-stat-uptime-label">网站已稳定运行</span>
+                <span class="visitor-stat-uptime-value">{{ uptimeText }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -121,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue';
+import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue';
 import type { Ref } from 'vue';
 import WinExpander from '../../components/WinExpander.vue';
 import WinRadioButton from '../../components/WinRadioButton.vue';
@@ -132,6 +144,7 @@ import WinButton from '../../components/WinButton.vue';
 import WinHyperlinkButton from '../../components/WinHyperlinkButton.vue';
 import WinGrid from '../../components/WinGrid.vue';
 import WinScrollViewer from '../../components/WinScrollViewer.vue';
+import VisitorCounter from '../VisitorCounter.vue';
 import appManifest from '../../manifest.json';
 import { useI18n } from '../../components/i18n/index';
 import credits from '../../../鸣谢文本';
@@ -172,6 +185,37 @@ const openRepository = () => {
   const url = t('about.repository-url');
   if (url) window.open(url, '_blank', 'noopener,noreferrer');
 };
+
+// ── 网站稳定运行时长 ────────────────────────────────────────────────
+// 起始日：2026-08-29（只改这一处即可）。按本地时区零点起算，纯前端计算，
+// 不依赖任何外部服务，所以永远不会空白。
+const SITE_LAUNCH_DATE = new Date(2026, 7, 29, 0, 0, 0); // 月份 0 起算，7 = 8 月
+const nowTick = ref(Date.now());
+let uptimeTimer: number | undefined;
+
+const uptimeText = computed(() => {
+  const diffMs = Math.max(0, nowTick.value - SITE_LAUNCH_DATE.getTime());
+  const totalSeconds = Math.floor(diffMs / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (days > 0) return `${days} 天 ${hours} 小时 ${minutes} 分 ${seconds} 秒`;
+  if (hours > 0) return `${hours} 小时 ${minutes} 分 ${seconds} 秒`;
+  return `${minutes} 分 ${seconds} 秒`;
+});
+
+onMounted(() => {
+  nowTick.value = Date.now();
+  // 显示到「秒」，每秒刷新一次让秒数走动
+  uptimeTimer = window.setInterval(() => {
+    nowTick.value = Date.now();
+  }, 1000);
+});
+
+onBeforeUnmount(() => {
+  if (uptimeTimer !== undefined) window.clearInterval(uptimeTimer);
+});
 </script>
 
 <style scoped>
@@ -306,5 +350,41 @@ const openRepository = () => {
   color: var(--TextFillColorSecondaryBrush, var(--text-secondary));
   font-size: 12px;
   margin-top: 8px;
+}
+
+/* 关于页·鸣谢下方的访问量与运行时长板块：独立卡片，文字跟随主题（深白/浅黑） */
+.visitor-stat-card {
+  margin-top: 6px;
+  padding: 12px 16px;
+  border: 1px solid var(--CardStrokeColorDefaultBrush, var(--card-stroke, rgba(128, 128, 128, 0.4)));
+  border-radius: 8px;
+  background: var(--CardBackgroundFillColorDefaultBrush, var(--card-bg, rgba(255, 255, 255, 0.04)));
+  color: var(--TextFillColorPrimaryBrush, var(--text-primary, #1f1f1f));
+}
+.visitor-stat-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--TextFillColorPrimaryBrush, var(--text-primary, #1f1f1f));
+}
+
+/* 运行时长：与上面访问量用一条细分隔线隔开，同卡片内 */
+.visitor-stat-uptime {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--CardStrokeColorDefaultBrush, var(--card-stroke, rgba(128, 128, 128, 0.25)));
+  font-size: 13px;
+  color: var(--TextFillColorPrimaryBrush, var(--text-primary, #1f1f1f));
+}
+.visitor-stat-uptime-label {
+  opacity: 0.85;
+}
+.visitor-stat-uptime-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 </style>
