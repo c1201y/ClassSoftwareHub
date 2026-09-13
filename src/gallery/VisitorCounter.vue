@@ -1,68 +1,24 @@
 <template>
-  <span class="visitor-counter" :class="{ 'vc-offline': offline }" aria-label="网站访问量统计">
+  <span class="visitor-counter" :class="{ 'vc-offline': visitorState.offline }" aria-label="网站访问量统计">
     <span class="vc-item">
       <span class="vc-label">总访问量</span>
-      <span class="vc-value vc-number">{{ fmt(pv) }}</span>
+      <span class="vc-value vc-number">{{ fmt(visitorState.pv) }}</span>
     </span>
     <span class="vc-item">
       <span class="vc-label">访客数</span>
-      <span class="vc-value vc-number">{{ fmt(uv) }}</span>
+      <span class="vc-value vc-number">{{ fmt(visitorState.uv) }}</span>
     </span>
   </span>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-
-// 自托管访问统计：Cloudflare Worker + KV（见 stats-worker/worker.js）。
-// 三个域名共用同一 Worker 地址，后台 KV 自动把各域名的访问累加成一个总数，
-// 解决不蒜子(busuanzi)按域名分别统计、各域名数字对不上的问题。
-//
-// ⚠️ 把下面的 API_BASE 改成你部署好的 Worker 地址（国内 .workers.dev 被墙，用自定义域名）。
-//    在 Cloudflare 后台把这个 Worker 绑到 service.132614.xyz（自定义域）即可。
-const API_BASE = 'https://service.132614.xyz';
-
-const pv = ref<number | null>(null);
-const uv = ref<number | null>(null);
-const offline = ref(false);
+// 纯展示组件：数字来自全站共享的 visitorState（由 App.vue 里的 trackVisit 上报并写入）。
+// 计数动作在应用根组件完成，因此全站所有页面访问都会计入，而不是只在设置页计入。
+import { visitorState } from './visitor';
 
 function fmt(n: number | null): string {
   return n === null ? '—' : n.toLocaleString('en-US');
 }
-
-onMounted(async () => {
-  const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-  // 本地预览走只读 /api/stats，避免把开发访问算进线上计数；线上走 /api/hit 正常 +1。
-  // credentials: 'include' 用于携带 Worker 域下的去重 Cookie（跨域 UV 去重需要）。
-  const path = isLocal ? '/api/stats' : '/api/hit';
-  // 把真实来源域名与页面路径一并传给统计端：
-  // 请求实际发往 service.132614.xyz/api/hit，若不显式带上，Worker 会把“统计接口自己”误当成来源。
-  // 用 query 参数（而非自定义请求头）以免触发跨域预检（preflight）。
-  const params = new URLSearchParams({
-    host: location.hostname,
-    page: location.pathname + location.hash,
-  });
-  const url = API_BASE + path + '?' + params.toString();
-  let ok = false;
-  async function loadOnce() {
-    try {
-      const res = await fetch(url, { credentials: 'include' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      pv.value = typeof data.pv === 'number' ? data.pv : null;
-      uv.value = typeof data.uv === 'number' ? data.uv : null;
-      offline.value = false;
-      ok = true;
-    } catch (e) {
-      // 把完整错误打到控制台，方便排查（地址 / 错误类型）
-      console.warn('[VisitorCounter] 统计接口请求失败：', e, '\n请求地址：', url);
-      offline.value = true;
-    }
-  }
-  await loadOnce();
-  // 首次失败：4 秒后重试一次（应对 Worker 冷启动 / 偶发网络抖动）
-  if (!ok) setTimeout(loadOnce, 4000);
-});
 </script>
 
 <style scoped>
