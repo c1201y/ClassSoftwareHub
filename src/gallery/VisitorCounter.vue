@@ -35,15 +35,26 @@ onMounted(async () => {
   // 本地预览走只读 /api/stats，避免把开发访问算进线上计数；线上走 /api/hit 正常 +1。
   // credentials: 'include' 用于携带 Worker 域下的去重 Cookie（跨域 UV 去重需要）。
   const path = isLocal ? '/api/stats' : '/api/hit';
-  try {
-    const res = await fetch(API_BASE + path, { credentials: 'include' });
-    if (!res.ok) throw new Error('bad status ' + res.status);
-    const data = await res.json();
-    pv.value = typeof data.pv === 'number' ? data.pv : null;
-    uv.value = typeof data.uv === 'number' ? data.uv : null;
-  } catch {
-    offline.value = true;
+  const url = API_BASE + path;
+  let ok = false;
+  async function loadOnce() {
+    try {
+      const res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      pv.value = typeof data.pv === 'number' ? data.pv : null;
+      uv.value = typeof data.uv === 'number' ? data.uv : null;
+      offline.value = false;
+      ok = true;
+    } catch (e) {
+      // 把完整错误打到控制台，方便排查（地址 / 错误类型）
+      console.warn('[VisitorCounter] 统计接口请求失败：', e, '\n请求地址：', url);
+      offline.value = true;
+    }
   }
+  await loadOnce();
+  // 首次失败：4 秒后重试一次（应对 Worker 冷启动 / 偶发网络抖动）
+  if (!ok) setTimeout(loadOnce, 4000);
 });
 </script>
 
