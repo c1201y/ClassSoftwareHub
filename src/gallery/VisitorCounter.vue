@@ -2,53 +2,48 @@
   <span class="visitor-counter" :class="{ 'vc-offline': offline }" aria-label="网站访问量统计">
     <span class="vc-item">
       <span class="vc-label">总访问量</span>
-      <span id="busuanzi_container_site_pv" class="vc-value">
-        <span id="busuanzi_value_site_pv" class="vc-number">—</span>
-      </span>
+      <span class="vc-value vc-number">{{ fmt(pv) }}</span>
     </span>
     <span class="vc-item">
       <span class="vc-label">访客数</span>
-      <span id="busuanzi_container_site_uv" class="vc-value">
-        <span id="busuanzi_value_site_uv" class="vc-number">—</span>
-      </span>
+      <span class="vc-value vc-number">{{ fmt(uv) }}</span>
     </span>
   </span>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
-// 不蒜子（busuanzi / 卜算子）：零后端、免费的第三方访问量统计。
-// 站点 PV / UV 由 busuanzi 服务端按域名统计，这里只负责展示。
-// 注意：busuanzi 对 localhost / 127.0.0.1 不统计（本地预览数字恒为 —），
-//       部署到线上真实域名后会自动填充真实访问量。
-const SCRIPT_SRC = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
-const SCRIPT_ID = 'busuanzi-counter-script';
+// 自托管访问统计：Cloudflare Worker + KV（见 stats-worker/worker.js）。
+// 三个域名共用同一 Worker 地址，后台 KV 自动把各域名的访问累加成一个总数，
+// 解决不蒜子(busuanzi)按域名分别统计、各域名数字对不上的问题。
+//
+// ⚠️ 把下面的 API_BASE 改成你部署好的 Worker 地址
+//    （部署后在 stats-worker 的 Dashboard 页底部也能看到该地址）。
+const API_BASE = 'https://datastatistics.3763902702.workers.dev';
 
+const pv = ref<number | null>(null);
+const uv = ref<number | null>(null);
 const offline = ref(false);
-let injectedScript: HTMLScriptElement | null = null;
 
-onMounted(() => {
-  // 等 Vue 把计数占位 span 渲染进 DOM 后再注入脚本，避免 SPA 下脚本先跑找不到节点。
-  // 同一次会话内若脚本已存在（例如从别的路由切回来）则不重复注入，避免 PV 重复计数。
-  if (document.getElementById(SCRIPT_ID)) return;
+function fmt(n: number | null): string {
+  return n === null ? '—' : n.toLocaleString('en-US');
+}
 
-  const script = document.createElement('script');
-  script.id = SCRIPT_ID;
-  script.async = true;
-  script.src = SCRIPT_SRC;
-  script.onerror = () => {
-    // 脚本加载失败（被墙 / 网络问题）时标记为离线，但不隐藏整块，
-    // 保留「总访问量 / 访客数」文字与「—」占位，至少结构完整。
+onMounted(async () => {
+  const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  // 本地预览走只读 /api/stats，避免把开发访问算进线上计数；线上走 /api/hit 正常 +1。
+  // credentials: 'include' 用于携带 Worker 域下的去重 Cookie（跨域 UV 去重需要）。
+  const path = isLocal ? '/api/stats' : '/api/hit';
+  try {
+    const res = await fetch(API_BASE + path, { credentials: 'include' });
+    if (!res.ok) throw new Error('bad status ' + res.status);
+    const data = await res.json();
+    pv.value = typeof data.pv === 'number' ? data.pv : null;
+    uv.value = typeof data.uv === 'number' ? data.uv : null;
+  } catch {
     offline.value = true;
-  };
-  document.head.appendChild(script);
-  injectedScript = script;
-});
-
-onBeforeUnmount(() => {
-  injectedScript?.remove();
-  injectedScript = null;
+  }
 });
 </script>
 
@@ -69,11 +64,8 @@ onBeforeUnmount(() => {
 .vc-label {
   opacity: 0.85;
 }
-/* 强制数字容器始终可见：busuanzi 默认会先隐藏容器、拿到数据再显示，
-   在 localhost 下它不填充会一直隐藏，这里用 !important 顶掉它的隐藏，
-   保证本地也能看到「—」占位，上线后 busuanzi 填进的数字同样正常显示。 */
 .vc-value {
-  display: inline !important;
+  display: inline;
 }
 .vc-number {
   font-variant-numeric: tabular-nums;
