@@ -38,15 +38,6 @@ jobs:
         with:
           path: dist
 
-      - name: 上传站点产物（供 OpenList / FTP 步骤复用）
-        # 用普通 artifact 而非 Pages artifact：download-artifact@v4 解压后
-        # 文件结构可预期（./dist/index.html），避免 Pages 专用 artifact
-        # 解包路径不一致导致单文件 glob 匹配不到。
-        uses: actions/upload-artifact@v4
-        with:
-          name: site
-          path: dist
-
   deploy-github-pages:
     needs: build
     runs-on: ubuntu-latest
@@ -59,14 +50,22 @@ jobs:
         uses: actions/deploy-pages@v4
 
   upload-to-openlist:
-    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: 下载构建产物
-        uses: actions/download-artifact@v4
+      - name: 取出源码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
         with:
-          name: site
-          path: ./dist
+          node-version: 22
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 打包单文件 HTML
+        run: npm run build:single
 
       - name: 只上传单文件 HTML 到 OpenList WebDAV
         # 单文件打包产物 dist/ 下只有 index.html（CSS/JS/图片全部内联），
@@ -82,14 +81,22 @@ jobs:
           fail_on_unmatched_files: true
 
   upload-to-ftp:
-    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: 下载构建产物
-        uses: actions/download-artifact@v4
+      - name: 取出源码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
         with:
-          name: site
-          path: ./dist
+          node-version: 22
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 打包单文件 HTML
+        run: npm run build:single
 
       - name: 上传单文件站点到 FTP 服务器
         # 单文件打包产物 dist/ 下只有 index.html（CSS/JS/图片全部内联），
