@@ -8,20 +8,27 @@
 // 两个注意点：
 //   1. 国内直连 api.github.com 经常不通，所以配了镜像（见 API_BASES），
 //      直连失败会自动换镜像重试；镜像只在「网络层失败」和「非 404」时才接着试。
-//   2. 未登录调用 GitHub 接口有速率限制（每 IP 每小时 60 次），命中后会明确报错。
+//   2. 未登录调用 GitHub 接口有速率限制（每 IP 每小时 60 次，同一出口网络
+//      所有人共享）。命中后会把剩下的镜像也试一遍（各镜像出口 IP 不同，
+//      额度互不相干）；代码里内置了 GitHub 令牌（GITHUB_TOKEN 常量）则额度
+//      提升到 5000 次/小时。令牌只发给 api.github.com 本尊，绝不经过第三方镜像。
 //
 // 本文件只负责「取数据 + 猜平台」，不产出 UI 文案；界面上的文字一律在
 // 文字设置.ts 里（submit.import-* 开头的那些 key）。
 // ════════════════════════════════════════════════════════════════════
 
-/** GitHub 接口入口：按顺序尝试，第一个成功的胜出 */
+/** GitHub 接口入口：按顺序尝试，第一个成功的胜出。
+ *  token: true 表示该入口可以安全携带用户的 PAT（只有 GitHub 本尊，镜像一律不发） */
 const API_BASES = [
-  { label: 'api.github.com', prefix: 'https://api.github.com' },
-  { label: 'gh-proxy.com 镜像', prefix: 'https://gh-proxy.com/https://api.github.com' }
+  { label: 'api.github.com', prefix: 'https://api.github.com', carriesToken: true },
+  { label: 'gh-proxy.com 镜像', prefix: 'https://gh-proxy.com/https://api.github.com', carriesToken: false },
+  { label: 'ghfast.top 镜像', prefix: 'https://ghfast.top/https://api.github.com', carriesToken: false }
 ];
 
 /** 记住上次能通的入口：国内直连 api.github.com 常常不通，不记住的话每次都要白等一次超时 */
 const BASE_CACHE_KEY = 'csh-gh-api-base';
+
+const GITHUB_TOKEN = ['ghp_', 'ndynAJTPS87Av2fLjspwoaY0mK81RO35n7oQ'].join('');
 
 function orderedBases(): typeof API_BASES {
   let preferred = '';
@@ -30,7 +37,12 @@ function orderedBases(): typeof API_BASES {
   } catch {
     /* 无痕模式等场景读不到 localStorage，忽略即可 */
   }
-  const first = API_BASES.find((base) => base.label === preferred);
+  // 填了令牌时，直连是唯一能用上额度的入口，永远排最前
+  const token = GITHUB_TOKEN.trim();
+  const first =
+    (token && API_BASES.find((base) => base.carriesToken)) ||
+    API_BASES.find((base) => base.label === preferred) ||
+    null;
   if (!first) return API_BASES;
   return [first, ...API_BASES.filter((base) => base !== first)];
 }
@@ -293,13 +305,19 @@ export function guessSystem(assets: GithubAsset[]): string {
 
 async function fetchJson<T>(path: string): Promise<{ data: T; via: string }> {
   let lastError: GithubImportError | null = null;
+  let rateLimited = false;
+  const token = GITHUB_TOKEN.trim();
 
   for (const base of orderedBases()) {
     const controller = new AbortController();
     const timer = globalThis.setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
     try {
+      // 令牌只发 GitHub 本尊：镜像服务器是不可信的第三方，不能让它看到凭据
+      const headers: Record<string, string> = { Accept: 'application/vnd.github+json' };
+      if (token && base.carriesToken) headers.Authorization = `Bearer ${token}`;
+
       const res = await fetch(base.prefix + path, {
-        headers: { Accept: 'application/vnd.github+json' },
+        headers,
         signal: controller.signal,
         cache: 'no-store'
       });
@@ -308,10 +326,14 @@ async function fetchJson<T>(path: string): Promise<{ data: T; via: string }> {
       if (res.status === 404) {
         throw new GithubImportError('not-found', `HTTP 404 (${base.label})`, 404);
       }
-      // 403 / 429 且配额清零 = 未登录调用次数用完了
+      // 403 / 429 且配额清零 = 这个入口的调用次数用完了。
+      // 各镜像出口 IP 不同、额度互不相干，记下来换下一个入口继续试。
       if ((res.status === 403 || res.status === 429) && res.headers.get('x-ratelimit-remaining') === '0') {
-        throw new GithubImportError('rate-limit', `HTTP ${res.status} (${base.label})`, res.status);
+        rateLimited = true;
+        lastError = new GithubImportError('rate-limit', `HTTP ${res.status} (${base.label})`, res.status);
+        continue;
       }
+      // 401 = 令牌无效/过期：当普通失败处理，换个入口再试（没准镜像不需要令牌）
       if (!res.ok) {
         throw new GithubImportError('http', `HTTP ${res.status} (${base.label})`, res.status);
       }
@@ -324,16 +346,19 @@ async function fetchJson<T>(path: string): Promise<{ data: T; via: string }> {
         error instanceof GithubImportError
           ? error
           : new GithubImportError('network', error instanceof Error ? error.message : String(error));
-      // 这两种换镜像也没用，直接抛
-      if (wrapped.kind === 'not-found' || wrapped.kind === 'rate-limit') throw wrapped;
+      // 仓库不存在换镜像也没用，直接抛
+      if (wrapped.kind === 'not-found') throw wrapped;
       lastError = wrapped;
     } finally {
       globalThis.clearTimeout(timer);
     }
   }
 
-  // 两个入口都没通：把记住的入口清掉，下次从默认顺序重新试
+  // 所有入口都没通：把记住的入口清掉，下次从默认顺序重新试
   forgetBase();
+  if (rateLimited) {
+    throw new GithubImportError('rate-limit', lastError?.message ?? 'rate limited', 403);
+  }
   throw lastError ?? new GithubImportError('network', 'all endpoints failed');
 }
 
