@@ -28,6 +28,16 @@ export function hasTracked(): boolean {
   return lastKey !== '';
 }
 
+// ── 百度统计（hm.js 在 index.html <head> 异步注入）────────────────────
+// 本站是 hash 路由 SPA：hm.js 只会在页面首次加载时自动记一个 PV，
+// 之后的路由切换不会触发页面刷新，需要在每次切页时手动 _trackPageview 补报。
+declare global {
+  interface Window {
+    _hmt?: unknown[];
+  }
+}
+let baiduFirstView = true;
+
 /**
  * 上报一次页面浏览（PV +1），并把最新数字写进共享状态。
  * 在应用根组件挂载时、以及每次路由切换后调用，从而覆盖全站所有页面。
@@ -40,6 +50,17 @@ export function trackVisit(key: string, page: string): void {
   lastKey = pageKey;
 
   const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+  // 百度统计：首次进站那次 PV 由 hm.js 加载时自动记录，不重复推；
+  // 本地开发（localhost）不上报，避免污染线上数据。
+  if (!isLocal) {
+    if (baiduFirstView) {
+      baiduFirstView = false;
+    } else if (Array.isArray(window._hmt)) {
+      window._hmt.push(['_trackPageview', page || '/']);
+    }
+  }
+
   // 本地预览走只读 /api/stats，避免把开发访问算进线上计数；线上走 /api/hit 正常 +1。
   // 用 query 参数把「真实来源域名 + 真实页面」带给统计端，否则 Worker 会把统计接口自己当成来源
   // （请求实际发往 service.132614.xyz/api/hit）。用 query 而非自定义请求头，避免跨域预检。
