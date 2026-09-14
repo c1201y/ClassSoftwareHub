@@ -1,0 +1,23 @@
+{
+  "_提交时间": "2026-09-14T22:31:09.689Z",
+  "_原始ID冲突": false,
+  "id": "test",
+  "name": "1",
+  "icon": "",
+  "category": "system",
+  "tagline": "1",
+  "description": "1",
+  "version": "",
+  "size": "",
+  "system": "",
+  "website": "",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "1",
+      "size": "1",
+      "url": "https://github.com/xwzkj/CheeseSchedule/raw/main/src-tauri/icons/64x64.png"
+    }
+  ],
+  "sort": 99
+}
