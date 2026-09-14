@@ -20,6 +20,9 @@
 /** GitHub 接口入口：按顺序尝试，第一个成功的胜出。
  *  token: true 表示该入口可以安全携带用户的 PAT（只有 GitHub 本尊，镜像一律不发） */
 const API_BASES = [
+  // 自家统计 Worker 的反代（service.132614.xyz 国内可达、Cloudflare 服务器端代调、
+  // 服务端内置令牌），永远排最前；挂了才落到直连和公共镜像
+  { label: '本站代理', prefix: 'https://service.132614.xyz/api/gh', carriesToken: false },
   { label: 'api.github.com', prefix: 'https://api.github.com', carriesToken: true },
   { label: 'gh-proxy.com 镜像', prefix: 'https://gh-proxy.com/https://api.github.com', carriesToken: false },
   { label: 'ghfast.top 镜像', prefix: 'https://ghfast.top/https://api.github.com', carriesToken: false }
@@ -31,20 +34,17 @@ const BASE_CACHE_KEY = 'csh-gh-api-base';
 const GITHUB_TOKEN = ['ghp_', 'ndynAJTPS87Av2fLjspwoaY0mK81RO35n7oQ'].join('');
 
 function orderedBases(): typeof API_BASES {
+  // 自家代理永远排最前：国内可达、稳定，且不消耗访客的 IP 限额
+  const [proxy, ...rest] = API_BASES;
   let preferred = '';
   try {
     preferred = localStorage.getItem(BASE_CACHE_KEY) ?? '';
   } catch {
     /* 无痕模式等场景读不到 localStorage，忽略即可 */
   }
-  // 填了令牌时，直连是唯一能用上额度的入口，永远排最前
-  const token = GITHUB_TOKEN.trim();
-  const first =
-    (token && API_BASES.find((base) => base.carriesToken)) ||
-    API_BASES.find((base) => base.label === preferred) ||
-    null;
-  if (!first) return API_BASES;
-  return [first, ...API_BASES.filter((base) => base !== first)];
+  const preferredRest = rest.find((base) => base.label === preferred);
+  if (!preferredRest) return API_BASES;
+  return [proxy, preferredRest, ...rest.filter((base) => base !== preferredRest)];
 }
 
 function rememberBase(label: string): void {
