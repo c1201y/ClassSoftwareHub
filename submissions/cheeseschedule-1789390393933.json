@@ -1,0 +1,24 @@
+{
+  "_提交时间": "2026-09-14T12:53:13.933Z",
+  "_原始ID冲突": false,
+  "id": "cheeseschedule",
+  "name": "CheeseSchedule",
+  "icon": "https://github.com/xwzkj/CheeseSchedule/raw/main/src-tauri/icons/64x64.png",
+  "category": "teaching",
+  "tagline": "奶酪课程表 是一款适合在教室使用的智能侧边课程表 基于tauri 简洁轻巧 为windows大屏打造",
+  "description": "奶酪课程表 是一款适合在教室使用的智能侧边课程表 基于tauri 简洁轻巧 为windows大屏打造",
+  "version": "v0.2.8",
+  "size": "6.8MB",
+  "system": "Windows10/11",
+  "website": "https://schedule.wanzii.cn/",
+  "github": "https://github.com/xwzkj/CheeseSchedule",
+  "downloads": [
+    {
+      "platform": "Windows x64 安装版",
+      "note": "cheese-schedule_0.2.8_x64-setup.exe",
+      "size": "6.8 MB",
+      "url": "https://github.com/xwzkj/CheeseSchedule/releases/download/v0.2.8/cheese-schedule_0.2.8_x64-setup.exe"
+    }
+  ],
+  "sort": 10
+}
