@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- 页面标题会在运行时由 i18n 的 app.title 覆盖 -->
     <title>电教委员常用软件下载站</title>
+    <!-- 百度统计（异步加载，PC / 移动端通用）。SPA 的路由切换 PV 在 src/gallery/visitor.ts 里补报 -->
+    <script>
+      var _hmt = _hmt || [];
+      (function() {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?2814baff433bc4008255d92f5f236473";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>

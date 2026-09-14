@@ -24,6 +24,86 @@
             TextWrapping="Wrap"
             :Text="t('submit.subtitle')" />
 
+          <!-- ── 从 GitHub 一键读取（省去手抄安装包直链）────────────── -->
+          <section class="submit-section submit-import">
+            <WinTextBlock
+              class="submit-section-title is-in-card"
+              FontSize="20"
+              FontWeight="600"
+              Margin="0,0,0,10"
+              :Text="t('submit.import-title')" />
+            <WinTextBlock
+              class="submit-import-desc"
+              FontSize="14"
+              Foreground="var(--TextFillColorSecondaryBrush, var(--text-secondary))"
+              TextWrapping="Wrap"
+              :Text="t('submit.import-desc')" />
+
+            <div class="submit-import-row">
+              <WinTextBox
+                :PlaceholderText="t('submit.import-placeholder')"
+                v-model:Text="repoInput" />
+              <WinButton
+                Style="AccentButtonStyle"
+                :Content="reading ? t('submit.import-reading') : t('submit.import-button')"
+                :IsEnabled="!reading"
+                @Click="runImport" />
+            </div>
+
+            <WinCheckBox
+              class="submit-import-check"
+              :Content="t('submit.import-overwrite')"
+              v-model:IsChecked="overwrite" />
+            <WinTextBlock
+              class="submit-import-check-desc"
+              FontSize="12"
+              Foreground="var(--TextFillColorSecondaryBrush, var(--text-secondary))"
+              TextWrapping="Wrap"
+              :Text="t('submit.import-overwrite-desc')" />
+            <WinCheckBox
+              class="submit-import-check"
+              :Content="t('submit.import-prerelease')"
+              v-model:IsChecked="includePrerelease" />
+
+            <!-- 读取结果 -->
+            <WinInfoBar
+              v-if="importError"
+              class="submit-import-result"
+              :IsOpen="true"
+              :IsClosable="false"
+              Severity="Error"
+              :Title="t('submit.import-error-title')"
+              :Message="importError" />
+
+            <template v-else-if="importSummary">
+              <WinInfoBar
+                class="submit-import-result"
+                :IsOpen="true"
+                :IsClosable="false"
+                Severity="Success"
+                :Title="t('submit.import-ok-title')"
+                :Message="importSummary" />
+              <div
+                v-if="importFilled.length || importKept.length || importWarnings.length"
+                class="submit-import-report">
+                <div v-if="importFilled.length" class="submit-import-line">
+                  <span class="submit-import-label">{{ t('submit.import-filled') }}</span>
+                  <span class="submit-import-value">{{ importFilled.join('、') }}</span>
+                </div>
+                <div v-if="importKept.length" class="submit-import-line">
+                  <span class="submit-import-label">{{ t('submit.import-kept') }}</span>
+                  <span class="submit-import-value">{{ importKept.join('、') }}</span>
+                </div>
+                <div v-if="importWarnings.length" class="submit-import-line is-warn">
+                  <span class="submit-import-label">{{ t('submit.import-warnings') }}</span>
+                  <ul class="submit-import-notes">
+                    <li v-for="(warning, i) in importWarnings" :key="i">{{ warning }}</li>
+                  </ul>
+                </div>
+              </div>
+            </template>
+          </section>
+
           <!-- ── 基本信息 ────────────────────────────────────────── -->
           <section class="submit-section">
             <WinTextBlock
@@ -201,8 +281,11 @@ import WinTextBox from '../../components/WinTextBox.vue';
 import WinComboBox from '../../components/WinComboBox.vue';
 import WinButton from '../../components/WinButton.vue';
 import WinInfoBar from '../../components/WinInfoBar.vue';
+import WinCheckBox from '../../components/WinCheckBox.vue';
 import { useI18n } from '../../components/i18n/index';
-import { categories } from '../data';
+import { apps, categories } from '../data';
+import { GithubImportError, importFromGithub, repoToId, toTagline } from '../githubImport';
+import type { GithubImportResult } from '../githubImport';
 
 /** 提交接口地址（Cloudflare Worker） */
 const WORKER_URL = 'https://classhub.3763902702.workers.dev';
@@ -256,6 +339,210 @@ const removeDownload = (index: number) => {
   if (form.downloads.length <= 1) return;
   form.downloads.splice(index, 1);
 };
+
+// ════════════════════════════════════════════════════════════════════
+// 从 GitHub 一键读取
+// 取数据的逻辑都在 ../githubImport.ts，这里只做两件事：
+//   1. 把读到的内容填进表单（默认只填空字段，勾了「覆盖」才动已填内容）
+//   2. 把「填了什么 / 跳过了什么 / 要留意的坑」列给用户看
+// ════════════════════════════════════════════════════════════════════
+const repoInput = ref('');
+const reading = ref(false);
+/** 默认只填空白字段；勾上后连已填内容一起覆盖 */
+const overwrite = ref(false);
+/** 默认取最新正式版；勾上后优先取最新的预发布版本（Beta / Alpha） */
+const includePrerelease = ref(false);
+
+const importError = ref('');
+const importSummary = ref('');
+const importFilled = ref<string[]>([]);
+const importKept = ref<string[]>([]);
+const importWarnings = ref<string[]>([]);
+
+/** 上一次「一键读取」往各字段里写了什么：用来区分「用户手写的」和「上次自动填的」 */
+let lastFilled: Record<string, string> = {};
+/** 上一次「一键读取」填进去的下载链接（换行拼接） */
+let lastDownloadUrls = '';
+
+const resetImportReport = () => {
+  importError.value = '';
+  importSummary.value = '';
+  importFilled.value = [];
+  importKept.value = [];
+  importWarnings.value = [];
+};
+
+/** 错误类型 → 文案 key（其余错误统一走「网络错误」那句） */
+const IMPORT_ERROR_KEY: Record<string, string> = {
+  invalid: 'submit.import-error-invalid',
+  'not-found': 'submit.import-error-notfound',
+  'rate-limit': 'submit.import-error-ratelimit'
+};
+
+async function runImport() {
+  if (reading.value) return;
+  resetImportReport();
+
+  if (!repoInput.value.trim()) {
+    importError.value = t('submit.import-error-empty');
+    return;
+  }
+
+  reading.value = true;
+  try {
+    applyImport(
+      await importFromGithub(repoInput.value, {
+        includePrerelease: includePrerelease.value,
+        maxDownloads: 12
+      })
+    );
+  } catch (error) {
+    if (error instanceof GithubImportError && IMPORT_ERROR_KEY[error.kind]) {
+      importError.value = t(IMPORT_ERROR_KEY[error.kind]);
+    } else {
+      importError.value = t('submit.import-error-network', {
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+  } finally {
+    reading.value = false;
+  }
+}
+
+/** 把读取结果填进表单，并整理出一份「已填 / 已保留 / 需注意」的报告 */
+function applyImport(result: GithubImportResult) {
+  const { repo, release, downloads, system, facts, via } = result;
+  const filled: string[] = [];
+  const kept: string[] = [];
+  const warnings: string[] = [];
+
+  /**
+   * 统一填充规则：
+   *   · 空字段 → 直接填
+   *   · 有内容，但内容是上一次「一键读取」填进去的（用户没动过）→ 也可以覆盖，
+   *     否则换个仓库再读一次会什么都不更新，很反直觉
+   *   · 有内容，且是用户手写的 → 只有勾了「覆盖」才动
+   */
+  const put = (label: string, current: string, value: string, assign: (text: string) => void) => {
+    const next = (value || '').trim();
+    if (!next) return;
+    const shown = current.trim();
+    if (shown === next) {
+      lastFilled[label] = next;
+      kept.push(label);
+      return;
+    }
+    const editedByUser = shown !== '' && shown !== lastFilled[label];
+    if (editedByUser && !overwrite.value) {
+      kept.push(label);
+      return;
+    }
+    assign(next);
+    lastFilled[label] = next;
+    filled.push(label);
+  };
+
+  /** 上一次「一键读取」写进下载项的链接，用来判断现在的下载项是不是用户自己敲的 */
+  const currentUrls = form.downloads.map((item) => item.url.trim()).filter(Boolean).join('\n');
+  const downloadsEditedByUser = currentUrls !== '' && currentUrls !== lastDownloadUrls;
+
+  // ── 软件 ID：由仓库名生成；和站内已有软件撞车就自动加序号 ──────
+  const takenIds = new Set(apps.map((app) => app.id));
+  let suggestedId = repoToId(repo.repo);
+  if (suggestedId && takenIds.has(suggestedId)) {
+    let suffix = 2;
+    while (takenIds.has(`${suggestedId}-${suffix}`) && suffix < 100) suffix += 1;
+    const corrected = `${suggestedId}-${suffix}`;
+    warnings.push(t('submit.import-id-taken', { id: suggestedId, newId: corrected }));
+    suggestedId = corrected;
+  }
+  put(t('submit.id'), form.id, suggestedId, (text) => { form.id = text; });
+  if (form.id.trim() && takenIds.has(form.id.trim())) {
+    warnings.push(t('submit.import-id-duplicate', { id: form.id.trim() }));
+  }
+
+  // ── 文本字段 ──────────────────────────────────────────────────
+  put(t('submit.name'), form.name, repo.repo, (text) => { form.name = text; });
+  put(t('submit.tagline'), form.tagline, toTagline(repo.description), (text) => { form.tagline = text; });
+  put(t('submit.description'), form.description, repo.description, (text) => { form.description = text; });
+  put(t('submit.version'), form.version, release ? release.tagName : '', (text) => { form.version = text; });
+  put(t('submit.system'), form.system, system, (text) => { form.system = text; });
+  put(t('submit.website'), form.website, repo.homepage, (text) => { form.website = text; });
+  put(t('submit.github'), form.github, repo.htmlUrl, (text) => { form.github = text; });
+  // 仓库主页正好是微软商店链接时，顺手把「商店下载」也填上
+  if (repo.homepage.includes('apps.microsoft.com')) {
+    put(t('submit.store'), form.store, repo.homepage, (text) => { form.store = text; });
+  }
+  // 用的是预发布版：写一条 notice，详情页会在下载区上方提示
+  if (facts.usedPrerelease && release) {
+    put(t('submit.notice'), form.notice, t('submit.import-notice-prerelease', { tag: release.tagName }), (text) => { form.notice = text; });
+  }
+
+  // ── 图标：GitHub 接口拿不到软件图标，先用仓库所有者的头像顶上 ──
+  const iconLabel = t('submit.icon');
+  if (repo.ownerAvatar && form.icon.trim() !== repo.ownerAvatar &&
+      (!form.icon.trim() || lastFilled[iconLabel] === form.icon.trim() || overwrite.value)) {
+    form.icon = repo.ownerAvatar;
+    lastFilled[iconLabel] = repo.ownerAvatar;
+    filled.push(iconLabel);
+    warnings.push(t('submit.import-warn-icon', { owner: repo.owner }));
+  } else if (form.icon.trim()) {
+    kept.push(iconLabel);
+  }
+
+  // ── 下载项 ────────────────────────────────────────────────────
+  if (downloads.length > 0) {
+    if (downloadsEditedByUser && !overwrite.value) {
+      kept.push(t('submit.section-downloads'));
+      warnings.push(t('submit.import-warn-downloads-kept'));
+    } else {
+      form.downloads = downloads.map((item) => ({ ...item }));
+      lastDownloadUrls = form.downloads.map((item) => item.url.trim()).join('\n');
+      filled.push(`${t('submit.section-downloads')}（${downloads.length}）`);
+    }
+  } else if (!facts.releaseFailed) {
+    // 没有附件（没发过 Release，或 Release 里只有源码）→ 填 Release 页面链接
+    const url = release ? release.htmlUrl : `${repo.htmlUrl}/releases/latest`;
+    if (downloadsEditedByUser && !overwrite.value) {
+      kept.push(t('submit.section-downloads'));
+    } else {
+      form.downloads = [{
+        platform: t('submit.import-latest-platform'),
+        note: t('submit.import-latest-note'),
+        size: t('submit.import-web'),
+        url
+      }];
+      lastDownloadUrls = url;
+      filled.push(t('submit.section-downloads'));
+    }
+  }
+
+  // ── 需要留意的地方 ────────────────────────────────────────────
+  if (facts.releaseFailed) warnings.push(t('submit.import-warn-release-failed'));
+  if (facts.noRelease) warnings.push(t('submit.import-warn-no-release'));
+  if (facts.noAsset) warnings.push(t('submit.import-warn-no-asset'));
+  if (facts.assetSkipped > 0) warnings.push(t('submit.import-warn-skipped', { count: facts.assetSkipped }));
+  if (facts.truncated) warnings.push(t('submit.import-warn-truncated', { count: downloads.length }));
+  if (facts.usedPrerelease && release) warnings.push(t('submit.import-warn-prerelease', { tag: release.tagName }));
+  if (facts.newerPrereleaseTag) warnings.push(t('submit.import-warn-newer-prerelease', { tag: facts.newerPrereleaseTag }));
+  if (repo.archived) warnings.push(t('submit.import-warn-archived'));
+
+  // 地址栏统一成规范写法，方便用户核对
+  repoInput.value = repo.htmlUrl;
+
+  let summary = t('submit.import-summary', {
+    repo: repo.fullName,
+    version: release ? release.tagName : '—',
+    count: downloads.length,
+    via
+  });
+  if (repo.license) summary += ` ${t('submit.import-info-license', { license: repo.license })}`;
+
+  importSummary.value = summary;
+  importFilled.value = filled;
+  importKept.value = kept;
+  importWarnings.value = warnings;
+}
 
 async function submit() {
   if (loading.value) return;
@@ -439,9 +726,92 @@ async function submit() {
   margin-top: 16px;
 }
 
+/* ── 从 GitHub 一键读取 ─────────────────────────────────────────── */
+.submit-import {
+  margin-top: 20px;
+}
+
+.submit-import-desc {
+  max-width: 760px;
+}
+
+.submit-import-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.submit-import-row :deep(.win-textbox) {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+
+.submit-import-check {
+  margin-top: 12px;
+}
+
+/* 说明文字跟复选框的方框对齐（方框 20px + 间距 8px = 28px） */
+.submit-import-check-desc {
+  margin: 2px 0 0 28px;
+}
+
+.submit-import-result {
+  margin-top: 14px;
+}
+
+.submit-import-report {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--card-stroke, var(--ctrl-border, rgba(0, 0, 0, 0.12)));
+  border-radius: 8px;
+  background: var(--ctrl-fill-secondary, rgba(0, 0, 0, 0.02));
+}
+
+.submit-import-line {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.submit-import-label {
+  color: var(--text-secondary);
+}
+
+.submit-import-value {
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.submit-import-notes {
+  margin: 0;
+  padding-left: 16px;
+  color: var(--SystemFillColorCautionBrush, #9d5d00);
+}
+
+.submit-import-notes li {
+  margin: 0 0 2px;
+}
+
 @media (max-width: 640px) {
   .submit-field-row {
     grid-template-columns: 1fr;
+  }
+
+  .submit-import-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .submit-import-line {
+    grid-template-columns: 1fr;
+    gap: 2px;
   }
 }
 </style>
