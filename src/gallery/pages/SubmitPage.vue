@@ -287,8 +287,8 @@ import { apps, categories } from '../data';
 import { GithubImportError, importFromGithub, repoToId, toTagline } from '../githubImport';
 import type { GithubImportResult } from '../githubImport';
 
-/** 提交接口地址（Cloudflare Worker） */
-const WORKER_URL = 'https://classhub.3763902702.workers.dev';
+/** 提交接口地址（Cloudflare Worker 自定义域；.workers.dev 国内不可达，必须用自定义域） */
+const WORKER_URL = 'https://submit.132614.xyz';
 
 const { t } = useI18n();
 
