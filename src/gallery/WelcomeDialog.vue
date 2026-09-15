@@ -1,8 +1,9 @@
 <!-- 欢迎弹窗：进入网站（初始落在首页）时弹出一次。
      文案在根目录 文字设置.ts 的 welcome.* 键（英文在 en-US/Resources.ts）；
      表情图 = src/assets/welcome-sticker.gif（同名覆盖即可换图）；
-     四个外链：仓库地址 / 作者首页 = about.repository-url / about.author-home-url；
+     五个外链：仓库地址 / 作者首页 = about.repository-url / about.author-home-url；
                相关文章 = welcome.article + welcome.article-url；
+               QQ 群 = about.qq-group + about.qq-group-url；
                投喂作者 = about.reward + about.reward-url。 -->
 <template>
   <WinContentDialog
@@ -33,6 +34,12 @@
           :NavigateUri="t('welcome.article-url')"
           TargetName="_blank"
           :Content="t('welcome.article')"
+          FontSize="14" />
+        <span class="welcome-dialog-link-sep" aria-hidden="true">·</span>
+        <WinHyperlinkButton
+          :NavigateUri="t('about.qq-group-url')"
+          TargetName="_blank"
+          :Content="t('about.qq-group')"
           FontSize="14" />
         <span class="welcome-dialog-link-sep" aria-hidden="true">·</span>
         <WinHyperlinkButton

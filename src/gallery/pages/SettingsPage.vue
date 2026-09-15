@@ -84,11 +84,23 @@
                   TargetName="_blank"
                   HorizontalAlignment="Left"
                   :Content="t('welcome.article')" />
+                <!-- QQ 群：群链接在根目录「文字设置.ts」的 about.qq-group-url -->
+                <WinHyperlinkButton
+                  :NavigateUri="t('about.qq-group-url')"
+                  TargetName="_blank"
+                  HorizontalAlignment="Left"
+                  :Content="t('about.qq-group')" />
                 <WinHyperlinkButton
                   :NavigateUri="t('about.reward-url')"
                   TargetName="_blank"
                   HorizontalAlignment="Left"
                   :Content="t('about.reward')" />
+                <!-- UI 内核：本站界面用的上游组件库 —— 文字在根目录「文字设置.ts」 -->
+                <WinHyperlinkButton
+                  :NavigateUri="t('about.ui-kernel-url')"
+                  TargetName="_blank"
+                  HorizontalAlignment="Left"
+                  :Content="t('about.ui-kernel')" />
               </div>
             </WinExpander>
 

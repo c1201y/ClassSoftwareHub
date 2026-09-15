@@ -1,0 +1,188 @@
+/* ══════════════════════════════════════════════════════════════
+   内置工具通用样式（全局，前缀统一用 .tool-，避免污染其它页面）
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 面板 / 卡片 ─────────────────────────────────────────────── */
+.tool-panel {
+  box-sizing: border-box;
+  border: 1px solid var(--card-stroke, var(--ctrl-border, rgba(0, 0, 0, 0.12)));
+  border-radius: 8px;
+  background: var(--card-bg, var(--ctrl-fill-default, rgba(255, 255, 255, 0.5)));
+  padding: 16px;
+}
+
+.tool-section-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+/* ── 表单 ────────────────────────────────────────────────────── */
+.tool-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.tool-input,
+.tool-textarea,
+.tool-select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--ctrl-border, rgba(0, 0, 0, 0.22));
+  border-radius: 4px;
+  background: var(--ctrl-fill-default, rgba(255, 255, 255, 0.7));
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  transition: border-color var(--fast-duration) var(--fast-out-slow-in);
+}
+
+.tool-input:hover,
+.tool-textarea:hover,
+.tool-select:hover {
+  border-color: var(--ctrl-border, rgba(0, 0, 0, 0.3));
+}
+
+.tool-input:focus,
+.tool-textarea:focus,
+.tool-select:focus {
+  outline: none;
+  border-color: var(--accent-base, #0067C0);
+}
+
+/* 下拉选项：必须给「不透明」的颜色。浏览器内置弹层的底色是平台默认（白色），
+   而 --card-bg 在暗色下只有 5% 白 → 会变成白底 + 白字 = 整个下拉框全白看不见。 */
+.tool-select option,
+.tool-select optgroup {
+  background-color: #ffffff;
+  color: #1a1a1a;
+}
+
+html.theme-dark .tool-select {
+  color-scheme: dark;
+}
+
+html.theme-dark .tool-select option,
+html.theme-dark .tool-select optgroup {
+  background-color: #2f2f2f;
+  color: #ffffff;
+}
+
+.tool-textarea {
+  min-height: 120px;
+  resize: vertical;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.tool-input.mono,
+.tool-textarea.mono {
+  font-family: Consolas, 'Courier New', monospace;
+}
+
+/* ── 按钮 ────────────────────────────────────────────────────── */
+.tool-btn {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--ctrl-border, rgba(0, 0, 0, 0.22));
+  border-radius: 4px;
+  background: var(--ctrl-fill-default, rgba(255, 255, 255, 0.7));
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background var(--fast-duration) var(--fast-out-slow-in);
+}
+
+.tool-btn:hover {
+  background: var(--ctrl-fill-secondary, rgba(0, 0, 0, 0.05));
+}
+
+.tool-btn:active {
+  background: var(--ctrl-fill-tertiary, rgba(0, 0, 0, 0.07));
+  color: var(--text-secondary);
+}
+
+.tool-btn:disabled {
+  color: var(--text-disabled, rgba(0, 0, 0, 0.36));
+  background: var(--ctrl-fill-disabled, rgba(0, 0, 0, 0.04));
+  cursor: default;
+}
+
+.tool-btn.accent {
+  border-color: var(--accent-base, #0067C0);
+  background: var(--accent-base, #0067C0);
+  color: var(--accent-text, #fff);
+}
+
+.tool-btn.accent:hover {
+  background: var(--accent-hover, var(--accent-base, #0067C0));
+}
+
+.tool-btn.small {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+/* ── 布局小工具 ──────────────────────────────────────────────── */
+.tool-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.tool-row > .tool-input,
+.tool-row > .tool-select {
+  width: auto;
+  flex: 1 1 140px;
+  min-width: 0;
+}
+
+.tool-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.tool-hint {
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--text-secondary);
+}
+
+.tool-divider {
+  height: 1px;
+  margin: 16px 0;
+  background: var(--stroke-divider, rgba(0, 0, 0, 0.08));
+}
+
+/* ── 复制提示 ────────────────────────────────────────────────── */
+.tool-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
+  /* 要盖过全屏时钟层（2147483000），否则全屏时看不到提示 */
+  z-index: 2147483600;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: var(--dialog-background, #2b2b2b);
+  color: var(--text-primary);
+  font-size: 13px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}

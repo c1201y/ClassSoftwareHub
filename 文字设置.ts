@@ -12,10 +12,11 @@
 // 中文站改了顺手同步英文站；只维护中文站可不管它）。
 // 软件数据（软件名/简介/下载链接不在这里）→ 根目录「软件数据」文件夹。
 //
-// key 速查：app.*=站名/版权/版本号；home.*=首页标题区+下载HTML按钮；
+// key 速查：app.*=站名/版权/版本号；home.*=首页标题区+下载HTML按钮+
+//             「教学辅助」分类顶部的外链推荐卡（home.iwb-card-*）；
 // filter.*=筛选条；detail.*=详情页；text.*=通用按钮/设置页；
-// about.*=设置页“关于”区（*-url 是链接地址）。
-// welcome.*=欢迎弹窗（进入网站时弹出；仓库/作者链接复用 about.*-url 键；
+// about.*=设置页“关于”区（*-url 是链接地址；QQ 群入口=about.qq-group(+url)）。
+// welcome.*=欢迎弹窗（进入网站时弹出；仓库/作者/QQ 群链接复用 about.*-url 键；
 //           相关文章=welcome.article(+url)，投喂作者=about.reward(+url)）。
 // search.*=标题栏搜索框（placeholder、选项里“来源”的称呼、无结果提示）。
 // ════════════════════════════════════════════════════════════════════
@@ -62,9 +63,15 @@ export default {
       "about.author-home-url": "https://space.bilibili.com/1274920807",
       "about.echo-cave": "回声洞",
       "about.echo-cave-url": "https://www.bilibili.com/video/BV1GJ411x7h7/",
+      // QQ 群入口（「关于」区 + 首页欢迎弹窗都用这两条）
+      "about.qq-group": "加入 QQ 群",
+      "about.qq-group-url": "https://qm.qq.com/q/wByO7XG8Wk",
       "about.reward": "投喂作者",
       "about.reward-url": "https://ifdian.net/a/TinyNickCSHub",
       "about.repository-url": "https://github.com/c1201y/ClassSoftwareHub",
+      // 「关于」里的 UI 内核链接：本站界面用的上游组件库 WinUIonWeb（致敬原作者）
+      "about.ui-kernel": "UI 内核（WinUIonWeb）",
+      "about.ui-kernel-url": "https://github.com/Furry-Xiyi/WinUIonWeb",
       "text.page-transition": "页面过渡",
       "text.qq-group": "QQ 群组",
       "text.select-the-navigation-bar-position": "选择导航栏位置",
@@ -74,7 +81,7 @@ export default {
       "text.use-system-setting": "使用系统设置",
       "nav.home": "首页",
       "home.title": "ClassSoftwareHub",
-      "home.subtitle": "欢迎使用下载站【v2.2.0 - Autumn】，欢迎各位添砖加瓦，感谢 @Bilibili 椰汁cyan 提供网站的搭建！",
+      "home.subtitle": "欢迎使用下载站【v2.3.0 - September 18 Incident】，欢迎各位添砖加瓦，感谢 @Bilibili 椰汁cyan 提供网站的搭建！",
       "home.download-html": "使用 HTML【开发者】",
       "home.download-html-tip": "可以在网络通畅时下载本站，后离线也可访问！",
       "home.download-html-filename": "电教委员常用软件下载站.html",
@@ -82,8 +89,15 @@ export default {
       "home.download-template-tip": "共创！添加软件使用的模板",
       "home.download-template-filename": "模板.json",
       "home.download-html-only-single": "当前打开的页面不是离线单文件版（开发/预览模式下导出的文件会缺少脚本和样式，无法离线使用）。\n请先运行 npm run build:single 打包，再打开 dist 文件夹里生成的 HTML，使用此功能下载。",
+      // ★首页「教学辅助」分类顶部的外链推荐卡（Awesome IWB）
+      //   想换推荐的网站/改文案：只动下面这 4 个 key。
+      //   url 填完整网址（https:// 开头）；把 title 和 desc 都留空("")这张卡就不显示。
+      "home.iwb-card-title": "想找更多教学软件？去 Awesome IWB 逛逛",
+      "home.iwb-card-desc": "班级一体机 / 交互白板软件合集：希沃白板工具、课堂管理、课表看板、随机点名…… 都是开源好物",
+      "home.iwb-card-action": "打开 Awesome IWB",
+      "home.iwb-card-url": "https://aiwb.smart-teach.cn/",
       "welcome.hello": "欢迎！(*￣3￣)╭",
-      "welcome.intro": "欢迎使用ClassSoftwareHub下载站【v2.2.0 - Autumn】，收纳多款电教委员常用软件，感谢使用本网站！如果你觉得好的话可以考虑投喂作者哦！",
+      "welcome.intro": "欢迎使用ClassSoftwareHub下载站【v2.3.0 - September 18 Incident】，收纳多款电教委员常用软件，感谢使用本网站！如果你觉得好的话可以考虑投喂作者哦！",
       "welcome.repository": "仓库地址",
       "welcome.explore": "开始探索下载~",
       "welcome.article": "相关文章",
@@ -93,6 +107,8 @@ export default {
       "search.source-intro": "相关简介",
       "search.no-results": "没有找到与“{query}”相关的软件",
       "filter.all": "全部",
+      // 分类筛选条右边的小字，{count} 会自动替换成已收录的软件数量
+      "filter.collected": "本站目前已收录软件数量：{count}",
       "detail.intro": "应用介绍",
       "detail.info": "详细信息",
       "detail.version": "软件版本",
@@ -111,7 +127,7 @@ export default {
       "detail.store-only": "该软件通过 Microsoft Store 分发，点上方按钮打开商店页面即可获取",
       "app.shortTitle": "电教委员常用软件下载站",
       "app.author": "Tiny-Nick",
-      "app.version": "v2.2.0 - Autumn (20260915PR01)",
+      "app.version": "v2.3.0 - September 18 Incident (20260916PR03)",
       "nav.submit": "提交软件",
       "submit.subtitle": "填写下面的信息，提交后进入审核队列，审核通过会自动上线。",
       "submit.import-title": "从 GitHub 一键读取",

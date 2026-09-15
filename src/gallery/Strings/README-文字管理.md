@@ -23,9 +23,9 @@
 | 详情页标题（应用介绍 / 详细信息 / 下载…） | `detail.*`（version/size/system/website/github/intro/info/download…） |
 | 详情页"待补充"占位 | `detail.pending` |
 | 设置页：主题 / 材质 / 导航位置 | `text.theme` `text.material` `text.navigation-pane-position` 等 `text.*` |
-| 关于区：作者首页 / 回声洞 / 投喂作者 | `about.author-home*` `about.echo-cave*` `about.reward*` |
+| 关于区：作者首页 / 回声洞 / 投喂作者 / QQ 群 | `about.author-home*` `about.echo-cave*` `about.reward*` `about.qq-group*` |
 | 版权行 / 版本号 | `text.about-copyright` `app.author` `app.version` |
-| 欢迎弹窗：标题 / 正文 / 按钮 / 相关文章 | `welcome.*`（`welcome.hello` 标题、`welcome.intro` 正文、`welcome.explore` 按钮、`welcome.article`+`welcome.article-url` 相关文章；仓库/作者/投喂链接复用 `about.*-url`） |
+| 欢迎弹窗：标题 / 正文 / 按钮 / 相关文章 | `welcome.*`（`welcome.hello` 标题、`welcome.intro` 正文、`welcome.explore` 按钮、`welcome.article`+`welcome.article-url` 相关文章；仓库/作者/QQ 群/投喂链接复用 `about.*-url`） |
 | 标题栏搜索框：占位提示 / 结果"来源"称呼 / 无结果提示 | `search.placeholder` `search.source-name`（应用名称）`search.source-intro`（相关简介）`search.no-results` |
 
 ## 软件名、软件简介、下载链接？
@@ -40,7 +40,7 @@
   页面已经不用了，**留着无害**，别删即可。
 - 版权行由 `text.about-copyright`（模板）+ `app.author` + `text.all-rights-reserved` 拼成；
   中文版把"版权所有"留空 '' 是原版故意的（版权行只显示"© 2026 Tiny-Nick。"）。
-- `about.*-url` 是链接地址，改链接改它们（作者首页/回声洞/投喂作者/代码仓库）。
+- `about.*-url` 是链接地址，改链接改它们（作者首页/回声洞/投喂作者/代码仓库/QQ 群）。
 - 搜索框会同时搜 软件名称 + 一句话简介 + 详细介绍（逻辑在 `src/gallery/searchIndex.ts`，
   日常不用碰）；结果写成「软件名（应用名称）」= 名字命中，「软件名（相关简介）」= 简介/介绍命中。
 - 版本号 `app.version` 显示在关于区；原 HTML 里写的 `v2026831` 疑似手误
