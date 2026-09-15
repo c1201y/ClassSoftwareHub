@@ -13,17 +13,32 @@ jobs:
       contents: read
       issues: write
     steps:
+      # fetch-depth: 0 —— 下面的 git diff 要拿到事件里的两个提交对象，浅克隆可能缺
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: 找出本次新增的草稿文件
         id: find
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
         run: |
-          NEW_FILES=$(git diff --diff-filter=A --name-only HEAD~1 HEAD -- 'submissions/*.json' || true)
-          echo "files<<EOF" >> $GITHUB_OUTPUT
-          echo "$NEW_FILES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          # ⚠️ 不能用 `git diff HEAD~1 HEAD`：checkout 检出的是【fetch 那一刻的分支 tip】，
+          #    未必是触发本次运行的那个提交。两次推送挨得近时会重复建 issue，甚至完全
+          #    漏建（草稿静默滞留在 submissions/ 里，永远等不到审核）。
+          #    改用事件自带的 before/after 两个 SHA，范围精确，且能覆盖一次推送多个提交。
+          ZERO=0000000000000000000000000000000000000000
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "$ZERO" ]; then
+            NEW_FILES=$(git show --diff-filter=A --name-only --pretty=format: "$AFTER" -- 'submissions/*.json' || true)
+          else
+            NEW_FILES=$(git diff --diff-filter=A --name-only "$BEFORE" "$AFTER" -- 'submissions/*.json' || true)
+          fi
+          echo "本次新增的草稿："
+          echo "$NEW_FILES"
+          echo "files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$NEW_FILES" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: 为每个草稿创建 Issue
         if: steps.find.outputs.files != ''
@@ -34,9 +49,23 @@ jobs:
           script: |
             const fs = require('fs')
             const files = process.env.FILES.split('\n').map(s => s.trim()).filter(Boolean)
+
+            // 幂等保护：手动「Re-run」时 before/after 不变，不判重会重复建 issue
+            const opened = await github.rest.issues.listForRepo({
+              ...context.repo,
+              state: 'all',
+              per_page: 100
+            })
+            const existingTitles = new Set(opened.data.map(i => i.title))
+
             for (const file of files) {
               if (!fs.existsSync(file)) continue
               const data = JSON.parse(fs.readFileSync(file, 'utf8'))
+              const title = `[待审核] ${data.name} (${data.id})`
+              if (existingTitles.has(title)) {
+                console.log(`已存在同名 Issue，跳过：${title}`)
+                continue
+              }
               const conflictHint = data._原始ID冲突
                 ? `\n> ⚠️ **注意**：\`软件数据/apps/${data.id}.json\` 已存在，通过前需先处理冲突。`
                 : ''
@@ -63,7 +92,7 @@ jobs:
 
               await github.rest.issues.create({
                 ...context.repo,
-                title: `[待审核] ${data.name} (${data.id})`,
+                title,
                 body,
                 labels: ['待审核']
               })
