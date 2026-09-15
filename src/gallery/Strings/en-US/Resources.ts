@@ -78,7 +78,7 @@ export default {
     "detail.not-found": "Software not found.",
     "app.shortTitle": "Software Download Station",
     "app.author": "惜忆想睡觉",
-    "app.version": "1.0.0-Insider",
+    "app.version": "v2.2.0 - Autumn (20260915PR01)",
     "detail.downloads": "Downloads",
     "detail.pending": "TBD",
     "detail.github": "GitHub",
