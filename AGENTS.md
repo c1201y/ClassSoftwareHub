@@ -16,9 +16,9 @@
 | | |
 |---|---|
 | Stack | Vue 3.5 + Vue Router 4 (**hash routing**) + Vite 8 + TypeScript. Pure static front end, no backend |
-| Boot path | `index.html` → `src/main.ts` → `src/gallery/App.vue` (shell) → `src/gallery/router.ts` (4 routes) |
+| Boot path | `index.html` → `src/main.ts` → `src/gallery/App.vue` (shell) → `src/gallery/router.ts` (7 routes: home / detail / settings / submit / tools / single tool / AI nav) |
 | App code | Everything lives in `src/gallery/` — **the only place you should change code** |
-| Data | `软件数据/apps/*.json` (one file per app, 56 today) + `软件数据/categories.json` (4 categories) |
+| Data | `软件数据/apps/*.json` (one file per app, 57 today) + `软件数据/categories.json` (4 categories) |
 | Strings | Chinese = `文字设置.ts` at repo root; English = `src/gallery/Strings/en-US/Resources.ts` |
 | Live site | https://classsoftwarehub.132614.xyz (see `CNAME`) / mirror: classsoftwarehub.xfane.com |
 | Output | `npm run build` → `dist/` (multi-file); `SINGLEFILE=1` → one HTML file (what CI ships) |
@@ -49,8 +49,11 @@ src/
   ├─ main.ts                     Mount entry
   ├─ gallery/                  ★ This site's application code
   │   ├─ App.vue                 Shell: nav pane / theme / holiday skin / welcome dialog / data-error bar
-  │   ├─ router.ts               The 4 routes (table below)
-  │   ├─ pages/                  HomePage / DownloadDetailPage / SettingsPage / SubmitPage
+  │   ├─ router.ts               The 7 routes (table below)
+  │   ├─ pages/                  HomePage / DownloadDetailPage / SettingsPage / SubmitPage / AiNavPage
+  │   ├─ tools/                  ★ Built-in tools: index.ts registry + ToolShell.vue + one .vue per tool
+  │   │                           (adding a tool = one registry entry; its route is generated from it)
+  │   ├─ aiSiteIcons.ts          Site icons for the AI-nav page (inlined base64, no third-party icon service)
   │   ├─ data/index.ts           Data loader: types + fault-tolerant parsing (⚠️ do not edit)
   │   ├─ githubImport.ts         "Import from GitHub" (从 GitHub 一键读取) on the submit page
   │   ├─ searchIndex.ts          Title-bar search (matches name + tagline + description)
@@ -76,6 +79,9 @@ Routes (hash-based):
 | `#/download/:id` | App detail page; `:id` = the `id` field in the data |
 | `#/settings` | Settings (appearance / about / visit stats) |
 | `#/submit` | Submit a new app |
+| `#/tools` | Built-in tools (card list, 10 client-side utilities) |
+| `#/tools/<id>` | A single built-in tool; routes are generated from the `src/gallery/tools/index.ts` registry |
+| `#/ai` | AI nav (21 Chinese AI sites, full-width clickable rows) |
 
 ---
 
@@ -217,11 +223,12 @@ changes are replayed by `visitor.ts`.
 - Public version: `X.Y.Z` + a **codename suffix, which is kept** (e.g. `- Autumn`).
   X = major (architecture / UI overhaul); Y = feature update; Z = small fix.
 - Internal version: `AAAABBCCPRDD` (year / month / day / file revision), e.g. `20260915PR01`.
-- Update all of these together — current value is `v2.2.0 - Autumn (20260915PR01)`:
+- Update all of these together — current value is `v2.3.0 - September 18 Incident (20260916PR03)`:
   - `文字设置.ts` → `app.version`, `home.subtitle`, `welcome.intro` (**3 places**)
   - `src/gallery/Strings/en-US/Resources.ts` → `app.version`
-  - `package.json` → `version` (bare `2.2.0`, no codename / internal number)
-- Release tags keep the old habit: `v2.2.0-Autumn`.
+  - `package.json` → `version` (bare `2.3.0`, no codename / internal number); also bump the two `"version"` fields
+  at the top of `package-lock.json` (npm normally syncs these)
+- Release tags keep the old habit: `v2.3.0-September18Incident` (history: `v2.1.0-Autumn`, `v2.2.0-Autumn`).
 - `CHANGELOG.md` is maintained by hand; **whether it ships with a commit is the maintainer's call**
   (there is precedent for keeping it local-only).
 

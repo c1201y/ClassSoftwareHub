@@ -365,10 +365,14 @@ interface NavItem {
   MenuItems?: NavItem[];
 }
 
-const pageTags = new Set(['home', 'settings', 'submit']);
+const pageTags = new Set(['home', 'settings', 'submit', 'tools', 'ai']);
 
-// ── 底部导航：提交软件（#/submit，与设置齿轮同区的 Footer 菜单项）──────
+// ── 底部导航：AI 导航 + 内置工具 + 提交软件（Footer 菜单项；工具页在上，方便后面继续加工具）──
 const footerMenuItems = computed<NavItem[]>(() => [
+  // 图标 E99A(Robot)：AI 导航
+  { Tag: 'ai', Icon: '\uE99A', Content: 'AI 导航' },
+  // 图标用 EC7A(DeveloperTools)：E90F(Repair) 会和左侧「系统工具」分类撞图标
+  { Tag: 'tools', Icon: '\uEC7A', Content: '内置工具' },
   { Tag: 'submit', Icon: '\uE11C', Content: t('nav.submit') }
 ]);
 
@@ -398,7 +402,12 @@ const selectedNavigationItem = computed<NavItem | null>({
       }
     }
     if (currentPage.value === 'home') return navMenuItems.value[0] ?? null;
-    if (currentPage.value === 'submit') return footerMenuItems.value[0] ?? null;
+    // 内置工具及其所有子工具页（tool-xxx）→ 高亮 Footer 里的「内置工具」
+    if (currentPage.value === 'tools' || (currentPage.value ?? '').startsWith('tool-')) {
+      return footerMenuItems.value.find((item) => item.Tag === 'tools') ?? null;
+    }
+    if (currentPage.value === 'ai') return footerMenuItems.value.find((item) => item.Tag === 'ai') ?? null;
+    if (currentPage.value === 'submit') return footerMenuItems.value.find((item) => item.Tag === 'submit') ?? null;
     return null;
   },
   set: (item) => {

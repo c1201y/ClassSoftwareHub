@@ -1,12 +1,176 @@
 /* 首页卡片 + 分类筛选栏样式 —— 从单文件版 indexV20260831.html 提取（原 scoped 属性已剥离） */
 .home-page {
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto auto 1fr;
+  /* 行：页头 / 两个入口卡片 / 分类筛选条 / 软件列表（推荐卡在软件列表内部，不占行） */
+  grid-template-rows: auto auto auto 1fr;
   width: 100%;
   min-width: 0;
   margin: 0;
   display: grid;
   overflow-x: hidden;
+}
+/* ── 分类推荐卡（整页宽的外链卡片，出现在「教学辅助」分类的软件列表最上方）──
+   文案/网址在根目录 文字设置.ts 的 home.iwb-card-*；title 或 desc 留空即隐藏。 */
+.category-promo-card {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 14px;
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  min-width: 0;
+  text-decoration: none;
+  border: 1px solid color-mix(in srgb, var(--accent-base, #0067C0) 32%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent-base, #0067C0) 8%, transparent);
+  color: var(--text-primary);
+  cursor: pointer;
+  animation: category-promo-in 260ms cubic-bezier(0, 0, 0, 1);
+  transition: background var(--faster-duration, 83ms) linear;
+}
+.category-promo-card:hover:not(:active) {
+  background: color-mix(in srgb, var(--accent-base, #0067C0) 15%, transparent);
+}
+.category-promo-card:active {
+  background: color-mix(in srgb, var(--accent-base, #0067C0) 22%, transparent);
+}
+.category-promo-card:focus-visible {
+  outline: 2px solid var(--accent-base, #0067C0);
+  outline-offset: 2px;
+}
+.category-promo-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--accent-base, #0067C0) 25%, transparent);
+  background: color-mix(in srgb, var(--accent-base, #0067C0) 14%, transparent);
+  color: var(--accent-base, #0067C0);
+  font-family: "WinUIOnWebIcons";
+  font-size: 22px;
+  line-height: 1;
+}
+.category-promo-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.category-promo-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 21px;
+}
+.category-promo-desc {
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--text-secondary);
+}
+.category-promo-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-base, #0067C0);
+  white-space: nowrap;
+}
+.category-promo-link-icon {
+  font-family: "WinUIOnWebIcons";
+  font-size: 13px;
+}
+@keyframes category-promo-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .category-promo-card {
+    animation: none;
+  }
+}
+/* ── 首页两个入口卡片（内置工具 / AI 导航，各占一半，在分类筛选条上方）──
+   内置工具的文案在 HomePage.vue 里硬编码（工具相关文案不进 文字设置.ts）；
+   AI 导航的文案在根目录 AI导航文本.ts 里（方便自己改） */
+.home-jump-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 20px 36px 0;
+}
+.home-jump-card {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 14px;
+  margin: 0;
+  padding: 14px 16px;
+  width: auto;
+  min-width: 0;
+  text-align: left;
+  border: 1px solid var(--card-stroke, var(--control-stroke-color-default, var(--ctrl-border)));
+  border-radius: 8px;
+  background: var(--control-item-fill, var(--CardBackgroundFillColorDefaultBrush, var(--card-bg)));
+  color: var(--text-primary);
+  font: inherit;
+  cursor: pointer;
+  transition: background var(--faster-duration, 83ms) linear;
+}
+.home-jump-card:hover:not(:active) {
+  background: var(--control-fill-color-secondary, var(--ctrl-fill-secondary));
+}
+.home-jump-card:active {
+  background: var(--control-fill-color-tertiary, var(--ctrl-fill-tertiary));
+  color: var(--text-secondary);
+}
+.home-jump-card:focus-visible {
+  outline: 2px solid var(--accent-base, #0067C0);
+  outline-offset: 2px;
+}
+.home-jump-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--accent-base, #0067C0) 25%, transparent);
+  background: color-mix(in srgb, var(--accent-base, #0067C0) 12%, transparent);
+  color: var(--accent-base, #0067C0);
+  font-family: "WinUIOnWebIcons";
+  font-size: 22px;
+  line-height: 1;
+}
+.home-jump-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.home-jump-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 21px;
+}
+.home-jump-desc {
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--text-secondary);
+}
+.home-jump-arrow {
+  font-family: "WinUIOnWebIcons";
+  font-size: 13px;
+  color: var(--text-secondary);
 }
 /* ── 节日皮肤：首页顶部海报（补丁，见 src/gallery/holidayTheme.ts）──
    整幅海报铺在首页最顶部（图片顶 = 网页顶），高度按原比例自动、尽量完整显示，
@@ -90,11 +254,32 @@
   flex-wrap: wrap;
   gap: 8px 12px;
 }
+/* 筛选条那一块：筛选条居中，下面跟一行「已收录软件数量」小字 */
+.filter-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 20px 36px;
+}
 .filter-bar {
   place-self: center;
   width: max-content;
   max-width: 100%;
-  margin: 20px 0 20px 36px;
+  margin: 0;
+}
+/* WinSelectorBar 组件在根节点上带了内联样式 `place-self: start center`（对应 WinUI 默认的
+   “纵向贴顶、横向居中”），内联样式优先级最高 —— 在 flex 竖排容器里 align-self: start 会让
+   筛选条横轴上贴左。这里用 !important 把它扳回居中（窄屏下宽度仍是 auto 自动撑满，不受影响）。 */
+.filter-row .filter-bar {
+  align-self: center !important;
+}
+/* 筛选条右边的小字（数量由 apps.length 动态填） */
+.filter-count {
+  font-size: 12.5px;
+  line-height: 18px;
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 .token-filter-bar {
   --SelectorBarItemSpacing: 8px;
@@ -323,6 +508,25 @@ html.theme-dark .category-badge {
   .home-page-header {
     padding: 20px 16px 0;
   }
+  /* 窄屏：两个入口卡片竖着排（并排太挤，说明会折成三行） */
+  .home-jump-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    margin: 16px 16px 0;
+  }
+  .home-jump-card {
+    padding: 12px 14px;
+    column-gap: 12px;
+  }
+  .home-jump-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+  .home-jump-desc {
+    font-size: 12px;
+    line-height: 17px;
+  }
   .holiday-hero-image {
     max-height: 300px;
   }
@@ -336,15 +540,38 @@ html.theme-dark .category-badge {
   .switch-presenter {
     margin: 0 16px 24px;
   }
+  /* 窄屏：推荐卡竖排更宽松（右侧动作文字换到第二行） */
+  .category-promo-card {
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: 8px;
+    margin: 0 0 12px;
+    padding: 12px 14px;
+  }
+  .category-promo-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+  .category-promo-action {
+    grid-column: 2;
+  }
   /* 手机窄屏：筛选条占满可用宽度，分类按钮自动换行，避免溢出屏幕。
      （.win-selector-bar 是 inline-grid 且列宽 auto=内容宽，须把列改成 1fr
        并让 items-view 宽度 100% 才能真正约束换行） */
+  /* 窄屏：筛选条撑满宽度（它的按钮会换行），小字在下方 */
+  .filter-row {
+    align-items: stretch;
+    margin: 16px 16px 8px;
+  }
   .filter-bar {
     place-self: stretch;
     width: auto;
     max-width: none;
-    margin: 16px 16px 8px;
+    margin: 0;
     grid-template-columns: minmax(0, 1fr);
+  }
+  .filter-count {
+    white-space: normal;
   }
   .token-filter-bar .win-selector-bar-items-view {
     flex-wrap: wrap;

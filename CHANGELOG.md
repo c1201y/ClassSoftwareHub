@@ -1,5 +1,68 @@
 # 更新日志 (Changelog)
 
+## v2.3.0 - September 18 Incident（20260916PR03）发布！
+
+本次更新新增「内置工具」与「AI 导航」两个板块，首页更好逛；重点是**所有新功能都在浏览器本地运行**，不额外占用服务器流量。
+
+### 更新日志
+
+- **【新增】** 新增「内置工具」板块（导航栏 → 内置工具），收录 10 个开箱即用的小工具：**图片取色 / 颜色转换 · 配色 / 随机抽号 / 课堂计时器 / 全屏时钟 / 文本处理 / 编码 · 哈希 / Markdown 预览 / 二维码生成 / 时间戳转换**。全部在浏览器本地运行，不上传、不联网，服务器只发一个网页。
+- **【新增】** 新增「AI 导航」页面：整行式收录 21 个常用国产 AI 网站（DeepSeek、豆包、通义千问、文心一言、Kimi、智谱清言、腾讯元宝、讯飞星火……），点一下直达。站点图标已内联进网页，不依赖第三方图标服务，页面不发出外部请求。
+- **【新增】** 首页新增「内置工具」「AI 导航」两个入口卡片（并排各占一半），从首页一键进入。
+- **【新增】** 「教学辅助」分类顶部新增 **Awesome IWB** 推荐卡：一键跳转 [Awesome IWB · 交互式白板软件合集](https://aiwb.smart-teach.cn/)，帮老师发现更多一体机 / 白板软件。（文案与网址写在根目录 `文字设置.ts` 的 `home.iwb-card-*`，可自行修改，留空即关闭这张卡）
+- **【新增】** 设置页「关于」新增「UI 内核（WinUIonWeb）」链接，向本站所用界面组件库的作者致敬。
+- **【新增】** 设置页「关于」与首页欢迎弹窗新增 **QQ 群入口**（点击链接加入群聊【ClassSoftwareHub】）：用着有问题、想推荐软件，直接进群说。
+- **【变更】** 首页「本站目前已收录软件数量」小字由筛选条右侧移到**筛选条正下方**居中显示。
+- **【优化】** 「随机抽号」新增**公平性自检**：一键在本机实抽 2 万次并画出分布直方图（附卡方判读），抽号公不公平一眼可辨；同时显示「范围内还剩多少个号没抽过」，并新增一行「本次设置」白话总结（范围 / 抽几个 / 是否不重复），范围填错一眼可见。
+- **【优化】** 「全屏时钟」重做：默认黑白并跟随站点深浅色、**双击屏幕退出全屏**、适配触屏（一键全屏 + 防息屏），课堂上直接当大钟用。
+- **【优化】** 内置工具页交互细节打磨：下拉选项框在深色模式下不再是白底、哈希值过长时按钮不再被挤成竖排、全屏时钟不再被标题栏压住。
+
+### 其他内容
+
+- 网站链接1：[电教委员常用软件下载站](https://classsoftwarehub.132614.xyz/#/home)
+- 网站链接2：[classsoftwarehub.xfane.com](https://classsoftwarehub.xfane.com/#/home)
+  > 【提示】福建闽北，闽西地区的用户可能会遇上打不开的问题。
+- 夸克网盘：[夸克网盘分享](https://pan.quark.cn/s/7cbf21203ad9)
+- 投喂作者：[爱发电 · 连接创作者与粉丝的会员制平台](https://ifdian.net/a/TinyNickCSHub)
+- Github 主页：[c1201y/ClassSoftwareHub](https://github.com/c1201y/ClassSoftwareHub)
+- Github 更新文章：[Releases · c1201y/ClassSoftwareHub](https://github.com/c1201y/ClassSoftwareHub/releases)
+- 智教论坛：[Programmer_Nick - 智教联盟论坛](https://forum.smart-teach.cn/u/Programmer_Nick)
+- 此项目由人类构建。
+
+---
+
+## v2.2.0 - Autumn（20260915PR01）发布！
+
+本次更新重点打磨「提交软件」这条链路，并新增 3 款电教委员常用软件
+
+### 更新日志
+
+- **【新增】** 提交软件页新增「从 GitHub 一键读取」：粘贴仓库地址后点一下，自动读取软件名称、简介、版本号、支持系统、官网，以及 Release 里各平台的安装包，直接填进表单；默认取最新正式版，也可以勾选包含 Beta / Alpha 预发布版本。（by[@椰汁](https://github.com/c1201y/)）
+- **【新增】** 提交失败不再白填：部分地区提交时无法访问时提供「重试 / 下载提交文件 / 复制内容 / 去 GitHub 提交」四种兜底方式；已填内容会自动暂存，下次打开页面可以「恢复上次填写」。（by[@椰汁](https://github.com/c1201y/)）
+- **【新增】** 接入百度统计（by[@椰汁](https://github.com/c1201y/)）
+- **【新增】** 新增 3 款软件：**SecRandom**（公平随机点名 / 抽签）、**SecScore**（班级个人积分管理）、**CheeseSchedule**（奶酪课程表）。（by[@椰汁](https://github.com/c1201y/)）
+- **【变更】** 提交接口改为双入口自动降级（加速域名优先、直连兜底），并记住上次可用的入口，提交成功率更高、等待更短。（by[@椰汁](https://github.com/c1201y/)）
+- **【修复】** 修复国内部分网络下，提交页「一键读取」与「提交」报 `Failed to fetch` 的问题：GitHub 读取改走本站代理并支持多镜像回退，提交接口换用国内可达的域名。（by[@椰汁](https://github.com/c1201y/)）
+- **【修复】** 修复访问量统计偶发不计数、重复计数，以及「来源 / 热门页面」统计不准确的问题；统计接口换用国内可达的域名。（by[@椰汁](https://github.com/c1201y/)）
+- **【优化】** 审核通过后自动重新构建并部署——此前会出现「提交已审核通过，但线上页面没有更新」的情况，需要人工手动触发。（by[@椰汁](https://github.com/c1201y/)）
+- **【优化】** 支持批量审核：一次勾选多个提交依次处理，不会再因为并发冲突而丢失审核结果。（by[@椰汁](https://github.com/c1201y/)）
+- **【优化】** 部署流程改为只构建一次，构建更快（by[@椰汁](https://github.com/c1201y/)）
+- 认真学习了宾语从句awa
+
+### 其他内容
+
+- 网站链接1：[电教委员常用软件下载站](https://classsoftwarehub.132614.xyz/#/home)
+- 网站链接2：[classsoftwarehub.xfane.com](https://classsoftwarehub.xfane.com/#/home)
+  > 【提示】福建闽北，闽西地区的用户可能会遇上打不开的问题。
+- 夸克网盘：[夸克网盘分享](https://pan.quark.cn/s/7cbf21203ad9)
+- 投喂作者：[爱发电 · 连接创作者与粉丝的会员制平台](https://ifdian.net/a/TinyNickCSHub)
+- Github 主页：[c1201y/ClassSoftwareHub](https://github.com/c1201y/ClassSoftwareHub)
+- Github 更新文章：[Releases · c1201y/ClassSoftwareHub](https://github.com/c1201y/ClassSoftwareHub/releases)
+- 智教论坛：[Programmer_Nick - 智教联盟论坛](https://forum.smart-teach.cn/u/Programmer_Nick)
+- 此项目由人类构建。
+
+---
+
 ## v2.1.0 - Autumn（20260913PR01）发布！
 
 在此版本我们优化了 v2.0.0 中的一些内容，增加更多的内容，请及时更新。
