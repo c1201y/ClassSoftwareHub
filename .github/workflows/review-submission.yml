@@ -10,9 +10,20 @@ jobs:
       (github.event.label.name == 'approved' || github.event.label.name == 'rejected')
       && contains(github.event.issue.labels.*.name, '待审核')
     runs-on: ubuntu-latest
+    # 批量审核（UI 里勾选多个 Issue 一起打标签）会同时触发多个运行，它们从同一
+    # HEAD 各自 commit，谁先 push 成功谁赢，其余全部 non-fast-forward 失败
+    # （实测 2026-09-15 10:37 连续两次审核各挂一次，那次审核操作等于丢了）。
+    # 用 queue:max 让它们排队串行执行（最多 100 个在队里）。
+    # ⚠️ 不能拿 cancel-in-progress:false 代替 —— 那不是排队：并发组默认只保留
+    #    1 running + 1 pending，新来的 pending 会把旧的【顶掉】，批量审核会静默丢单。
+    concurrency:
+      group: review-submission
+      queue: max
     permissions:
       contents: write
       issues: write
+      # 需要 actions:write 才能派发 deploy.yml（见下方「触发构建与部署」）
+      actions: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -91,9 +102,35 @@ jobs:
             }
 
       - name: 提交更改
+        id: commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --quiet || git commit -m "review: ${{ github.event.label.name }} #${{ github.event.issue.number }}"
-          git push
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "review: ${{ github.event.label.name }} #${{ github.event.issue.number }}"
+            # 兜底：万一仍有并发（队列未生效等），反复 rebase 到最新 main 重试
+            ok=""
+            for i in $(seq 1 8); do
+              if git push; then ok=1; break; fi
+              git rebase --abort 2>/dev/null || true
+              git pull --rebase origin main || true
+              sleep $((RANDOM % 3 + 1))
+            done
+            if [ "$ok" != "1" ]; then
+              echo "::error::推送失败（多次重试后仍冲突），请重新给该 Issue 打一次标签。"
+              exit 1
+            fi
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 触发构建与部署
+        # ⚠️ 用 GITHUB_TOKEN 推送产生的 push 事件【不会】触发其它工作流（GitHub 防递归机制），
+        #    所以审核合并后 deploy.yml 不会自己跑，必须在这里显式派发一次。
+        #    workflow_dispatch 是这条限制的唯一例外，但仍需 GITHUB_TOKEN 具备 actions:write。
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy.yml --ref main

@@ -101,10 +101,9 @@ jobs:
       - name: 上传单文件站点到 FTP 服务器
         # 单文件打包产物 dist/ 下只有 index.html（CSS/JS/图片全部内联），
         # 直接把 dist/ 目录镜像到 FTP 根目录即可。
-        # 凭据通过仓库 Secrets 注入（不写进本文件）：
-        #   FTP_SERVER = 149.88.74.95
-        #   FTP_USERNAME = ser761153303305
-        #   FTP_PASSWORD = q0kmn5b00iR3
+        # 凭据全部通过仓库 Secrets 注入：FTP_SERVER / FTP_USERNAME / FTP_PASSWORD
+        # ⚠️ 本仓库是公开仓库，任何凭据都不要明文写进本文件（含注释）——
+        #    写进来等于公开，且进入 git 历史后无法撤回，只能改密码。
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
