@@ -197,8 +197,21 @@ export default {
       "submit.submitting": "提交中…",
       "submit.error-required": "请填写带 * 的必填项",
       "submit.error-network": "网络错误：{message}",
+      "submit.error-timeout": "请求超时（{seconds} 秒无响应）",
+      "submit.error-unexpected": "提交服务返回了无法识别的内容",
       "submit.result-success-title": "提交成功",
       "submit.result-success": "已进入审核队列，管理员审核通过后会自动上线。",
       "submit.result-error-title": "提交失败",
-      "submit.result-error": "请稍后重试，或到仓库提 Issue 反馈。"
+      "submit.result-error": "请稍后重试，或到仓库提 Issue 反馈。",
+      "submit.fallback-title": "提交服务连不上",
+      "submit.fallback-desc": "提交服务没连上（部分地区对境外流量的限制，或浏览器、网络环境异常，都会这样）。你填的内容没有丢，可以过一段时间再试，也可以直接交到 GitHub。",
+      "submit.fallback-retry": "重试提交",
+      "submit.fallback-download": "下载提交文件",
+      "submit.fallback-copy": "复制内容",
+      "submit.fallback-copied": "已复制",
+      "submit.fallback-github": "去 GitHub 提交",
+      "submit.fallback-github-hint": "点开链接后把刚下载的 JSON 内容贴进去（放在 submissions/ 目录下，文件名用 .json 结尾）再提交。这一步需要登录 GitHub 账号；没有写入权限时 GitHub 会引导你先 fork 并创建 PR，合并后同样进入审核队列。",
+      "submit.fallback-restore": "恢复上次填写",
+      "submit.fallback-restore-title": "已恢复填写",
+      "submit.fallback-restored": "已把上次没提交成功的内容填回表单，可以直接点「提交」重试。"
     };
