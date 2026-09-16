@@ -172,7 +172,12 @@ jobs:
 
             const TITLE = '📦 软件信息体检 · 待人工确认'
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
-            const header = `_最近一次检查：${new Date().toISOString().replace('T', ' ').slice(0, 16)} UTC　·　[本次运行](${runUrl})_\n\n`
+            const stamp = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC'
+            // ⚠️ 清单正文（update-pending.md）自带 H1 标题与「最近一次检查」时间，
+            //    这里只要补一个「本次运行」链接 —— 再写一遍标题和时间，Issue 里就会重复两套。
+            const linkLine = `[本次运行](${runUrl})\n\n`
+            // 关闭时清单正文已经不在了，得自己把时间写全
+            const doneHeader = `_最近一次检查：${stamp}　·　[本次运行](${runUrl})_\n\n`
 
             const { data: issues } = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
@@ -188,7 +193,7 @@ jobs:
                 core.info('本次没有需要人工确认的条目，且没有已开的 Issue，什么都不用做')
                 return
               }
-              const done = header + '## ✅ 全部处理完了\n\n' +
+              const done = doneHeader + '## ✅ 全部处理完了\n\n' +
                 `本次体检\`${updated}\` 个软件自动更新完毕，没有需要人工确认的条目。\n\n` +
                 '下一次体检若发现新的问题，会自动重新打开本 Issue。\n'
               await github.rest.issues.update({
@@ -202,13 +207,13 @@ jobs:
             if (found) {
               await github.rest.issues.update({
                 owner: context.repo.owner, repo: context.repo.repo,
-                issue_number: found.number, body: header + body, state: 'open',
+                issue_number: found.number, body: linkLine + body, state: 'open',
               })
               core.info(`已更新待人工确认 Issue #${found.number}（${count} 条）`)
             } else {
               const created = await github.rest.issues.create({
                 owner: context.repo.owner, repo: context.repo.repo,
-                title: TITLE, body: header + body,
+                title: TITLE, body: linkLine + body,
               })
               core.info(`已新建待人工确认 Issue #${created.data.number}（${count} 条）`)
             }
