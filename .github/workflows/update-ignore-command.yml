@@ -1,0 +1,312 @@
+name: Update Ignore Command
+
+# 「软件信息体检」Issue 的操作入口。
+#
+#  ① 点方框（默认、最省事）：体检清单里每条下面有**两个**复选框 ——
+#     「已改好 → 重新检测」＝ 维护者已经去别处（网页改 JSON / 本地改完推）改完并提交，
+#                            这里只负责**重跑一次体检**看改对没有 —— 不读不写任何仓库文件；
+#     「不用跟进」        ＝ 永久忽略，写 软件数据/update-ignore.json。
+#     文末「已忽略」区每条还有「恢复提醒」的方框。
+#     实现见下面的 tick job。勾选＝编辑 Issue 正文 ＝ issues.edited。
+#
+#  ② 回命令（后备，等效于「永久忽略 / 恢复提醒」）：在本 Issue 里评论
+#     /ignore <软件id> [updates|all] [理由]     默认 updates（仍提醒直链失效）；all = 什么都不提醒
+#     /unignore <软件id>
+#     实现见下面的 ignore job。
+#
+# ⚠️ 本仓库是 public，任何人都能评论 —— 所以下面三重门必须都过才执行：
+#   1. 必须是在「📦 软件信息体检」这个 Issue 下（不是随便一个 Issue）
+#   2. 评论者必须对本仓库有写权限（OWNER / MEMBER / COLLABORATOR）
+#   3. 命令必须是行首的 /ignore 或 /unignore
+# 评论内容一律通过环境变量传进 bash，不拼进脚本正文，避免命令注入。
+#
+# ⚠️ 点方框那条路（tick job）**不需要额外鉴权**：本 Issue 是机器人建的，
+#    GitHub 只允许有写权限的人编辑它的正文 —— 能改正文的人本来就能改仓库。
+
+on:
+  issue_comment:
+    types: [created]
+  # ★ 勾选路径：点方框 ＝ 编辑 Issue 正文
+  issues:
+    types: [edited]
+
+permissions:
+  contents: read
+
+jobs:
+  ignore:
+    if: |
+      github.event_name == 'issue_comment'
+      && !github.event.issue.pull_request
+      && startsWith(github.event.issue.title, '📦 软件信息体检')
+      && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+      && (startsWith(github.event.comment.body, '/ignore') || startsWith(github.event.comment.body, '/unignore'))
+    runs-on: ubuntu-latest
+    concurrency:
+      group: update-ignore
+      queue: max
+    permissions:
+      contents: write
+      issues: write
+      actions: write
+    steps:
+      - name: 取出源码
+        uses: actions/checkout@v4
+
+      - name: 准备 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 执行命令
+        id: run
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          set -uo pipefail
+          # 只取评论第一行，然后交给 bash 自己分词。
+          # ⚠️ 别改回 `cut -d' ' -f2` —— 实测（Git Bash 的 cut）在分隔符不存在时会把**整行**当作
+          #    第 2 个字段返回，于是 `/ignore`（没写 id）会被解析成 ID=/ignore，把命令本身当成软件 id。
+          #    bash 内建分词没有这个坑：字段不存在就是空，且天然忽略多余空格。
+          # set -f 是为了让评论里的 * ? 不被当成通配符展开。
+          LINE="${COMMENT_BODY%%$'\n'*}"
+          LINE="${LINE%$'\r'}"
+          set -f
+          set -- $LINE
+          set +f
+          CMD="${1:-}"
+          ID="${2:-}"
+          ARG2="${3:-}"
+
+          if [ -z "$ID" ]; then
+            echo "handled=false" >> "$GITHUB_OUTPUT"
+            echo "summary=命令里没有软件 id。用法：\`/ignore <软件id> [updates|all] [理由]\` 或 \`/unignore <软件id>\`。" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          SKIP="updates"
+          REASON=""
+          if [ "$CMD" = "/ignore" ]; then
+            # 第 3 个词恰好是 updates / all 时把它当「范围」，否则整段都算理由
+            if [ "$ARG2" = "updates" ] || [ "$ARG2" = "all" ]; then
+              SKIP="$ARG2"
+              if [ $# -ge 3 ]; then shift 3; else set --; fi
+            else
+              if [ $# -ge 2 ]; then shift 2; else set --; fi
+            fi
+            REASON="$*"
+            ACTION="加入忽略清单"
+            if ! node scripts/update-ignore.mjs --add="$ID" --skip="$SKIP" --reason="$REASON"; then
+              echo "handled=false" >> "$GITHUB_OUTPUT"
+              echo "summary=命令没执行成功：软件 id \`$ID\` 不合法（只允许小写字母、数字和短横线）。" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          else
+            ACTION="取消忽略"
+            node scripts/update-ignore.mjs --remove="$ID"
+          fi
+
+          if git diff --quiet -- 软件数据/update-ignore.json; then
+            echo "handled=false" >> "$GITHUB_OUTPUT"
+            echo "summary=\`$ID\` 的忽略状态没有变化（本来就是这样）。" >> "$GITHUB_OUTPUT"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 软件数据/update-ignore.json
+          git commit -m "chore(data): ${ACTION} ${ID}
+
+          由体检 Issue 里的 ${CMD} 命令触发（.github/workflows/update-ignore-command.yml）。"
+
+          ok=""
+          for i in 1 2 3 4 5 6; do
+            if git push origin HEAD:main; then ok=1; break; fi
+            git pull --rebase origin main || true
+            sleep $((RANDOM % 3 + 1))
+          done
+          if [ "$ok" != "1" ]; then
+            echo "handled=false" >> "$GITHUB_OUTPUT"
+            echo "summary=改动已生成但推送失败（多次重试仍冲突），请重新发一次命令。" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "handled=true" >> "$GITHUB_OUTPUT"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "summary=已${ACTION}：\`$ID\`（范围：$SKIP）。" >> "$GITHUB_OUTPUT"
+
+      - name: 重新体检以刷新清单
+        # 忽略状态变了，让 Issue 清单立刻反映出来（该条会从待审列表消失）
+        if: steps.run.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run check-updates.yml --ref main
+
+      - name: 回复评论
+        if: always() && steps.run.outputs.summary != ''
+        uses: actions/github-script@v7
+        env:
+          HANDLED: ${{ steps.run.outputs.handled }}
+          SUMMARY: ${{ steps.run.outputs.summary }}
+        with:
+          script: |
+            const handled = process.env.HANDLED === 'true'
+            const summary = process.env.SUMMARY || '（没有说明）'
+            const tail = handled
+              ? '\n\n> 已重新触发一次体检，本清单稍后会自动刷新；`软件数据/update-ignore.json` 里能看到这条记录。'
+              : '\n\n> 用法：`/ignore <软件id> [updates|all] [理由]`、`/unignore <软件id>`。'
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: (handled ? '✅ ' : 'ℹ️ ') + summary + tail,
+            })
+
+  # ★ 复选框路径（2026-09-16 新增）：花一次点击，省掉记命令、复制 id。
+  #   点勾 ＝ GitHub 编辑 Issue 正文 → 触发 issues.edited；我们比对「哪一行从 [ ] 变成 [x]」定位动作。
+  #   三种框：recheck（已改好，重跑体检）/ ignore（永久忽略）/ unignore（恢复提醒）。
+  #   两条防呆：
+  #     1. 排除机器人自己（清单整体重写同样是 edited 事件，sender 是 github-actions[bot]）；
+  #     2. 只认「新勾上」的 —— 所以重复触发天然幂等，不需要额外去重。
+  tick:
+    if: |
+      github.event_name == 'issues'
+      && !github.event.issue.pull_request
+      && startsWith(github.event.issue.title, '📦 软件信息体检')
+      && github.event.sender.login != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: update-ignore
+      queue: max
+    permissions:
+      contents: write
+      issues: write
+      actions: write
+    steps:
+      # 这一步不碰仓库文件，所以放在最前面：点「重新检测」时不需要 checkout / Node，
+      # 后面的写入步骤在自己的 if 里把关，省掉两个步骤的等待。
+      - name: 看哪几条被勾中了
+        id: pick
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // 正文里的 `<!-- ignore:id=xx -->` / `<!-- unignore:id=xx -->` / `<!-- recheck:id=xx -->`
+            // 是清单渲染时埋的隐藏标记，与 scripts/check-updates.mjs 的 tick() 一一对应 —— 改一边必须同步改另一边。
+            const TAG = /<!--\s*(ignore|unignore|recheck):id=([a-z0-9][a-z0-9-]*)\s*-->/
+            const read = (body) => {
+              const m = new Map()
+              for (const line of String(body || '').split('\n')) {
+                const hit = line.match(TAG)
+                if (!hit) continue
+                m.set(`${hit[1]}:${hit[2]}`, /^-\s*\[[xX]\]/.test(line.trim()))
+              }
+              return m
+            }
+            // 正文过长时 GitHub 可能不给 changes.body；拿不到旧正文就当「全是新勾的」，
+            // 代价只是可能把同一条命令再执行一遍，而写入是幂等的。
+            const before = read(context.payload.changes?.body?.from || '')
+            const after = read(context.payload.issue?.body || '')
+            const picked = { ignore: [], unignore: [], recheck: [] }
+            for (const [key, checked] of after) {
+              if (!checked || before.get(key)) continue
+              const [kind, id] = key.split(':')
+              picked[kind].push(id)
+            }
+            core.info(`新勾选：忽略 ${picked.ignore.length} 条、恢复提醒 ${picked.unignore.length} 条、重新检测 ${picked.recheck.length} 条`)
+            for (const kind of ['ignore', 'unignore', 'recheck']) core.setOutput(kind, picked[kind].join(' '))
+
+      - name: 取出源码
+        if: steps.pick.outputs.ignore != '' || steps.pick.outputs.unignore != ''
+        uses: actions/checkout@v4
+
+      - name: 准备 Node
+        if: steps.pick.outputs.ignore != '' || steps.pick.outputs.unignore != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 写入忽略清单并提交
+        id: write
+        if: steps.pick.outputs.ignore != '' || steps.pick.outputs.unignore != ''
+        env:
+          IGNORE_IDS: ${{ steps.pick.outputs.ignore }}
+          UNIGNORE_IDS: ${{ steps.pick.outputs.unignore }}
+        run: |
+          set -uo pipefail
+          # id 只可能是小写字母 / 数字 / 短横线（上一步的正则已卡住），所以直接按空格分词即可
+          for id in $IGNORE_IDS; do
+            echo "· 忽略 $id"
+            node scripts/update-ignore.mjs --add="$id" --skip=updates --reason="体检 Issue 里勾选" || exit 1
+          done
+          for id in $UNIGNORE_IDS; do
+            echo "· 恢复提醒 $id"
+            node scripts/update-ignore.mjs --remove="$id" || exit 1
+          done
+
+          if git diff --quiet -- 软件数据/update-ignore.json; then
+            echo "清单没有实际变化（本来就是这些状态），跳过提交"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 软件数据/update-ignore.json
+          git commit -m "chore(data): 按体检 Issue 的勾选更新忽略清单
+
+          由体检 Issue 正文里的复选框触发（.github/workflows/update-ignore-command.yml 的 tick job）。"
+
+          ok=""
+          for i in 1 2 3 4 5 6; do
+            if git push origin HEAD:main; then ok=1; break; fi
+            git pull --rebase origin main || true
+            sleep $((RANDOM % 3 + 1))
+          done
+          if [ "$ok" != "1" ]; then
+            echo "::error::改动已生成但推送失败（多次重试仍冲突），请再点一次方框。"
+            exit 1
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: 重新体检以刷新清单
+        # 两种情况都要重跑：① 忽略状态变了，那条该从清单里消失；
+        #                    ② 点了「已改好 → 重新检测」—— 机器得亲自看一眼人改的到底对不对。
+        # 派发的是**全量**体检（不带 --only）：局部结果不能代表全局，会误关 Issue。
+        if: steps.pick.outputs.recheck != '' || steps.write.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run check-updates.yml --ref main
+
+      - name: 回一句说明
+        # 只在真的做了事才回复；写入失败时不说话，免得谎报「已忽略」
+        if: always() && (steps.write.outputs.changed == 'true' || steps.pick.outputs.recheck != '')
+        uses: actions/github-script@v7
+        env:
+          IGNORE_IDS: ${{ steps.pick.outputs.ignore }}
+          UNIGNORE_IDS: ${{ steps.pick.outputs.unignore }}
+          RECHECK_IDS: ${{ steps.pick.outputs.recheck }}
+        with:
+          script: |
+            const q = (ids) => ids.map((x) => '`' + x + '`').join('、')
+            const split = (s) => String(s || '').split(' ').filter(Boolean)
+            const lines = []
+            const ig = split(process.env.IGNORE_IDS)
+            const un = split(process.env.UNIGNORE_IDS)
+            const rc = split(process.env.RECHECK_IDS)
+            if (ig.length) lines.push(`🙈 已永久忽略：${q(ig)}`)
+            if (un.length) lines.push(`🔔 已恢复提醒：${q(un)}`)
+            if (rc.length) lines.push(`🔄 已重新体检：${q(rc)}`)
+            lines.push('')
+            if (rc.length) {
+              lines.push('> 几分钟后本清单会自动刷新：改对了的条目会从清单里消失；如果还在，点开它的折叠区能看到新的「没自动改」原因（也可能只是上游又发新版了）。')
+            }
+            if (ig.length || un.length) {
+              lines.push('> 来自本 Issue 正文里的勾选（等价于 `/ignore` / `/unignore`）。点错了回 `/unignore <软件id>` 就能撤销；`软件数据/update-ignore.json` 里能看到这条记录。')
+            }
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: lines.join('\n'),
+            })
