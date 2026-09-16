@@ -18,7 +18,7 @@
 | Stack | Vue 3.5 + Vue Router 4 (**hash routing**) + Vite 8 + TypeScript. Pure static front end, no backend |
 | Boot path | `index.html` → `src/main.ts` → `src/gallery/App.vue` (shell) → `src/gallery/router.ts` (7 routes: home / detail / settings / submit / tools / single tool / AI nav) |
 | App code | Everything lives in `src/gallery/` — **the only place you should change code** |
-| Data | `软件数据/apps/*.json` (one file per app, 57 today) + `软件数据/categories.json` (4 categories) |
+| Data | `软件数据/apps/*.json` (one file per app, 60 today) + `软件数据/categories.json` (4 categories) |
 | Strings | Chinese = `文字设置.ts` at repo root; English = `src/gallery/Strings/en-US/Resources.ts` |
 | Live site | https://classsoftwarehub.132614.xyz (see `CNAME`) / mirror: classsoftwarehub.xfane.com |
 | Output | `npm run build` → `dist/` (multi-file); `SINGLEFILE=1` → one HTML file (what CI ships) |
@@ -44,6 +44,7 @@ npm run check         # type-check + build
 AI导航文本.ts                    Site list + copy for the AI-nav page (independent of 文字设置.ts)
 软件数据/
   ├─ categories.json             The 4 categories: system / schedule / teaching / other
+  ├─ update-ignore.json          Apps the update checker should stop nagging about (see "CI Notes")
   ├─ README-维护手册.md          ★ Read this before editing data
   └─ apps/<id>.json              One file per app; files starting with `_` are not loaded
 src/
@@ -69,7 +70,9 @@ stats-worker/
   ├─ worker.js                   Cloudflare Worker: visit stats + GitHub API proxy (600+ lines)
   └─ wrangler.toml               Deploy config (KV binding: STATS)
 submissions/                     Visitor-submitted app drafts (submission-flow entry; don't hand-edit)
-.github/workflows/               The 3 workflows (see "CI Notes")
+scripts/                         Maintenance scripts — `check-updates.mjs` (upstream version checker) and
+                                 `update-ignore.mjs` (edits the ignore list); see "CI Notes"
+.github/workflows/               The 5 workflows (see "CI Notes")
 ```
 
 Routes (hash-based):
@@ -232,8 +235,54 @@ changes are replayed by `visitor.ts`.
 - `deploy.yml` builds **once** in the `build` job and passes the artifact to the three upload jobs
   (previously each uploaded job rebuilt, burning runner minutes). The single-file output is just
   `dist/index.html`.
-- All three workflows carry Chinese comments explaining *why* they are written this way —
+- All five workflows carry Chinese comments explaining *why* they are written this way —
   **read those comments before changing anything.**
+- `check-updates.yml` runs `scripts/check-updates.mjs` **every Friday** (and on demand), comparing
+  `软件数据/apps/*.json` against upstream GitHub releases, and **splits the outcome in two**:
+  - what the script can prove → written back, committed and deployed **automatically** (the scheduled
+    run applies by default; `workflow_dispatch` also defaults `apply=true`);
+  - what it cannot prove → one rolling issue, `📦 软件信息体检 · 待人工确认`, listing each case with a
+    title, one line of "why the script stayed put", and **two checkboxes**:
+    - **"已改好 → 重新检测"** — the maintainer fixes the JSON *elsewhere* (web edit, or locally then
+      push), commits, then ticks this; the workflow just re-runs the whole check to verify. This path
+      reads and writes nothing in the repo. The re-run is queued, not instant — the answer arrives a
+      couple of minutes later, and a correct fix makes the entry disappear.
+    - **"不用跟进"** — ticking it once mutes that entry forever (`/ignore <id>` in a comment does the
+      same).
+    Detailed "how to fix it by hand" steps sit in a collapsed `<details>` block. When nothing is pending
+    the issue **closes itself**. The full report always goes to the Job Summary.
+  The safety rule is **all-or-nothing**: an app's `version` and its download links are one unit, so a
+  single unsolvable point blocks the whole entry (otherwise you get "version 26.03, link still on the
+  26.02 file"). Blockers: cross-major bumps, download items whose `note` carries a SHA512/256 checksum
+  (swapping the file invalidates it), asset filenames that changed upstream, unresolvable `github`
+  slugs, dead links, and versions that are not comparable strings (e.g. `上次更新日期 2026/8/18`).
+  Non-GitHub links (vendor sites, mirrors) are **never** touched — only reported. That report is its
+  **own** pending kind (`stale`), deliberately *not* attached to a bump: while it hung off the bump
+  entry, the notice disappeared the moment the script finished the upgrade by itself, so the vendor
+  link stayed stale with nobody the wiser (7-Zip lost its two `7-zip.org` links exactly that way).
+  After writing anything back it must dispatch `deploy.yml` explicitly (same `GITHUB_TOKEN`
+  suppression rule as above). The script rewrites each JSON file individually to **preserve its
+  original line endings** — see Hard Rule 8.
+- `update-ignore-command.yml` is what makes review actions work. It has **two entry points**:
+  - `tick` job — the checkboxes. Ticking one edits the issue body → `issues.edited`; the job diffs
+    `changes.body.from` against the new body and acts on rows that went `[ ]` → `[x]` only, so it is
+    idempotent and cannot re-fire on its own rewrite (also filtered by `sender != github-actions[bot]`).
+    `ignore` / `unignore` ticks go through `scripts/update-ignore.mjs` into
+    `软件数据/update-ignore.json`; a `recheck` tick skips checkout and Node entirely and just dispatches
+    `check-updates.yml`. ⚠️ That dispatch must always be a **full** run — never pass `--only` from
+    there, because `update-pending.md` is a global snapshot and a partial one would be written over the
+    issue body, wiping every other entry. (The issue step now refuses to touch the issue at all once
+    `inputs.only` is set; before, it only guarded the "0 pending" case.)
+    The app id travels in a hidden `<!-- ignore:id=xx -->` / `<!-- unignore:id=xx -->` /
+    `<!-- recheck:id=xx -->` HTML comment emitted by `tick()` in `scripts/check-updates.mjs` —
+    **change one side and you must change the other**. Not needing an extra auth gate is deliberate:
+    the issue is bot-authored, so only users with write access can edit its body at all.
+  - `ignore` job — the fallback `/ignore` / `/unignore` comments. ⚠️ The repo is public, so **anyone**
+    can comment — the job is gated on three conditions (it must be *that* issue / the commenter must
+    have write access / the body must start with `/ignore` or `/unignore`). Do not relax them. The
+    comment body arrives via an env var and is parsed by bash's own word splitting — **do not switch
+    back to `cut -d' ' -f2`**: when the delimiter is absent it returns the whole line, which would
+    record `/ignore` itself as an app id.
 
 ---
 
@@ -266,6 +315,24 @@ changes are replayed by `visitor.ts`.
 3. Run `npm run dev` to check the home and detail pages, then `npm run type-check`.
 4. For paid or licence-restricted software, spell out the restriction in `notice` or `description`
    (e.g. Bulk Rename Utility: free for personal use, paid for commercial).
+
+**Updating an existing app's version / links**: run
+`node scripts/check-updates.mjs --report=out.md --pending=pending.md` (add `--only=id1,id2` to narrow
+it, `--no-link` to skip the download-link liveness check). Add `--apply` to write back what the script
+can prove; anything it cannot prove lands in `pending.md` instead. Export `GITHUB_TOKEN` first or you
+hit the 60-requests/hour anonymous limit. This is exactly what the weekly
+`.github/workflows/check-updates.yml` run does — see "CI Notes".
+
+**After fixing an entry by hand**: you do not edit anything from the issue — fix
+`软件数据/apps/<id>.json` wherever you like, **commit**, then tick "已改好 → 重新检测" under that entry.
+That dispatches a full check, and the entry disappears if the fix holds. Nothing else to remember.
+
+**Muting an update nag forever**: tick "不用跟进" under that entry in the health-check issue (one
+click, nothing to type) — or reply `/ignore <id> [updates|all] [reason]`, or run
+`node scripts/update-ignore.mjs --add=<id> --skip=updates --reason="..."` locally
+(`--list` and `--remove=<id>` also work). Untick-by-hand is offered as a "restore" checkbox in the
+issue's collapsed *ignored* section. Records live in `软件数据/update-ignore.json`: `updates`
+stops reporting version/repo problems but still reports dead links; `all` reports nothing at all.
 
 **Changing site copy**: only `文字设置.ts` (plus the English file) — never touch the keys.
 

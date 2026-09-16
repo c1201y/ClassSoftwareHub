@@ -1,0 +1,29 @@
+{
+  "_说明": [
+    "「软件信息体检」的忽略清单：写在这里的软件不会再出现在待人工确认的 Issue 里，也不会被自动改。",
+    "用法：在体检 Issue 里**点一下那条下面的方框**就会自动加到这里（也可以回复 `/ignore <软件id> [updates|all] [理由]`，或直接手工加）。",
+    "字段：",
+    "  skip   = updates | all",
+    "           updates（默认）＝ 不再提醒「版本更新 / 仓库信息」这类事；下载直链失效仍会提醒",
+    "           all           ＝ 什么提醒都不要（软件已下架、不再维护时用）",
+    "  reason = 为什么忽略。会写进体检报告，方便以后回顾，建议写。",
+    "  at     = 加进来的日期（YYYY-MM-DD），由体检 Issue 里的勾选 / 命令自动填写。",
+    "本文件里 _ 开头的键（如本段 _说明）一律不是忽略条目，只是注释。",
+    "要取消忽略：在体检 Issue 文末「已忽略」区点一下那条的「恢复提醒」，或回复 `/unignore <软件id>`，也可以把对应那行删掉。"
+  ],
+  "classisland-17": {
+    "skip": "updates",
+    "reason": "有意收录 ClassIsland 1.7 老版本，供老系统使用，不跟随上游",
+    "at": "2026-09-16"
+  },
+  "everything": {
+    "skip": "updates",
+    "reason": "Everything 上游没有 GitHub 仓库（github 字段指向的 voidtools/Everything 是 404），无法体检",
+    "at": "2026-09-16"
+  },
+  "geek-uninstaller": {
+    "skip": "updates",
+    "reason": "Geek Uninstaller 上游没有 GitHub 仓库（github 字段误填了 bilibili 视频链接），无法体检",
+    "at": "2026-09-16"
+  }
+}
