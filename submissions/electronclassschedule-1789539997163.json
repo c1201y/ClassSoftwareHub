@@ -1,0 +1,30 @@
+{
+  "_提交时间": "2026-09-16T06:26:37.163Z",
+  "_原始ID冲突": false,
+  "id": "electronclassschedule",
+  "name": "ElectronClassSchedule",
+  "icon": "https://avatars.githubusercontent.com/u/152008081?v=4",
+  "category": "teaching",
+  "tagline": "电子桌面课程表",
+  "description": "电子桌面课程表，可用于学校电子白板，交流QQ二群：914887202。交流TG群：https://t.me/ECSchedule",
+  "version": "latest",
+  "size": "",
+  "system": "Windows",
+  "website": "https://t.me/ECSchedule",
+  "github": "https://github.com/EnderWolf006/ElectronClassSchedule",
+  "downloads": [
+    {
+      "platform": "其他 压缩包",
+      "note": "Win10_Win11_ElectronClassSchedule.zip",
+      "size": "120 MB",
+      "url": "https://github.com/EnderWolf006/ElectronClassSchedule/releases/download/latest/Win10_Win11_ElectronClassSchedule.zip"
+    },
+    {
+      "platform": "其他 压缩包",
+      "note": "Win7_Win8_ElectronClassSchedule.zip",
+      "size": "110 MB",
+      "url": "https://github.com/EnderWolf006/ElectronClassSchedule/releases/download/latest/Win7_Win8_ElectronClassSchedule.zip"
+    }
+  ],
+  "sort": 99
+}
