@@ -1,0 +1,24 @@
+{
+  "_提交时间": "2026-09-16T06:25:48.913Z",
+  "_原始ID冲突": false,
+  "id": "countboard",
+  "name": "CountBoard",
+  "icon": "https://avatars.githubusercontent.com/u/35163802?v=4",
+  "category": "teaching",
+  "tagline": "CountBoard 是一个基于Tkinter简单的,开源的桌面日程倒计时应用。",
+  "description": "CountBoard 是一个基于Tkinter简单的,开源的桌面日程倒计时应用。",
+  "version": "V1.3.0.2",
+  "size": "",
+  "system": "Windows",
+  "website": "",
+  "github": "https://github.com/Gaoyongxian666/CountBoard",
+  "downloads": [
+    {
+      "platform": "Windows 安装版",
+      "note": "CountBoard_1.3.0.2.exe",
+      "size": "17.7 MB",
+      "url": "https://github.com/Gaoyongxian666/CountBoard/releases/download/V1.3.0.2/CountBoard_1.3.0.2.exe"
+    }
+  ],
+  "sort": 99
+}
