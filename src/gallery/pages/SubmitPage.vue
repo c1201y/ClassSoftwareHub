@@ -153,6 +153,14 @@
               v-model:Text="form.description">
               <template #header>{{ t('submit.description') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
             </WinTextBox>
+            <!-- 联系方式：只进审核工单，不随软件数据发布（见 buildPayload 里的 _联系方式） -->
+            <WinTextBox
+              :Header="t('submit.contact')"
+              :PlaceholderText="t('submit.contact-placeholder')"
+              :Description="t('submit.contact-desc')"
+              v-model:Text="form.contact">
+              <template #header>{{ t('submit.contact') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
+            </WinTextBox>
             </div>
           </section>
 
@@ -364,6 +372,8 @@ const form = reactive({
   category: '',
   tagline: '',
   description: '',
+  /** 提交者联系方式：必填，只写进草稿 JSON（`_联系方式`）供审核时联系，不发布到站点 */
+  contact: '',
   version: '',
   size: '',
   system: '',
@@ -634,13 +644,19 @@ function buildPayload(): Record<string, unknown> | null {
         note: item.note.trim(),
         size: item.size.trim(),
         url: item.url.trim()
-      }))
+      })),
+    /**
+     * 联系方式：下划线开头的字段是「审核用元数据」，不写进站点的软件数据 ——
+     * review-submission.yml 合并时会把所有 `_` 开头的键剥掉，只在审核 Issue 里显示。
+     * 所以这里顺手带上 `_`，既能让管理员看到，又不会污染 软件数据/apps/<id>.json。
+     */
+    _联系方式: form.contact.trim()
   };
 
   // 必填校验（原来靠原生 required，但提交按钮不是原生 submit 按钮，校验根本不会触发）
   const missing =
     !payload.id || !payload.name || !payload.category ||
-    !payload.tagline || !payload.description ||
+    !payload.tagline || !payload.description || !payload._联系方式 ||
     (payload.downloads as unknown[]).length === 0;
   if (missing) return null;
 
@@ -803,6 +819,7 @@ function applyPayload(data: Record<string, unknown>) {
   form.icon = text('icon');
   form.tagline = text('tagline');
   form.description = text('description');
+  form.contact = text('_联系方式');
   form.version = text('version');
   form.size = text('size');
   form.system = text('system');

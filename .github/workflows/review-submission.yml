@@ -71,9 +71,14 @@ jobs:
                 })
                 return
               }
+              // 合并前剥掉所有「审核用元数据」字段：一律以 `_` 开头
+              // （`_提交时间` / `_原始ID冲突` / `_联系方式`……），它们只服务于审核环节，
+              // 不属于站点数据契约（字段表见 软件数据/README-维护手册.md）。
+              // 按前缀过滤而不是逐个列举，是为了以后加字段不用再回来改这里。
               const clean = { ...data }
-              delete clean['_提交时间']
-              delete clean['_原始ID冲突']
+              for (const key of Object.keys(clean)) {
+                if (key.startsWith('_')) delete clean[key]
+              }
               fs.writeFileSync(appsPath, JSON.stringify(clean, null, 2))
               fs.unlinkSync(submissionPath)
 
