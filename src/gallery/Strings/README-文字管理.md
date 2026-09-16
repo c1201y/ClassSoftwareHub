@@ -16,7 +16,7 @@
 
 | 想改哪句 | 找哪个 key（前缀） |
 |---|---|
-| 站名 / 副标题 / ⬇下载HTML按钮 | `app.title` `home.title` `home.subtitle` `home.download-html*` |
+| 站名 / 副标题 | `app.title` `home.title` `home.subtitle` |
 | 首页筛选条"全部" | `filter.all` |
 | 左侧导航"首页 / 设置" | `nav.home` `text.settings` |
 | 分类名（系统工具等） | ⚠️ 不在这里！在根目录 `软件数据/categories.json` |

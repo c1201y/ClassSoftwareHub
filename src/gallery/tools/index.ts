@@ -102,6 +102,14 @@ export const TOOLS: ToolDef[] = [
     icon: '\uE823',
     group: '实用工具',
     load: () => import('./TimestampTool.vue')
+  },
+  {
+    id: 'mirror-download',
+    name: '系统镜像下载',
+    desc: 'Windows 等系统镜像的官方 / 可信第三方下载入口，点一行直接跳转。本站不存储镜像，只做跳转。',
+    icon: '\uE896',
+    group: '实用工具',
+    load: () => import('./MirrorDownloadTool.vue')
   }
 ];
 

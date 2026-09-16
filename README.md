@@ -103,12 +103,10 @@ node scripts/update-ignore.mjs --list                                    # 看�
 
 ## 备注
 
-- 页面右上角“⬇ 下载HTML”按钮：在**单文件打包产物**上点击可把整站另存为一份离线 HTML；
-  开发模式下请勿用它（存下来的是开发页），发布请走 `npm run build:single`。
 - **版本号规则**（2026-09-15 起）：对外版本号用 `X.Y.Z` —— X 大版本（底层架构 / UI 大改动）、
   Y 功能更新、Z 小修小补；**代号后缀保留**（如 `- Autumn`）。同一版本另有内部版本号 `AAAABBCCPRDD`
   （AAAA 年 / BB 月 / CC 日期 / DD 文件版次），例 `20260915PR01`。
-  对外版本号与内部版本号都写在 `文字设置.ts` 的 `app.version`（当前 `v2.3.0 - September 18 Incident (20260916PR03)`），
+  对外版本号与内部版本号都写在 `文字设置.ts` 的 `app.version`（当前 `v2.3.1 - September 18 Incident (20260916PR05)`），
   英文站同步改 `src/gallery/Strings/en-US/Resources.ts` 的 `app.version`（设置页「关于」展示的就是它）。
 - 设置页“关于”里的“投喂作者/回声洞/作者首页/QQ 群”链接来自 `文字设置.ts` 的 `about.*-url` 键，改文字区即可换链接。
 - 设置页已移除“页面过渡”选项，切换动画固定为默认效果（用户不可调）。

@@ -5,22 +5,38 @@
     <div class="tool-grid-2">
       <div class="tool-panel">
         <span class="tool-section-title">输入</span>
-        <textarea v-model="input" class="tool-textarea" spellcheck="false" placeholder="在这里输入文字（支持中文）"></textarea>
+        <WinTextBox
+          class="enc-box"
+          v-model:Text="input"
+          :AcceptsReturn="true"
+          TextWrapping="Wrap"
+          :IsSpellCheckEnabled="false"
+          PlaceholderText="在这里输入文字（支持中文）"
+          FontFamily="Consolas, 'Courier New', monospace"
+          :FontSize="13" />
 
         <div class="tool-row enc-actions">
-          <button class="tool-btn small" @click="b64enc">Base64 编码</button>
-          <button class="tool-btn small" @click="b64dec">Base64 解码</button>
-          <button class="tool-btn small" @click="urlenc">URL 编码</button>
-          <button class="tool-btn small" @click="urldec">URL 解码</button>
+          <WinButton FontSize="13" Padding="10,0,10,0" Content="Base64 编码" @Click="b64enc" />
+          <WinButton FontSize="13" Padding="10,0,10,0" Content="Base64 解码" @Click="b64dec" />
+          <WinButton FontSize="13" Padding="10,0,10,0" Content="URL 编码" @Click="urlenc" />
+          <WinButton FontSize="13" Padding="10,0,10,0" Content="URL 解码" @Click="urldec" />
         </div>
       </div>
 
       <div class="tool-panel">
         <span class="tool-section-title">输出</span>
-        <textarea v-model="output" class="tool-textarea" spellcheck="false" placeholder="转换结果"></textarea>
+        <WinTextBox
+          class="enc-box"
+          v-model:Text="output"
+          :AcceptsReturn="true"
+          TextWrapping="Wrap"
+          :IsSpellCheckEnabled="false"
+          PlaceholderText="转换结果"
+          FontFamily="Consolas, 'Courier New', monospace"
+          :FontSize="13" />
         <div class="tool-row enc-actions">
-          <button class="tool-btn small" :disabled="!output" @click="copy(output, '结果')">复制结果</button>
-          <button class="tool-btn small" :disabled="!output" @click="useOutputAsInput">用结果替换输入</button>
+          <WinButton FontSize="13" Padding="10,0,10,0" Content="复制结果" :IsEnabled="!!output" @Click="copy(output, '结果')" />
+          <WinButton FontSize="13" Padding="10,0,10,0" Content="用结果替换输入" :IsEnabled="!!output" @Click="useOutputAsInput" />
         </div>
       </div>
     </div>
@@ -30,7 +46,7 @@
       <div v-for="row in hashes" :key="row.name" class="enc-hash-row">
         <div class="enc-hash-head">
           <span class="enc-hash-name">{{ row.name }}</span>
-          <button class="tool-btn small" :disabled="!row.value" @click="copy(row.value, row.name)">复制</button>
+          <WinButton FontSize="13" Padding="10,0,10,0" Content="复制" :IsEnabled="!!row.value" @Click="copy(row.value, row.name)" />
         </div>
         <div class="enc-hash-value mono">{{ row.value || '—' }}</div>
       </div>
@@ -46,6 +62,8 @@ import { computed, onMounted, ref, watch } from 'vue';
 import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
 import { md5 } from './md5';
+import WinTextBox from '../../components/WinTextBox.vue';
+import WinButton from '../../components/WinButton.vue';
 
 const { toast, copy } = useCopy();
 
@@ -115,6 +133,10 @@ onMounted(() => { void computeHashes(''); });
 </script>
 
 <style scoped>
+.enc-box :deep(.win-textbox-textarea) {
+  min-height: 120px;
+}
+
 .enc-actions {
   margin-top: 12px;
 }
