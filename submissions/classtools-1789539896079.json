@@ -1,0 +1,42 @@
+{
+  "_提交时间": "2026-09-16T06:24:56.079Z",
+  "_原始ID冲突": false,
+  "id": "classtools",
+  "name": "ClassTools",
+  "icon": "https://avatars.githubusercontent.com/u/18461360?v=4",
+  "category": "teaching",
+  "tagline": "一个用在班级电脑上面的动态壁纸系统，显示高考倒计时、作业、课程表、值日生等",
+  "description": "一个用在班级电脑上面的动态壁纸系统，显示高考倒计时、作业、课程表、值日生等",
+  "version": "v3.1.0",
+  "size": "",
+  "system": "",
+  "website": "",
+  "github": "https://github.com/clansty/ClassTools",
+  "downloads": [
+    {
+      "platform": "其他 便携版",
+      "note": "ClassTools-3.1.0-portable-32.7z",
+      "size": "63.7 MB",
+      "url": "https://github.com/clansty/ClassTools/releases/download/v3.1.0/ClassTools-3.1.0-portable-32.7z"
+    },
+    {
+      "platform": "其他 便携版",
+      "note": "ClassTools-3.1.0-portable-64.7z",
+      "size": "66.9 MB",
+      "url": "https://github.com/clansty/ClassTools/releases/download/v3.1.0/ClassTools-3.1.0-portable-64.7z"
+    },
+    {
+      "platform": "其他 x64 APPX",
+      "note": "ClassTools_3.1.0.0_x64.Appx",
+      "size": "98.6 MB",
+      "url": "https://github.com/clansty/ClassTools/releases/download/v3.1.0/ClassTools_3.1.0.0_x64.Appx"
+    },
+    {
+      "platform": "其他 x86 APPX",
+      "note": "ClassTools_3.1.0.0_x86.Appx",
+      "size": "93.4 MB",
+      "url": "https://github.com/clansty/ClassTools/releases/download/v3.1.0/ClassTools_3.1.0.0_x86.Appx"
+    }
+  ],
+  "sort": 99
+}
