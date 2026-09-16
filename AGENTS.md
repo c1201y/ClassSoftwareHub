@@ -41,6 +41,7 @@ npm run check         # type-check + build
 ```
 文字设置.ts                    ★ All Chinese UI strings (the only file to touch for copy)
 鸣谢文本.ts                       Credits list on the Settings page (independent of 文字设置.ts)
+AI导航文本.ts                    Site list + copy for the AI-nav page (independent of 文字设置.ts)
 软件数据/
   ├─ categories.json             The 4 categories: system / schedule / teaching / other
   ├─ README-维护手册.md          ★ Read this before editing data
@@ -106,6 +107,15 @@ Routes (hash-based):
    no push, no tags.
 7. Commit messages are short Chinese phrases; follow the existing history:
    `chore(version): ...`, `review: approved #12`, `fix: ...`.
+8. **Mind the line endings.** There is **no `.gitattributes`** in this repo, so line endings are a
+   mix: `src/gallery/pages/SubmitPage.vue` is **CRLF**, while most `.ts` / `.md` / `.json` files are
+   **LF**. **Never assume "the whole repo is LF"** — read the file's actual bytes and keep them
+   unchanged, or a small edit shows up as a whole-file diff (this really happened: a 19-line change
+   was reported as `+1148/-1131` and needed a follow-up commit just to restore the line endings).
+9. **Keep internal housekeeping out of this repo.** It is public: no "known issues / TODO"
+   sections, no notes about past misconfiguration, no sandbox or tooling workarounds, no paths to
+   scratch files. Those belong in the maintainer's local notes — everything committed here is
+   read by strangers.
 
 ---
 
@@ -192,6 +202,10 @@ changes are replayed by `visitor.ts`.
    strips every such key (`review-submission.yml` filters by prefix, not by name), so a new
    submission-only field can never leak into the published app data — it only shows up in the
    review issue (`create-review-issue.yml` prints `联系方式` explicitly).
+   Required before submission: `id`, `name`, `category`, `tagline`, `description`, a contact
+   (`_联系方式`) and **at least one direct download link**. All of it is validated in
+   `SubmitPage.vue` → `buildPayload()` — the submit button is not a native submit control, so the
+   HTML `required` attribute never fires and validation has to stay in JS.
 2. That push triggers `.github/workflows/create-review-issue.yml`, which opens one
    `[待审核] <name> (<id>)` issue per **newly added** draft (label `待审核`; duplicate titles are skipped
    idempotently).
@@ -233,7 +247,12 @@ changes are replayed by `visitor.ts`.
   - `src/gallery/Strings/en-US/Resources.ts` → `app.version`
   - `package.json` → `version` (bare `2.3.0`, no codename / internal number); also bump the two `"version"` fields
   at the top of `package-lock.json` (npm normally syncs these)
-- Release tags keep the old habit: `v2.3.0-September18Incident` (history: `v2.1.0-Autumn`, `v2.2.0-Autumn`).
+- The codename is part of the public version string and **may be an English phrase**
+  (`- Autumn`, `- September 18 Incident`) — the suffix stays in user-facing copy.
+- Release tags keep the old habit: `v2.3.0-September18Incident` (history: `v2.1.0-Autumn`,
+  `v2.2.0-Autumn`). A tag points at the **last commit of that version's cycle**, not at the commit
+  that bumped the version — `v2.2.0-Autumn` is the AGENTS.md commit, `v2.1.0-Autumn` is the
+  `docs: 添加 v2.1.0 更新日志` commit.
 - `CHANGELOG.md` is maintained by hand; **whether it ships with a commit is the maintainer's call**
   (there is precedent for keeping it local-only).
 
