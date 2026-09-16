@@ -61,6 +61,9 @@ jobs:
   upload-to-openlist:
     needs: build
     runs-on: ubuntu-latest
+    # 网盘（OpenList WebDAV）偶发抖动会导致连接超时 —— 这一路失败只标黄警告，
+    # 不让整次部署变红（站点主入口同时走 GitHub Pages 与 FTP，不受影响）。
+    continue-on-error: true
     steps:
       - name: 取出构建产物
         uses: actions/download-artifact@v4
@@ -68,18 +71,38 @@ jobs:
           name: site-dist
           path: dist
 
-      - name: 只上传单文件 HTML 到 OpenList WebDAV
+      - name: 只上传单文件 HTML 到 OpenList WebDAV（失败自动重试 3 次）
         # 单文件打包产物 dist/ 下只有 index.html（CSS/JS/图片全部内联），
         # 所以这里只传这一个 HTML，不再打包也不再整目录上传。
-        # keep_structure 保持默认 false → 直接落到 /网站/index.html
-        uses: bxb100/action-upload-webdav@v1
-        with:
-          webdav_address: "https://pan.132614.xyz/dav/"
-          webdav_username: ${{ secrets.WEBDAV_USERNAME }}
-          webdav_password: ${{ secrets.WEBDAV_PASSWORD }}
-          webdav_upload_path: "/网站/"
-          files: ./dist/index.html
-          fail_on_unmatched_files: true
+        # 目标：https://pan.132614.xyz/dav/网站/index.html（%E7%BD%91%E7%AB%99 就是「网站」）。
+        # 这里不用现成 action 而是手写 curl：那个 action 没设连接超时，网络抖动时要白等 2 分多
+        # 才报 ETIMEDOUT；curl 30 秒即可判定失败，随后退避重试，整体更快也更稳。
+        env:
+          WEBDAV_USERNAME: ${{ secrets.WEBDAV_USERNAME }}
+          WEBDAV_PASSWORD: ${{ secrets.WEBDAV_PASSWORD }}
+        run: |
+          set -u
+          target='https://pan.132614.xyz/dav/%E7%BD%91%E7%AB%99/index.html'
+          for attempt in 1 2 3; do
+            echo "::group::第 ${attempt} 次上传"
+            if curl -fsS --connect-timeout 30 --max-time 180 \
+                 -T ./dist/index.html \
+                 --user "${WEBDAV_USERNAME}:${WEBDAV_PASSWORD}" \
+                 "$target"; then
+              echo "上传成功"
+              echo "::endgroup::"
+              exit 0
+            fi
+            echo "::endgroup::"
+            echo "::warning::第 ${attempt} 次上传失败"
+            if [ "$attempt" -lt 3 ]; then
+              delay=$((attempt * 20))
+              echo "等待 ${delay}s 后重试"
+              sleep "$delay"
+            fi
+          done
+          echo "::error::3 次上传均失败 —— 网盘这一路已跳过，站点主入口（Pages / FTP）不受影响"
+          exit 1
 
   upload-to-ftp:
     needs: build
