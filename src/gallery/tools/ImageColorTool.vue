@@ -78,8 +78,8 @@
       </div>
 
       <div class="color-actions">
-        <button class="tool-btn" @click="pickFile">换一张</button>
-        <button class="tool-btn" @click="reset">清空</button>
+        <WinButton Content="换一张" @Click="pickFile" />
+        <WinButton Content="清空" @Click="reset" />
       </div>
     </template>
 
@@ -93,6 +93,7 @@ import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
 import { extractPalette } from '../imageColors';
 import type { Hsl, PaletteResult } from '../imageColors';
+import WinButton from '../../components/WinButton.vue';
 
 /** 缩放到的最长边（像素）：太大没必要，还会拖慢取色 */
 const MAX_SIDE = 120;

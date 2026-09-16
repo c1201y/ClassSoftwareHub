@@ -254,6 +254,13 @@
   flex-wrap: wrap;
   gap: 8px 12px;
 }
+/* 「加入 QQ 群」：和模板按钮同一行，靠本行右端（margin-left:auto 把它顶到最右） */
+.home-qq-group-btn {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  text-decoration: none;
+}
 /* 筛选条那一块：筛选条居中，下面跟一行「已收录软件数量」小字 */
 .filter-row {
   display: flex;

@@ -7,24 +7,23 @@
       <div class="tool-panel">
         <span class="tool-section-title">抽号设置</span>
         <div class="pick-range">
-          <input v-model.number="from" class="tool-input" type="number" min="0" step="1" />
+          <WinNumberBox class="pick-numbox" :Minimum="0" :SmallChange="1" v-model:Value="from" />
           <span class="pick-tilde">~</span>
-          <input v-model.number="to" class="tool-input" type="number" min="0" step="1" />
+          <WinNumberBox class="pick-numbox" :Minimum="0" :SmallChange="1" v-model:Value="to" />
         </div>
         <div class="tool-row pick-opt">
-          <label class="pick-field">
-            <span class="tool-label">抽几个</span>
-            <input v-model.number="count" class="tool-input pick-count" type="number" min="1" step="1" />
-          </label>
-          <label class="pick-check">
-            <input v-model="noRepeat" type="checkbox" />
-            <span>不重复（抽过的不再出现）</span>
-          </label>
+          <WinNumberBox class="pick-count" Header="抽几个" :Minimum="1" :SmallChange="1" v-model:Value="count" />
+          <WinCheckBox Content="不重复（抽过的不再出现）" v-model:IsChecked="noRepeat" />
         </div>
 
-        <button class="tool-btn accent pick-start" :disabled="rolling" @click="start">
-          {{ rolling ? '抽号中…' : '开始抽号' }}
-        </button>
+        <div class="pick-start">
+          <WinButton
+            Style="AccentButtonStyle"
+            Width="100%"
+            :Content="rolling ? '抽号中…' : '开始抽号'"
+            :IsEnabled="!rolling"
+            @Click="start" />
+        </div>
 
         <!-- 当前设置的白话总结：防止范围填错自己不知道 -->
         <div class="tool-hint pick-summary">
@@ -49,13 +48,13 @@
         <div v-if="used.length" class="pick-used">
           <div class="pick-used-head">
             <span class="tool-hint">已抽 {{ used.length }} 个：{{ used.join('、') }}</span>
-            <button class="tool-btn small" @click="resetUsed">重置记录</button>
+            <WinButton Content="重置记录" @Click="resetUsed" />
           </div>
         </div>
 
         <!-- 公平性自检：当场抽 2 万次，看分布平不平（给"这抽号是不是有问题"一个答案） -->
         <div class="pick-checkbar">
-          <button class="tool-btn small" @click="runFairCheck">公平性自检</button>
+          <WinButton Content="公平性自检" @Click="runFairCheck" />
           <span class="tool-hint">在本机实抽 2 万次，看分布平不平</span>
         </div>
         <div v-if="fairCheck" class="pick-hist">
@@ -73,14 +72,18 @@
       <div class="tool-panel">
         <span class="tool-section-title">随机分组</span>
         <div class="tool-row">
-          <select v-model="groupMode" class="tool-select pick-gmode">
-            <option value="byGroups">按组数（分成 N 组）</option>
-            <option value="perGroup">按人数（每组 N 人）</option>
-          </select>
-          <input v-model.number="groupValue" class="tool-input pick-count" type="number" min="1" step="1" />
+          <WinComboBox
+            class="pick-gmode"
+            Width="100%"
+            :ItemsSource="GROUP_ITEMS"
+            DisplayMemberPath="label"
+            v-model:SelectedIndex="groupModeIndex" />
+          <WinNumberBox class="pick-count" :Minimum="1" :SmallChange="1" v-model:Value="groupValue" />
         </div>
         <div class="tool-hint pick-ghint">范围沿用上面的 {{ from }} ~ {{ to }}</div>
-        <button class="tool-btn pick-start" @click="doGroup">开始分组</button>
+        <div class="pick-start">
+          <WinButton Width="100%" Content="开始分组" @Click="doGroup" />
+        </div>
 
         <div v-if="groups.length" class="pick-groups">
           <div v-for="(g, i) in groups" :key="i" class="pick-group">
@@ -102,6 +105,10 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
+import WinButton from '../../components/WinButton.vue';
+import WinCheckBox from '../../components/WinCheckBox.vue';
+import WinComboBox from '../../components/WinComboBox.vue';
+import WinNumberBox from '../../components/WinNumberBox.vue';
 
 const { toast } = useCopy();
 
@@ -304,6 +311,17 @@ const runFairCheck = () => {
 /* ── 分组 ─────────────────────────────────────────────────────── */
 const groupMode = ref<'byGroups' | 'perGroup'>('byGroups');
 const groupValue = ref(4);
+const GROUP_ITEMS: { value: 'byGroups' | 'perGroup'; label: string }[] = [
+  { value: 'byGroups', label: '按组数（分成 N 组）' },
+  { value: 'perGroup', label: '按人数（每组 N 人）' }
+];
+const groupModeIndex = computed({
+  get: () => Math.max(0, GROUP_ITEMS.findIndex((i) => i.value === groupMode.value)),
+  set: (i: number) => {
+    const o = GROUP_ITEMS[i];
+    if (o) groupMode.value = o.value;
+  }
+});
 const groups = ref<number[][]>([]);
 
 const doGroup = () => {
@@ -340,11 +358,9 @@ onBeforeUnmount(() => {
   gap: 10px;
 }
 
-.pick-range .tool-input {
+.pick-numbox {
   flex: 1 1 0;
   min-width: 0;
-  text-align: center;
-  font-size: 18px;
 }
 
 .pick-tilde {

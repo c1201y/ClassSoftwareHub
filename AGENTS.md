@@ -291,14 +291,14 @@ changes are replayed by `visitor.ts`.
 - Public version: `X.Y.Z` + a **codename suffix, which is kept** (e.g. `- Autumn`).
   X = major (architecture / UI overhaul); Y = feature update; Z = small fix.
 - Internal version: `AAAABBCCPRDD` (year / month / day / file revision), e.g. `20260915PR01`.
-- Update all of these together — current value is `v2.3.0 - September 18 Incident (20260916PR03)`:
+- Update all of these together — current value is `v2.3.1 - September 18 Incident (20260916PR05)`:
   - `文字设置.ts` → `app.version`, `home.subtitle`, `welcome.intro` (**3 places**)
   - `src/gallery/Strings/en-US/Resources.ts` → `app.version`
-  - `package.json` → `version` (bare `2.3.0`, no codename / internal number); also bump the two `"version"` fields
+  - `package.json` → `version` (bare `2.3.1`, no codename / internal number); also bump the two `"version"` fields
   at the top of `package-lock.json` (npm normally syncs these)
 - The codename is part of the public version string and **may be an English phrase**
   (`- Autumn`, `- September 18 Incident`) — the suffix stays in user-facing copy.
-- Release tags keep the old habit: `v2.3.0-September18Incident` (history: `v2.1.0-Autumn`,
+- Release tags keep the old habit: `v2.3.1-September18Incident` (history: `v2.1.0-Autumn`,
   `v2.2.0-Autumn`). A tag points at the **last commit of that version's cycle**, not at the commit
   that bumped the version — `v2.2.0-Autumn` is the AGENTS.md commit, `v2.1.0-Autumn` is the
   `docs: 添加 v2.1.0 更新日志` commit.

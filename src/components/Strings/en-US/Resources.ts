@@ -162,5 +162,12 @@ export default {
   "control.infobadge.icon": "Notification",
   "control.infobadge.dot": "New notification",
   "control.infobar.close-button-name": "Close",
-  "control.infobar.close-button-tooltip": "Close"
+  "control.infobar.close-button-tooltip": "Close",
+  "control.datepicker.month": "Month",
+  "control.datepicker.day": "Day",
+  "control.datepicker.year": "Year",
+  "control.timepicker.hour": "Hour",
+  "control.timepicker.minute": "Minute",
+  "control.timepicker.am": "AM",
+  "control.timepicker.pm": "PM"
 };

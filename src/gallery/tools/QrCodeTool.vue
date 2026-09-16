@@ -5,21 +5,30 @@
     <div class="tool-grid-2">
       <div class="tool-panel">
         <span class="tool-section-title">内容</span>
-        <textarea
-          v-model="text"
-          class="tool-textarea"
-          spellcheck="false"
-          placeholder="输入网址或任意文字，例如 https://classsoftwarehub.132614.xyz"></textarea>
+        <WinTextBox
+          PlaceholderText="输入网址或任意文字，例如 https://classsoftwarehub.132614.xyz"
+          AcceptsReturn
+          TextWrapping="Wrap"
+          :IsSpellCheckEnabled="false"
+          MinHeight="120"
+          v-model:Text="text" />
         <div class="tool-row qr-opts">
-          <label class="tool-label" for="qr-ec">容错级别</label>
-          <select id="qr-ec" v-model="ec" class="tool-select qr-sel">
-            <option value="L">L（7%）</option>
-            <option value="M">M（15%）</option>
-            <option value="Q">Q（25%）</option>
-            <option value="H">H（30%）</option>
-          </select>
-          <label class="tool-label" for="qr-size">尺寸</label>
-          <input id="qr-size" v-model.number="size" class="tool-input qr-num" type="number" min="128" max="1024" step="32" />
+          <WinComboBox
+            class="qr-sel"
+            Header="容错级别"
+            Width="180"
+            :ItemsSource="EC_ITEMS"
+            DisplayMemberPath="label"
+            v-model:SelectedIndex="ecIndex" />
+          <WinNumberBox
+            class="qr-num"
+            Header="尺寸"
+            Width="150"
+            :Minimum="128"
+            :Maximum="1024"
+            :SmallChange="32"
+            SpinButtonPlacementMode="Inline"
+            v-model:Value="size" />
         </div>
       </div>
 
@@ -28,8 +37,8 @@
         <div v-if="error" class="tool-hint qr-error">{{ error }}</div>
         <canvas v-show="!error" ref="canvas" class="qr-canvas"></canvas>
         <div class="tool-row qr-actions">
-          <button class="tool-btn accent" :disabled="!!error" @click="download">下载 PNG</button>
-          <button class="tool-btn" :disabled="!!error" @click="copyImage">复制图片</button>
+          <WinButton Style="AccentButtonStyle" Content="下载 PNG" :IsEnabled="!error" @Click="download" />
+          <WinButton Content="复制图片" :IsEnabled="!error" @Click="copyImage" />
         </div>
       </div>
     </div>
@@ -39,10 +48,14 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import qrcode from 'qrcode-generator';
 import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
+import WinButton from '../../components/WinButton.vue';
+import WinComboBox from '../../components/WinComboBox.vue';
+import WinNumberBox from '../../components/WinNumberBox.vue';
+import WinTextBox from '../../components/WinTextBox.vue';
 
 const { toast, copy } = useCopy();
 
@@ -51,6 +64,20 @@ const ec = ref<'L' | 'M' | 'Q' | 'H'>('M');
 const size = ref(320);
 const error = ref('');
 const canvas = ref<HTMLCanvasElement | null>(null);
+
+const EC_ITEMS: { value: 'L' | 'M' | 'Q' | 'H'; label: string }[] = [
+  { value: 'L', label: 'L（7%）' },
+  { value: 'M', label: 'M（15%）' },
+  { value: 'Q', label: 'Q（25%）' },
+  { value: 'H', label: 'H（30%）' }
+];
+const ecIndex = computed({
+  get: () => Math.max(0, EC_ITEMS.findIndex((i) => i.value === ec.value)),
+  set: (i: number) => {
+    const o = EC_ITEMS[i];
+    if (o) ec.value = o.value;
+  }
+});
 
 const MARGIN = 4; // 静默区（模块数）
 
@@ -132,16 +159,12 @@ onMounted(render);
 
 <style scoped>
 .qr-opts {
-  margin-top: 12px;
+  margin-top: 14px;
+  align-items: flex-start;
 }
 
-.qr-sel {
-  width: 130px !important;
-  flex: 0 0 auto;
-}
-
+.qr-sel,
 .qr-num {
-  width: 96px !important;
   flex: 0 0 auto;
 }
 

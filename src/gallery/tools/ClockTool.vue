@@ -6,7 +6,21 @@
       <!-- ── 预览 ───────────────────────────────────────────── -->
       <div class="tool-panel">
         <span class="tool-section-title">预览</span>
-        <div class="clock-stage clock-stage--preview" :class="stageClass" :style="stageStyle">
+        <WinInfoBar
+          class="clock-tip-bar"
+          :IsOpen="true"
+          :IsClosable="false"
+          Severity="Informational"
+          Title="放背景图"
+          Message="把图片直接拖进下面的框就能当背景；也可以点右边的「选择图片」。" />
+        <div
+          class="clock-stage clock-stage--preview"
+          :class="[stageClass, { 'is-dragover': dragOver }]"
+          :style="stageStyle"
+          @dragenter.prevent="onDragEnter"
+          @dragover.prevent="onDragOver"
+          @dragleave.prevent="onDragLeave"
+          @drop.prevent="onDrop">
           <div class="clock-veil" :style="veilStyle"></div>
           <div class="clock-face">
             <div class="clock-time">
@@ -14,15 +28,33 @@
             </div>
             <div v-if="showDate" class="clock-date">{{ dateText }}</div>
           </div>
+          <div v-show="dragOver" class="clock-drop">松开鼠标，设为背景图</div>
         </div>
 
-        <div class="tool-row clock-modes">
-          <button class="tool-btn accent" @click="enterWeb">网页全屏</button>
-          <button class="tool-btn" @click="enterScreen">屏幕全屏</button>
+        <div class="clock-modes">
+          <WinButton
+            Style="AccentButtonStyle"
+            Content="网页全屏"
+            HorizontalContentAlignment="Center"
+            @Click="enterWeb" />
+          <WinButton
+            Content="屏幕全屏"
+            HorizontalContentAlignment="Center"
+            @Click="enterScreen" />
         </div>
-        <div class="tool-hint clock-mode-hint">
-          「网页全屏」= 铺满整个浏览器窗口；「屏幕全屏」= 浏览器全屏（F11 那种）。
-          全屏后 <b>双击屏幕</b>（或按 Esc）退出。
+        <WinInfoBar
+          class="clock-tip-bar clock-mode-hint"
+          :IsOpen="true"
+          :IsClosable="false"
+          Severity="Informational"
+          Title="全屏 / 退出"
+          Message="「网页全屏」= 铺满整个浏览器窗口；「屏幕全屏」= 浏览器全屏（F11 那种）。全屏后双击屏幕（或按 Esc）退出。" />
+
+        <div class="clock-sync">
+          <WinButton Content="校准系统时间" @Click="openTimeSync" />
+          <span class="tool-hint clock-sync-text">
+            时钟读的是<b>本机系统时间</b>，显示不准就点左边按钮到 time.is 对一下时。
+          </span>
         </div>
       </div>
 
@@ -32,41 +64,70 @@
 
         <span class="tool-label">背景图片</span>
         <div class="tool-row">
-          <label class="tool-btn small clock-filebtn">
-            选择图片
-            <input type="file" accept="image/*" @change="onFile" />
-          </label>
-          <button class="tool-btn small" :disabled="!bgUrl" @click="clearBg">移除图片</button>
+          <input ref="fileInput" class="clock-file-hidden" type="file" accept="image/*" @change="onFile" />
+          <WinButton Content="选择图片" @Click="pickFile" />
+          <WinButton Content="移除图片" :IsEnabled="!!bgUrl" @Click="clearBg" />
         </div>
         <div class="tool-hint clock-bgname">
-          {{ bgUrl ? bgName : '不选图片就是纯黑底白字' }}
+          {{ bgUrl ? bgName : '当前未设置背景图（上面拖一张进来即可）' }}
         </div>
 
-        <label class="clock-field">
-          <span class="tool-label">蒙版 / 材质</span>
-          <select v-model="veil" class="tool-select">
-            <option value="none">无</option>
-            <option value="white">白色蒙版</option>
-            <option value="black">黑色蒙版</option>
-            <option value="acrylic">亚克力（Acrylic）</option>
-            <option value="mica">云母（Mica）</option>
-          </select>
-        </label>
+        <WinComboBox
+          class="clock-field"
+          Header="蒙版 / 材质"
+          Width="100%"
+          :ItemsSource="VEIL_ITEMS"
+          DisplayMemberPath="label"
+          v-model:SelectedIndex="veilIndex" />
 
-        <label v-if="veil !== 'none'" class="clock-field">
-          <span class="tool-label">蒙版强度 {{ veilStrength }}%</span>
-          <input v-model.number="veilStrength" class="clock-slider" type="range" min="0" max="100" step="1" />
-        </label>
+        <div v-if="veil !== 'none'" class="clock-field">
+          <WinSlider
+            Header="蒙版强度（%）"
+            Width="100%"
+            :Minimum="0"
+            :Maximum="100"
+            :StepFrequency="1"
+            v-model:Value="veilStrength" />
+        </div>
 
-        <label class="clock-field">
-          <span class="tool-label">字号大小 {{ Math.round(scale * 100) }}%</span>
-          <input v-model.number="scale" class="clock-slider" type="range" min="0.6" max="1.3" step="0.05" />
-        </label>
+        <WinComboBox
+          class="clock-field"
+          Header="背景底色"
+          Width="100%"
+          :ItemsSource="TONE_ITEMS"
+          DisplayMemberPath="label"
+          v-model:SelectedIndex="toneIndex" />
+
+        <WinComboBox
+          class="clock-field"
+          Header="文字颜色"
+          Width="100%"
+          :ItemsSource="INK_ITEMS"
+          DisplayMemberPath="label"
+          v-model:SelectedIndex="inkIndex" />
+
+        <WinComboBox
+          class="clock-field"
+          Header="时间字体"
+          Width="100%"
+          :ItemsSource="FONT_OPTIONS"
+          DisplayMemberPath="label"
+          v-model:SelectedIndex="fontIndex" />
+
+        <div class="clock-field">
+          <WinSlider
+            :Header="`字号大小 ${Math.round(scale * 100)}%`"
+            Width="100%"
+            :Minimum="0.6"
+            :Maximum="1.3"
+            :StepFrequency="0.05"
+            v-model:Value="scale" />
+        </div>
 
         <div class="clock-checks">
-          <label class="clock-check"><input v-model="showSeconds" type="checkbox" /><span>显示秒</span></label>
-          <label class="clock-check"><input v-model="showDate" type="checkbox" /><span>显示日期 / 星期</span></label>
-          <label class="clock-check"><input v-model="hour12" type="checkbox" /><span>12 小时制</span></label>
+          <WinCheckBox Content="显示秒" v-model:IsChecked="showSeconds" />
+          <WinCheckBox Content="显示日期 / 星期" v-model:IsChecked="showDate" />
+          <WinCheckBox Content="12 小时制" v-model:IsChecked="hour12" />
         </div>
       </div>
     </div>
@@ -99,6 +160,11 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
+import WinButton from '../../components/WinButton.vue';
+import WinCheckBox from '../../components/WinCheckBox.vue';
+import WinComboBox from '../../components/WinComboBox.vue';
+import WinInfoBar from '../../components/WinInfoBar.vue';
+import WinSlider from '../../components/WinSlider.vue';
 
 const { toast } = useCopy();
 
@@ -107,6 +173,7 @@ type Veil = 'none' | 'white' | 'black' | 'acrylic' | 'mica';
 
 const mode = ref<Mode>('normal');
 const overlayEl = ref<HTMLElement | null>(null);
+const fileInput = ref<HTMLInputElement | null>(null);
 const hintVisible = ref(false);
 let hintTimer = 0;
 
@@ -118,6 +185,73 @@ const scale = ref(1);
 const showSeconds = ref(true);
 const showDate = ref(true);
 const hour12 = ref(false);
+/** 背景底色：跟随主题 / 强制白 / 强制黑（亮色模式下也想用黑底时的开关） */
+const tone = ref<'theme' | 'light' | 'dark'>('theme');
+/** 文字颜色：自动跟随底色 / 强制白 / 强制黑（背景图太亮、暗色模式下白字看不清时的开关） */
+const ink = ref<'auto' | 'white' | 'black'>('auto');
+
+/* ── 下拉选项（WinComboBox 的 ItemsSource） ──────────────── */
+const VEIL_ITEMS: { value: Veil; label: string }[] = [
+  { value: 'none', label: '无' },
+  { value: 'white', label: '白色蒙版' },
+  { value: 'black', label: '黑色蒙版' },
+  { value: 'acrylic', label: '亚克力（Acrylic）' },
+  { value: 'mica', label: '云母（Mica）' }
+];
+const TONE_ITEMS: { value: 'theme' | 'light' | 'dark'; label: string }[] = [
+  { value: 'theme', label: '跟随网站主题' },
+  { value: 'light', label: '白色' },
+  { value: 'dark', label: '黑色' }
+];
+const INK_ITEMS: { value: 'auto' | 'white' | 'black'; label: string }[] = [
+  { value: 'auto', label: '自动（跟随底色）' },
+  { value: 'white', label: '白色字' },
+  { value: 'black', label: '黑色字' }
+];
+
+/* ── 时间字体 ─────────────────────────────────────────────── */
+type FontKey = 'consolas' | 'bahnschrift' | 'cascadia' | 'segoe' | 'georgia';
+const FONT_OPTIONS: { key: FontKey; label: string; stack: string }[] = [
+  { key: 'consolas', label: '等宽 · 同课堂计时器', stack: "Consolas, 'Courier New', monospace" },
+  { key: 'bahnschrift', label: '工业风 · Bahnschrift', stack: "Bahnschrift, 'DIN Alternate', 'Segoe UI', sans-serif" },
+  { key: 'cascadia', label: '现代等宽 · Cascadia', stack: "'Cascadia Mono', 'Cascadia Code', Consolas, monospace" },
+  { key: 'segoe', label: '系统 UI · Segoe', stack: "'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif" },
+  { key: 'georgia', label: '优雅衬线 · Georgia', stack: "Georgia, 'Times New Roman', serif" }
+];
+const fontKey = ref<FontKey>('bahnschrift');
+const fontStack = computed(
+  () => FONT_OPTIONS.find((f) => f.key === fontKey.value)?.stack ?? FONT_OPTIONS[0].stack
+);
+
+/* 下拉双向绑定用的索引（WinComboBox 用 SelectedIndex） */
+const veilIndex = computed({
+  get: () => Math.max(0, VEIL_ITEMS.findIndex((i) => i.value === veil.value)),
+  set: (i: number) => {
+    const o = VEIL_ITEMS[i];
+    if (o) veil.value = o.value;
+  }
+});
+const toneIndex = computed({
+  get: () => Math.max(0, TONE_ITEMS.findIndex((i) => i.value === tone.value)),
+  set: (i: number) => {
+    const o = TONE_ITEMS[i];
+    if (o) tone.value = o.value;
+  }
+});
+const inkIndex = computed({
+  get: () => Math.max(0, INK_ITEMS.findIndex((i) => i.value === ink.value)),
+  set: (i: number) => {
+    const o = INK_ITEMS[i];
+    if (o) ink.value = o.value;
+  }
+});
+const fontIndex = computed({
+  get: () => Math.max(0, FONT_OPTIONS.findIndex((f) => f.key === fontKey.value)),
+  set: (i: number) => {
+    const o = FONT_OPTIONS[i];
+    if (o) fontKey.value = o.key;
+  }
+});
 
 /* ── 时间 ─────────────────────────────────────────────────── */
 const now = ref(new Date());
@@ -144,7 +278,21 @@ onMounted(() => {
 const a = computed(() => veilStrength.value / 100);
 
 const stageStyle = computed<Record<string, string>>(() => {
-  const style: Record<string, string> = { '--clock-scale': String(scale.value) };
+  const style: Record<string, string> = {
+    '--clock-scale': String(scale.value),
+    '--clock-font': fontStack.value
+  };
+  // 背景底色 / 文字色：跟随主题时交给 CSS，强制黑白时用变量覆盖
+  if (tone.value === 'light') {
+    style['--clock-bg'] = '#ffffff';
+    style['--clock-fg'] = '#111111';
+  } else if (tone.value === 'dark') {
+    style['--clock-bg'] = '#000000';
+    style['--clock-fg'] = '#ffffff';
+  }
+  // 文字颜色强制：优先级最高（--clock-ink），盖过底色/主题/背景图
+  if (ink.value === 'white') style['--clock-ink'] = '#ffffff';
+  else if (ink.value === 'black') style['--clock-ink'] = '#111111';
   if (bgUrl.value) style.backgroundImage = `url("${bgUrl.value}")`;
   return style;
 });
@@ -172,21 +320,20 @@ const veilStyle = computed<Record<string, string>>(() => {
 });
 
 /**
- * 底色 / 文字色走 CSS：
- *   没有背景图 → 纯黑白，跟随网站主题（亮色=白底黑字，暗色=黑底白字）
- *   有背景图   → 白蒙版给深色字，其余给白字（都带一圈淡投影，保证看得清）
+ * 底色 / 文字色：
+ *   跟随主题 → 亮色 = 白底黑字，暗色 = 黑底白字（由 CSS 决定）
+ *   强制白/黑 → 由 --clock-bg / --clock-fg 变量覆盖，亮色模式下也能用黑底
+ *   有背景图 → 白蒙版给深色字，其余给白字
  */
 const stageClass = computed(() => ({
   'is-photo': !!bgUrl.value,
-  'is-light-bg': !!bgUrl.value && veil.value === 'white'
+  'is-light-bg': !!bgUrl.value && veil.value === 'white',
+  'tone-light': tone.value === 'light',
+  'tone-dark': tone.value === 'dark'
 }));
 
 /* ── 背景图片 ─────────────────────────────────────────────── */
-const onFile = (e: Event) => {
-  const input = e.target as HTMLInputElement;
-  const file = input.files?.[0];
-  input.value = '';
-  if (!file) return;
+const applyImageFile = (file: File) => {
   if (!file.type.startsWith('image/')) {
     toast.value = '请选择图片文件';
     return;
@@ -198,6 +345,37 @@ const onFile = (e: Event) => {
   if (bgUrl.value) URL.revokeObjectURL(bgUrl.value);
   bgUrl.value = URL.createObjectURL(file);
   bgName.value = file.name;
+};
+
+const onFile = (e: Event) => {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = '';
+  if (file) applyImageFile(file);
+};
+
+/** WinButton 触发隐藏的原生 file input */
+const pickFile = () => fileInput.value?.click();
+
+/* 直接把图片拖进预览框也能设为背景（学校浏览器上传按钮不好使时的兜底） */
+const dragOver = ref(false);
+let dragDepth = 0;
+const onDragEnter = () => {
+  dragDepth += 1;
+  dragOver.value = true;
+};
+const onDragOver = () => {
+  dragOver.value = true;
+};
+const onDragLeave = () => {
+  dragDepth = Math.max(0, dragDepth - 1);
+  if (!dragDepth) dragOver.value = false;
+};
+const onDrop = (e: DragEvent) => {
+  dragDepth = 0;
+  dragOver.value = false;
+  const file = e.dataTransfer?.files?.[0];
+  if (file) applyImageFile(file);
 };
 
 const clearBg = () => {
@@ -229,6 +407,11 @@ const enterScreen = async () => {
     toast.value = '浏览器拒绝了全屏请求，可以用「网页全屏」';
   }
   void requestWakeLock();
+};
+
+/** 打开 time.is 对时（只跳外链，不接任何 API） */
+const openTimeSync = () => {
+  window.open('https://time.is/', '_blank', 'noopener,noreferrer');
 };
 
 const exitFull = () => {
@@ -312,15 +495,16 @@ onBeforeUnmount(() => {
 .clock-stage {
   position: relative;
   overflow: hidden;
-  /* 纯黑白，跟随网站主题：亮色 = 白底黑字，暗色 = 黑底白字 */
-  background-color: #ffffff;
+  /* 纯黑白，默认跟随网站主题：亮色 = 白底黑字，暗色 = 黑底白字；
+     可用「背景底色」强制成黑/白（--clock-bg 覆盖） */
+  background-color: var(--clock-bg, #ffffff);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
 
 html.theme-dark .clock-stage {
-  background-color: #000000;
+  background-color: var(--clock-bg, #000000);
 }
 
 .clock-stage--preview {
@@ -345,34 +529,33 @@ html.theme-dark .clock-stage {
   gap: 0.12em;
   user-select: none;
   -webkit-user-select: none;
-  color: #111111;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.45);
+  color: var(--clock-ink, var(--clock-fg, #111111));
+  pointer-events: none;
 }
 
 html.theme-dark .clock-face {
-  color: #ffffff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  color: var(--clock-ink, var(--clock-fg, #ffffff));
 }
 
-/* 有背景图时不再看主题：白蒙版上给深色字，其余一律白字 */
+/* 有背景图时不再看主题：白蒙版上给深色字，其余一律白字；--clock-ink 可强制覆盖 */
 .clock-stage.is-photo .clock-face {
-  color: #ffffff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  color: var(--clock-ink, #ffffff);
 }
 
 .clock-stage.is-photo.is-light-bg .clock-face {
-  color: #111111;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.45);
+  color: var(--clock-ink, #111111);
 }
 
 .clock-time {
   display: flex;
   align-items: baseline;
+  /* 字体可在设置里切换；默认与课堂计时器同款等宽 */
+  font-family: var(--clock-font, Consolas, 'Courier New', monospace);
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
   letter-spacing: 0.01em;
   line-height: 1;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .clock-stage--preview .clock-time {
@@ -446,6 +629,44 @@ html.theme-dark .clock-hint {
   color: rgba(255, 255, 255, 0.92);
 }
 
+/* 强制黑白底色时，提示条配色也跟着走 */
+.clock-stage.tone-light .clock-hint {
+  background: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.clock-stage.tone-dark .clock-hint {
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* 把图片拖到预览框上时的提示 */
+.clock-stage.is-dragover {
+  outline: 2px dashed var(--accent-base, #0067C0);
+  outline-offset: -6px;
+}
+
+/* 提示条（WinInfoBar）与上下元素留点间距 */
+.clock-tip-bar {
+  display: block;
+  margin: 0 0 12px;
+}
+
+.clock-drop {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--clock-ink, var(--clock-fg, #111111));
+  background: rgba(127, 127, 127, 0.18);
+  pointer-events: none;
+}
+
 @keyframes clock-hint-in {
   from { opacity: 0; transform: translate(-50%, 6px); }
   to { opacity: 1; transform: translate(-50%, 0); }
@@ -457,37 +678,45 @@ html.theme-dark .clock-hint {
   margin-top: 16px;
 }
 
-.clock-slider {
+/* WinSlider 根节点 inheritAttrs:false、不接收外部 class，用 :deep 把宽度拉满 */
+.clock-field :deep(.win-slider-root) {
+  display: flex;
   width: 100%;
-  accent-color: var(--accent-base, #0067C0);
 }
 
 .clock-checks {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 20px;
-  margin-top: 16px;
-}
-
-.clock-check {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13px;
-  cursor: pointer;
-  user-select: none;
+  gap: 10px 20px;
+  margin-top: 18px;
 }
 
 .clock-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
   margin-top: 14px;
 }
 
-.clock-modes .tool-btn {
-  flex: 1 1 140px;
+.clock-modes :deep(.win-btn) {
+  width: 100%;
 }
 
 .clock-mode-hint {
   margin-top: 10px;
+}
+
+.clock-sync {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.clock-sync-text {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .clock-bgname {
@@ -497,17 +726,8 @@ html.theme-dark .clock-hint {
   white-space: nowrap;
 }
 
-/* 隐藏原生 file input，用 label 当按钮 */
-.clock-filebtn {
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.clock-filebtn input {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
+/* WinButton 触发的隐藏原生 file input */
+.clock-file-hidden {
+  display: none;
 }
 </style>

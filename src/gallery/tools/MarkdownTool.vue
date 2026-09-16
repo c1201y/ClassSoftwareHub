@@ -7,12 +7,20 @@
         <div class="md-pane-head">
           <span class="tool-section-title">Markdown</span>
           <div class="tool-row">
-            <button class="tool-btn small" @click="insertSample">示例</button>
-            <button class="tool-btn small" :disabled="!input" @click="copy(input, 'Markdown')">复制源码</button>
-            <button class="tool-btn small" :disabled="!html" @click="copy(html, 'HTML')">复制 HTML</button>
+            <WinButton FontSize="13" Padding="10,0,10,0" Content="示例" @Click="insertSample" />
+            <WinButton FontSize="13" Padding="10,0,10,0" Content="复制源码" :IsEnabled="!!input" @Click="copy(input, 'Markdown')" />
+            <WinButton FontSize="13" Padding="10,0,10,0" Content="复制 HTML" :IsEnabled="!!html" @Click="copy(html, 'HTML')" />
           </div>
         </div>
-        <textarea v-model="input" class="tool-textarea md-input" spellcheck="false" placeholder="# 标题&#10;&#10;正文…"></textarea>
+        <WinTextBox
+          class="md-input"
+          v-model:Text="input"
+          :AcceptsReturn="true"
+          TextWrapping="Wrap"
+          :IsSpellCheckEnabled="false"
+          PlaceholderText="# 标题&#10;&#10;正文…"
+          FontFamily="Consolas, 'Courier New', monospace"
+          :FontSize="13" />
       </div>
 
       <div class="tool-panel md-pane">
@@ -30,6 +38,8 @@ import { computed, ref } from 'vue';
 import { marked } from 'marked';
 import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
+import WinTextBox from '../../components/WinTextBox.vue';
+import WinButton from '../../components/WinButton.vue';
 
 const { toast, copy } = useCopy();
 
@@ -74,6 +84,10 @@ const insertSample = () => {
 
 .md-input {
   flex: 1 1 auto;
+  min-height: 420px;
+}
+
+.md-input :deep(.win-textbox-textarea) {
   min-height: 420px;
 }
 

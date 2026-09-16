@@ -10,7 +10,7 @@
         <img class="holiday-hero-image" :src="activeHoliday.banner" :alt="activeHoliday.label" />
       </div>
       <div class="home-page">
-        <!-- 页头：站名 + 副标题 + 离线保存按钮 -->
+        <!-- 页头：站名 + 副标题 + 软件清单模板按钮 -->
         <section class="home-page-header">
           <div class="home-header-copy">
             <WinTextBlock
@@ -25,13 +25,6 @@
               FontSize="18" />
           </div>
           <div class="home-offline-download">
-            <button
-              type="button"
-              class="home-download-html-btn"
-              @click="downloadSiteHTML">
-              {{ t('home.download-html') }}
-            </button>
-            <span class="home-download-html-tip">{{ t('home.download-html-tip') }}</span>
             <!-- 软件清单模板：登记新软件时下载，内容与根目录 软件数据/apps/_模板.json 一致 -->
             <span class="home-download-template-line">
               <button
@@ -41,6 +34,14 @@
                 {{ t('home.download-template') }}
               </button>
               <span class="home-download-html-tip">{{ t('home.download-template-tip') }}</span>
+              <!-- 加入 QQ 群：和模板按钮同一行、靠右（链接复用设置页「关于」的 about.qq-group-url） -->
+              <a
+                class="home-download-html-btn home-qq-group-btn"
+                :href="t('about.qq-group-url')"
+                target="_blank"
+                rel="noopener noreferrer">
+                {{ t('about.qq-group') }}
+              </a>
             </span>
           </div>
         </section>
@@ -214,48 +215,6 @@ const openTools = () => {
 /** 首页「AI 导航」入口卡片：文字来自根目录 AI导航文本.ts */
 const openAiNav = () => {
   void router.push({ name: 'ai' });
-};
-
-/**
- * “⬇ 下载HTML”：把整页存成一份可离线打开的单文件 HTML。
- * 只在“单文件离线版”（npm run build:single 的产物）里有效：
- *  - 开发/多文件版页面引用了外部脚本与样式，直接导出必然残缺 → 弹提示；
- *  - 单文件版则导出“干净壳”：清空 #app 渲染内容、去掉运行时注入的
- *    blob 资源与 body 上的瞬态浮层，重开时由页面脚本重新完整渲染。
- */
-const downloadSiteHTML = () => {
-  try {
-    const hasExternalAssets =
-      document.querySelectorAll('link[rel="stylesheet"][href], script[src]').length > 0;
-    if (hasExternalAssets) {
-      window.alert(t('home.download-html-only-single'));
-      return;
-    }
-    const root = document.documentElement.cloneNode(true) as HTMLElement;
-    const app = root.querySelector('#app');
-    if (app) app.innerHTML = '';
-    root.querySelectorAll('link[href^="blob:"], link[rel="manifest"]').forEach((node) => node.remove());
-    // body 里只保留 #app：清掉瞬态浮层等元素节点，以及 Vue 运行期遗留的注释锚点
-    const body = root.querySelector('body');
-    if (body) {
-      Array.from(body.childNodes).forEach((node) => {
-        if (node.nodeType === 8 || (node.nodeType === 1 && (node as HTMLElement).id !== 'app')) {
-          node.remove();
-        }
-      });
-    }
-    const html = '<!DOCTYPE html>\n' + root.outerHTML;
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const anchor = document.createElement('a');
-    anchor.href = URL.createObjectURL(blob);
-    anchor.download = t('home.download-html-filename');
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-    window.setTimeout(() => URL.revokeObjectURL(anchor.href), 1000);
-  } catch (error) {
-    window.alert('下载失败：' + String(error));
-  }
 };
 
 /**

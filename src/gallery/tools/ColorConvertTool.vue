@@ -8,24 +8,30 @@
 
         <div class="cc-hex-row">
           <input type="color" class="cc-picker" :value="hex" @input="onPicker" aria-label="取色板" />
-          <input class="tool-input cc-hex" :value="hex" spellcheck="false" @change="onHex" />
+          <WinTextBox
+            class="cc-hex"
+            :Text="hexText"
+            :IsSpellCheckEnabled="false"
+            FontFamily="Consolas, 'Courier New', monospace"
+            @update:Text="onHex"
+            @LostFocus="onHexBlur" />
         </div>
 
         <div class="cc-group">
           <span class="tool-label">RGB</span>
           <div class="tool-row">
-            <input class="tool-input cc-num" type="number" min="0" max="255" :value="rgb[0]" @change="onRgb(0, $event)" />
-            <input class="tool-input cc-num" type="number" min="0" max="255" :value="rgb[1]" @change="onRgb(1, $event)" />
-            <input class="tool-input cc-num" type="number" min="0" max="255" :value="rgb[2]" @change="onRgb(2, $event)" />
+            <WinNumberBox class="cc-num" :Minimum="0" :Maximum="255" :SmallChange="1" v-model:Value="rgbR" />
+            <WinNumberBox class="cc-num" :Minimum="0" :Maximum="255" :SmallChange="1" v-model:Value="rgbG" />
+            <WinNumberBox class="cc-num" :Minimum="0" :Maximum="255" :SmallChange="1" v-model:Value="rgbB" />
           </div>
         </div>
 
         <div class="cc-group">
           <span class="tool-label">HSL</span>
           <div class="tool-row">
-            <input class="tool-input cc-num" type="number" min="0" max="360" :value="hsl.h" @change="onHsl('h', $event)" />
-            <input class="tool-input cc-num" type="number" min="0" max="100" :value="hsl.s" @change="onHsl('s', $event)" />
-            <input class="tool-input cc-num" type="number" min="0" max="100" :value="hsl.l" @change="onHsl('l', $event)" />
+            <WinNumberBox class="cc-num" :Minimum="0" :Maximum="360" :SmallChange="1" v-model:Value="hslH" />
+            <WinNumberBox class="cc-num" :Minimum="0" :Maximum="100" :SmallChange="1" v-model:Value="hslS" />
+            <WinNumberBox class="cc-num" :Minimum="0" :Maximum="100" :SmallChange="1" v-model:Value="hslL" />
           </div>
         </div>
 
@@ -68,10 +74,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
 import { rgbToHsl, hslToRgb, rgbToHex } from '../imageColors';
+import WinTextBox from '../../components/WinTextBox.vue';
+import WinNumberBox from '../../components/WinNumberBox.vue';
 
 const { toast, copy } = useCopy();
 
@@ -86,32 +94,57 @@ const setRgb = (r: number, g: number, b: number) => {
   rgb.value = [clamp(Math.round(r), 0, 255), clamp(Math.round(g), 0, 255), clamp(Math.round(b), 0, 255)];
 };
 
-const onHex = (e: Event) => {
-  const raw = (e.target as HTMLInputElement).value.trim().replace(/^#/, '');
+/* HEX 文本框：本地文本与规范 hex 双向同步 */
+const hexText = ref(hex.value);
+watch(hex, (v) => { hexText.value = v; });
+
+const parseHex = (value: string): Rgb | null => {
+  const raw = value.trim().replace(/^#/, '');
   const full = raw.length === 3 ? raw.split('').map((c) => c + c).join('') : raw;
-  if (/^[0-9a-fA-F]{6}$/.test(full)) {
-    setRgb(parseInt(full.slice(0, 2), 16), parseInt(full.slice(2, 4), 16), parseInt(full.slice(4, 6), 16));
-  } else {
-    (e.target as HTMLInputElement).value = hex.value;
-  }
+  if (!/^[0-9a-fA-F]{6}$/.test(full)) return null;
+  return [parseInt(full.slice(0, 2), 16), parseInt(full.slice(2, 4), 16), parseInt(full.slice(4, 6), 16)];
 };
 
-const onPicker = (e: Event) => onHex(e as unknown as Event);
+const onHex = (value: string) => {
+  hexText.value = value;
+  const parsed = parseHex(value);
+  if (parsed) setRgb(parsed[0], parsed[1], parsed[2]);
+};
 
-const onRgb = (index: 0 | 1 | 2, e: Event) => {
-  const v = Number((e.target as HTMLInputElement).value);
+const onHexBlur = () => {
+  if (!parseHex(hexText.value)) hexText.value = hex.value;
+};
+
+const onPicker = (e: Event) => onHex((e.target as HTMLInputElement).value);
+
+const onRgb = (index: 0 | 1 | 2, v: number) => {
   const next = [...rgb.value] as Rgb;
   next[index] = clamp(Number.isFinite(v) ? v : 0, 0, 255);
   rgb.value = next;
 };
 
-const onHsl = (key: 'h' | 's' | 'l', e: Event) => {
-  const v = Number((e.target as HTMLInputElement).value);
+const rgbBox = (index: 0 | 1 | 2) => computed<number>({
+  get: () => rgb.value[index],
+  set: (v: number) => onRgb(index, v)
+});
+const rgbR = rgbBox(0);
+const rgbG = rgbBox(1);
+const rgbB = rgbBox(2);
+
+const onHsl = (key: 'h' | 's' | 'l', v: number) => {
   const base = { ...hsl.value };
   base[key] = clamp(Number.isFinite(v) ? v : 0, 0, key === 'h' ? 360 : 100);
   const [r, g, b] = hslToRgb(base.h, base.s, base.l);
   setRgb(r, g, b);
 };
+
+const hslBox = (key: 'h' | 's' | 'l') => computed<number>({
+  get: () => hsl.value[key],
+  set: (v: number) => onHsl(key, v)
+});
+const hslH = hslBox('h');
+const hslS = hslBox('s');
+const hslL = hslBox('l');
 
 const shift = (deltaH: number) => {
   const h = (((hsl.value.h + deltaH) % 360) + 360) % 360;
@@ -152,7 +185,11 @@ const harmonies = computed(() => [
 }
 
 .cc-hex {
-  font-family: Consolas, 'Courier New', monospace;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cc-hex :deep(.win-textbox-field) {
   text-transform: uppercase;
 }
 

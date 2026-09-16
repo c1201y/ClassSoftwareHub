@@ -5,7 +5,15 @@
     <div class="tool-grid-2">
       <div class="tool-panel">
         <span class="tool-section-title">输入</span>
-        <textarea v-model="input" class="tool-textarea tt-box" spellcheck="false" placeholder="把文本粘进来"></textarea>
+        <WinTextBox
+          class="tt-box"
+          v-model:Text="input"
+          :AcceptsReturn="true"
+          TextWrapping="Wrap"
+          :IsSpellCheckEnabled="false"
+          PlaceholderText="把文本粘进来"
+          FontFamily="Consolas, 'Courier New', monospace"
+          :FontSize="13" />
         <div class="tt-stats tool-hint">
           <span>{{ stats.chars }} 字</span>
           <span>{{ stats.noSpace }} 不含空格</span>
@@ -17,11 +25,19 @@
 
       <div class="tool-panel">
         <span class="tool-section-title">结果</span>
-        <textarea v-model="output" class="tool-textarea tt-box" spellcheck="false" placeholder="处理结果出现在这里"></textarea>
+        <WinTextBox
+          class="tt-box"
+          v-model:Text="output"
+          :AcceptsReturn="true"
+          TextWrapping="Wrap"
+          :IsSpellCheckEnabled="false"
+          PlaceholderText="处理结果出现在这里"
+          FontFamily="Consolas, 'Courier New', monospace"
+          :FontSize="13" />
         <div class="tool-row tt-actions">
-          <button class="tool-btn small" :disabled="!output" @click="copy(output, '结果')">复制结果</button>
-          <button class="tool-btn small" :disabled="!output" @click="input = output">用结果替换输入</button>
-          <button class="tool-btn small" :disabled="!input && !output" @click="clearAll">清空</button>
+          <WinButton FontSize="13" Padding="10,0,10,0" Content="复制结果" :IsEnabled="!!output" @Click="copy(output, '结果')" />
+          <WinButton FontSize="13" Padding="10,0,10,0" Content="用结果替换输入" :IsEnabled="!!output" @Click="input = output" />
+          <WinButton FontSize="13" Padding="10,0,10,0" Content="清空" :IsEnabled="!!input || !!output" @Click="clearAll" />
         </div>
       </div>
     </div>
@@ -32,27 +48,27 @@
         <div class="tt-op-group">
           <span class="tool-label">行处理</span>
           <div class="tool-row">
-            <button class="tool-btn small" @click="apply(dedupeLines)">去重复行</button>
-            <button class="tool-btn small" @click="apply(removeEmptyLines)">去空行</button>
-            <button class="tool-btn small" @click="apply(trimLines)">去首尾空格</button>
-            <button class="tool-btn small" @click="apply(reverseLines)">反转行序</button>
-            <button class="tool-btn small" @click="apply(sortLines)">按行排序</button>
+            <WinButton FontSize="13" Padding="10,0,10,0" Content="去重复行" @Click="apply(dedupeLines)" />
+            <WinButton FontSize="13" Padding="10,0,10,0" Content="去空行" @Click="apply(removeEmptyLines)" />
+            <WinButton FontSize="13" Padding="10,0,10,0" Content="去首尾空格" @Click="apply(trimLines)" />
+            <WinButton FontSize="13" Padding="10,0,10,0" Content="反转行序" @Click="apply(reverseLines)" />
+            <WinButton FontSize="13" Padding="10,0,10,0" Content="按行排序" @Click="apply(sortLines)" />
           </div>
         </div>
         <div class="tt-op-group">
           <span class="tool-label">大小写</span>
           <div class="tool-row">
-            <button class="tool-btn small" @click="apply((t) => t.toUpperCase())">全部大写</button>
-            <button class="tool-btn small" @click="apply((t) => t.toLowerCase())">全部小写</button>
+            <WinButton FontSize="13" Padding="10,0,10,0" Content="全部大写" @Click="apply((t) => t.toUpperCase())" />
+            <WinButton FontSize="13" Padding="10,0,10,0" Content="全部小写" @Click="apply((t) => t.toLowerCase())" />
           </div>
         </div>
         <div class="tt-op-group">
           <span class="tool-label">标点 / 空白</span>
           <div class="tool-row">
-            <button class="tool-btn small" @click="apply(cnToEn)">中文标点→英文</button>
-            <button class="tool-btn small" @click="apply(enToCn)">英文标点→中文</button>
-            <button class="tool-btn small" @click="apply(collapseSpaces)">合并连续空格</button>
-            <button class="tool-btn small" @click="apply(trimAll)">去全文首尾空白</button>
+            <WinButton FontSize="13" Padding="10,0,10,0" Content="中文标点→英文" @Click="apply(cnToEn)" />
+            <WinButton FontSize="13" Padding="10,0,10,0" Content="英文标点→中文" @Click="apply(enToCn)" />
+            <WinButton FontSize="13" Padding="10,0,10,0" Content="合并连续空格" @Click="apply(collapseSpaces)" />
+            <WinButton FontSize="13" Padding="10,0,10,0" Content="去全文首尾空白" @Click="apply(trimAll)" />
           </div>
         </div>
       </div>
@@ -66,6 +82,8 @@
 import { computed, ref } from 'vue';
 import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
+import WinTextBox from '../../components/WinTextBox.vue';
+import WinButton from '../../components/WinButton.vue';
 
 const { toast, copy } = useCopy();
 const input = ref('');
@@ -113,6 +131,10 @@ const clearAll = () => { input.value = ''; output.value = ''; };
 
 <style scoped>
 .tt-box {
+  min-height: 180px;
+}
+
+.tt-box :deep(.win-textbox-textarea) {
   min-height: 180px;
 }
 
