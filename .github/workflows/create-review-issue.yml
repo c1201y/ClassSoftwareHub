@@ -69,11 +69,18 @@ jobs:
               const conflictHint = data._原始ID冲突
                 ? `\n> ⚠️ **注意**：\`软件数据/apps/${data.id}.json\` 已存在，通过前需先处理冲突。`
                 : ''
+              // 联系方式（必填项，2026-09-16 起）：单独提到正文开头，管理员需要联系提交者时不用翻 JSON。
+              // 老草稿 / 兜底通道提交的文件可能没有这个字段，给个显眼的缺省提示。
+              const contact = String(data._联系方式 ?? '').trim()
+              const contactLine = contact
+                ? `**联系方式**：${contact}`
+                : '**联系方式**：⚠️ 未填写（提交页自 2026-09-16 起为必填项，此条可能来自更早的提交或兜底通道）'
               const body = [
                 `**提交文件**：\`${file}\``,
                 `**软件 ID**：\`${data.id}\``,
                 `**分类**：\`${data.category}\``,
                 `**提交时间**：${data._提交时间}`,
+                contactLine,
                 conflictHint,
                 '',
                 '<details><summary>查看完整 JSON</summary>',

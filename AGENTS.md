@@ -187,6 +187,11 @@ changes are replayed by `visitor.ts`.
 
 1. A visitor fills in `#/submit` (optionally auto-filled by "Import from GitHub") → `POST /api/submit`
    → the self-hosted Worker writes the JSON into `submissions/<id>.json` in this repo.
+   The draft carries the app fields **plus review-only metadata whose keys start with `_`**
+   (`_提交时间`, `_原始ID冲突`, `_联系方式`). **Convention: `_`-prefixed key = review-only.** Merging
+   strips every such key (`review-submission.yml` filters by prefix, not by name), so a new
+   submission-only field can never leak into the published app data — it only shows up in the
+   review issue (`create-review-issue.yml` prints `联系方式` explicitly).
 2. That push triggers `.github/workflows/create-review-issue.yml`, which opens one
    `[待审核] <name> (<id>)` issue per **newly added** draft (label `待审核`; duplicate titles are skipped
    idempotently).
