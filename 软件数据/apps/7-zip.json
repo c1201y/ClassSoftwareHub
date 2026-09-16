@@ -15,13 +15,13 @@
       "platform": "Windows 64位 安装版",
       "note": "64位系统推荐",
       "size": "1.6 MB",
-      "url": "https://www.7-zip.org/a/7z2602-x64.exe"
+      "url": "https://www.7-zip.org/a/7z2603-x64.exe"
     },
     {
       "platform": "Windows 32位 安装版",
       "note": "32位系统使用",
-      "size": "1.2 MB",
-      "url": "https://www.7-zip.org/a/7z2602.exe"
+      "size": "1.3 MB",
+      "url": "https://www.7-zip.org/a/7z2603.exe"
     },
     {
       "platform": "Windows 64位 Github源 安装版",
