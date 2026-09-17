@@ -1,0 +1,43 @@
+{
+  "_提交时间": "2026-09-17T13:51:27.148Z",
+  "_原始ID冲突": false,
+  "id": "lively",
+  "name": "Lively Wallpaper",
+  "icon": "https://avatars.githubusercontent.com/u/17554161?v=4",
+  "category": "other",
+  "tagline": "Wallpaper Engine不错的替代品",
+  "description": "开源的动态壁纸软件，Wallpaper Engine不错的替代品",
+  "version": "v2.2.1.0",
+  "size": "约210MB",
+  "system": "Windows",
+  "website": "https://rocksdanister.com/lively",
+  "github": "https://github.com/rocksdanister/lively",
+  "downloads": [
+    {
+      "platform": "其他 压缩包",
+      "note": "lively_command_utility.zip",
+      "size": "9.4 MB",
+      "url": "https://github.com/rocksdanister/lively/releases/download/v2.2.1.0/lively_command_utility.zip"
+    },
+    {
+      "platform": "其他 压缩包",
+      "note": "lively_player_cefsharp.zip",
+      "size": "156 MB",
+      "url": "https://github.com/rocksdanister/lively/releases/download/v2.2.1.0/lively_player_cefsharp.zip"
+    },
+    {
+      "platform": "Windows x86 安装版",
+      "note": "lively_setup_x86_full_v2210.exe",
+      "size": "208 MB",
+      "url": "https://github.com/rocksdanister/lively/releases/download/v2.2.1.0/lively_setup_x86_full_v2210.exe"
+    },
+    {
+      "platform": "其他 压缩包",
+      "note": "lively_utility_screensaver.zip",
+      "size": "4.1 KB",
+      "url": "https://github.com/rocksdanister/lively/releases/download/v2.2.1.0/lively_utility_screensaver.zip"
+    }
+  ],
+  "sort": 99,
+  "store": "https://apps.microsoft.com/detail/9ntm2qc6qws7?hl=zh-CN&gl=CN"
+}
