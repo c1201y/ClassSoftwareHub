@@ -1,7 +1,7 @@
 {
   "id": "rammap",
   "name": "RAMMap 内存分析",
-  "icon": "https://tse3-mm.cn.bing.net/th/id/OIP-C.Rf52Fb3Ltu8Od5t9ks6AbwHaG4?w=190&h=180&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3",
+  "icon": "https://soft-img.30405.com/2025/0924/09241648159407.jpg?resize=p_5,w_128",
   "category": "system",
   "tagline": "微软官方内存分析工具，看清内存到底被谁占了",
   "description": "RAMMap 是 Microsoft Sysinternals 出品的系统内存分析工具，能详细展示物理内存的使用构成：各进程占用、文件缓存（Standby / Modified）、驱动锁定内存、分页与非分页池等，并支持手动清空待机列表、系统工作集、已修改页面列表等。适合排查「内存被吃满」「磁盘缓存过大」「关机/休眠异常」等问题。官方出品，免安装，解压即用。",
