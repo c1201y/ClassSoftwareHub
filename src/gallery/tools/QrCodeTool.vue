@@ -6,7 +6,7 @@
       <div class="tool-panel">
         <span class="tool-section-title">内容</span>
         <WinTextBox
-          PlaceholderText="输入网址或任意文字，例如 https://classsoftwarehub.132614.xyz"
+          PlaceholderText="输入网址或任意文字，例如 https://classsoftwarehub.us.ci"
           AcceptsReturn
           TextWrapping="Wrap"
           :IsSpellCheckEnabled="false"
@@ -59,7 +59,7 @@ import WinTextBox from '../../components/WinTextBox.vue';
 
 const { toast, copy } = useCopy();
 
-const text = ref('https://classsoftwarehub.132614.xyz');
+const text = ref('https://classsoftwarehub.us.ci');
 const ec = ref<'L' | 'M' | 'Q' | 'H'>('M');
 const size = ref(320);
 const error = ref('');
