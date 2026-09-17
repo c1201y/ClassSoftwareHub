@@ -7,9 +7,10 @@
   "description": "ClassIsland 是一款教室大屏 / 班级电脑用的课表与信息展示工具，可在屏幕角落常驻显示当前课程、上下课提醒、天气与自定义组件。这里提供的是 1.7 系列（最后版本 1.7.106.2），适合需要兼容旧插件、或仍在用 1.7 的教室电脑。注意：1.7 版不提供 exe 安装包，下载后解压压缩包、运行文件夹里的 ClassIsland.exe 即可；若已装 2.x 版请先卸载，两个大版本不能共存。",
   "version": "1.7.106.2",
   "size": "60 MB ~ 121 MB",
-  "system": "Windows 10/11（x86 / x64 / ARM64）",
+  "system": "Windows 7/10/11（x86 / x64 / ARM64）",
   "website": "https://classisland.tech/",
   "github": "https://github.com/ClassIsland/ClassIsland",
+  "notice": "此版本不再更新！",
   "downloads": [
     {
       "platform": "Windows x64 完整版",
