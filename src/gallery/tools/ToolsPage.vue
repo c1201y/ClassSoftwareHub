@@ -15,6 +15,18 @@
         Foreground="var(--TextFillColorSecondaryBrush, var(--text-secondary))"
         TextWrapping="Wrap"
         Text="把这些小工具直接做进网站，打开就能用，不用下载、也不上传 —— 省得为一个小功能单独装个软件。" />
+      <!-- 搜索：按「工具名 / 说明 / 分组」即时过滤下面的卡片，纯本地过滤、不联网 -->
+      <div class="tools-search-row">
+        <WinTextBox
+          v-model:Text="keyword"
+          class="tools-search-box"
+          PlaceholderText="搜索工具：计时器、二维码、取色……"
+          InputScope="Search"
+          FontSize="14" />
+        <span class="tools-search-count">
+          {{ keyword.trim() ? `找到 ${matchedCount} 个工具` : `共 ${totalCount} 个工具` }}
+        </span>
+      </div>
     </div>
     <WinScrollViewer
       class="tools-page-scroll"
@@ -22,7 +34,7 @@
       VerticalScrollMode="Auto">
       <div class="gallery-item-page tools-page-body">
         <div class="gallery-page-content">
-          <section v-for="group in groups" :key="group.name" class="tools-group">
+          <section v-for="group in visibleGroups" :key="group.name" class="tools-group">
             <span class="tools-group-title">{{ group.name }}</span>
             <div class="tools-grid">
               <button
@@ -40,6 +52,17 @@
               </button>
             </div>
           </section>
+
+          <!-- 搜不到时的空状态：给出路（换词 / 看全部 / 提建议） -->
+          <div v-if="!visibleGroups.length" class="tools-empty">
+            <span class="tools-empty-icon" aria-hidden="true">&#xE721;</span>
+            <p class="tools-empty-title">没有找到这个工具</p>
+            <p class="tools-empty-desc">
+              换个关键词试试（比如「计时」「去重」「编码」）。想要的工具站里没有？
+              可以到「提交软件」页说一声，或者进 QQ 群提。
+            </p>
+            <button type="button" class="tools-empty-reset" @click="keyword = ''">显示全部工具</button>
+          </div>
         </div>
       </div>
     </WinScrollViewer>
@@ -47,17 +70,39 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import WinGrid from '../../components/WinGrid.vue';
 import WinScrollViewer from '../../components/WinScrollViewer.vue';
 import WinTextBlock from '../../components/WinTextBlock.vue';
-import { toolGroups, type ToolDef } from './index';
+import WinTextBox from '../../components/WinTextBox.vue';
+import { toolGroups, TOOLS, type ToolDef } from './index';
 
-const groups = toolGroups();
 const router = useRouter();
 const openTool = (tool: ToolDef) => {
   void router.push({ name: `tool-${tool.id}` });
 };
+
+const allGroups = toolGroups();
+const totalCount = TOOLS.length;
+
+/** 搜索关键词：留空（或只剩空格）就显示全部 */
+const keyword = ref('');
+
+/** 命中规则：工具名 / 说明 / 分组名，任一包含关键词即算命中；不区分大小写 */
+const visibleGroups = computed(() => {
+  const q = keyword.value.trim().toLowerCase();
+  if (!q) return allGroups;
+  return allGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((tool) => `${tool.name} ${tool.desc} ${tool.group}`.toLowerCase().includes(q))
+    }))
+    .filter((group) => group.items.length > 0);
+});
+
+/** 当前命中的工具数（搜索框右边那行小字用） */
+const matchedCount = computed(() => visibleGroups.value.reduce((sum, group) => sum + group.items.length, 0));
 </script>
 
 <style scoped>
@@ -87,6 +132,26 @@ const openTool = (tool: ToolDef) => {
   max-width: 720px;
 }
 
+/* ── 搜索框 ────────────────────────────────────────────────── */
+.tools-search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.tools-search-box {
+  flex: 0 1 380px;
+  max-width: 380px;
+}
+
+.tools-search-count {
+  flex: 0 0 auto;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-tertiary, var(--text-secondary));
+}
+
 .tools-page-body {
   padding-top: 20px;
   max-width: 1064px;
@@ -110,7 +175,7 @@ const openTool = (tool: ToolDef) => {
   gap: 16px;
 }
 
-/* ── 工具卡片 ─────────────────────────────────────────────────── */
+/* ── 工具卡片 ─────────────────────────────────────────────── */
 .tools-card {
   box-sizing: border-box;
   display: grid;
@@ -190,9 +255,69 @@ const openTool = (tool: ToolDef) => {
   color: var(--text-tertiary, var(--text-secondary));
 }
 
+/* ── 空状态 ───────────────────────────────────────────────── */
+.tools-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 44px 16px 32px;
+  text-align: center;
+}
+
+.tools-empty-icon {
+  font-family: 'WinUIOnWebIcons';
+  font-size: 30px;
+  line-height: 1;
+  color: var(--text-tertiary, var(--text-secondary));
+}
+
+.tools-empty-title {
+  margin: 8px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tools-empty-desc {
+  margin: 0;
+  max-width: 440px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-secondary);
+}
+
+.tools-empty-reset {
+  margin-top: 10px;
+  padding: 6px 16px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--ctrl-fill-default, rgba(255, 255, 255, 0.5));
+  border: 1px solid var(--card-stroke, var(--ctrl-border, rgba(0, 0, 0, 0.12)));
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background var(--faster-duration, 83ms) linear;
+}
+
+.tools-empty-reset:hover {
+  background: var(--ctrl-fill-secondary, rgba(0, 0, 0, 0.04));
+}
+
 @media (max-width: 640px) {
   .tools-header {
     padding: 16px 16px 0;
+  }
+
+  .tools-search-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .tools-search-box {
+    flex: 1 1 auto;
+    max-width: none;
   }
 
   .tools-page-body {

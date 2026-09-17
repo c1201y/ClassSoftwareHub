@@ -56,6 +56,7 @@ src/
   │   ├─ tools/                  ★ Built-in tools: index.ts registry + ToolShell.vue + one .vue per tool
   │   │                           (adding a tool = one registry entry; its route is generated from it)
   │   ├─ aiSiteIcons.ts          Site icons for the AI-nav page (inlined base64, no third-party icon service)
+  │   ├─ appIcons.ts             ★ App-icon resolver: prefers the local 64 px copy, falls back to the `icon` URL
   │   ├─ data/index.ts           Data loader: types + fault-tolerant parsing (⚠️ do not edit)
   │   ├─ githubImport.ts         "Import from GitHub" (从 GitHub 一键读取) on the submit page
   │   ├─ searchIndex.ts          Title-bar search (matches name + tagline + description)
@@ -66,6 +67,7 @@ src/
   │   ├─ Strings/en-US/          English UI strings
   │   └─ styles/                 Home / detail page styles (extracted verbatim from the original HTML)
   ├─ components/ styles/ utils/ assets/   ⛔ WinUIonWeb library (upstream source — see "Hard Rules")
+  │                                        └ site assets under `assets/`: icons/ · holiday/ · Fonts/ · AppIcon-*
 stats-worker/
   ├─ worker.js                   Cloudflare Worker: visit stats + GitHub API proxy (600+ lines)
   └─ wrangler.toml               Deploy config (KV binding: STATS)
@@ -83,7 +85,7 @@ Routes (hash-based):
 | `#/download/:id` | App detail page; `:id` = the `id` field in the data |
 | `#/settings` | Settings (appearance / about / visit stats) |
 | `#/submit` | Submit a new app |
-| `#/tools` | Built-in tools (card list, 10 client-side utilities) |
+| `#/tools` | Built-in tools (searchable card list, 11 client-side utilities) |
 | `#/tools/<id>` | A single built-in tool; routes are generated from the `src/gallery/tools/index.ts` registry |
 | `#/ai` | AI nav (21 Chinese AI sites, full-width clickable rows) |
 
@@ -100,6 +102,8 @@ Routes (hash-based):
    Keep the directory layout intact so it can be diffed against upstream releases. The one deviation:
    `WinNavigationView` was patched to support **image icons** (put an image URL in a nav item's `icon`).
    Write page-specific styles as **scoped rules inside the page component** instead.
+   Exception: `src/assets/` also holds **site-owned** assets (`icons/`, `holiday/`, `Fonts/`,
+   `AppIcon-*`). Keep those in their own files / subfolders so the upstream tree stays diffable.
 4. **Never commit `dist/` (already in .gitignore) or `.workbuddy/`.**
 5. **Never put credentials in any file of this repo — comments included.** This is a **public repo**:
    writing a secret here publishes it, and once it is in git history it **cannot be taken back**
@@ -130,7 +134,7 @@ Fields and meanings (full reference: `软件数据/README-维护手册.md` and `
 |---|---|
 | `id` | **Unique** ASCII identifier: lowercase letters, digits, hyphens only. URL = `#/download/<id>` |
 | `name` | App name |
-| `icon` | Icon image URL (square, 256×256 recommended); empty shows a placeholder |
+| `icon` | Icon image URL (square, 256×256 recommended); empty shows a placeholder. ⚠️ Hosted on GitHub / jsDelivr → **also add a 64 px local copy** (see "App icons") |
 | `category` | Must be a key from `categories.json`: `system` / `schedule` / `teaching` / `other` |
 | `tagline` | One-line summary (home card) |
 | `description` | Full description (detail page) |
@@ -160,6 +164,22 @@ Key constraints:
   to edit data.
 - When collecting data for a new app, **prefer the GitHub REST API (releases/assets)** for real direct
   links and file sizes — far more reliable than guessing. HEAD-check an icon URL before writing it.
+
+### App icons (remote by default, local when it matters)
+
+Icons point at each vendor's own CDN, which is fine for domestic vendors. Icons hosted on **GitHub
+(avatars / raw / `github.com/…/raw/…`) or jsDelivr** are however unreliable from mainland China, so those
+keep a local copy too:
+
+- `src/assets/icons/<id>.webp` — a 64×64 WebP, usually 1–3 KB. **The file name must equal the app `id`.**
+  A missing file just falls back to the `icon` URL, so adding one is always safe.
+- Resolution lives in `src/gallery/appIcons.ts`: `appIconUrl()` prefers the local file,
+  `appIconUrlSafe()` additionally drops an icon that already failed once in this session.
+- `HomePage.vue` / `DownloadDetailPage.vue` render `<img loading="lazy" referrerpolicy="no-referrer"
+  @error="markIconBroken(app.id)">` and fall back to a first-letter tile — a dead icon never leaves a
+  blank hole.
+- The single-file build inlines these (they are tiny; `assetsInlineLimit` is 1e8 there), so the offline
+  copy carries them as well.
 
 ---
 
