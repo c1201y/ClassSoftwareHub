@@ -298,9 +298,13 @@ changes are replayed by `visitor.ts`.
   at the top of `package-lock.json` (npm normally syncs these)
 - The codename is part of the public version string and **may be an English phrase**
   (`- Autumn`, `- September 18 Incident`) — the suffix stays in user-facing copy.
-- Release tags keep the old habit: `v2.3.1-September18Incident` (history: `v2.1.0-Autumn`,
-  `v2.2.0-Autumn`). A tag points at the **last commit of that version's cycle**, not at the commit
-  that bumped the version — `v2.2.0-Autumn` is the AGENTS.md commit, `v2.1.0-Autumn` is the
+- Release tags are named `vX.Y.Z-<season codename>` — `-Autumn` for every release so far
+  (`v2.0.0-Autumn`, `v2.1.0-Autumn`, `v2.2.0-Autumn`, `v2.3.0-Autumn`). ⚠️ That suffix is the
+  **season codename, not the release headline**: `v2.3.0-Autumn` is correct even though the CHANGELOG
+  entry for that release is titled `v2.3.0 - September 18 Incident`. Do **not** build a tag out of the
+  headline — `v2.3.0-September18Incident` was created once that way and had to be deleted.
+  A tag points at the **last commit of that version's cycle**, not at the commit that bumped the
+  version — `v2.2.0-Autumn` is the AGENTS.md commit, `v2.1.0-Autumn` is the
   `docs: 添加 v2.1.0 更新日志` commit.
 - `CHANGELOG.md` is maintained by hand; **whether it ships with a commit is the maintainer's call**
   (there is precedent for keeping it local-only).
