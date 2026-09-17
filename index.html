@@ -5,6 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- 页面标题会在运行时由 i18n 的 app.title 覆盖 -->
     <title>电教委员常用软件下载站</title>
+
+    <!-- ── SEO / 收录 ───────────────────────────────────────────────
+         本站是 hash 路由的单页应用：不执行 JS 时，下面这些 meta 是搜索
+         引擎与聊天工具唯一能读到的信息，文案请与站点实际内容保持一致。
+         ⚠️ 主域名是 classsoftwarehub.132614.xyz，canonical 与 og:url 一律用它
+            （另一个域名 xfane.com 指向同一份页面，靠 canonical 合并权重）。 -->
+    <meta
+      name="description"
+      content="面向电教委员与班级电脑的软件下载站：收录数十款教学辅助、班级管理、白板与多媒体软件，无广告、无捆绑、开源优先；另有课堂小工具与国产 AI 导航，全部在浏览器本地运行、不上传数据。"
+    />
+    <meta
+      name="keywords"
+      content="电教委员,班级电脑,教学软件下载,班级管理软件,一体机软件,白板软件,无广告软件下载,ClassIsland,课堂小工具"
+    />
+    <meta name="author" content="Tiny-Nick" />
+    <meta name="robots" content="index,follow" />
+    <meta name="theme-color" content="#0067C0" />
+    <link rel="canonical" href="https://classsoftwarehub.132614.xyz/" />
+    <link rel="icon" href="./favicon.ico" sizes="any" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "ClassSoftwareHub 电教委员常用软件下载站",
+        "alternateName": "电教委员常用软件下载站",
+        "url": "https://classsoftwarehub.132614.xyz/",
+        "description": "面向电教委员与班级电脑的软件下载站：收录数十款教学辅助、班级管理、白板与多媒体软件，无广告、无捆绑、开源优先。",
+        "inLanguage": "zh-CN",
+        "author": { "@type": "Person", "name": "Tiny-Nick" }
+      }
+    </script>
+
+    <!-- ── 分享卡片：在 QQ / 微信等聊天工具里发本站链接时的预览 ── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ClassSoftwareHub" />
+    <meta property="og:title" content="电教委员常用软件下载站" />
+    <meta
+      property="og:description"
+      content="收录数十款教学辅助、班级管理、白板与多媒体软件，无广告、无捆绑、开源优先；另有课堂小工具与国产 AI 导航，全部本地运行、不上传数据。"
+    />
+    <meta property="og:url" content="https://classsoftwarehub.132614.xyz/" />
+    <meta property="og:image" content="https://classsoftwarehub.132614.xyz/og-cover.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="电教委员常用软件下载站" />
+    <meta
+      name="twitter:description"
+      content="收录数十款教学辅助、班级管理、白板与多媒体软件，无广告、无捆绑、开源优先。"
+    />
+    <meta name="twitter:image" content="https://classsoftwarehub.132614.xyz/og-cover.png" />
     <!-- 百度统计（异步加载，PC / 移动端通用）。SPA 的路由切换 PV 在 src/gallery/visitor.ts 里补报 -->
     <script>
       var _hmt = _hmt || [];
@@ -36,6 +88,18 @@
   </head>
   <body>
     <div id="app"></div>
+    <!-- 未启用 JS 时的兜底说明（正常浏览不会显示） -->
+    <noscript>
+      <div
+        style="max-width:44rem;margin:12vh auto;padding:0 1.5rem;line-height:1.8;font-family:system-ui,-apple-system,'Microsoft YaHei',sans-serif;color:#1b1b1b"
+      >
+        <h1 style="font-size:1.5rem;margin-bottom:.5rem">电教委员常用软件下载站</h1>
+        <p>
+          本站面向电教委员与班级电脑，收录教学辅助、班级管理、白板与多媒体等软件，无广告、无捆绑、开源优先；另有课堂小工具与国产 AI 导航。
+        </p>
+        <p>页面需要启用 JavaScript 才能浏览，请在浏览器设置中开启后刷新重试。</p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
