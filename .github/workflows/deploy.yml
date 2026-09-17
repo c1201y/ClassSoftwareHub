@@ -70,6 +70,12 @@ jobs:
     # 不让整次部署变红（站点主入口同时走 GitHub Pages 与 FTP，不受影响）。
     continue-on-error: true
     steps:
+      - name: 取出源码
+        # 上传脚本 scripts/upload-webdav.py 在仓库里，这一步不能省。
+        # （旧的 curl 写法不需要 checkout，换成脚本后忘了加，第一次跑就报
+        #  "can't open file .../scripts/upload-webdav.py: No such file or directory"。）
+        uses: actions/checkout@v4
+
       - name: 取出构建产物
         uses: actions/download-artifact@v4
         with:
