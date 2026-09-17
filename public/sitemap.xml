@@ -2,11 +2,11 @@
 <!--
   本站是 hash 路由的单页应用（页面地址形如 /#/download/xxx），
   锚点后的部分不会被搜索引擎当作独立网址，所以这里只列首页。
-  站点地图地址：https://classsoftwarehub.132614.xyz/sitemap.xml
+  站点地图地址：https://classsoftwarehub.us.ci/sitemap.xml
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://classsoftwarehub.132614.xyz/</loc>
+    <loc>https://classsoftwarehub.us.ci/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>

@@ -20,7 +20,7 @@
 | App code | Everything lives in `src/gallery/` — **the only place you should change code** |
 | Data | `软件数据/apps/*.json` (one file per app, 60 today) + `软件数据/categories.json` (4 categories) |
 | Strings | Chinese = `文字设置.ts` at repo root; English = `src/gallery/Strings/en-US/Resources.ts` |
-| Live site | https://classsoftwarehub.132614.xyz (see `CNAME`) / mirror: classsoftwarehub.xfane.com |
+| Live site | https://classsoftwarehub.us.ci (main) — mirrors: classsoftwarehub.132614.xyz (see `CNAME`) · classsoftwarehub.xfane.com |
 | Output | `npm run build` → `dist/` (multi-file); `SINGLEFILE=1` → one HTML file (what CI ships) |
 
 ### Commands
@@ -364,7 +364,10 @@ stops reporting version/repo problems but still reports dead links; `all` report
 **SEO & the share card**: everything a crawler or chat app can read *without running JS* lives in
 `index.html` (`description` / `keywords` / `canonical` / Open Graph / Twitter card / JSON-LD) plus
 files in `public/` — `robots.txt`, `sitemap.xml`, `favicon.ico`, and `og-cover.png` (1200×630, the
-preview image shown when the link is posted in QQ / WeChat). Vite copies `public/` verbatim into
+preview image shown when the link is posted in QQ / WeChat). **Every absolute URL in these files must
+use the main domain `https://classsoftwarehub.us.ci/`** — Bing rejects a sitemap that lists another
+domain ("not contained in this site"); the two mirrors (132614.xyz / xfane.com) are folded into the
+main domain by `canonical`. Vite copies `public/` verbatim into
 `dist/`, so they reach GitHub Pages and the FTP mirror; the OpenList step uploads `index.html` only.
 Keep this copy in step with the real site — search engines index the static `<title>`/`description`
 and the `<noscript>` block, **not** the runtime i18n strings. Two limits worth repeating: the site

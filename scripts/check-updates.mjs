@@ -41,7 +41,7 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const APPS_DIR = path.join(ROOT, '软件数据', 'apps')
-const UA = 'ClassSoftwareHub-UpdateChecker/1.0 (+https://classsoftwarehub.132614.xyz)'
+const UA = 'ClassSoftwareHub-UpdateChecker/1.0 (+https://classsoftwarehub.us.ci)'
 
 // ── 参数 ────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2)
