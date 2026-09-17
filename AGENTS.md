@@ -47,6 +47,7 @@ AI导航文本.ts                    Site list + copy for the AI-nav page (indep
   ├─ update-ignore.json          Apps the update checker should stop nagging about (see "CI Notes")
   ├─ README-维护手册.md          ★ Read this before editing data
   └─ apps/<id>.json              One file per app; files starting with `_` are not loaded
+public/                        Copied verbatim into dist/ — robots.txt · sitemap.xml · favicon.ico · og-cover.png (see "SEO & the share card")
 src/
   ├─ main.ts                     Mount entry
   ├─ gallery/                  ★ This site's application code
@@ -359,6 +360,18 @@ issue's collapsed *ignored* section. Records live in `软件数据/update-ignore
 stops reporting version/repo problems but still reports dead links; `all` reports nothing at all.
 
 **Changing site copy**: only `文字设置.ts` (plus the English file) — never touch the keys.
+
+**SEO & the share card**: everything a crawler or chat app can read *without running JS* lives in
+`index.html` (`description` / `keywords` / `canonical` / Open Graph / Twitter card / JSON-LD) plus
+files in `public/` — `robots.txt`, `sitemap.xml`, `favicon.ico`, and `og-cover.png` (1200×630, the
+preview image shown when the link is posted in QQ / WeChat). Vite copies `public/` verbatim into
+`dist/`, so they reach GitHub Pages and the FTP mirror; the OpenList step uploads `index.html` only.
+Keep this copy in step with the real site — search engines index the static `<title>`/`description`
+and the `<noscript>` block, **not** the runtime i18n strings. Two limits worth repeating: the site
+uses **hash routing**, so `/#/download/<id>` is not a distinct URL to a crawler (only the home page
+is listable, which is why `sitemap.xml` has a single entry), and the app is fully client-rendered,
+so the `<noscript>` body is all a non-JS crawler sees. Swapping the cover is just PNG-in,
+PNG-out at the same path.
 
 **"The site did not update after deploy"**: first check whether `deploy.yml` actually ran. A push made
 with `GITHUB_TOKEN` never triggers it, so post-review deploys rely on the explicit

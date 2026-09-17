@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://classsoftwarehub.132614.xyz/sitemap.xml
