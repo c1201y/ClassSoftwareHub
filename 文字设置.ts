@@ -123,7 +123,7 @@ export default {
       "detail.store-only": "该软件通过 Microsoft Store 分发，点上方按钮打开商店页面即可获取",
       "app.shortTitle": "电教委员常用软件下载站",
       "app.author": "Tiny-Nick",
-      "app.version": "v2.3.1 - September 18 Incident (20260917PR02)",
+      "app.version": "v2.3.1 - September 18 Incident (20260917PR03)",
       "nav.submit": "提交软件",
       "submit.subtitle": "填写下面的信息，提交后进入审核队列，审核通过会自动上线。",
       "submit.import-title": "从 GitHub 一键读取",
