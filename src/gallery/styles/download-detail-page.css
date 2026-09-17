@@ -28,6 +28,18 @@
   width: 100%;
   height: 100%;
 }
+/* 图标没加载出来时的兜底：显示软件名首字 */
+.detail-app-icon-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--accent-base);
+  background: color-mix(in srgb, var(--accent-base) 14%, transparent);
+}
 .detail-heading-text {
   min-width: 0;
 }

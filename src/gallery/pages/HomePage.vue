@@ -113,7 +113,16 @@
               @click="openDetail(app)">
               <span class="control-item-surface">
                 <span class="download-app-icon">
-                  <img v-if="app.icon" :src="app.icon" :alt="app.name" />
+                  <!-- 图标：本地那份优先（见 src/gallery/appIcons.ts）；外链挂掉就退回首字色块，不开天窗 -->
+                  <img
+                    v-if="appIconUrlSafe(app)"
+                    :src="appIconUrlSafe(app)"
+                    :alt="app.name"
+                    loading="lazy"
+                    decoding="async"
+                    referrerpolicy="no-referrer"
+                    @error="markIconBroken(app.id)" />
+                  <span v-else class="download-app-icon-fallback" aria-hidden="true">{{ app.name.slice(0, 1) }}</span>
                 </span>
                 <span class="control-item-text">
                   <WinTextBlock class="control-item-title" :Text="app.name" />
@@ -143,6 +152,7 @@ import WinSelectorBar from '../../components/WinSelectorBar.vue';
 import { useI18n } from '../../components/i18n/index';
 import { apps, categories, categoryName } from '../data';
 import type { SoftwareApp } from '../data';
+import { appIconUrlSafe, markIconBroken } from '../appIcons';
 import '../styles/home-page.css';
 // 软件清单模板：与根目录 软件数据/apps/_模板.json 保持同源（打包时内联进单文件）
 import softwareTemplateRaw from '../../../软件数据/apps/_模板.json?raw';

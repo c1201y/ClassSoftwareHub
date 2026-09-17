@@ -8,7 +8,15 @@
         <!-- 头部：图标 + 名称 + 标语 + 分类徽标 -->
         <div class="detail-heading">
           <div class="detail-app-icon">
-            <img v-if="app.icon" :src="app.icon" :alt="app.name" />
+            <!-- 图标：本地那份优先（见 src/gallery/appIcons.ts）；外链挂掉就退回首字色块 -->
+            <img
+              v-if="appIconUrlSafe(app)"
+              :src="appIconUrlSafe(app)"
+              :alt="app.name"
+              decoding="async"
+              referrerpolicy="no-referrer"
+              @error="markIconBroken(app.id)" />
+            <span v-else class="detail-app-icon-fallback" aria-hidden="true">{{ app.name.slice(0, 1) }}</span>
           </div>
           <div class="detail-heading-text">
             <h1 class="detail-title">{{ app.name }}</h1>
@@ -116,6 +124,7 @@ import WinButton from '../../components/WinButton.vue';
 import { useI18n } from '../../components/i18n/index';
 import { findAppById, categoryName } from '../data';
 import type { DownloadItem } from '../data';
+import { appIconUrlSafe, markIconBroken } from '../appIcons';
 import '../styles/download-detail-page.css';
 
 const { t } = useI18n();
