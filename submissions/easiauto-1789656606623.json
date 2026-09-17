@@ -1,0 +1,24 @@
+{
+  "_提交时间": "2026-09-17T14:50:06.623Z",
+  "_原始ID冲突": false,
+  "id": "easiauto",
+  "name": "EasiAuto",
+  "icon": "https://avatars.githubusercontent.com/u/77066831?v=4",
+  "category": "teaching",
+  "tagline": "一款自动登录希沃白板的小工具！",
+  "description": "一款自动登录希沃白板的小工具，旨在带来更智能、更方便、更易用的希沃白板登录体验，简化课前准备流程。",
+  "version": "v1.2.1",
+  "size": "",
+  "system": "",
+  "website": "https://easiauto.0xabcd.dev",
+  "github": "https://github.com/hxabcd/EasiAuto",
+  "downloads": [
+    {
+      "platform": "其他 压缩包",
+      "note": "EasiAuto_v1.2.1.zip",
+      "size": "96.9 MB",
+      "url": "https://github.com/hxabcd/EasiAuto/releases/download/v1.2.1/EasiAuto_v1.2.1.zip"
+    }
+  ],
+  "sort": 50
+}
