@@ -21,7 +21,7 @@
 | Data | `软件数据/apps/*.json` (one file per app, 60 today) + `软件数据/categories.json` (4 categories) |
 | Strings | Chinese = `文字设置.ts` at repo root; English = `src/gallery/Strings/en-US/Resources.ts` |
 | Live site | https://classsoftwarehub.us.ci (main) — mirrors: classsoftwarehub.132614.xyz (see `CNAME`) · classsoftwarehub.xfane.com |
-| Output | `npm run build` → `dist/` (multi-file); `SINGLEFILE=1` → one HTML file (what CI ships) |
+| Output | `npm run build` → `dist/` (multi-file, **what CI ships**); `SINGLEFILE=1` → one HTML file (offline / double-click) |
 
 ### Commands
 
@@ -29,8 +29,8 @@
 npm install           # first time only
 npm run dev           # dev server at http://localhost:5173
 npm run type-check    # vue-tsc --build (run it after touching any .ts/.vue)
-npm run build         # multi-file bundle → dist/
-npm run build:single  # single-file bundle → dist/index.html (~1.9 MB, opens offline)
+npm run build         # multi-file bundle → dist/ — this is what CI deploys
+npm run build:single  # single-file bundle → dist/index.html (~2 MB, opens offline)
 npm run check         # type-check + build
 ```
 
@@ -73,8 +73,9 @@ stats-worker/
   ├─ worker.js                   Cloudflare Worker: visit stats + GitHub API proxy (600+ lines)
   └─ wrangler.toml               Deploy config (KV binding: STATS)
 submissions/                     Visitor-submitted app drafts (submission-flow entry; don't hand-edit)
-scripts/                         Maintenance scripts — `check-updates.mjs` (upstream version checker) and
-                                 `update-ignore.mjs` (edits the ignore list); see "CI Notes"
+scripts/                         Maintenance scripts — `check-updates.mjs` (upstream version checker),
+                                 `update-ignore.mjs` (edits the ignore list) and `upload-webdav.py`
+                                 (mirrors dist/ to the OpenList folder); see "CI Notes"
 .github/workflows/               The 5 workflows (see "CI Notes")
 ```
 
@@ -253,9 +254,23 @@ changes are replayed by `visitor.ts`.
   ⚠️ **Do not go back to `git diff HEAD~1 HEAD`** — checkout lands on the tip fetched at that moment,
   so two pushes close together either duplicate an issue or **create none at all** (the draft sits in
   `submissions/` forever). That is also why `fetch-depth: 0` is required.
-- `deploy.yml` builds **once** in the `build` job and passes the artifact to the three upload jobs
-  (previously each uploaded job rebuilt, burning runner minutes). The single-file output is just
-  `dist/index.html`.
+- `deploy.yml` builds **once** in the `build` job (`npm run build`, multi-file) and passes the
+  artifact to the three upload jobs (previously each uploaded job rebuilt, burning runner minutes).
+  The artifact is the whole `dist/` — `index.html` plus an `assets/` folder of content-hashed,
+  per-route chunks (~66 files, ~2 MB total).
+  - **Pages** takes `dist/` as-is. **FTP** mirrors it (FTP-Deploy-Action also deletes remote files
+    that are no longer in `dist/`, so stale hashed chunks do not pile up).
+  - **OpenList (WebDAV)** runs `scripts/upload-webdav.py`: mkcol → PUT every file → verify → prune.
+    Uploads are **raw** — no zip / tar / gzip — so the remote folder stays a browsable copy of the
+    site. The prune pass only cleans folders the build itself produced (`assets/`); it never touches
+    the target root, which may hold files we do not own. Every request retries, and the job keeps
+    `continue-on-error` because that host is a small box that occasionally drops connections.
+  - ⚠️ `index.html` must keep referencing its assets **relatively** (`vite.config.ts` sets
+    `base: './'`): the OpenList copy lives in a sub-folder (`网站/`), where an absolute `/assets/…`
+    would 404. Hash routing (the document path never changes) is what makes one build work at both
+    depths. The same file also sanitises chunk names to ASCII — a Chinese module filename
+    (`AI导航文本.ts`) would otherwise emit `assets/AI导航文本-xxxx.js`, and some servers mishandle
+    percent-encoded paths.
 - All five workflows carry Chinese comments explaining *why* they are written this way —
   **read those comments before changing anything.**
 - `check-updates.yml` runs `scripts/check-updates.mjs` **every Friday** (and on demand), comparing
@@ -312,7 +327,7 @@ changes are replayed by `visitor.ts`.
 - Public version: `X.Y.Z` + a **codename suffix, which is kept** (e.g. `- Autumn`).
   X = major (architecture / UI overhaul); Y = feature update; Z = small fix.
 - Internal version: `AAAABBCCPRDD` (year / month / day / file revision), e.g. `20260915PR01`.
-- Update all of these together — current value is `v2.3.1 - September 18 Incident (20260916PR05)`:
+- Update all of these together — current value is `v2.3.1 - September 18 Incident (20260917PR05)`:
   - `文字设置.ts` → `app.version`, `home.subtitle`, `welcome.intro` (**3 places**)
   - `src/gallery/Strings/en-US/Resources.ts` → `app.version`
   - `package.json` → `version` (bare `2.3.1`, no codename / internal number); also bump the two `"version"` fields

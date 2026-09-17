@@ -9,8 +9,8 @@
 ```bash
 npm install          # 首次使用（已装过可跳过）
 npm run dev          # 开发预览 http://localhost:5173（改代码自动刷新）
-npm run build        # 常规打包 → dist/（多文件，适合挂服务器/GitHub Pages）
-npm run build:single # 单文件打包 → dist/index.html（约 1.9MB，可离线双击打开）
+npm run build        # 常规打包 → dist/（多文件：index.html + assets/，线上部署用的就是这个）
+npm run build:single # 单文件打包 → dist/index.html（约 2MB，可离线双击打开，不属于部署产物）
 npm run type-check   # TS 类型检查
 ```
 
@@ -25,7 +25,9 @@ npm run type-check   # TS 类型检查
 | 分类（名称/图标/顺序） | 根目录 `软件数据/categories.json`（一般不碰） |
 | **AI 导航**（网址清单/文案） | 根目录 **`AI导航文本.ts`** —— 一个网站一段，改名称/简介/网址即可（图标内置，不用管） |
 
-改完 → 跑 `npm run build`（或 `build:single`）→ 把产物给班级电脑。
+改完 → 跑 `npm run build`，把 **`dist/` 整个目录**（`index.html` + `assets/` 文件夹）拷给班级电脑；
+推送到 `main` 后 GitHub Actions 会自动打包并发布到 **GitHub Pages + FTP + OpenList 网盘**三处。
+`npm run build:single` 打出的单文件 HTML 只用于「拷一个文件走、离线双击打开」的场景，**线上部署不用它**。
 
 ## 软件信息自动更新（省事用）
 
@@ -106,7 +108,7 @@ node scripts/update-ignore.mjs --list                                    # 看�
 - **版本号规则**（2026-09-15 起）：对外版本号用 `X.Y.Z` —— X 大版本（底层架构 / UI 大改动）、
   Y 功能更新、Z 小修小补；**代号后缀保留**（如 `- Autumn`）。同一版本另有内部版本号 `AAAABBCCPRDD`
   （AAAA 年 / BB 月 / CC 日期 / DD 文件版次），例 `20260915PR01`。
-  对外版本号与内部版本号都写在 `文字设置.ts` 的 `app.version`（当前 `v2.3.1 - September 18 Incident (20260916PR05)`），
+  对外版本号与内部版本号都写在 `文字设置.ts` 的 `app.version`（当前 `v2.3.1 - September 18 Incident (20260917PR05)`），
   英文站同步改 `src/gallery/Strings/en-US/Resources.ts` 的 `app.version`（设置页「关于」展示的就是它）。
 - 设置页“关于”里的“投喂作者/回声洞/作者首页/QQ 群”链接来自 `文字设置.ts` 的 `about.*-url` 键，改文字区即可换链接。
 - 设置页已移除“页面过渡”选项，切换动画固定为默认效果（用户不可调）。
