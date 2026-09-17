@@ -47,7 +47,7 @@ AI导航文本.ts                    Site list + copy for the AI-nav page (indep
   ├─ update-ignore.json          Apps the update checker should stop nagging about (see "CI Notes")
   ├─ README-维护手册.md          ★ Read this before editing data
   └─ apps/<id>.json              One file per app; files starting with `_` are not loaded
-public/                        Copied verbatim into dist/ — robots.txt · sitemap.xml · favicon.ico · og-cover.png (see "SEO & the share card")
+public/                        Copied verbatim into dist/ — robots.txt · sitemap.xml · favicon.ico · og-cover.png · BingSiteAuth.xml (see "SEO & the share card")
 src/
   ├─ main.ts                     Mount entry
   ├─ gallery/                  ★ This site's application code
