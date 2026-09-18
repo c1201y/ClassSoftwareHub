@@ -1,7 +1,7 @@
 {
   "id": "lively",
   "name": "Lively Wallpaper",
-  "icon": "https://avatars.githubusercontent.com/u/17554161?v=4",
+  "icon": "https://store-images.s-microsoft.com/image/apps.4720.14416131676512756.84314783-1c86-4403-b991-2e1da8525703.bf78340f-7059-4641-8d3f-8a7f740be8c0?h=134",
   "category": "other",
   "tagline": "Wallpaper Engine不错的替代品",
   "description": "开源的动态壁纸软件，Wallpaper Engine不错的替代品",
@@ -10,6 +10,7 @@
   "system": "Windows",
   "website": "https://rocksdanister.com/lively",
   "github": "https://github.com/rocksdanister/lively",
+  "store": "https://apps.microsoft.com/detail/9ntm2qc6qws7?hl=zh-CN&gl=CN",
   "downloads": [
     {
       "platform": "其他 压缩包",
@@ -36,6 +37,5 @@
       "url": "https://github.com/rocksdanister/lively/releases/download/v2.2.1.0/lively_utility_screensaver.zip"
     }
   ],
-  "sort": 99,
-  "store": "https://apps.microsoft.com/detail/9ntm2qc6qws7?hl=zh-CN&gl=CN"
+  "sort": 99
 }
