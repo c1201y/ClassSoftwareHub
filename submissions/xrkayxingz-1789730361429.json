@@ -1,0 +1,33 @@
+{
+  "_提交时间": "2026-09-18T11:19:21.429Z",
+  "_原始ID冲突": false,
+  "id": "xrkayxingz",
+  "name": "向日葵远程",
+  "icon": "",
+  "category": "other",
+  "tagline": "常用远控软件",
+  "description": "远程控制手机、电脑等，市面上主流远控软件，基础功能免费",
+  "version": "",
+  "size": "",
+  "system": "",
+  "website": "https://sunlogin.oray.com/download",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "Windows 64位安装版",
+      "size": "189.8MB",
+      "url": "https://dw.oray.com/sl/windows/AweSun_16.6.0.32198.exe"
+    },
+    {
+      "platform": "Windows 32位安装版",
+      "size": "86.8MB",
+      "url": "https://d-cdn.oray.com/sl/windows/AweSun_v16.5.0.32083_x86.exe"
+    },
+    {
+      "platform": "Windows ARM安装版",
+      "size": "74.9MB",
+      "url": "https://dw.oray.com/sl/windows/AweSun_16.5.0.32083_arm64.exe"
+    }
+  ],
+  "sort": 99
+}
