@@ -6,7 +6,7 @@
 > and curates with a clear bias: **no ads, no bundled junk, open source first**.
 >
 > This file is the minimum context an AI agent (or a new contributor) needs. **Read it before
-> touching anything** — especially "Hard Rules" and "Directory Map". `README.md` is written for
+> making any change** — especially "Hard Rules" and "Directory Map". `README.md` is written for
 > content maintainers; this file is written for people changing code.
 
 ---
@@ -72,7 +72,7 @@ src/
 stats-worker/
   ├─ worker.js                   Cloudflare Worker: visit stats + GitHub API proxy (600+ lines)
   └─ wrangler.toml               Deploy config (KV binding: STATS)
-submissions/                     Visitor-submitted app drafts (submission-flow entry; don't hand-edit)
+submissions/                     Visitor-submitted app drafts (entry point of the submission flow; do not edit by hand)
 scripts/                         Maintenance scripts — `check-updates.mjs` (upstream version checker),
                                  `update-ignore.mjs` (edits the ignore list) and `upload-webdav.py`
                                  (mirrors dist/ to the OpenList folder); see "CI Notes"
@@ -111,16 +111,16 @@ Routes (hash-based):
    writing a secret here publishes it, and once it is in git history it **cannot be taken back**
    (deleting it afterwards does not undo the leak — you have to rotate the secret at the provider).
    All credentials go through repository Secrets (`FTP_*`, `WEBDAV_*`).
-6. **Do not commit or push on your own initiative.** The maintainer's workflow is "change files,
-   let me look, then push". Without an explicit instruction, stay in the working tree: no commit,
+6. **Do not commit or push on your own initiative.** The maintainer reviews changes before they are pushed.
+   Without an explicit instruction, stay in the working tree: no commit,
    no push, no tags.
 7. Commit messages are short Chinese phrases; follow the existing history:
    `chore(version): ...`, `review: approved #12`, `fix: ...`.
 8. **Mind the line endings.** There is **no `.gitattributes`** in this repo, so line endings are a
    mix: `src/gallery/pages/SubmitPage.vue` is **CRLF**, while most `.ts` / `.md` / `.json` files are
    **LF**. **Never assume "the whole repo is LF"** — read the file's actual bytes and keep them
-   unchanged, or a small edit shows up as a whole-file diff (this really happened: a 19-line change
-   was reported as `+1148/-1131` and needed a follow-up commit just to restore the line endings).
+   unchanged, or a small edit shows up as a whole-file diff (for example, a 19-line change once appeared as `+1148/-1131` and needed a follow-up commit only
+   to restore the line endings).
 9. **Keep internal housekeeping out of this repo.** It is public: no "known issues / TODO"
    sections, no notes about past misconfiguration, no sandbox or tooling workarounds, no paths to
    scratch files. Those belong in the maintainer's local notes — everything committed here is
@@ -162,8 +162,7 @@ Key constraints:
   `macOS（Apple 芯片）` / `Linux x64（.deb）` / `Android ARM64（APK）`.
 - **Fault tolerance is deliberate**: one broken JSON can never take the site down — the bad file is
   skipped, everything else still renders, and a red bar at the top lists "how many files failed + file
-  name + approximate line + reason" (`dataLoadIssues`, see `src/gallery/data/index.ts`). Don't be afraid
-  to edit data.
+  name + approximate line + reason" (`dataLoadIssues`, see `src/gallery/data/index.ts`). Data edits are safe.
 - When collecting data for a new app, **prefer the GitHub REST API (releases/assets)** for real direct
   links and file sizes — far more reliable than guessing. HEAD-check an icon URL before writing it.
 
@@ -196,14 +195,14 @@ keep a local copy too:
 Worker routes: `/api/hit` (PV+1 / UV dedupe / concurrent visitors), `/api/stats` (read-only, used by
 local dev), `/api/gh/*` (GitHub proxy), `/` (stats dashboard page).
 
-**Reachability from mainland China is this project's number-one constraint** — it has bitten us
-repeatedly:
+**Reachability from mainland China is the project's primary constraint**, and it has repeatedly
+caused failures:
 
 - `.workers.dev` is **unreachable from mainland China** → every visitor-facing endpoint must use a
   **custom domain**.
 - "Import from GitHub" falls back through: site proxy → `api.github.com` → `gh-proxy.com` → `ghfast.top`.
-  **The endpoint that worked is remembered in `localStorage['csh-gh-api-base']`** so the next call
-  skips the dead ones instead of waiting out the timeout.
+  **The endpoint that worked is remembered in `localStorage['csh-gh-api-base']`** so later calls
+  skip unreachable endpoints instead of waiting for their timeouts.
 - The submit flow falls back the same way; **the working endpoint is remembered in
   `localStorage['csh-submit-endpoint']`**. Per-endpoint timeout is **10 s**, and a failed submission is
   saved to `localStorage['csh-submit-draft']`.
@@ -248,14 +247,14 @@ changes are replayed by `visitor.ts`.
 - `review-submission.yml` uses `concurrency: { group: review-submission, queue: max }` so concurrent
   reviews are **queued and serialized**. ⚠️ **Do not replace it with `cancel-in-progress: false`** —
   that only keeps "1 running + 1 pending", and a new pending run **evicts** the old one, so **batch
-  reviews silently lose entries** (we have lost 2 that way). A `pull --rebase` retry loop backs up the
+  reviews silently lose entries** (two review batches were lost this way). A `pull --rebase` retry loop backs up the
   push as well.
 - `create-review-issue.yml` computes its diff range from the event's own `before` / `after` SHAs.
   ⚠️ **Do not go back to `git diff HEAD~1 HEAD`** — checkout lands on the tip fetched at that moment,
-  so two pushes close together either duplicate an issue or **create none at all** (the draft sits in
-  `submissions/` forever). That is also why `fetch-depth: 0` is required.
+  so two closely spaced pushes either duplicate an issue or **create none at all** (the draft then sits
+  in `submissions/` indefinitely). That is also why `fetch-depth: 0` is required.
 - `deploy.yml` builds **once** in the `build` job (`npm run build`, multi-file) and passes the
-  artifact to the three upload jobs (previously each uploaded job rebuilt, burning runner minutes).
+  artifact to the three upload jobs (previously every upload job rebuilt on its own, consuming extra runner minutes).
   The artifact is the whole `dist/` — `index.html` plus an `assets/` folder of content-hashed,
   per-route chunks (~66 files, ~2 MB total).
   - **Pages** takes `dist/` as-is. **FTP** mirrors it (FTP-Deploy-Action also deletes remote files
@@ -264,7 +263,7 @@ changes are replayed by `visitor.ts`.
     Uploads are **raw** — no zip / tar / gzip — so the remote folder stays a browsable copy of the
     site. The prune pass only cleans folders the build itself produced (`assets/`); it never touches
     the target root, which may hold files we do not own. Every request retries, and the job keeps
-    `continue-on-error` because that host is a small box that occasionally drops connections.
+    `continue-on-error` because that host occasionally drops connections.
   - ⚠️ `index.html` must keep referencing its assets **relatively** (`vite.config.ts` sets
     `base: './'`): the OpenList copy lives in a sub-folder (`网站/`), where an absolute `/assets/…`
     would 404. Hash routing (the document path never changes) is what makes one build work at both
@@ -294,8 +293,8 @@ changes are replayed by `visitor.ts`.
   slugs, dead links, and versions that are not comparable strings (e.g. `上次更新日期 2026/8/18`).
   Non-GitHub links (vendor sites, mirrors) are **never** touched — only reported. That report is its
   **own** pending kind (`stale`), deliberately *not* attached to a bump: while it hung off the bump
-  entry, the notice disappeared the moment the script finished the upgrade by itself, so the vendor
-  link stayed stale with nobody the wiser (7-Zip lost its two `7-zip.org` links exactly that way).
+  entry, the notice disappeared the moment the script finished the upgrade by itself, so the vendor link
+  stayed stale with no visible warning (this is how the two `7-zip.org` links on 7-Zip went stale).
   After writing anything back it must dispatch `deploy.yml` explicitly (same `GITHUB_TOKEN`
   suppression rule as above). The script rewrites each JSON file individually to **preserve its
   original line endings** — see Hard Rule 8.
@@ -365,12 +364,12 @@ hit the 60-requests/hour anonymous limit. This is exactly what the weekly
 
 **After fixing an entry by hand**: you do not edit anything from the issue — fix
 `软件数据/apps/<id>.json` wherever you like, **commit**, then tick "已改好 → 重新检测" under that entry.
-That dispatches a full check, and the entry disappears if the fix holds. Nothing else to remember.
+That dispatches a full check, and the entry disappears if the fix holds. No further steps are required.
 
 **Muting an update nag forever**: tick "不用跟进" under that entry in the health-check issue (one
 click, nothing to type) — or reply `/ignore <id> [updates|all] [reason]`, or run
 `node scripts/update-ignore.mjs --add=<id> --skip=updates --reason="..."` locally
-(`--list` and `--remove=<id>` also work). Untick-by-hand is offered as a "restore" checkbox in the
+(`--list` and `--remove=<id>` also work). An entry can be restored by ticking its "restore" checkbox in the
 issue's collapsed *ignored* section. Records live in `软件数据/update-ignore.json`: `updates`
 stops reporting version/repo problems but still reports dead links; `all` reports nothing at all.
 
@@ -391,11 +390,11 @@ is listable, which is why `sitemap.xml` has a single entry), and the app is full
 so the `<noscript>` body is all a non-JS crawler sees. Swapping the cover is just PNG-in,
 PNG-out at the same path.
 
-**"The site did not update after deploy"**: first check whether `deploy.yml` actually ran. A push made
+**Site did not update after deployment**: first verify that `deploy.yml` actually ran. A push made
 with `GITHUB_TOKEN` never triggers it, so post-review deploys rely on the explicit
 `gh workflow run deploy.yml` dispatch.
 
-**"Some regions cannot open the site"**: this is a mainland-reachability problem. Check for
+**Some regions cannot open the site**: this is a mainland-reachability issue. Check for
 blocked domains such as `.workers.dev`. The main site is served from SpeedOnline Hong Kong, while the
 submission path goes through Cloudflare.
 
