@@ -77,6 +77,11 @@ const 系统镜像网站: MirrorText = {
       desc: '第三方系统镜像下载站',
       url: 'https://vizyn.dpdns.org/',
       color: '#7C3AED'
+    },
+    {
+      name: '站长收藏的系统镜像',
+      desc: '站长自己收藏的WinXP，Win7，Win8.1，Win10，Win11，Tiny11，WinPE系统镜像',
+      url: 'https://pan.baidu.com/s/1sQU6leqf5M2dnS1Cu36e2w?pwd=1234'
     }
   ]
 };
