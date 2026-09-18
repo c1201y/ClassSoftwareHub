@@ -26,7 +26,7 @@
 | 关于区：作者首页 / 回声洞 / 投喂作者 / QQ 群 | `about.author-home*` `about.echo-cave*` `about.reward*` `about.qq-group*` |
 | 版权行 / 版本号 | `text.about-copyright` `app.author` `app.version` |
 | 欢迎弹窗：标题 / 正文 / 按钮 / 相关文章 | `welcome.*`（`welcome.hello` 标题、`welcome.intro` 正文、`welcome.explore` 按钮、`welcome.article`+`welcome.article-url` 相关文章；仓库/作者/QQ 群/投喂链接复用 `about.*-url`） |
-| 标题栏搜索框：占位提示 / 结果"来源"称呼 / 无结果提示 | `search.placeholder` `search.source-name`（应用名称）`search.source-intro`（相关简介）`search.no-results` |
+| 全站搜索（Ctrl + K 面板）：入口文字 / 占位提示 / 结果"来源"称呼 / 分组名 / 页面条目 / 快捷键提示 | `search.titlebar` `search.placeholder` `search.no-results` `search.empty-hint`；`search.source-name`（应用名称）`search.source-intro`（相关简介）；`search.group-*`（软件 / 内置工具 / AI 导航 / 页面）；`search.page-*`（五个页面条目及其说明）；`search.keys-*` `search.footer-note`；`search.tools-hint` `search.tools-count`（工具页提示与数量） |
 
 ## 软件名、软件简介、下载链接？
 
@@ -41,7 +41,9 @@
 - 版权行由 `text.about-copyright`（模板）+ `app.author` + `text.all-rights-reserved` 拼成；
   中文版把"版权所有"留空 '' 是原版故意的（版权行只显示"© 2026 Tiny-Nick。"）。
 - `about.*-url` 是链接地址，改链接改它们（作者首页/回声洞/投喂作者/代码仓库/QQ 群）。
-- 搜索框会同时搜 软件名称 + 一句话简介 + 详细介绍（逻辑在 `src/gallery/searchIndex.ts`，
-  日常不用碰）；结果写成「软件名（应用名称）」= 名字命中，「软件名（相关简介）」= 简介/介绍命中。
-- 版本号 `app.version` 显示在关于区；原 HTML 里写的 `v2026831` 疑似手误
-  （站名副标题写的是 v20260831），确认后改这里 + `en-US` 对应值即可。
+- 搜索面板会同时搜 **软件（名称 / 一句话简介 / 详细介绍）+ 内置工具 + AI 导航站点 + 页面**，
+  结果按类别分组（逻辑在 `src/gallery/searchIndex.ts`，日常不用碰）；软件结果右侧标出命中来源，
+  即 `search.source-name`（应用名称）或 `search.source-intro`（相关简介）。
+- 版本号按 `X.Y.Z + 内部版本号` 规则维护，写在 `app.version`（设置页「关于」显示的就是它），
+  同时要改副标题 `home.subtitle`、欢迎弹窗 `welcome.intro`，以及英文站 `en-US/Resources.ts`
+  的 `app.version`。

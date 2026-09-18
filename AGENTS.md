@@ -60,7 +60,8 @@ src/
   │   ├─ appIcons.ts             ★ App-icon resolver: prefers the local 64 px copy, falls back to the `icon` URL
   │   ├─ data/index.ts           Data loader: types + fault-tolerant parsing (⚠️ do not edit)
   │   ├─ githubImport.ts         "Import from GitHub" (从 GitHub 一键读取) on the submit page
-  │   ├─ searchIndex.ts          Title-bar search (matches name + tagline + description)
+  │   ├─ searchIndex.ts          ★ Search index behind the global search panel (apps / tools / AI sites / pages)
+  │   ├─ GlobalSearch.vue        The Ctrl+K search panel: grouped results, ↑↓ / Enter / Esc
   │   ├─ visitor.ts              Self-hosted visit counter + Baidu Analytics SPA pageview replay
   │   ├─ holidayTheme.ts         Holiday skin (Mid-Autumn / National Day, switches with light/dark)
   │   ├─ VisitorCounter.vue      Settings-page visit stats (read-only view of visitorState)
@@ -87,7 +88,7 @@ Routes (hash-based):
 | `#/download/:id` | App detail page; `:id` = the `id` field in the data |
 | `#/settings` | Settings (appearance / about / visit stats) |
 | `#/submit` | Submit a new app |
-| `#/tools` | Built-in tools (searchable card list, 11 client-side utilities) |
+| `#/tools` | Built-in tools (card list, 11 client-side utilities — searched via the global panel) |
 | `#/tools/<id>` | A single built-in tool; routes are generated from the `src/gallery/tools/index.ts` registry |
 | `#/ai` | AI nav (21 Chinese AI sites, full-width clickable rows) |
 
@@ -372,6 +373,11 @@ click, nothing to type) — or reply `/ignore <id> [updates|all] [reason]`, or r
 (`--list` and `--remove=<id>` also work). An entry can be restored by ticking its "restore" checkbox in the
 issue's collapsed *ignored* section. Records live in `软件数据/update-ignore.json`: `updates`
 stops reporting version/repo problems but still reports dead links; `all` reports nothing at all.
+
+**Extending the search**: result matching lives in `src/gallery/searchIndex.ts` (`searchApps` /
+`searchTools` / `searchAiSites` / `searchPages` → `searchGlobal`); the panel that renders it is
+`src/gallery/GlobalSearch.vue`; every label is a `search.*` key in `文字设置.ts`. New pages to be
+searchable go into the `SEARCH_PAGES` table in `searchIndex.ts` (title + description are i18n keys).
 
 **Changing site copy**: only `文字设置.ts` (plus the English file) — never touch the keys.
 

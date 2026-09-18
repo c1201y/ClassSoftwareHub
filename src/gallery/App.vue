@@ -3,28 +3,10 @@
   <WinToolTipService />
   <!-- 欢迎弹窗（进入网站时弹出一次） -->
   <WelcomeDialog v-model:open="welcomeDialogOpen" />
+  <!-- 全站搜索面板（Ctrl + K / Ctrl + F 打开，点标题栏搜索框也行） -->
+  <GlobalSearch v-model:open="globalSearchOpen" />
   <Teleport to="body">
     <div v-if="isNavigationFrozen" class="gallery-navigation-freeze" aria-hidden="true"></div>
-  </Teleport>
-  <!-- 窄标题栏（放不下搜索框）时点放大镜弹出的搜索框 -->
-  <Teleport to="body">
-    <div
-      v-if="compactSearchOpen"
-      ref="compactSearchRef"
-      class="gallery-compact-search-popup"
-      role="search">
-      <WinAutoSuggestBox
-        ref="compactSearchBoxRef"
-        v-model:Text="searchQuery"
-        :ItemsSource="searchResults"
-        TextMemberPath="title"
-        :PlaceholderText="t('search.placeholder')"
-        QueryIcon="Find"
-        :OpenOnFocus="false"
-        :UpdateTextOnSelect="false"
-        class="gallery-compact-search"
-        @QuerySubmitted="onSearchQuerySubmitted" />
-    </div>
   </Teleport>
   <WinTitleBar
     ref="titleBarRef"
@@ -38,25 +20,16 @@
     :IconSource="appIcon"
     @BackRequested="onBackRequested"
     @PaneToggleRequested="onTopBarToggle">
-    <!-- 标题栏搜索框：搜索范围 = 软件名称/简介/详细介绍；窄窗口自动收成右侧放大镜按钮 -->
-    <WinAutoSuggestBox
-      ref="searchBoxRef"
-      v-model:Text="searchQuery"
-      :ItemsSource="searchResults"
-      TextMemberPath="title"
-      :PlaceholderText="t('search.placeholder')"
-      QueryIcon="Find"
-      :OpenOnFocus="false"
-      :UpdateTextOnSelect="false"
-      class="gallery-titlebar-search"
-      @QuerySubmitted="onSearchQuerySubmitted" />
+    <!-- 搜索入口：点开全站搜索面板（软件 / 内置工具 / AI 站点 / 页面），快捷键 Ctrl + K -->
     <button
       type="button"
-      class="gallery-titlebar-search-button"
+      class="gallery-titlebar-search"
       :aria-label="t('text.search')"
       v-bind="{ 'tooltipservice.tooltip': t('text.search') }"
-      @click="onCompactSearchButtonClick">
-      <span class="gallery-titlebar-search-button-icon" aria-hidden="true">&#xE721;</span>
+      @click="openGlobalSearch">
+      <span class="gallery-titlebar-search-icon" aria-hidden="true">&#xE721;</span>
+      <span class="gallery-titlebar-search-label">{{ t('search.titlebar') }}</span>
+      <span class="gallery-titlebar-search-kbd" aria-hidden="true">Ctrl K</span>
     </button>
   </WinTitleBar>
   <div class="gallery-app-content" :class="{ 'has-titlebar': isHostedInUwpWebView, 'wco-titlebar': !isHostedInUwpWebView }">
@@ -110,16 +83,15 @@ import { nextTick, ref, watch, provide, computed, onMounted, onBeforeUnmount } f
 import type { Ref } from 'vue';
 import WinTitleBar from '../components/WinTitleBar.vue';
 import WinNavigationView from '../components/WinNavigationView.vue';
-import WinAutoSuggestBox from '../components/WinAutoSuggestBox.vue';
 import WinToolTipService from '../components/WinToolTipService.vue';
 import WelcomeDialog from './WelcomeDialog.vue';
+import GlobalSearch from './GlobalSearch.vue';
 import { syncHolidayTheme, isHolidaySeason, type HolidayTheme } from './holidayTheme';
 import { trackVisit, hasTracked } from './visitor';
 import appIcon from '../assets/AppIcon.ico';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from '../components/i18n/index';
 import { apps, categories, dataLoadIssues } from './data';
-import { searchSoftware } from './searchIndex';
 import {
   DefaultNavigationTransitionInfo,
   NavigationTrigger_NavigatingAway,
@@ -151,101 +123,18 @@ router.isReady().then(() => {
   if (currentPage.value === 'home') welcomeDialogOpen.value = true;
 }).catch(() => {});
 
-// ── 标题栏搜索框（范围 = 名称/简介/详细介绍，见 searchIndex.ts）─────────
-interface SearchSuggestion {
-  title: string;
-  id: string;
-  noResults?: boolean;
-  [key: string]: unknown;
-}
-type AsbChosenSuggestion = string | number | Record<string, unknown> | null;
+// ── 全站搜索（Ctrl + K / Ctrl + F 打开面板；匹配逻辑见 searchIndex.ts）──
 const titleBarRef = ref<{ isCompact?: boolean; isNarrow?: boolean } | null>(null);
-const searchBoxRef = ref<{ $el?: HTMLElement } | null>(null);
-const compactSearchBoxRef = ref<{ $el?: HTMLElement } | null>(null);
-const compactSearchRef = ref<HTMLElement | null>(null);
-const compactSearchOpen = ref(false);
-const searchQuery = ref('');
-const titlebarCompact = computed(() => Boolean(titleBarRef.value?.isCompact));
-const titlebarNarrow = computed(() => Boolean(titleBarRef.value?.isNarrow));
-const searchResults = computed<SearchSuggestion[]>(() => {
-  const query = searchQuery.value.trim();
-  if (!query) return [];
-  const hits = searchSoftware(query);
-  if (hits.length === 0) {
-    return [{ title: t('search.no-results', { query }), id: '', noResults: true }];
-  }
-  return hits.map((hit) => ({
-    title: `${hit.name}（${
-      hit.source === 'name' ? t('search.source-name') : t('search.source-intro')
-    }）`,
-    id: hit.id
-  }));
-});
-/** 点选项 / 回车：跳到该软件详情页（成功跳转后清空搜索词） */
-const onSearchQuerySubmitted = (args: { QueryText: string; ChosenSuggestion: AsbChosenSuggestion }) => {
-  compactSearchOpen.value = false;
-  const query = String(args.QueryText ?? '').trim();
-  if (!query) return;
-  const chosen = args.ChosenSuggestion;
-  const chosenId = chosen !== null && typeof chosen === 'object'
-    ? String((chosen as { id?: unknown }).id ?? '')
-    : '';
-  const targetId = chosenId || searchSoftware(query)[0]?.id;
-  if (!targetId) return;
-  void navigateToRoute({ name: 'download-detail', params: { id: targetId } }).then((ok) => {
-    if (ok) searchQuery.value = '';
-  });
-};
-const onCompactSearchButtonClick = () => {
-  compactSearchOpen.value = !compactSearchOpen.value;
-  if (compactSearchOpen.value) {
-    void nextTick(() => {
-      compactSearchRef.value?.querySelector('input')?.focus({ preventScroll: true });
-    });
-  }
-};
-const onDocumentPointerDownForCompactSearch = (event: PointerEvent) => {
-  const target = event.target as Node | null;
-  if (target instanceof Element && target.closest?.('.gallery-titlebar-search-button')) return;
-  if (!compactSearchOpen.value) return;
-  if (compactSearchRef.value?.contains(target)) return;
-  if (target instanceof Element && target.closest?.('.win-asb-popup, .win-menu-flyout-wrap')) return;
-  // 先让选项的点击事件跑完，再收起弹出框（否则点击会先被吞掉）
-  window.setTimeout(() => {
-    compactSearchOpen.value = false;
-  }, 0);
-};
-const onDocumentKeydownForCompactSearch = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') compactSearchOpen.value = false;
-};
-const onWindowBlurForCompactSearch = () => {
-  compactSearchOpen.value = false;
-};
-const focusSearchBox = () => {
-  if (titlebarNarrow.value || titlebarCompact.value) {
-    if (!compactSearchOpen.value) compactSearchOpen.value = true;
-    void nextTick(() => {
-      compactSearchRef.value?.querySelector('input')?.focus({ preventScroll: true });
-    });
-  } else {
-    searchBoxRef.value?.$el?.querySelector('input')?.focus({ preventScroll: true });
-  }
+const globalSearchOpen = ref(false);
+const openGlobalSearch = () => {
+  globalSearchOpen.value = true;
 };
 const onWindowKeydown = (event: KeyboardEvent) => {
-  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') {
+  const key = event.key.toLowerCase();
+  if ((event.ctrlKey || event.metaKey) && (key === 'k' || key === 'f')) {
     event.preventDefault();
-    focusSearchBox();
+    openGlobalSearch();
   }
-};
-const onWindowResize = () => {
-  void nextTick(() => {
-    const titleBarElement = (titleBarRef.value as { $el?: HTMLElement } | null)?.$el;
-    const searchElement = titleBarElement?.querySelector('.gallery-titlebar-search');
-    const searchVisible = searchElement && getComputedStyle(searchElement).display !== 'none';
-    if ((!titlebarNarrow.value && !titlebarCompact.value) || searchVisible) {
-      compactSearchOpen.value = false;
-    }
-  });
 };
 // 导航窗格固定左侧停靠（已按需求砍掉“导航窗格位置”设置项；Auto = 宽屏展开在左，窄屏收成左侧汉堡）
 const isPaneOpen = ref(true);
@@ -535,12 +424,8 @@ onMounted(() => {
   syncNavigationFreezeState(isNavigationFrozen.value);
   postUwpSetting('theme', themeSetting.value);
   postUwpSetting('material', materialSetting.value);
-  // 搜索框（Ctrl+F 聚焦 / 点别处收起窄窗口弹出框 / 窗口拉宽自动收起）
+  // 搜索快捷键：Ctrl + K（也支持 Ctrl + F）打开全站搜索面板
   window.addEventListener('keydown', onWindowKeydown);
-  window.addEventListener('resize', onWindowResize);
-  window.addEventListener('blur', onWindowBlurForCompactSearch);
-  document.addEventListener('pointerdown', onDocumentPointerDownForCompactSearch);
-  document.addEventListener('keydown', onDocumentKeydownForCompactSearch);
 });
 
 onBeforeUnmount(() => {
@@ -553,10 +438,6 @@ onBeforeUnmount(() => {
   document.getElementById('app')?.removeAttribute('aria-busy');
   systemThemeQuery.removeEventListener('change', onSystemThemeChange);
   window.removeEventListener('keydown', onWindowKeydown);
-  window.removeEventListener('resize', onWindowResize);
-  window.removeEventListener('blur', onWindowBlurForCompactSearch);
-  document.removeEventListener('pointerdown', onDocumentPointerDownForCompactSearch);
-  document.removeEventListener('keydown', onDocumentKeydownForCompactSearch);
 });
 
 watch(themeSetting, (value) => postUwpSetting('theme', value));
@@ -616,68 +497,97 @@ watch(materialSetting, (value) => postUwpSetting('material', value));
     --TitleBarRightPaddingWidth: 138px;
   }
 
-  /* ── 标题栏搜索框（同 WinUIonWeb 方案）────────────────────────── */
+  /* ── 标题栏搜索入口（点开全站搜索面板；窄标题栏收成放大镜按钮）────── */
   .gallery-titlebar-search {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1 1 auto;
     width: 100%;
     max-width: 350px;
+    min-width: 0;
+    height: 30px;
+    margin: 0 8px 0 0;
+    padding: 0 8px 0 10px;
+    border: 1px solid var(--ctrl-border, rgba(0, 0, 0, 0.06));
+    border-bottom-color: var(--ctrl-strong-stroke, rgba(0, 0, 0, 0.45));
+    border-radius: var(--ControlCornerRadius, 4px);
+    background: var(--ctrl-fill-default, rgba(255, 255, 255, 0.7));
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 13px;
+    text-align: left;
+    cursor: text;
+    transition: background var(--fast-duration, 150ms) linear,
+      border-color var(--fast-duration, 150ms) linear;
   }
 
-  /* 搜索框在标题右侧的内容列内；内容列会随窗口收缩，不会盖住左侧图标/标题 */
-  .gallery-titlebar .win-titlebar-content {
-    position: static;
-    overflow: visible;
+  .gallery-titlebar-search:hover {
+    background: var(--ctrl-fill-secondary, rgba(0, 0, 0, 0.04));
   }
 
-  /* 标题栏实际宽度过窄时优先保留标题，隐藏搜索框（WinTitleBar 按自身宽度
-     打 is-narrow/is-compact，不依赖视口媒体查询，PWA/WebView2 下同样生效） */
+  .gallery-titlebar-search:active {
+    background: var(--ctrl-fill-tertiary, rgba(0, 0, 0, 0.06));
+  }
+
+  .gallery-titlebar-search:focus-visible {
+    outline: 2px solid var(--accent-base, #0067C0);
+    outline-offset: 1px;
+  }
+
+  .gallery-titlebar-search-icon {
+    flex: 0 0 auto;
+    font-family: var(--SymbolThemeFontFamily, 'WinUIOnWebIcons');
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  .gallery-titlebar-search-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* 快捷键提示小块 */
+  .gallery-titlebar-search-kbd {
+    flex: 0 0 auto;
+    padding: 1px 5px;
+    border: 1px solid var(--ctrl-border, rgba(0, 0, 0, 0.12));
+    border-radius: 4px;
+    background: var(--subtle-secondary);
+    color: var(--text-tertiary, var(--text-secondary));
+    font-size: 10px;
+    line-height: 14px;
+  }
+
+  /* 标题栏实际宽度过窄 / 内容放不下时（WinTitleBar 按自身宽度打 is-narrow/is-compact
+     标记，不依赖视口媒体查询，PWA/WebView2 下同样生效）收成 40px 的图标按钮 */
   .gallery-titlebar.is-narrow .gallery-titlebar-search,
   .gallery-titlebar.is-compact .gallery-titlebar-search {
-    display: none !important;
-  }
-
-  /* 窄标题栏时标题后的搜索按钮：样式与返回/汉堡按钮保持一致 */
-  .gallery-titlebar-search-button {
-    display: none;
-    box-sizing: border-box;
+    flex: 0 0 40px !important;
     width: 40px;
+    max-width: 40px;
+    height: 40px;
     margin: 2px;
     padding: 0;
-    border: 0;
-    border-radius: var(--ControlCornerRadius, 4px);
-    flex: 0 0 auto !important;
-    align-self: stretch;
-    align-items: center;
     justify-content: center;
-    color: var(--TitleBarForegroundBrush, var(--text-primary));
+    border-color: transparent;
     background: var(--TitleBarBackButtonBackground, transparent);
-    cursor: pointer;
-    font-family: var(--SymbolThemeFontFamily, 'WinUIOnWebIcons');
-    font-size: 16px;
-    transition: background var(--fast-duration) var(--fast-out-slow-in), color var(--fast-duration) var(--fast-out-slow-in);
   }
 
-  .gallery-titlebar.is-narrow .gallery-titlebar-search-button,
-  .gallery-titlebar.is-compact .gallery-titlebar-search-button {
-    display: flex;
+  .gallery-titlebar.is-narrow .gallery-titlebar-search-label,
+  .gallery-titlebar.is-compact .gallery-titlebar-search-label,
+  .gallery-titlebar.is-narrow .gallery-titlebar-search-kbd,
+  .gallery-titlebar.is-compact .gallery-titlebar-search-kbd {
+    display: none;
   }
 
-  .gallery-titlebar-search-button:hover {
+  .gallery-titlebar.is-narrow .gallery-titlebar-search:hover,
+  .gallery-titlebar.is-compact .gallery-titlebar-search:hover {
     background: var(--TitleBarBackButtonBackgroundPointerOver, var(--subtle-secondary));
-  }
-
-  .gallery-titlebar-search-button:active {
-    background: var(--TitleBarBackButtonBackgroundPressed, var(--subtle-tertiary));
-    color: var(--text-secondary);
-  }
-
-  .gallery-titlebar-search-button-icon {
-    width: 16px;
-    height: 16px;
-    font-size: 16px;
-    line-height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   /* 窄标题栏时内容列左对齐，让搜索按钮紧跟标题 */
@@ -685,33 +595,6 @@ watch(materialSetting, (value) => postUwpSetting('material', value));
   .gallery-titlebar.is-compact .win-titlebar-content {
     justify-content: flex-start;
     padding: var(--TitleBarCompactContentMargin, 0 16px 0 0);
-  }
-
-  /* 窄窗口点放大镜弹出的搜索框：标题栏下方、距视口左侧 16px */
-  .gallery-compact-search-popup {
-    position: fixed;
-    top: max(env(titlebar-area-height, 0px), 48px);
-    left: 16px;
-    width: min(350px, calc(100vw - 32px));
-    z-index: 10000;
-  }
-
-  .gallery-compact-search {
-    width: 100%;
-  }
-
-  /* 弹出式搜索框浮在页面上，输入框换成 Acrylic 填充，避免两层半透明叠在一起 */
-  .gallery-compact-search.win-auto-suggest-box .win-textbox {
-    --textbox-background: var(--AcrylicInAppFillColorDefaultBrush);
-    --textbox-background-pointer-over: var(--AcrylicInAppFillColorDefaultBrush);
-    --textbox-background-pressed: var(--AcrylicInAppFillColorDefaultBrush);
-    --textbox-background-focused: var(--AcrylicInAppFillColorDefaultBrush);
-    isolation: isolate;
-  }
-
-  .gallery-compact-search.win-auto-suggest-box .win-textbox-border {
-    -webkit-backdrop-filter: var(--flyout-backdrop);
-    backdrop-filter: var(--flyout-backdrop);
   }
 
   @font-face {

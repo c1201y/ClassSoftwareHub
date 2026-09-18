@@ -109,7 +109,7 @@ node scripts/update-ignore.mjs --list                                    # 查�
   Y 为功能更新、Z 为小修小补；**代号后缀保留**（如 `- Autumn`）。同一版本另有内部版本号 `AAAABBCCPRDD`
   （AAAA 年 / BB 月 / CC 日期 / DD 文件版次），例 `20260915PR01`。
   对外版本号与内部版本号均写入 `文字设置.ts` 的 `app.version`
-  （当前 `v2.3.1 - September 18 Incident (20260917PR05)`），英文站需同步修改
+  （当前 `v2.4.0 - Autumn (20260918PR01)`），英文站需同步修改
   `src/gallery/Strings/en-US/Resources.ts` 的 `app.version`（设置页「关于」展示的即为此值）。
 - 设置页「关于」中的「投喂作者 / 回声洞 / 作者首页 / QQ 群」链接来自 `文字设置.ts` 的 `about.*-url` 键，
   修改文字区即可更换链接。
@@ -131,10 +131,13 @@ node scripts/update-ignore.mjs --list                                    # 查�
   弹窗文字位于 `文字设置.ts` 的 `welcome.*` 键（相关文章链接 = `welcome.article-url`，
   QQ 群 = `about.qq-group` + `about.qq-group-url`，投喂作者 = `about.reward` + `about.reward-url`）；
   表情图 = `src/assets/welcome-sticker.gif`（更换时以同名文件覆盖后重新打包）。
-- **标题栏搜索框**：与 WinUIonWeb 一致位于窗口顶部（窗口过窄时自动收起为搜索按钮，Ctrl+F 也可唤出）。
-  搜索范围不限于软件名，还包括**一句话简介**与**详细介绍** —— 在只记得用途而不记得名称时同样可以搜到。
-  结果格式为「软件名（来源）」：括号内为命中来源（`应用名称` 或 `相关简介`）。
-  搜索逻辑位于 `src/gallery/searchIndex.ts`，文案位于 `文字设置.ts` 的 `search.*` 键，日常维护无需修改代码。
+- **全站搜索**：按 `Ctrl + K`（`Ctrl + F` 同样可唤出）或点击标题栏的搜索框，会弹出搜索面板，
+  一次即可搜到四类内容 —— **软件 / 内置工具 / AI 导航站点 / 页面**，结果按类别分组显示。
+  软件除名称外还匹配**一句话简介**与**详细介绍**，因此只记得用途、不记得名称时同样可以搜到；
+  软件结果右侧标注命中来源（`应用名称` 或 `相关简介`）。`↑` `↓` 选择、`Enter` 打开、`Esc` 关闭；
+  AI 导航的站点在新标签页打开，其余结果在站内跳转。关键词留空时列出五个页面快捷入口。
+  搜索逻辑位于 `src/gallery/searchIndex.ts`，面板界面位于 `src/gallery/GlobalSearch.vue`，
+  文案位于 `文字设置.ts` 的 `search.*` 键，日常维护无需修改代码。
 - **网站图标**：`src/assets/AppIcon.ico / AppIcon-180/192/512.png` 由
   `src/assets/AppIcon-source.png`（1890×1890 原图）缩放生成；更换图标时覆盖
   AppIcon-source.png 后重新生成四个文件（或使用任意工具缩放为同名文件覆盖），再重新打包。
