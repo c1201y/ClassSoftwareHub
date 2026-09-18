@@ -1,7 +1,7 @@
 {
   "id": "peazip",
   "name": "PeaZip 解压缩工具",
-  "icon": "https://peazip.github.io/peazip.png",
+  "icon": "https://peazip.github.io/peazip_ico24.png",
   "category": "system",
   "tagline": "开源免费的多格式压缩/解压工具（200+ 格式，无广告）",
   "description": "PeaZip 是一款开源免费的压缩/解压软件，支持 7z、zip、tar、gz、bz2、iso 等 200 多种格式的读取与常见格式的压缩，内置 AES-256 加密、分卷、文件校验、批量重命名等实用功能。界面简洁、无广告、无捆绑，可完全替代收费的压缩软件。安装版直接装即可，便携版解压即用。",
