@@ -1,7 +1,7 @@
 {
   "id": "xrkayxingz",
   "name": "向日葵远程",
-  "icon": "https://repngrayimg.com/sunlogin/img/common/logo-full-black.png",
+  "icon": "https://images-eds-ssl.xboxlive.com/image?url=4rt9.lXDC4H_93laV1_eHM0OYfiFeMI2p9MWie0CvL99U4GA1gf6_kayTt_kBblFwHwo8BW8JXlqfnYxKPmmBUPoAV7IWf4N9aBTOry356naPW9kMnSngru7N0KsczsCmGqbHLhab6n1ar4nAq0b6OJNxnOhgfu1lf9qrvQCjsU-&format=source&h=134",
   "category": "other",
   "tagline": "常用远控软件",
   "description": "远程控制手机、电脑等，市面上主流远控软件，基础功能免费",
@@ -9,7 +9,6 @@
   "size": "约189mb",
   "system": "Window,mac",
   "website": "https://sunlogin.oray.com/download",
-  "github": "",
   "downloads": [
     {
       "platform": "Windows 64位安装版",
