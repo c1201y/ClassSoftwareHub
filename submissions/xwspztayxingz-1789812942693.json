@@ -1,0 +1,23 @@
+{
+  "_提交时间": "2026-09-19T10:15:42.693Z",
+  "_原始ID冲突": false,
+  "id": "xwspztayxingz",
+  "name": "希沃视频展台",
+  "icon": "",
+  "category": "schedule",
+  "tagline": "视频展台软件",
+  "description": "一个功能齐全的视频展台软件，可以搭配希沃白板联动使用",
+  "version": "2.1.0.4410",
+  "size": "142.7MB",
+  "system": "Windows7及以上",
+  "website": "https://e.seewo.com/product/EasiCamera",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "Windows安装版",
+      "size": "Windows7及以上",
+      "url": "https://imlizhi-store-https.seewo.com/EasiCamera_2.1.0.4410(20260731145539).exe"
+    }
+  ],
+  "sort": 99
+}
