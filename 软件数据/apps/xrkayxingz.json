@@ -1,13 +1,13 @@
 {
   "id": "xrkayxingz",
   "name": "向日葵远程",
-  "icon": "",
+  "icon": "https://repngrayimg.com/sunlogin/img/common/logo-full-black.png",
   "category": "other",
   "tagline": "常用远控软件",
   "description": "远程控制手机、电脑等，市面上主流远控软件，基础功能免费",
-  "version": "",
-  "size": "",
-  "system": "",
+  "version": "v16.5.0.32083",
+  "size": "约189mb",
+  "system": "Window,mac",
   "website": "https://sunlogin.oray.com/download",
   "github": "",
   "downloads": [
