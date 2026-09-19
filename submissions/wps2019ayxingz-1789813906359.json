@@ -1,0 +1,24 @@
+{
+  "_提交时间": "2026-09-19T10:31:46.359Z",
+  "_原始ID冲突": false,
+  "id": "wps2019ayxingz",
+  "name": "WPS2019",
+  "icon": "",
+  "category": "schedule",
+  "tagline": "WPS Office老版本",
+  "description": "WPS 2019版，没有繁杂的AI功能，只保留纯净的办公软件功能，不用登录也能使用所有功能，适合内存吃紧电脑使用\n注意！注意！注意！\n此软件有自动更新，下载安装好以后请及时在开始菜单内找到WPS文件夹，选择配置工具，点击高级，在升级设置里面关闭自动更新，并且如果弹出升级提示，千万不要升级\n另:在配置工具里面的功能定制等板块内，把所有的模板推荐等关闭，可以减少广告",
+  "version": "10314.12012.2019",
+  "size": "153.4MB",
+  "system": "Windows7及以上",
+  "website": "https://www.wps.cn/product/wps2019/",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "Windows安装版",
+      "note": "注意看简介",
+      "size": "153.4MB",
+      "url": "https://pacakge.cache.wpscdn.cn/wps/download/W.P.S.10314.12012.2019.exe"
+    }
+  ],
+  "sort": 99
+}
