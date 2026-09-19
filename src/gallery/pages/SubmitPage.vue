@@ -186,7 +186,9 @@
             <WinTextBox
               :Header="t('submit.system')"
               :PlaceholderText="t('submit.system-placeholder')"
-              v-model:Text="form.system" />
+              v-model:Text="form.system">
+              <template #header>{{ t('submit.system') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
+            </WinTextBox>
             <WinTextBox
               :Header="t('submit.website')"
               :PlaceholderText="t('submit.website-placeholder')"
@@ -249,6 +251,12 @@
                   v-model:Text="dl.url">
                   <template #header>{{ t('submit.download-url') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
                 </WinTextBox>
+                <!-- 校验值（选填）：只收十六进制，页面按位数认算法，不写算法名 -->
+                <WinTextBox
+                  :Header="t('submit.download-hash')"
+                  :PlaceholderText="t('submit.download-hash-placeholder')"
+                  :Description="t('submit.download-hash-desc')"
+                  v-model:Text="dl.hash" />
               </div>
             </div>
             <WinButton
@@ -361,9 +369,11 @@ interface DownloadDraft {
   note: string;
   size: string;
   url: string;
+  /** 校验值：纯十六进制（算法按位数识别，见 HASH_LENGTHS），选填 */
+  hash: string;
 }
 
-const emptyDownload = (): DownloadDraft => ({ platform: '', note: '', size: '', url: '' });
+const emptyDownload = (): DownloadDraft => ({ platform: '', note: '', size: '', url: '', hash: '' });
 
 const form = reactive({
   id: '',
@@ -572,7 +582,11 @@ function applyImport(result: GithubImportResult) {
       kept.push(t('submit.section-downloads'));
       warnings.push(t('submit.import-warn-downloads-kept'));
     } else {
-      form.downloads = downloads.map((item) => ({ ...item }));
+      // 重新「一键读取」时表单里的校验值别丢：同一个链接的校验值原样带过去（手填的哈希通常还是对的）
+      const hashByUrl = new Map(
+        form.downloads.filter((item) => item.hash.trim()).map((item) => [item.url.trim(), item.hash.trim()])
+      );
+      form.downloads = downloads.map((item) => ({ ...item, hash: hashByUrl.get(item.url.trim()) ?? '' }));
       lastDownloadUrls = form.downloads.map((item) => item.url.trim()).join('\n');
       filled.push(`${t('submit.section-downloads')}（${downloads.length}）`);
     }
@@ -586,7 +600,8 @@ function applyImport(result: GithubImportResult) {
         platform: t('submit.import-latest-platform'),
         note: t('submit.import-latest-note'),
         size: t('submit.import-web'),
-        url
+        url,
+        hash: ''
       }];
       lastDownloadUrls = url;
       filled.push(t('submit.section-downloads'));
@@ -620,8 +635,35 @@ function applyImport(result: GithubImportResult) {
   importWarnings.value = warnings;
 }
 
-/** 从表单拼出要提交的 payload；必填项不全返回 null */
-function buildPayload(): Record<string, unknown> | null {
+/**
+ * 校验值输入框里的写法五花八门：可能带「MD5:」「sha256 =」前缀、带 0x、按字节用冒号或空格分隔。
+ * 站点只认纯十六进制（算法按位数识别），所以这里先统一剥干净。
+ */
+function normalizeHash(raw: string): string {
+  return raw
+    .trim()
+    .replace(/^(md5|sha-?1|sha-?224|sha-?256|sha-?384|sha-?512)\s*[:=]?\s*/i, '')
+    .replace(/^0x/i, '')
+    .replace(/[\s:]/g, '');
+}
+
+/**
+ * 合法校验值 = 纯十六进制，且位数能对上一种算法。
+ * 位数表必须和详情页 DownloadDetailPage.vue 的 HASH_ALGORITHMS 一致，否则会把合法的
+ * SHA-224 / SHA-384 当成非法值拦下来：32=MD5 / 40=SHA-1 / 56=SHA-224 / 64=SHA-256 / 96=SHA-384 / 128=SHA-512
+ */
+const HASH_LENGTHS = [32, 40, 56, 64, 96, 128];
+
+function isHashLike(value: string): boolean {
+  return /^[0-9a-f]+$/i.test(value) && HASH_LENGTHS.includes(value.length);
+}
+
+/**
+ * 从表单拼出要提交的 payload。
+ * 必填项不全、或校验值填了但格式不对时，payload 为 null，error 里带上要显示的提示
+ * （error 为空表示按通用的「请填写带 * 的必填项」提示）。
+ */
+function buildPayload(): { payload: Record<string, unknown> | null; error: string } {
   const payload: Record<string, unknown> = {
     id: form.id.trim(),
     name: form.name.trim(),
@@ -639,12 +681,18 @@ function buildPayload(): Record<string, unknown> | null {
     sort: sortText.value.trim() === '' ? undefined : Number(sortText.value),
     downloads: form.downloads
       .filter((item) => item.url.trim())
-      .map((item) => ({
-        platform: item.platform.trim(),
-        note: item.note.trim(),
-        size: item.size.trim(),
-        url: item.url.trim()
-      })),
+      .map((item) => {
+        const entry: Record<string, unknown> = {
+          platform: item.platform.trim(),
+          note: item.note.trim(),
+          size: item.size.trim(),
+          url: item.url.trim()
+        };
+        // 校验值选填：归一化后为空就不写这个键，免得多出一堆 `"hash": ""`
+        const hash = normalizeHash(item.hash);
+        if (hash) entry.hash = hash;
+        return entry;
+      }),
     /**
      * 联系方式：下划线开头的字段是「审核用元数据」，不写进站点的软件数据 ——
      * review-submission.yml 合并时会把所有 `_` 开头的键剥掉，只在审核 Issue 里显示。
@@ -654,14 +702,23 @@ function buildPayload(): Record<string, unknown> | null {
   };
 
   // 必填校验（原来靠原生 required，但提交按钮不是原生 submit 按钮，校验根本不会触发）
+  // 「系统限制」也计入必填：留空详情页只会显示「待补充」；从 GitHub 一键读取时会自动归纳填上
   const missing =
     !payload.id || !payload.name || !payload.category ||
     !payload.tagline || !payload.description || !payload._联系方式 ||
+    !payload.system ||
     (payload.downloads as unknown[]).length === 0;
-  if (missing) return null;
+  if (missing) return { payload: null, error: '' };
+
+  // 校验值格式检查：填了就必须是合法写法 —— 写错的哈希比不写更糟（用户会照着核对下载文件）
+  const downloadItems = payload.downloads as { hash?: string }[];
+  const badHashIndex = downloadItems.findIndex((item) => item.hash && !isHashLike(item.hash));
+  if (badHashIndex >= 0) {
+    return { payload: null, error: t('submit.error-hash', { index: badHashIndex + 1 }) };
+  }
 
   if (payload.sort === undefined) delete payload.sort;
-  return payload;
+  return { payload, error: '' };
 }
 
 interface SubmissionReply {
@@ -835,7 +892,8 @@ function applyPayload(data: Record<string, unknown>) {
         platform: String(item.platform ?? ''),
         note: String(item.note ?? ''),
         size: String(item.size ?? ''),
-        url: String(item.url ?? '')
+        url: String(item.url ?? ''),
+        hash: String(item.hash ?? '')
       }))
     : [emptyDownload()];
 
@@ -861,13 +919,14 @@ function restoreDraft() {
 async function submit() {
   if (loading.value) return;
 
-  const payload = buildPayload();
-  if (!payload) {
+  const built = buildPayload();
+  if (!built.payload) {
     ok.value = false;
     messageTitle.value = t('submit.result-error-title');
-    message.value = t('submit.error-required');
+    message.value = built.error || t('submit.error-required');
     return;
   }
+  const payload = built.payload;
 
   loading.value = true;
   message.value = '';

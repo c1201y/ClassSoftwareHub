@@ -14,44 +14,51 @@
   "downloads": [
     {
       "platform": "Windows x64 安装版",
-      "note": "主流 64 位系统，推荐下载这个；SHA256：51EF95F5D75E68344334B44B9F779ED2D66691455268AC6D5B38CF29577E5408，请注意核对文件 SHA256 是否正确。",
+      "note": "主流 64 位系统，推荐下载这个",
       "size": "4.8 MB",
+      "hash": "51EF95F5D75E68344334B44B9F779ED2D66691455268AC6D5B38CF29577E5408",
       "url": "https://stk.sectl.cn/d/SecScore/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v0.9.0/SecScore_1.0.0_x64-setup.exe"
     },
     {
       "platform": "Windows x64 MSI 安装包",
-      "note": "适合机房 / 多机批量部署；SHA256：264E172F3243947DAA13376832FCDA14263099CB08594601563C38B40ED6CA72，请注意核对文件 SHA256 是否正确。",
+      "note": "适合机房 / 多机批量部署",
       "size": "6.5 MB",
+      "hash": "264E172F3243947DAA13376832FCDA14263099CB08594601563C38B40ED6CA72",
       "url": "https://stk.sectl.cn/d/SecScore/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v0.9.0/SecScore_1.0.0_x64_en-US.msi"
     },
     {
       "platform": "macOS（.dmg）",
-      "note": "Intel 版；Apple 芯片需 Rosetta 转译运行；SHA256：022109ACDE23FFD427CE4D5D5E8DB2F634422B72D9C990498124124593F8C9BA，请注意核对文件 SHA256 是否正确。",
+      "note": "Intel 版；Apple 芯片需 Rosetta 转译运行",
       "size": "6.1 MB",
+      "hash": "022109ACDE23FFD427CE4D5D5E8DB2F634422B72D9C990498124124593F8C9BA",
       "url": "https://stk.sectl.cn/d/SecScore/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v0.9.0/SecScore_1.0.0_x64.dmg"
     },
     {
       "platform": "Android（APK）",
-      "note": "通用安装包，安卓手机 / 平板；SHA256：41E213BBD8AA0EA8F6CA812A78BDF5D8B48FC07CF057F52956B1224BD1950318，请注意核对文件 SHA256 是否正确。",
+      "note": "通用安装包，安卓手机 / 平板",
       "size": "39.9 MB",
+      "hash": "41E213BBD8AA0EA8F6CA812A78BDF5D8B48FC07CF057F52956B1224BD1950318",
       "url": "https://stk.sectl.cn/d/SecScore/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v0.9.0/app-universal-release.apk"
     },
     {
       "platform": "Linux x64（.deb）",
-      "note": "Debian / Ubuntu 等，双击安装；SHA256：18133C25AD9ABD0E353D04A38A4C2706FB4C623AB96907EEC9D7970486F30ECD，请注意核对文件 SHA256 是否正确。",
+      "note": "Debian / Ubuntu 等，双击安装",
       "size": "6.3 MB",
+      "hash": "18133C25AD9ABD0E353D04A38A4C2706FB4C623AB96907EEC9D7970486F30ECD",
       "url": "https://stk.sectl.cn/d/SecScore/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v0.9.0/SecScore_1.0.0_amd64.deb"
     },
     {
       "platform": "Linux x64（.rpm）",
-      "note": "Fedora / openSUSE 等；SHA256：494937E2C0A312A3E4838018D1D0F38ED955D3A4CD6EB9B4535E623DFE4A312B，请注意核对文件 SHA256 是否正确。",
+      "note": "Fedora / openSUSE 等",
       "size": "6.3 MB",
+      "hash": "494937E2C0A312A3E4838018D1D0F38ED955D3A4CD6EB9B4535E623DFE4A312B",
       "url": "https://stk.sectl.cn/d/SecScore/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v0.9.0/SecScore-1.0.0-1.x86_64.rpm"
     },
     {
       "platform": "Linux x64（.AppImage）",
-      "note": "免安装，赋予执行权限后直接运行；SHA256：8A832ABD31A3B5DB755F6205F48C65F06BA9347AFFC9579D5589B0A766805B06，请注意核对文件 SHA256 是否正确。",
+      "note": "免安装，赋予执行权限后直接运行",
       "size": "75.6 MB",
+      "hash": "8A832ABD31A3B5DB755F6205F48C65F06BA9347AFFC9579D5589B0A766805B06",
       "url": "https://stk.sectl.cn/d/SecScore/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v0.9.0/SecScore_1.0.0_amd64.AppImage"
     },
     {

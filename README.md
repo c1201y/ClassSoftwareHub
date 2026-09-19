@@ -60,7 +60,7 @@ node scripts/update-ignore.mjs --list                                    # 查�
 
 - **跨大版本更新**（1.7 → 2.0）：站内可能有意保留旧版（例如供旧系统使用的 `classisland-17`），
   也可能需要整体升级（简介、截图需同步修改）；
-- `note` 中包含 **SHA512 / SHA256 校验值** —— 文件更换后校验值即失效，需重新计算；
+- 下载项带 **校验值**（`hash` 字段；早期写法写在 `note` 里）—— 文件更换后校验值即失效，需重新计算；
 - 上游**更换了附件文件名**，脚本无法判断新旧对应关系；
 - `github` 字段指向不存在的仓库，或填写的并非仓库地址；
 - **非 GitHub 直链仍指向旧版本**（例如官网提供 `7z2602-x64.exe`，而站内版本已是 26.03）——
@@ -109,7 +109,7 @@ node scripts/update-ignore.mjs --list                                    # 查�
   Y 为功能更新、Z 为小修小补；**代号后缀保留**（如 `- Autumn`）。同一版本另有内部版本号 `AAAABBCCPRDD`
   （AAAA 年 / BB 月 / CC 日期 / DD 文件版次），例 `20260915PR01`。
   对外版本号与内部版本号均写入 `文字设置.ts` 的 `app.version`
-  （当前 `v2.3.2 - September 18 Incident (20260919PR02)`），英文站需同步修改
+  （当前 `v2.3.2 - September 18 Incident (20260919PR03)`），英文站需同步修改
   `src/gallery/Strings/en-US/Resources.ts` 的 `app.version`（设置页「关于」展示的即为此值）。
 - 设置页「关于」中的「投喂作者 / 回声洞 / 作者首页 / QQ 群」链接来自 `文字设置.ts` 的 `about.*-url` 键，
   修改文字区即可更换链接。

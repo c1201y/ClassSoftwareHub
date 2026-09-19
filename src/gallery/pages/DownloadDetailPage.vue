@@ -98,6 +98,17 @@
                 <div class="detail-download-platform">{{ download.platform }}</div>
                 <div v-if="download.note" class="detail-download-note">{{ download.note }}</div>
                 <div v-if="download.size" class="detail-download-size">{{ download.size }}</div>
+                <!-- 校验值：只有数据里填了 hash 才出现；默认只显示首尾，点一下复制完整值 -->
+                <button
+                  v-if="download.hash"
+                  class="detail-download-hash"
+                  type="button"
+                  :title="hashAlgorithm(download.hash) + ' ' + download.hash"
+                  @click="copyHash(download.hash)">
+                  <span class="detail-download-hash-alg">{{ hashAlgorithm(download.hash) }}</span>
+                  <span class="detail-download-hash-value">{{ shortHash(download.hash) }}</span>
+                  <span class="detail-download-hash-action">{{ copiedHash === download.hash ? t('detail.hash-copied') : t('detail.hash-copy') }}</span>
+                </button>
               </div>
               <div class="detail-download-actions">
                 <WinButton
@@ -204,6 +215,41 @@ const openStore = () => {
   }
 };
 
+// ── 校验值（downloads[].hash）───────────────────────────────────────────
+// 128 位的 SHA512 直接铺在下载行里会把文字画出卡片，所以这里只显示首尾几位，
+// 完整值放 title 里、点一下复制走。填 hash 时只写十六进制即可，算法按长度推断。
+
+/** 长度 → 算法名（32=MD5 / 40=SHA-1 / 56=SHA-224 / 64=SHA-256 / 96=SHA-384 / 128=SHA-512） */
+const HASH_ALGORITHMS: Record<number, string> = {
+  32: 'MD5',
+  40: 'SHA-1',
+  56: 'SHA-224',
+  64: 'SHA-256',
+  96: 'SHA-384',
+  128: 'SHA-512'
+};
+
+const hashAlgorithm = (hash: string) => HASH_ALGORITHMS[hash.length] || t('detail.hash-checksum');
+
+const shortHash = (hash: string) => (hash.length > 16 ? `${hash.slice(0, 8)}…${hash.slice(-6)}` : hash);
+
+/** 刚复制了哪一条（2 秒后按钮文字变回「复制」） */
+const copiedHash = ref('');
+let copiedHashTimer = 0;
+
+const copyHash = async (hash: string) => {
+  try {
+    await navigator.clipboard.writeText(hash);
+  } catch {
+    return; // 剪贴板不可用时什么都不做：完整值在 title 里，用户还能手选
+  }
+  copiedHash.value = hash;
+  window.clearTimeout(copiedHashTimer);
+  copiedHashTimer = window.setTimeout(() => {
+    copiedHash.value = '';
+  }, 2000);
+};
+
 // ── GitHub 下载加速（通道清单与判断逻辑见 src/gallery/githubMirror.ts）──────
 // 主按钮始终是 GitHub 官方直链；这里只是额外给一条国内镜像的路，
 // 展开哪一行用 url 记（同一个软件不会有两行同一个链接）。
@@ -211,11 +257,12 @@ const openStore = () => {
 /** 当前展开了加速通道的那条下载链接；空串表示都没展开 */
 const mirrorOpenUrl = ref('');
 
-// 点进另一个软件时组件会被复用（ref 不会自己清），把展开的面板收起来
+// 点进另一个软件时组件会被复用（ref 不会自己清），把展开的面板和复制状态收起来
 watch(
   () => route.params.id,
   () => {
     mirrorOpenUrl.value = '';
+    copiedHash.value = '';
   }
 );
 

@@ -145,7 +145,7 @@ Fields and meanings (full reference: `软件数据/README-维护手册.md` and `
 | `website` `github` | Homepage / repository URL |
 | `notice` | Optional. Renders a **blue banner** above the download list (for apps that update often or have flaky direct links) |
 | `store` | Optional. Store URL — adds a "download from the Store" card on the detail page |
-| `downloads[]` | Download entries: `{ platform, note?, size?, url? }` |
+| `downloads[]` | Download entries: `{ platform, note?, size?, hash?, url? }` |
 | `sort` | Display order, smaller first; omitted means last |
 | `维护备注` | Maintainer note; **never rendered on the site** |
 
@@ -248,10 +248,19 @@ changes are replayed by `visitor.ts`.
    strips every such key (`review-submission.yml` filters by prefix, not by name), so a new
    submission-only field can never leak into the published app data — it only shows up in the
    review issue (`create-review-issue.yml` prints `联系方式` explicitly).
-   Required before submission: `id`, `name`, `category`, `tagline`, `description`, a contact
+   Required before submission: `id`, `name`, `category`, `tagline`, `description`, `system`, a contact
    (`_联系方式`) and **at least one direct download link**. All of it is validated in
    `SubmitPage.vue` → `buildPayload()` — the submit button is not a native submit control, so the
    HTML `required` attribute never fires and validation has to stay in JS.
+   Download items also take an **optional checksum** (`下载项 → 校验值`). It is normalized on submit
+   (`normalizeHash()`): an `MD5:` / `SHA-256` prefix, `0x`, and byte-separating colons / spaces are
+   stripped, because the detail page identifies the algorithm **by hex length alone** (32 / 40 / 56 /
+   64 / 96 / 128 → MD5 / SHA-1 / SHA-224 / SHA-256 / SHA-384 / SHA-512) and never from a name.
+   ⚠️ `HASH_LENGTHS` in `SubmitPage.vue` must stay in sync with `HASH_ALGORITHMS` in
+   `DownloadDetailPage.vue` — a shorter list rejects legitimate SHA-224 / SHA-384 values.
+   A non-hex or unknown-length value blocks the submit with its own message (`submit.error-hash`); an
+   empty field means the `hash` key is simply omitted from the payload. Re-running "一键读取" keeps
+   hashes whose URL did not change.
 2. That push triggers `.github/workflows/create-review-issue.yml`, which opens one
    `[待审核] <name> (<id>)` issue per **newly added** draft (label `待审核`; duplicate titles are skipped
    idempotently).
@@ -310,8 +319,9 @@ changes are replayed by `visitor.ts`.
     the issue **closes itself**. The full report always goes to the Job Summary.
   The safety rule is **all-or-nothing**: an app's `version` and its download links are one unit, so a
   single unsolvable point blocks the whole entry (otherwise you get "version 26.03, link still on the
-  26.02 file"). Blockers: cross-major bumps, download items whose `note` carries a SHA512/256 checksum
-  (swapping the file invalidates it), asset filenames that changed upstream, unresolvable `github`
+  26.02 file"). Blockers: cross-major bumps, download items that carry a checksum (the `hash` field,
+  or a SHA512/256 written into `note`) — swapping the file invalidates it — plus asset filenames that
+  changed upstream, unresolvable `github`
   slugs, dead links, and versions that are not comparable strings (e.g. `上次更新日期 2026/8/18`).
   Non-GitHub links (vendor sites, mirrors) are **never** touched — only reported. That report is its
   **own** pending kind (`stale`), deliberately *not* attached to a bump: while it hung off the bump
@@ -348,7 +358,7 @@ changes are replayed by `visitor.ts`.
 - Public version: `X.Y.Z` + a **codename suffix, which is kept** (e.g. `- Autumn`).
   X = major (architecture / UI overhaul); Y = feature update; Z = small fix.
 - Internal version: `AAAABBCCPRDD` (year / month / day / file revision), e.g. `20260915PR01`.
-- Update all of these together — current value is `v2.3.2 - September 18 Incident (20260919PR02)`:
+- Update all of these together — current value is `v2.3.2 - September 18 Incident (20260919PR03)`:
   - `文字设置.ts` → `app.version`, `home.subtitle`, `welcome.intro` (**3 places**)
   - `src/gallery/Strings/en-US/Resources.ts` → `app.version`
   - `package.json` → `version` (bare `2.3.2`, no codename / internal number); also bump the two `"version"` fields

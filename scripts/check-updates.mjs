@@ -23,11 +23,11 @@
  * 四条设计原则：
  *  1. 保守 —— 只改「能确定」的东西，判定不了的一律只报告。宁可少改，不可改错。
  *  2. 全有或全无 —— 一个软件的「版本号 + 它的下载直链」是一个整体：
- *     只要有任何一处不能自动处理（跨大版本、note 里带校验值、新 release 里找不到对应文件），
+ *     只要有任何一处不能自动处理（跨大版本、下载项带校验值、新 release 里找不到对应文件），
  *     就**一个字都不改**，整体交给人工。否则会出现「版本号是新的、直链还是旧文件」这种自相矛盾的数据。
  *  3. 不破坏 —— 写回时保持原文件的缩进与**行尾**（本仓没有 .gitattributes，行尾是混合的：
  *     多数 JSON 是 LF，但个别文件是 CRLF），绝不能整文件重写。
- *  4. 不碰校验值 —— note 里写了 SHA512 的下载项**一律不自动改直链**：
+ *  4. 不碰校验值 —— 带校验值的下载项（`hash` 字段，或早期写在 note 里的）**一律不自动改直链**：
  *     换了文件校验值就失效，留下错的 SHA512 比不更新更糟，那种必须人工核对。
  *
  * 产出分工（配合 check-updates.yml）：
@@ -508,6 +508,13 @@ async function main() {
 const hasChecksum = (s) => /sha512|sha256|sha-512|sha-256|md5|crc32/i.test(cur(s))
 
 /**
+ * 这条下载项带不带校验值 —— 带了就说明「文件换了要人工重算」，脚本不许自动换直链。
+ * 两种写法都算：单独的 `hash` 字段（现行写法），早期写在 `note` 里的。
+ * 注意 `hash` 里只有十六进制、不含算法名，hasChecksum() 单独查它匹配不到，必须显式判空。
+ */
+const itemHasChecksum = (item) => hasChecksum(item?.note) || !!cur(item?.hash)
+
+/**
  * 为一个「站内版本落后于上游」的软件出**更新计划**，`apply=true` 时才真的写文件。
  *
  * 策略是「全有或全无」：版本号与它的下载直链是一个整体，
@@ -517,7 +524,7 @@ const hasChecksum = (s) => /sha512|sha256|sha-512|sha-256|md5|crc32/i.test(cur(s
  * blockers 的 kind（同类会合并成一条，避免渲染时一屏 12 行）：
  *   bump   {crossMajor, text}  跨大版本（站内可能有意收录旧版，或升级涉及简介/截图等人工内容）
  *   link   {files[]}           是本仓库的 release 链接，但在新版本的附件里找不到对应文件
- *   sha    {platforms[]}       下载项的说明里带 SHA512/SHA256 校验值，换了文件校验值就失效
+ *   sha    {platforms[]}       下载项带校验值（hash 字段，或 note 里写着 SHA512/SHA256），换了文件校验值就失效
  *   verify {text}              站内版本号不等于上游任何 tag，搞不清它对应哪个版本，不敢动
  *
  * @returns {{ok: boolean, applied: string[], blockers: {kind: string, text: string}[], staleNonGithub: object[]}}
@@ -564,8 +571,8 @@ function planUpdate(entry, app, up, apply) {
     const r = matchNewAsset(item, up.slug, up.tags || [], newRelease)
     // 不指向本仓库 release（官网 / 镜像 / 别的仓库）、或链接里已经写着新版本 —— 都不需要动
     if (r.status === 'up-to-date' || r.status === 'not-ours') { linkPlan.push({ item, r, noChange: true }); continue }
-    // 文件真的会变，但说明里嵌了校验值 —— 换了文件校验值就失效，不能替维护者做主
-    if (hasChecksum(item.note)) { shaBlocked.push(platform); continue }
+    // 文件真的会变，但这条带校验值 —— 换了文件校验值就失效，不能替维护者做主
+    if (itemHasChecksum(item)) { shaBlocked.push(platform); continue }
     if (r.status === 'no-match' || r.status === 'no-assets') { noMatchBlocked.push(r.oldFile || platform); continue }
     linkPlan.push({ item, r, noChange: false })
   }
@@ -668,7 +675,7 @@ function blockerTexts(blockers) {
     if (b.kind === 'bump') {
       out.push(b.text)
     } else if (b.kind === 'sha') {
-      out.push(`${b.platforms.length} 个下载项的说明里带校验值（SHA512/SHA256 等），文件一换校验值就失效、必须人工重算`)
+      out.push(`${b.platforms.length} 个下载项带校验值（hash 字段或 note 里的 SHA512/SHA256），文件一换校验值就失效、必须人工重算`)
     } else if (b.kind === 'link') {
       out.push(`${b.files.length} 条下载直链在上游新版本的附件里找不到对应文件（${q(b.files.slice(0, 2))}${b.files.length > 2 ? ' 等' : ''}）`)
     } else if (b.kind === 'verify') {
@@ -702,7 +709,7 @@ function bumpAdvice(it) {
   }
   if (kinds.has('sha')) {
     const b = it.blockers.find((x) => x.kind === 'sha')
-    lines.push(`**带校验值的 ${b.platforms.length} 个下载项**（${b.platforms.slice(0, 3).map((p) => `\`${p}\``).join('、')}${b.platforms.length > 3 ? ' 等' : ''}）：下载新包 → 重新计算 SHA512 → 连 \`downloads[].note\` 里的校验值一起改`)
+    lines.push(`**带校验值的 ${b.platforms.length} 个下载项**（${b.platforms.slice(0, 3).map((p) => `\`${p}\``).join('、')}${b.platforms.length > 3 ? ' 等' : ''}）：下载新包 → 重新计算 SHA512 → 连 \`downloads[].hash\`（早期写法是 note 里的校验值）一起改`)
   }
   if (kinds.has('verify')) lines.push('站内版本号不在上游 tag 里，先确认它对应哪个版本，再决定怎么改')
   return lines

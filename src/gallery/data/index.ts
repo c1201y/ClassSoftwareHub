@@ -23,6 +23,9 @@ export interface DownloadItem {
   platform: string;
   note?: string;
   size?: string;
+  /** 校验值（可选）：只写十六进制，算法按长度识别（64=SHA-256 / 128=SHA-512 等）。
+      详情页只显示首尾几位，点一下可复制完整值。 */
+  hash?: string;
   url?: string;
 }
 
