@@ -109,7 +109,7 @@ node scripts/update-ignore.mjs --list                                    # 查�
   Y 为功能更新、Z 为小修小补；**代号后缀保留**（如 `- Autumn`）。同一版本另有内部版本号 `AAAABBCCPRDD`
   （AAAA 年 / BB 月 / CC 日期 / DD 文件版次），例 `20260915PR01`。
   对外版本号与内部版本号均写入 `文字设置.ts` 的 `app.version`
-  （当前 `v2.3.2 - September 18 Incident (20260919PR01)`），英文站需同步修改
+  （当前 `v2.3.2 - September 18 Incident (20260919PR02)`），英文站需同步修改
   `src/gallery/Strings/en-US/Resources.ts` 的 `app.version`（设置页「关于」展示的即为此值）。
 - 设置页「关于」中的「投喂作者 / 回声洞 / 作者首页 / QQ 群」链接来自 `文字设置.ts` 的 `about.*-url` 键，
   修改文字区即可更换链接。
