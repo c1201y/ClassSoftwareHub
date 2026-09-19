@@ -90,19 +90,48 @@
 
         <div v-if="otherDownloads.length" class="detail-download-list">
           <div
-            v-for="download in otherDownloads"
-            :key="download.platform"
-            class="detail-download-row">
-            <div class="detail-download-info">
-              <div class="detail-download-platform">{{ download.platform }}</div>
-              <div v-if="download.note" class="detail-download-note">{{ download.note }}</div>
-              <div v-if="download.size" class="detail-download-size">{{ download.size }}</div>
+            v-for="(download, index) in otherDownloads"
+            :key="download.platform + '-' + index"
+            class="detail-download-item">
+            <div class="detail-download-row">
+              <div class="detail-download-info">
+                <div class="detail-download-platform">{{ download.platform }}</div>
+                <div v-if="download.note" class="detail-download-note">{{ download.note }}</div>
+                <div v-if="download.size" class="detail-download-size">{{ download.size }}</div>
+              </div>
+              <div class="detail-download-actions">
+                <WinButton
+                  class="detail-download-button"
+                  :Content="t('detail.download')"
+                  Style="AccentButtonStyle"
+                  @click="openDownload(download)" />
+                <!-- GitHub 的链接才多给一条国内加速路（通道清单见 githubMirror.ts） -->
+                <WinButton
+                  v-if="isMirrorableUrl(download.url)"
+                  class="detail-mirror-button"
+                  :Content="t('detail.mirror-button')"
+                  Style="AccentButtonStyle"
+                  @click="toggleMirror(download.url)" />
+              </div>
             </div>
-            <WinButton
-              class="detail-download-button"
-              :Content="t('detail.download')"
-              Style="AccentButtonStyle"
-              @click="openDownload(download)" />
+
+            <!-- 加速通道：展开后列出所有镜像，点哪条走哪条 -->
+            <div v-if="mirrorOpenUrl === download.url" class="detail-mirror-panel">
+              <p class="detail-mirror-desc">{{ t('detail.mirror-desc') }}</p>
+              <div class="detail-mirror-channels">
+                <a
+                  v-for="channel in orderedChannels"
+                  :key="channel.id"
+                  class="detail-mirror-channel"
+                  :href="mirrorHref(download, channel)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  @click="onMirrorClick(channel)">
+                  <span class="detail-mirror-channel-name">{{ channel.name }}</span>
+                </a>
+              </div>
+              <p class="detail-mirror-note">{{ t('detail.mirror-note') }}</p>
+            </div>
           </div>
         </div>
         <p v-else-if="storeLink" class="detail-store-only-hint">{{ t('detail.store-only') }}</p>
@@ -115,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import WinScrollViewer from '../../components/WinScrollViewer.vue';
 import WinHyperlinkButton from '../../components/WinHyperlinkButton.vue';
@@ -125,6 +154,14 @@ import { useI18n } from '../../components/i18n/index';
 import { findAppById, categoryName } from '../data';
 import type { DownloadItem } from '../data';
 import { appIconUrlSafe, markIconBroken } from '../appIcons';
+import {
+  MIRROR_CHANNELS,
+  isMirrorableUrl,
+  mirrorUrl,
+  preferredChannelId,
+  rememberChannel
+} from '../githubMirror';
+import type { MirrorChannel } from '../githubMirror';
 import '../styles/download-detail-page.css';
 
 const { t } = useI18n();
@@ -163,5 +200,44 @@ const openStore = () => {
   if (target) {
     window.open(target, '_blank', 'noopener,noreferrer');
   }
+};
+
+// ── GitHub 下载加速（通道清单与判断逻辑见 src/gallery/githubMirror.ts）──────
+// 主按钮始终是 GitHub 官方直链；这里只是额外给一条国内镜像的路，
+// 展开哪一行用 url 记（同一个软件不会有两行同一个链接）。
+
+/** 当前展开了加速通道的那条下载链接；空串表示都没展开 */
+const mirrorOpenUrl = ref('');
+
+// 点进另一个软件时组件会被复用（ref 不会自己清），把展开的面板收起来
+watch(
+  () => route.params.id,
+  () => {
+    mirrorOpenUrl.value = '';
+  }
+);
+
+const toggleMirror = (url?: string) => {
+  if (!url) return;
+  mirrorOpenUrl.value = mirrorOpenUrl.value === url ? '' : url;
+};
+
+/** 上次用过的通道排到最前 —— 常用的话能少点一下 */
+const preferredId = ref(preferredChannelId());
+const orderedChannels = computed(() => {
+  const first = MIRROR_CHANNELS.find((channel) => channel.id === preferredId.value);
+  if (!first) return MIRROR_CHANNELS;
+  return [first, ...MIRROR_CHANNELS.filter((channel) => channel !== first)];
+});
+
+/** 拼出该下载项在某个通道下的链接（url 是可选字段，这里顺手兜住空值） */
+const mirrorHref = (download: DownloadItem, channel: MirrorChannel) =>
+  download.url ? mirrorUrl(download.url, channel) : '';
+
+/** 记下这次选的通道（下次它就在最前面），并收起面板 —— 点完有反馈，不会看着像没反应 */
+const onMirrorClick = (channel: MirrorChannel) => {
+  preferredId.value = channel.id;
+  rememberChannel(channel.id);
+  mirrorOpenUrl.value = '';
 };
 </script>

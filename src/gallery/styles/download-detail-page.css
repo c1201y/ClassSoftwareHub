@@ -185,6 +185,77 @@ html.theme-dark .detail-category-badge {
 .detail-download-button {
   flex: none;
 }
+/* 一行 = 信息 + 按钮组；下面可能还挂着「加速通道」面板 */
+.detail-download-item {
+  flex-direction: column;
+  display: flex;
+}
+.detail-download-actions {
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  display: flex;
+}
+.detail-mirror-button {
+  flex: none;
+}
+/* ── GitHub 加速通道面板 ─────────────────────────────────────────── */
+.detail-mirror-panel {
+  background: color-mix(in srgb, var(--accent-base) 5%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--accent-base) 22%, var(--card-stroke));
+  border-radius: 8px;
+  margin-top: 8px;
+  padding: 14px 18px;
+}
+.detail-mirror-desc {
+  color: var(--text-secondary);
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+.detail-mirror-channels {
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  display: grid;
+}
+.detail-mirror-channel {
+  background: var(--card-bg);
+  border: 1px solid var(--card-stroke);
+  border-radius: 6px;
+  color: var(--text-primary);
+  justify-content: center;
+  align-items: center;
+  padding: 9px 12px;
+  font-size: 13px;
+  text-decoration: none;
+  transition: background var(--faster-duration, 83ms) linear,
+    border-color var(--faster-duration, 83ms) linear;
+  display: flex;
+}
+.detail-mirror-channel:hover {
+  background: var(--ctrl-fill-secondary, rgba(0, 0, 0, 0.04));
+  border-color: color-mix(in srgb, var(--accent-base) 45%, transparent);
+}
+.detail-mirror-channel:active {
+  background: var(--ctrl-fill-tertiary, rgba(0, 0, 0, 0.06));
+}
+.detail-mirror-channel:focus-visible {
+  outline: 2px solid var(--accent-base);
+  outline-offset: 2px;
+}
+.detail-mirror-channel-name {
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.detail-mirror-note {
+  color: var(--text-secondary);
+  margin: 10px 0 0;
+  font-size: 11.5px;
+  line-height: 1.6;
+}
 .detail-not-found {
   color: var(--text-secondary);
   font-size: 14px;
@@ -198,6 +269,17 @@ html.theme-dark .detail-category-badge {
   }
   .detail-download-button {
     width: 100%;
+  }
+  /* 窄屏：按钮组占满一行，两个按钮平分；镜像通道改成一行一个 */
+  .detail-download-actions {
+    width: 100%;
+  }
+  .detail-download-actions > * {
+    flex: 1 1 0;
+    width: auto;
+  }
+  .detail-mirror-channels {
+    grid-template-columns: 1fr;
   }
   .detail-store-card {
     flex-wrap: wrap;
