@@ -1,4 +1,4 @@
-name: Check App Updates
+name: 检查应用更新
 
 # 「软件信息自动更新」：每周去上游（GitHub Releases）核对站内 软件数据/apps/*.json
 # 记录的最新版本与下载直链，然后**分两路处理**：
