@@ -1,0 +1,23 @@
+{
+  "_提交时间": "2026-09-19T10:23:18.936Z",
+  "_原始ID冲突": false,
+  "id": "yjxzsayxingz",
+  "name": "海康易教学助手",
+  "icon": "",
+  "category": "schedule",
+  "tagline": "海康威视开发的一个类似希沃白板的教学软件",
+  "description": "一个类似于希沃白板的软件，但是自带PPT组件和画笔功能，在任何页面都可以调用画笔，全屏PPT后自动适配PPT翻页按键等，自带白板功能，无需登录也能使用大部分功能",
+  "version": "1.26.4",
+  "size": "353.7MB",
+  "system": "Windows系统(一般建议Windows10)",
+  "website": "https://www.hik-cloud.com/teach-prepare-web/download.html#/download",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "Windows安装版",
+      "size": "353.7MB",
+      "url": "https://yunmdload.hik-cloud.com/teach/download/cvtNew/setupPackage/V1.26.4/CloudviewTeach_V1.26.4.exe"
+    }
+  ],
+  "sort": 99
+}
