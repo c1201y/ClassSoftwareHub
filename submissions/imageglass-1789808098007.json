@@ -1,0 +1,72 @@
+{
+  "_提交时间": "2026-09-19T08:54:58.007Z",
+  "_原始ID冲突": false,
+  "id": "imageglass",
+  "name": "ImageGlass",
+  "icon": "https://avatars.githubusercontent.com/u/3154213?v=4",
+  "category": "teaching",
+  "tagline": "🏞 A fast, open-source, modern image viewer for 90+ formats…",
+  "description": "🏞 A fast, open-source, modern image viewer for 90+ formats – including WEBP, GIF, SVG, AVIF, JXL, HEIC and more – built for smooth browsing across Windows, macOS, and Linux.",
+  "version": "10.0.6.906",
+  "size": "",
+  "system": "Windows / macOS / Linux",
+  "website": "https://imageglass.org",
+  "github": "https://github.com/d2phap/ImageGlass",
+  "downloads": [
+    {
+      "platform": "Linux x64（AppImage）",
+      "note": "ImageGlass_10.0.6.906_linux-x64.AppImage",
+      "size": "38.3 MB",
+      "url": "https://github.com/d2phap/ImageGlass/releases/download/10.0.6.906/ImageGlass_10.0.6.906_linux-x64.AppImage"
+    },
+    {
+      "platform": "Linux x64 FLATPAK",
+      "note": "ImageGlass_10.0.6.906_linux-x64.flatpak",
+      "size": "30.2 MB",
+      "url": "https://github.com/d2phap/ImageGlass/releases/download/10.0.6.906/ImageGlass_10.0.6.906_linux-x64.flatpak"
+    },
+    {
+      "platform": "Linux x64 压缩包",
+      "note": "ImageGlass_10.0.6.906_linux-x64.tar.gz",
+      "size": "40.7 MB",
+      "url": "https://github.com/d2phap/ImageGlass/releases/download/10.0.6.906/ImageGlass_10.0.6.906_linux-x64.tar.gz"
+    },
+    {
+      "platform": "macOS（Apple 芯片）（磁盘映像）",
+      "note": "ImageGlass_10.0.6.906_mac-arm64.dmg",
+      "size": "41.2 MB",
+      "url": "https://github.com/d2phap/ImageGlass/releases/download/10.0.6.906/ImageGlass_10.0.6.906_mac-arm64.dmg"
+    },
+    {
+      "platform": "Windows ARM64 MSIX",
+      "note": "ImageGlass_10.0.6.906_win-arm64.msix",
+      "size": "42.1 MB",
+      "url": "https://github.com/d2phap/ImageGlass/releases/download/10.0.6.906/ImageGlass_10.0.6.906_win-arm64.msix"
+    },
+    {
+      "platform": "Windows ARM64 压缩包",
+      "note": "ImageGlass_10.0.6.906_win-arm64.zip",
+      "size": "39.6 MB",
+      "url": "https://github.com/d2phap/ImageGlass/releases/download/10.0.6.906/ImageGlass_10.0.6.906_win-arm64.zip"
+    },
+    {
+      "platform": "Windows x64（MSI 安装版）",
+      "note": "ImageGlass_10.0.6.906_win-x64.msi",
+      "size": "33.8 MB",
+      "url": "https://github.com/d2phap/ImageGlass/releases/download/10.0.6.906/ImageGlass_10.0.6.906_win-x64.msi"
+    },
+    {
+      "platform": "Windows x64 MSIX",
+      "note": "ImageGlass_10.0.6.906_win-x64.msix",
+      "size": "44.3 MB",
+      "url": "https://github.com/d2phap/ImageGlass/releases/download/10.0.6.906/ImageGlass_10.0.6.906_win-x64.msix"
+    },
+    {
+      "platform": "Windows x64 压缩包",
+      "note": "ImageGlass_10.0.6.906_win-x64.zip",
+      "size": "41.9 MB",
+      "url": "https://github.com/d2phap/ImageGlass/releases/download/10.0.6.906/ImageGlass_10.0.6.906_win-x64.zip"
+    }
+  ],
+  "sort": 99
+}
