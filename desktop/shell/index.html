@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>ClassSoftwareHub</title>
+  <!--
+    这不是一个界面 —— 它只是一个背景承载页。
+
+    窗口的可见内容全部由子视图（站点）占据；状态提示一律交给系统自己画：
+      · 窗口标题      → main.js 的 win.setTitle()
+      · 任务栏角标    → main.js 的 win.setOverlayIcon()
+      · 断网提示      → Electron 原生对话框 dialog.showMessageBox()
+
+    因此本页不放任何自绘 UI，只提供一个跟随系统深浅色的底色，
+    避免窗口缩放/切换的瞬间闪白。
+  -->
+  <style>
+    html, body { height: 100%; margin: 0; background: #f3f3f3; }
+    @media (prefers-color-scheme: dark) {
+      html, body { background: #202020; }
+    }
+  </style>
+</head>
+<body></body>
+</html>

@@ -1,0 +1,62 @@
+# ClassSoftwareHub 桌面版 · 打包配置（electron-builder）
+# 产物：Windows 安装包 / 便携版（.exe）、Linux 安装包（.deb）
+# 用法见 desktop/README.md —— 正常都交给 .github/workflows/build-desktop.yml 自动跑。
+
+appId: cn.classsoftwarehub.desktop
+productName: ClassSoftwareHub
+copyright: Copyright © 2026 Tiny-Nick · MIT License
+
+directories:
+  output: release
+  buildResources: assets
+
+# 只把运行需要的东西打进包：主进程、承载页/兜底页、内置离线副本、图标
+files:
+  - main.js
+  - package.json
+  - shell/**/*
+  - snapshot/**/*
+  # ★ assets/ 必须显式列出：main.js 运行时按 __dirname 读窗口图标与任务栏角标，
+  #   不进 asar 的话 setOverlayIcon 会静默拿到空图（不报错，只是角标不见了）。
+  - assets/**/*
+
+# ── Windows ──
+win:
+  icon: assets/icon.ico
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: ClassSoftwareHub
+  artifactName: ClassSoftwareHub-Desktop-${version}-Setup.${ext}
+
+portable:
+  artifactName: ClassSoftwareHub-Desktop-${version}-Portable.${ext}
+
+# ── Linux ──
+linux:
+  icon: assets/icon.png
+  category: Utility
+  synopsis: 电教委员常用软件下载站
+  description: |-
+    ClassSoftwareHub 桌面版：把「电教委员常用软件下载站」装进一个独立窗口。
+    内容跟随网站自动更新；断网时自动切换到随包附带的离线副本。
+  # 别写 `desktop:` 键值对 —— electron-builder 26 起这个字段改成了「.desktop 文件路径」，
+  # 旧的对象写法会直接把配置校验打挂（Invalid configuration object）。
+  # Name / Comment / Categories 交给它按 productName / synopsis / category 自动生成。
+  target:
+    - target: deb
+      arch: [x64]
+  artifactName: ClassSoftwareHub-Desktop-${version}-${arch}.${ext}
+
+deb:
+  priority: optional
+  # depends 留空用 electron-builder 的默认依赖表（手写容易漏 libnss3 / libatspi2.0-0 这些）
