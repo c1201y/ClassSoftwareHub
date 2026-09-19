@@ -1,0 +1,217 @@
+name: Build Desktop App
+
+# 桌面版（Windows exe / Linux deb）**只手动发版**，不跟随提交自动构建 ——
+# 网站内容更新时桌面版打开的就是最新网页，不需要重新发版；只有「内置离线副本」想更新、
+# 或桌面版代码本身改了，才来跑一次。
+#
+# 触发方式（唯一）：Actions → Build Desktop App → Run workflow → 填要发的 tag 号。
+#   填 `desktop-v1.0.1`；只填 `1.0.1` 或 `v1.0.1` 会自动补成 `desktop-v1.0.1`。
+# 一次做完四件事：
+#   ① 校验并**自动创建** tag（已存在则直接失败，防重复发版）
+#   ② 打包 Windows（Setup + Portable）与 Linux（.deb）
+#   ③ 用 CHANGELOG.md 里**最新一节**当发布说明
+#   ④ 建 Release，把安装包挂上去
+#
+# 产物版本号**跟随 tag**：打包前把 desktop/package.json 的 version 换成 tag 里的版本，
+# 所以发 desktop-v1.0.1 时 exe 会叫 ClassSoftwareHub-Desktop-1.0.1-Setup.exe。
+#
+# ⚠️ 要重发同一个版本，得先删掉旧 tag 与对应的 Release（本工作流不覆盖已有 tag）。
+# ⚠️ 推 tag 不再触发任何工作流（本文件已去掉 `on: push: tags`）；Release 只由这里创建。
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '要发布的 tag：desktop-v1.0.1（只填 1.0.1 会自动补成 desktop-v1.0.1）'
+        required: true
+        type: string
+      prerelease:
+        description: '标记为预发布（Pre-release）'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  # ── ① 校验 tag，并创建 / 推送它 ────────────────────────────────────────────
+  tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.norm.outputs.tag }}
+      version: ${{ steps.norm.outputs.version }}
+    steps:
+      - name: 取出源码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 校验并规范化 tag
+        id: norm
+        env:
+          RAW_TAG: ${{ inputs.tag }}   # 经环境变量传入，不拼进脚本正文
+        run: |
+          set -euo pipefail
+          t="$(printf '%s' "$RAW_TAG" | tr -d ' \t\r\n')"
+          case "$t" in
+            desktop-v*) ;;
+            v*)         t="desktop-$t" ;;
+            *)          t="desktop-v$t" ;;
+          esac
+          v="${t#desktop-v}"
+          if ! printf '%s' "$v" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::tag 应为 desktop-vX.Y.Z 形式（收到：$RAW_TAG）"
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$t" >/dev/null 2>&1; then
+            echo "::error::tag $t 已存在。要重发请先在 Releases 里删掉该 Release，再删除这个 tag。"
+            exit 1
+          fi
+          echo "tag=$t"     >> "$GITHUB_OUTPUT"
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "将发布：$t（版本号 $v）"
+
+      - name: 创建并推送 tag
+        env:
+          TAG: ${{ steps.norm.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "ClassSoftwareHub 桌面版 $TAG"
+          git push origin "refs/tags/$TAG"
+          echo "已创建 tag $TAG"
+
+  # ── ② 打包两个平台 ────────────────────────────────────────────────────────
+  build:
+    needs: tag
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: --win
+            artifact: desktop-windows
+          - os: ubuntu-latest
+            target: --linux
+            artifact: desktop-linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: 取出源码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: 安装站点依赖
+        run: npm ci
+
+      - name: 构建站点（单文件版）
+        # 桌面版的离线兜底用的就是这份单文件产物：所有资源内联，file:// 直接打开也能用。
+        run: npm run build:single
+
+      - name: 生成内置离线副本（snapshot/）
+        working-directory: desktop
+        run: node scripts/make-snapshot.mjs
+
+      - name: 安装桌面版依赖
+        working-directory: desktop
+        # 桌面版依赖单独一份（不放进站点 package.json，免得每次部署站点都白拉 100 MB 的 Electron）；
+        # 这里不做 lock 文件，用 install 而不是 ci。
+        run: npm install --no-audit --no-fund
+
+      - name: 版本号对齐 tag
+        working-directory: desktop
+        # electron-builder.yml 里产物名用的是 ${version}；不对齐的话会出现
+        # 「发的是 desktop-v1.0.1、包却叫 ...-1.0.0-Setup.exe」。只改工作区文件，不提交。
+        run: npm version "${{ needs.tag.outputs.version }}" --no-git-tag-version --allow-same-version
+
+      - name: 打包 ${{ matrix.target }}
+        working-directory: desktop
+        run: npx electron-builder ${{ matrix.target }} --publish never
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 不签名（没有代码签名证书；Windows 会提示"未知发布者"，这是预期内的）
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            desktop/release/*.exe
+            desktop/release/*.deb
+          if-no-files-found: error
+          retention-days: 14
+
+  # ── ③ 建 Release：发布说明取 CHANGELOG 最新一节，安装包附上 ───────────────
+  release:
+    needs: [tag, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 取出源码（为读 CHANGELOG.md）
+        uses: actions/checkout@v4
+
+      - name: 下载两个平台的构建产物
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: 生成发布说明
+        env:
+          TAG: ${{ needs.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import io, re
+          lines = io.open('CHANGELOG.md', encoding='utf-8').read().splitlines()
+          heads = [i for i, l in enumerate(lines) if l.startswith('## ')]
+          if not heads:
+              raise SystemExit('CHANGELOG.md 里找不到 "## " 标题，无法生成发布说明')
+          start = heads[0]
+          end = heads[1] if len(heads) > 1 else len(lines)
+          # 最新一节：跳过标题行（标题单独用在下面那行），掐掉结尾的分隔线
+          body = '\n'.join(lines[start + 1:end]).strip()
+          body = re.sub(r'\n*---\s*$', '', body).rstrip()
+          site = re.sub(r'发布！?$', '', lines[start].lstrip('# ').strip())
+          head = (
+              '桌面版安装包（Windows exe / Linux deb）。\n\n'
+              '- **Windows**：`Setup` 是安装版（可自选安装目录，装完有开始菜单与桌面快捷方式）；'
+              '`Portable` 是免安装版，双击即用。\n'
+              '- **Linux**：`.deb` 包，`sudo apt install ./ClassSoftwareHub-Desktop-*.deb` 安装。\n'
+              '- 打开后**内容跟随网站自动更新**；断网时会自动切到随包附带的离线副本，并在窗口顶部说明。\n\n'
+              '随包附带的离线副本对应网站版本：**%s**\n\n'
+              '---\n\n' % site
+          )
+          io.open('notes.md', 'w', encoding='utf-8').write(head + body + '\n')
+          print('发布说明已生成（%d 字符），取自：%s' % (len(head + body), site))
+          PY
+          echo "----- notes.md 预览 -----"
+          head -20 notes.md
+
+      - name: 创建 Release 并附上安装包
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.tag.outputs.tag }}
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(artifacts/*.exe artifacts/*.deb)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::没有找到任何安装包，取消发布"
+            exit 1
+          fi
+          args=(--title "$TAG" --notes-file notes.md)
+          if [ "$PRERELEASE" = "true" ]; then
+            args+=(--prerelease)
+          fi
+          gh release create "$TAG" "${args[@]}" "${files[@]}"
+          echo "✅ 已发布 $TAG："
+          gh release view "$TAG" --json url,assets --jq '.url, (.assets[] | "  - " + .name)'

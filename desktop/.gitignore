@@ -1,0 +1,10 @@
+# 依赖与打包产物
+node_modules/
+release/
+# release/ 万一被 Windows 文件锁占住，可以换个输出目录绕开（见 README 的实测记录）
+release-out/
+release-new/
+
+# 内置离线副本：构建时由 scripts/make-snapshot.mjs 从站点产物生成，不入库
+snapshot/*.html
+snapshot/version.json

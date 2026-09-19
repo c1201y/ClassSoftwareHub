@@ -14,6 +14,23 @@ npm run build:single # 单文件打包 → dist/index.html（约 2MB，可离线
 npm run type-check   # TypeScript 类型检查
 ```
 
+## 桌面版（Windows exe / Linux deb）
+
+`desktop/` 是一个 Electron 桌面程序，把站点装进独立窗口：**内容跟随网站自动更新**（它直接加载网站，
+不是把网页打包死），断网时自动切到随包附带的离线副本。所以**它自己不需要更新** —— 只有内置副本会过期，
+一旦过期就会在窗口顶部按 Windows 应用的做法提示。
+
+```bash
+npm run build:single            # ① 先在站点根目录做单文件产物（离线副本的来源）
+cd desktop && npm install       # ② 桌面版依赖单独一份，不放进站点的 package.json
+node scripts/make-snapshot.mjs  # ③ 生成内置离线副本
+npm start                       # ④ 本地运行；pack:win / pack:linux 出安装包
+```
+
+完整说明（三级降级、状态条形态、发版流程、已知取舍）见 **`desktop/README.md`**。
+出安装包不用手工操作：到 GitHub Actions 手动跑 **Build Desktop App**，或打一个 `desktop-v<版本>` 标签，
+Windows 与 Linux 的产物会自动附到 Release。
+
 ## 日常维护：需要修改哪些文件
 
 > 日常维护只需改动以下两个内容区，无需修改代码。

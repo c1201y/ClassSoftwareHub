@@ -32,6 +32,12 @@ npm run type-check    # vue-tsc --build (run it after touching any .ts/.vue)
 npm run build         # multi-file bundle → dist/ — this is what CI deploys
 npm run build:single  # single-file bundle → dist/index.html (~2 MB, opens offline)
 npm run check         # type-check + build
+
+# Desktop app (Electron, lives in desktop/ — separate package.json on purpose)
+cd desktop && npm install
+node scripts/make-snapshot.mjs   # built-in offline copy, reads ../dist (run build:single first)
+npm start                        # run the desktop shell
+npm run pack:win                 # → release/*.exe     (pack:linux → *.deb)
 ```
 
 ---
@@ -77,7 +83,30 @@ submissions/                     Visitor-submitted app drafts (entry point of th
 scripts/                         Maintenance scripts — `check-updates.mjs` (upstream version checker),
                                  `update-ignore.mjs` (edits the ignore list) and `upload-webdav.py`
                                  (mirrors dist/ to the OpenList folder); see "CI Notes"
-.github/workflows/               The 5 workflows (see "CI Notes")
+desktop/                         ★ Electron desktop app (Windows exe / Linux deb). It **remote-loads the site**
+  ├─ main.js                      so site updates need no app release; three-step fallback (site → retry that
+  │                               hits the Chromium disk cache → bundled offline copy). Its own package.json:
+  │                               never merge Electron into the root one. Full guide: desktop/README.md
+  ├─ shell/                       ★ Blank carrier page (index.html) + no-copy.html fallback page only.
+  │                               Status is reported by the OS, never by our own widgets: window-title
+  │                               suffix, taskbar overlay badge (assets/badge-*.png) and native dialogs
+  │                               (version info / diagnostics / offline notice).
+  │                               Do NOT reintroduce a self-drawn banner — the content area is 100% site.
+  │                               ★ No system title bar: `titleBarStyle: 'hidden'` + `titleBarOverlay`,
+  │                               so min/max/close stay OS-drawn and float over the site's own titlebar.
+  │                               The overlay height must stay 48 to match WinTitleBar.vue, and the site
+  │                               shifts itself left via env(titlebar-area-*) — no site change needed.
+  │                               The only thing injected into the site is a headless colour probe
+  │                               (OVERLAY_PROBE) mirroring --app-bg back over console-message, so the
+  │                               button strip always matches the page (theme + holiday skin included).
+  │                               No DOM nodes, no style overrides.
+  ├─ scripts/make-snapshot.mjs    Site single-file bundle → built-in offline copy (snapshot/)
+  ├─ electron-builder.yml         Packaging: win = nsis + portable, linux = deb
+  ├─ assets/icon.png|ico          App icon is the *site* icon, not a separate design: trimmed to its
+  │                               content, centred on a square canvas (512 png for Linux, 16-256 ico for Windows).
+  │                               Master: src/assets/AppIcon-source.png — regenerate both when the site icon changes.
+  └─ snapshot/                    Generated at build time, not committed
+.github/workflows/               The 6 workflows (see "CI Notes")
 ```
 
 Routes (hash-based):
@@ -248,6 +277,16 @@ changes are replayed by `visitor.ts`.
    strips every such key (`review-submission.yml` filters by prefix, not by name), so a new
    submission-only field can never leak into the published app data — it only shows up in the
    review issue (`create-review-issue.yml` prints `联系方式` explicitly).
+   ✅ **Fixed 2026-09-19** — this used to be a known gap: the submission service rebuilt the draft
+   from a field whitelist and **dropped `_联系方式`**, so the review issue (issue #28) reported a
+   contact as missing even though `SubmitPage.vue` blocks an empty one. The service is a Cloudflare
+   Worker named `classhub` (behind `cshapi.132614.xyz` / `submit.132614.xyz`); it now copies
+   **every `_`-prefixed key from the request body** into the draft — matched by prefix, not by name —
+   while refusing to overwrite the two keys it writes itself (`_提交时间`, `_原始ID冲突`). The same
+   patch stopped `downloads[].hash` from being dropped. Source: `submit-worker/` (read its README
+   first — it is a backup, not a deployment source).
+   ⚠️ Drafts submitted **before** that date genuinely lack the key; a missing contact there is
+   expected, not a submitter mistake.
    Required before submission: `id`, `name`, `category`, `tagline`, `description`, `system`, a contact
    (`_联系方式`) and **at least one direct download link**. All of it is validated in
    `SubmitPage.vue` → `buildPayload()` — the submit button is not a native submit control, so the
@@ -301,7 +340,7 @@ changes are replayed by `visitor.ts`.
     depths. The same file also sanitises chunk names to ASCII — a Chinese module filename
     (`AI导航文本.ts`) would otherwise emit `assets/AI导航文本-xxxx.js`, and some servers mishandle
     percent-encoded paths.
-- All five workflows carry Chinese comments explaining *why* they are written this way —
+- All six workflows carry Chinese comments explaining *why* they are written this way —
   **read those comments before changing anything.**
 - `check-updates.yml` runs `scripts/check-updates.mjs` **every Friday** (and on demand), comparing
   `软件数据/apps/*.json` against upstream GitHub releases, and **splits the outcome in two**:
@@ -350,6 +389,25 @@ changes are replayed by `visitor.ts`.
     comment body arrives via an env var and is parsed by bash's own word splitting — **do not switch
     back to `cut -d' ' -f2`**: when the delimiter is absent it returns the whole line, which would
     record `/ignore` itself as an app id.
+- `build-desktop.yml` builds the Electron desktop app (Windows exe + Linux deb). It is **deliberately
+  not wired to `push: main`** — the app remote-loads the site, so a site update never needs a new build.
+  **Its only trigger is a manual `workflow_dispatch` with a required `tag` input.** One run does the
+  whole release: normalises the tag (`1.0.1` / `v1.0.1` → `desktop-v1.0.1`) and fails if it already
+  exists, creates and pushes it, builds both platforms **with the version taken from that tag** (written
+  into `desktop/package.json` inside the runner only, so `${version}` filenames always match the tag),
+  then creates a Release whose notes are **the newest section of `CHANGELOG.md`**. A `push: tags:
+  desktop-v*` trigger used to exist and was **removed on purpose — do not re-add it** (a tag push would
+  kick off a second, competing build and the tag would already exist by then). `desktop/` keeps **its
+  own** `package.json`: fold Electron into the root one and every site deploy pays for ~100 MB of
+  binaries it never uses.
+- `vite.config.ts` emits `dist/version.json` (plugin `csh-version-json`). The desktop app compares it
+  against the version of the offline copy it shipped with, and reports when that copy has fallen behind —
+  via window-title suffix + taskbar overlay badge, plus one native dialog when it has to go offline.
+  With the system title bar gone, that title is only reachable from the taskbar tooltip / Alt+Tab — the
+  taskbar badge and the offline dialog are what actually reach the user.
+  `electron-builder.yml` lists `assets/**/*` on purpose: `main.js` reads the window icon and the overlay
+  badges from `__dirname` at runtime, and an unlisted folder is a silent no-op (badge simply never shows).
+  The version string still comes from `文字设置.ts` — the plugin only parses it, never restates it.
 
 ---
 
