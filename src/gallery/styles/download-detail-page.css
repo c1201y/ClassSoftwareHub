@@ -199,6 +199,13 @@ html.theme-dark .detail-category-badge {
 .detail-mirror-button {
   flex: none;
 }
+/* 闪电图标：字形取自项目内置的 Segoe 图标字体，颜色跟按钮文字走（AccentButton 上是白的） */
+.detail-mirror-button-icon {
+  font-family: var(--SymbolThemeFontFamily, 'Segoe Fluent Icons', 'Segoe MDL2 Assets');
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1;
+}
 /* ── GitHub 加速通道面板 ─────────────────────────────────────────── */
 .detail-mirror-panel {
   background: color-mix(in srgb, var(--accent-base) 5%, var(--card-bg));

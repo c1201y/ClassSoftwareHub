@@ -109,9 +109,11 @@
                 <WinButton
                   v-if="isMirrorableUrl(download.url)"
                   class="detail-mirror-button"
-                  :Content="t('detail.mirror-button')"
                   Style="AccentButtonStyle"
-                  @click="toggleMirror(download.url)" />
+                  @click="toggleMirror(download.url)">
+                  <span class="detail-mirror-button-icon" aria-hidden="true">&#xE945;</span>
+                  <span>{{ t('detail.mirror-button') }}</span>
+                </WinButton>
               </div>
             </div>
 
