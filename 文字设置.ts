@@ -153,7 +153,7 @@ export default {
       "detail.mirror-note": "镜像由第三方公益提供：本站只做跳转，不中转、不修改文件，也不保证它们一直可用。装之前建议核对官方公布的哈希值。",
       "app.shortTitle": "电教委员常用软件下载站",
       "app.author": "Tiny-Nick",
-      "app.version": "v2.3.2 - Tangram (20260919PR01)",
+      "app.version": "v2.3.2 - September 18 Incident (20260919PR03)",
       "nav.submit": "提交软件",
       "submit.subtitle": "填写下面的信息，提交后进入审核队列，审核通过会自动上线。",
       "submit.import-title": "从 GitHub 一键读取",
