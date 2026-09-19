@@ -22,6 +22,7 @@
 | 分类名（系统工具等） | ⚠️ 不在这里！在根目录 `软件数据/categories.json` |
 | 详情页标题（应用介绍 / 详细信息 / 下载…） | `detail.*`（version/size/system/website/github/intro/info/download…） |
 | 详情页"待补充"占位 | `detail.pending` |
+| 详情页 GitHub「加速」按钮与说明 | `detail.mirror-button` `detail.mirror-desc` `detail.mirror-note`（镜像站点清单在 `src/gallery/githubMirror.ts`，不是文字） |
 | 设置页：主题 / 材质 / 导航位置 | `text.theme` `text.material` `text.navigation-pane-position` 等 `text.*` |
 | 关于区：作者首页 / 回声洞 / 投喂作者 / QQ 群 | `about.author-home*` `about.echo-cave*` `about.reward*` `about.qq-group*` |
 | 版权行 / 版本号 | `text.about-copyright` `app.author` `app.version` |

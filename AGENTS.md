@@ -204,6 +204,27 @@ caused failures:
 - "Import from GitHub" falls back through: site proxy → `api.github.com` → `gh-proxy.com` → `ghfast.top`.
   **The endpoint that worked is remembered in `localStorage['csh-gh-api-base']`** so later calls
   skip unreachable endpoints instead of waiting for their timeouts.
+- **Downloading** a GitHub release is the other half of the same problem, and it is handled client-side
+  only: `DownloadDetailPage.vue` puts a **blue "加速下载" (Mirror download) button** next to any
+  `downloads[].url` that `githubMirror.ts` recognises as a GitHub file link (`releases/download/…` or
+  `archive/…` on `github.com`, plus the `*githubusercontent.com` hosts). Tapping it expands the channel
+  list — each href is literally `<channel prefix> + <original url>`, never rewritten. Official links and
+  every non-GitHub host (vendor sites, netdisks) deliberately show **no** mirror button, so the
+  button itself is a reliable "this is GitHub" hint.
+  To add or drop a mirror, edit `MIRROR_CHANNELS` in `src/gallery/githubMirror.ts` — nothing else.
+  These are **third-party volunteer mirrors**: they relay the file, this site does not, and they do
+  go offline without notice. The last channel used is remembered in
+  `localStorage['csh-gh-mirror-channel']` and sorted to the front.
+  - **Vet every mirror before adding it — never copy a list off the web.** A mirror domain that lapses
+    gets **squatted** and starts redirecting to ad pages, which is exactly what happened to
+    `gh-proxy.net` (dropped 2026-09-19: `HEAD` → `302 http://survey-smiles.com`, and `GET` returned a
+    JS redirect page, so even a browser probe looked "fine"). Checks, in order:
+    1. `HEAD <prefix>https://github.com/ip7z/7zip/releases/download/26.03/7z2603-x64.msi` →
+       `200` + `Content-Type: application/octet-stream`.
+    2. Same URL with `Range: bytes=0-1023` → `206` (it supports resume).
+    3. Download one small file in full and compare its sha256 with the official one — proves the
+       relay is not tampering with the payload.
+    Anything answering `30x` or `text/html` is a dead or hijacked domain: drop it.
 - The submit flow falls back the same way; **the working endpoint is remembered in
   `localStorage['csh-submit-endpoint']`**. Per-endpoint timeout is **10 s**, and a failed submission is
   saved to `localStorage['csh-submit-draft']`.
@@ -327,10 +348,10 @@ changes are replayed by `visitor.ts`.
 - Public version: `X.Y.Z` + a **codename suffix, which is kept** (e.g. `- Autumn`).
   X = major (architecture / UI overhaul); Y = feature update; Z = small fix.
 - Internal version: `AAAABBCCPRDD` (year / month / day / file revision), e.g. `20260915PR01`.
-- Update all of these together — current value is `v2.3.1 - September 18 Incident (20260917PR05)`:
+- Update all of these together — current value is `v2.3.2 - September 18 Incident (20260919PR01)`:
   - `文字设置.ts` → `app.version`, `home.subtitle`, `welcome.intro` (**3 places**)
   - `src/gallery/Strings/en-US/Resources.ts` → `app.version`
-  - `package.json` → `version` (bare `2.3.1`, no codename / internal number); also bump the two `"version"` fields
+  - `package.json` → `version` (bare `2.3.2`, no codename / internal number); also bump the two `"version"` fields
   at the top of `package-lock.json` (npm normally syncs these)
 - The codename is part of the public version string and **may be an English phrase**
   (`- Autumn`, `- September 18 Incident`) — the suffix stays in user-facing copy.
