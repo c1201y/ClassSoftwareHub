@@ -176,11 +176,58 @@ html.theme-dark .detail-category-badge {
   color: var(--text-secondary);
   margin-top: 2px;
   font-size: 12.5px;
+  /* 备注里可能有人写很长的串（哈希、整条链接）—— 允许在任意位置断行，别把卡片撑破 */
+  overflow-wrap: anywhere;
 }
 .detail-download-size {
   color: var(--text-tertiary);
   margin-top: 2px;
   font-size: 12px;
+}
+/* 校验值：只显示首尾各几位，完整值在 title 里，点一下复制全部 */
+.detail-download-hash {
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 1px 7px;
+  max-width: 100%;
+  border: 1px solid var(--card-stroke);
+  border-radius: 5px;
+  background: var(--ctrl-fill-secondary, rgba(0, 0, 0, 0.04));
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 11.5px;
+  line-height: 1.75;
+  cursor: pointer;
+  display: inline-flex;
+  transition: background var(--faster-duration, 83ms) linear,
+    border-color var(--faster-duration, 83ms) linear;
+}
+.detail-download-hash:hover {
+  background: var(--ctrl-fill-tertiary, rgba(0, 0, 0, 0.06));
+  border-color: color-mix(in srgb, var(--accent-base) 45%, transparent);
+}
+.detail-download-hash:focus-visible {
+  outline: 2px solid var(--accent-base);
+  outline-offset: 2px;
+}
+.detail-download-hash-alg {
+  flex: none;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.detail-download-hash-value {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-family: Consolas, 'Cascadia Mono', ui-monospace, monospace;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.detail-download-hash-action {
+  flex: none;
+  color: var(--accent-base, #0067c0);
 }
 .detail-download-button {
   flex: none;
@@ -199,9 +246,12 @@ html.theme-dark .detail-category-badge {
 .detail-mirror-button {
   flex: none;
 }
-/* 闪电图标：字形取自项目内置的 Segoe 图标字体，颜色跟按钮文字走（AccentButton 上是白的） */
+/* 闪电图标：字形取自站点自带的内嵌图标字体（'WinUIOnWebIcons' = assets/Fonts/SEGOEICONS.TTF，
+   字体声明在 App.vue 里），和全站其它图标同一套写法。
+   ⚠️ 不要写成 'Segoe Fluent Icons' 之类的系统字体名：手机上没这两个字体，
+   U+E945 落在私有区会直接渲染成空白 —— 图标就"不显示"了。 */
 .detail-mirror-button-icon {
-  font-family: var(--SymbolThemeFontFamily, 'Segoe Fluent Icons', 'Segoe MDL2 Assets');
+  font-family: 'WinUIOnWebIcons';
   font-size: 14px;
   font-weight: 400;
   line-height: 1;

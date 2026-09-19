@@ -13,74 +13,82 @@
   "downloads": [
     {
       "platform": "Windows x64 selfContained",
-      "note": "主流 64 位系统，含运行时，推荐下载这个！SHA512：32E196DABBF72C6219FA9303247FC51500F79922AE834D33F98E6C5319C9AD6085B61A05C0E19153CEAC86D457C0C279F7962BF523CA54609C7FF1AD8A669486，请注意核对文件 SHA512 是否正确。",
+      "note": "主流 64 位系统，含运行时，推荐下载这个！",
       "size": "126 MB",
+      "hash": "32E196DABBF72C6219FA9303247FC51500F79922AE834D33F98E6C5319C9AD6085B61A05C0E19153CEAC86D457C0C279F7962BF523CA54609C7FF1AD8A669486",
       "url": "https://github.com/ClassIsland/ClassIsland/releases/download/2.1.0.1/ClassIsland_app_windows_x64_selfContained_folder.zip"
     },
     {
       "platform": "Windows x86 selfContained",
-      "note": "适用于老旧 32 位系统，含运行时，SHA512：3090A7B059A1087A9908D4F8CAD92D25F3421DD793ECE2C9E144F0C772396D64F5D51821B4716573D67B70CCA9BAA7EA2290DF92507FBCB6704868EBD66C27AA，请注意核对文件 SHA512 是否正确。",
+      "note": "适用于老旧 32 位系统，含运行时",
       "size": "120 MB",
+      "hash": "3090A7B059A1087A9908D4F8CAD92D25F3421DD793ECE2C9E144F0C772396D64F5D51821B4716573D67B70CCA9BAA7EA2290DF92507FBCB6704868EBD66C27AA",
       "url": "https://github.com/ClassIsland/ClassIsland/releases/download/2.1.0.1/ClassIsland_app_windows_x86_selfContained_folder.zip"
     },
     {
       "platform": "Windows x64 full_folder",
-      "note": "64 位 Windows 系统，不含运行时，SHA512：29BA0E7926BC81CF9D3D5FCC576B652CC85ACBCFE40F3354BC567E17F065C61660F2A62AECBAEE85A921A4B9EA0C7E799CD77ED890526C786D013636EAB50039，请注意核对文件 SHA512 是否正确。",
+      "note": "64 位 Windows 系统，不含运行时",
       "size": "64.8 MB",
+      "hash": "29BA0E7926BC81CF9D3D5FCC576B652CC85ACBCFE40F3354BC567E17F065C61660F2A62AECBAEE85A921A4B9EA0C7E799CD77ED890526C786D013636EAB50039",
       "url": "https://github.com/ClassIsland/ClassIsland/releases/download/2.1.0.1/ClassIsland_app_windows_x64_full_folder.zip"
     },
     {
       "platform": "Windows x86 full_folder",
-      "note": "32 位 Windows 系统，不含运行时，SHA512：003E363E26C825EB284A1CB752F84255EABB21C9E4403C83439FB5EF61EA654FB9A6EB9888C82AD05F6BC6BA2C7E94579FDBFE6FCFC62D7CF685E7B0EEB29FBC，请注意核对文件 SHA512 是否正确。",
+      "note": "32 位 Windows 系统，不含运行时",
       "size": "64 MB",
+      "hash": "003E363E26C825EB284A1CB752F84255EABB21C9E4403C83439FB5EF61EA654FB9A6EB9888C82AD05F6BC6BA2C7E94579FDBFE6FCFC62D7CF685E7B0EEB29FBC",
       "url": "https://github.com/ClassIsland/ClassIsland/releases/download/2.1.0.1/ClassIsland_app_windows_x86_full_folder.zip"
     },
     {
       "platform": "Windows ARM selfContained",
-      "note": "Windows on ARM，含运行时，SHA512：EB2683D0F37B5D3A47D812D22F25830F6DB0F5B2B74838223BDD5DF26667CB2F9364D96FEDD710593C3E8B91D5D4BB34CC474593466E75FE3C6CBA1F2A2A669F，请注意核对文件 SHA512 是否正确。",
+      "note": "Windows on ARM，含运行时",
       "size": "120 MB",
+      "hash": "EB2683D0F37B5D3A47D812D22F25830F6DB0F5B2B74838223BDD5DF26667CB2F9364D96FEDD710593C3E8B91D5D4BB34CC474593466E75FE3C6CBA1F2A2A669F",
       "url": "https://github.com/ClassIsland/ClassIsland/releases/download/2.1.0.1/ClassIsland_app_windows_arm64_selfContained_folder.zip"
     },
     {
       "platform": "Windows ARM full_folder",
-      "note": "Windows on ARM，不含运行时，SHA512：BB625AEAC5609ABE3866FDEE45B2102D394BE49756CBF5B7DE4EBECECD39BAC3B0FD26778BCBC4B26618014FEB2342DAD78DB601CA29C67F3D58A09CA7618E17，请注意核对文件 SHA512 是否正确。",
+      "note": "Windows on ARM，不含运行时",
       "size": "63.5 MB",
+      "hash": "BB625AEAC5609ABE3866FDEE45B2102D394BE49756CBF5B7DE4EBECECD39BAC3B0FD26778BCBC4B26618014FEB2342DAD78DB601CA29C67F3D58A09CA7618E17",
       "url": "https://github.com/ClassIsland/ClassIsland/releases/download/2.1.0.1/ClassIsland_app_windows_arm64_full_folder.zip"
     },
     {
       "platform": "MacOS x64",
-      "note": "MacOS 版本，SHA512：29BA0E7926BC81CF9D3D5FCC576B652CC85ACBCFE40F3354BC567E17F065C61660F2A62AECBAEE85A921A4B9EA0C7E799CD77ED890526C786D013636EAB50039，请注意核对文件 SHA512 是否正确。",
+      "note": "MacOS 版本",
       "size": "91.6 MB",
+      "hash": "29BA0E7926BC81CF9D3D5FCC576B652CC85ACBCFE40F3354BC567E17F065C61660F2A62AECBAEE85A921A4B9EA0C7E799CD77ED890526C786D013636EAB50039",
       "url": "https://github.com/ClassIsland/ClassIsland/releases/download/2.1.0.1/ClassIsland_app_macos_x64_selfContained_pkg.pkg"
     },
     {
       "platform": "MacOS arm64",
-      "note": "MacOS 版本，SHA512：29BA0E7926BC81CF9D3D5FCC576B652CC85ACBCFE40F3354BC567E17F065C61660F2A62AECBAEE85A921A4B9EA0C7E799CD77ED890526C786D013636EAB50039，请注意核对文件 SHA512 是否正确。",
+      "note": "MacOS 版本",
       "size": "90.1 MB",
+      "hash": "29BA0E7926BC81CF9D3D5FCC576B652CC85ACBCFE40F3354BC567E17F065C61660F2A62AECBAEE85A921A4B9EA0C7E799CD77ED890526C786D013636EAB50039",
       "url": "https://github.com/ClassIsland/ClassIsland/releases/download/2.1.0.1/ClassIsland_app_macos_arm64_selfContained_pkg.pkg"
     },
     {
       "platform": "Linux x64 含运行时",
-      "note": "08EC7C4E8427104825717CD5E684BDBEA231E5B91EDF60083D3534DCA0E26E2454C83EE1F0CB6D57EA242ACD82E4F02A5E62CC9E82006DA7F919AF1EACC949D6，请注意核对文件 SHA512 是否正确。",
       "size": "88.5 MB",
-      "url": "https://github.com/ClassIsland/ClassIsland/releases/download/2.1.0.1/ClassIsland_app_linux_x64_selfContained_folder.zip    "
+      "hash": "08EC7C4E8427104825717CD5E684BDBEA231E5B91EDF60083D3534DCA0E26E2454C83EE1F0CB6D57EA242ACD82E4F02A5E62CC9E82006DA7F919AF1EACC949D6",
+      "url": "https://github.com/ClassIsland/ClassIsland/releases/download/2.1.0.1/ClassIsland_app_linux_x64_selfContained_folder.zip"
     },
     {
       "platform": "Linux arm64 含运行时",
-      "note": "4C7B37036731B06AA7E46579430115794BF4CB3A240889DA94C8A3BBA3D8816A1214047022E04EDA01B5D55E739261AD5583C426BE9E1EDBE3AF9DE150888316，请注意核对文件 SHA512 是否正确。",
       "size": "86 MB",
+      "hash": "4C7B37036731B06AA7E46579430115794BF4CB3A240889DA94C8A3BBA3D8816A1214047022E04EDA01B5D55E739261AD5583C426BE9E1EDBE3AF9DE150888316",
       "url": "https://github.com/ClassIsland/ClassIsland/releases/download/2.1.0.1/ClassIsland_app_linux_arm64_selfContained_folder.zip"
     },
     {
       "platform": "Linux x64 便携版",
-      "note": "08EC7C4E8427104825717CD5E684BDBEA231E5B91EDF60083D3534DCA0E26E2454C83EE1F0CB6D57EA242ACD82E4F02A5E62CC9E82006DA7F919AF1EACC949D6，请注意核对文件 SHA512 是否正确。",
       "size": "64.9 MB",
+      "hash": "08EC7C4E8427104825717CD5E684BDBEA231E5B91EDF60083D3534DCA0E26E2454C83EE1F0CB6D57EA242ACD82E4F02A5E62CC9E82006DA7F919AF1EACC949D6",
       "url": "https://github.com/ClassIsland/ClassIsland/releases/download/2.1.0.1/ClassIsland_app_linux_x64_selfContained_deb.deb"
     },
     {
       "platform": "Linux arm64 便携版",
-      "note": "D92CFEB820025EF012FDE3BABD2CC9AAED7BFB601F49EF38078744889CB3E3F75CD17CC60A5F0E4040998C0949866BFD28A8A7B193AC1E3E98DB4885072EB9CE，请注意核对文件 SHA512 是否正确。",
       "size": "62 MB",
+      "hash": "D92CFEB820025EF012FDE3BABD2CC9AAED7BFB601F49EF38078744889CB3E3F75CD17CC60A5F0E4040998C0949866BFD28A8A7B193AC1E3E98DB4885072EB9CE",
       "url": "https://github.com/ClassIsland/ClassIsland/releases/download/2.1.0.1/ClassIsland_app_linux_arm64_selfContained_deb.deb"
     }
   ],
