@@ -1,0 +1,42 @@
+{
+  "_提交时间": "2026-09-19T05:56:49.029Z",
+  "_原始ID冲突": false,
+  "id": "viewpdf",
+  "name": "ViewPDF",
+  "icon": "https://github.com/SECTL/ViewPDF/raw/main/src-tauri/icons/Square1024x1024Logo.png",
+  "category": "schedule",
+  "tagline": "一个轻量级的PDF播放器",
+  "description": "基于 Tauri v2 构建的桌面演示批注应用，适用于教学、会议、产品展示等多种场景。\n\n无需 Node.js 构建前端 — 原生 ES Module 直接加载，零 bundler 依赖。\n\n此项目由viewstage衍生而来",
+  "version": "v0.2.5",
+  "size": "",
+  "system": "Windows / Linux",
+  "website": "",
+  "github": "https://github.com/SECTL/ViewPDF",
+  "downloads": [
+    {
+      "platform": "Linux x64（AppImage）",
+      "note": "viewpdf_0.2.5_amd64-linux.AppImage",
+      "size": "80.4 MB",
+      "url": "https://github.com/SECTL/ViewPDF/releases/download/v0.2.5/viewpdf_0.2.5_amd64-linux.AppImage"
+    },
+    {
+      "platform": "Linux x64（.deb）",
+      "note": "viewpdf_0.2.5_amd64-linux.deb",
+      "size": "7.0 MB",
+      "url": "https://github.com/SECTL/ViewPDF/releases/download/v0.2.5/viewpdf_0.2.5_amd64-linux.deb"
+    },
+    {
+      "platform": "Windows x64 安装版",
+      "note": "viewpdf_0.2.5_x64-setup.exe",
+      "size": "5.2 MB",
+      "url": "https://github.com/SECTL/ViewPDF/releases/download/v0.2.5/viewpdf_0.2.5_x64-setup.exe"
+    },
+    {
+      "platform": "Windows x64（MSI 安装版）",
+      "note": "viewpdf_0.2.5_x64_en-US.msi",
+      "size": "6.3 MB",
+      "url": "https://github.com/SECTL/ViewPDF/releases/download/v0.2.5/viewpdf_0.2.5_x64_en-US.msi"
+    }
+  ],
+  "sort": 99
+}
