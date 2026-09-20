@@ -7,7 +7,8 @@ on:
 jobs:
   review:
     if: |
-      (github.event.label.name == 'approved' || github.event.label.name == 'rejected')
+      (github.event.label.name == 'approved' || github.event.label.name == 'rejected'
+       || github.event.label.name == '覆盖已存在' || github.event.label.name == 'overwrite')
       && contains(github.event.issue.labels.*.name, '待审核')
     runs-on: ubuntu-latest
     # 批量审核（UI 里勾选多个 Issue 一起打标签）会同时触发多个运行，它们从同一
@@ -50,6 +51,17 @@ jobs:
             }
             const submissionPath = match[1]
 
+            // 只允许操作 submissions/ 下的草稿：Issue 正文里有一部分是外部可控文本，
+            // 万一被伪造成别的路径，绝不能让这一步写到 软件数据/ 或仓库外。
+            if (!submissionPath.startsWith('submissions/') || submissionPath.includes('..')) {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: issue.number,
+                body: `❌ 提交文件路径不合法：\`${submissionPath}\``
+              })
+              return
+            }
+
             if (!fs.existsSync(submissionPath)) {
               await github.rest.issues.createComment({
                 ...context.repo,
@@ -62,14 +74,55 @@ jobs:
             const data = JSON.parse(fs.readFileSync(submissionPath, 'utf8'))
             const appsPath = `软件数据/apps/${data.id}.json`
 
-            if (label === 'approved') {
-              if (fs.existsSync(appsPath)) {
+            // 覆盖通道（2026-09-20 新增）：ID 冲突时默认拒绝，但维护者有时确实想用本次提交
+            // 替换站内那份（例如提交者后来补了更全的信息）。打「覆盖已存在」才放行。
+            // ⚠️ 覆盖是**整份替换**：图标 / 版本号 / 下载直链全部以本次提交为准，代价必须看得见
+            //    —— 评论里会自动贴出「字段级差异」+「旧版完整内容」，且旧版永远能从本次提交的
+            //    父提交找回：`git show <父提交>:软件数据/apps/<id>.json`。
+            const OVERWRITE_LABEL = '覆盖已存在'
+            const isOverwrite = label === OVERWRITE_LABEL || label === 'overwrite'
+            const clip = (v) => {
+              const one = String(typeof v === 'string' ? v : JSON.stringify(v ?? null))
+                .replace(/\|/g, '\\|').replace(/\s+/g, ' ')
+              return one.length > 72 ? one.slice(0, 72) + '…' : one
+            }
+            const diffTable = (oldD, newD) => {
+              const rows = []
+              for (const k of [...new Set([...Object.keys(oldD), ...Object.keys(newD)])].sort()) {
+                if (k === 'downloads') continue
+                if (JSON.stringify(oldD[k] ?? null) !== JSON.stringify(newD[k] ?? null)) {
+                  rows.push(`| \`${k}\` | ${clip(oldD[k])} | ${clip(newD[k])} |`)
+                }
+              }
+              const od = Array.isArray(oldD.downloads) ? oldD.downloads : []
+              const nd = Array.isArray(newD.downloads) ? newD.downloads : []
+              if (JSON.stringify(od) !== JSON.stringify(nd)) {
+                rows.push(`| \`downloads\` | ${od.length} 条 | ${nd.length} 条 |`)
+              }
+              if (!rows.length) return '> 覆盖前后内容完全一致（等于空操作）。'
+              return ['**覆盖前 → 覆盖后**', '', '| 字段 | 旧 | 新 |', '|---|---|---|', ...rows].join('\n')
+            }
+
+            if (label === 'approved' || isOverwrite) {
+              const exists = fs.existsSync(appsPath)
+              if (exists && !isOverwrite) {
                 await github.rest.issues.createComment({
                   ...context.repo,
                   issue_number: issue.number,
-                  body: `❌ 已存在同名文件 \`${appsPath}\`。请先删除旧文件或让提交者改 ID 后重新提交。`
+                  body: `❌ 已存在同名文件 \`${appsPath}\`。请先删除旧文件或让提交者改 ID 后重新提交。\n\n`
+                    + `> 若确实要用**本次提交**整份覆盖站内那份，请改打 \`${OVERWRITE_LABEL}\` 标签`
+                    + `（图标 / 版本号 / 下载直链都会以本次提交为准；旧内容会自动附在本 Issue 评论里）。`
                 })
                 return
+              }
+              // 覆盖前先把旧版整份读出来留档，避免「黑箱覆盖」
+              let oldData = null
+              if (exists) {
+                try {
+                  oldData = JSON.parse(fs.readFileSync(appsPath, 'utf8'))
+                } catch (e) {
+                  oldData = null
+                }
               }
               // 合并前剥掉所有「审核用元数据」字段：一律以 `_` 开头
               // （`_提交时间` / `_原始ID冲突` / `_联系方式`……），它们只服务于审核环节，
@@ -82,10 +135,17 @@ jobs:
               fs.writeFileSync(appsPath, JSON.stringify(clean, null, 2))
               fs.unlinkSync(submissionPath)
 
+              let tail = ''
+              if (oldData) {
+                tail = '\n\n' + diffTable(oldData, clean)
+                  + '\n\n<details><summary>旧版完整内容（覆盖前存档）</summary>\n\n```json\n'
+                  + JSON.stringify(oldData, null, 2)
+                  + '\n```\n\n</details>'
+              }
               await github.rest.issues.createComment({
                 ...context.repo,
                 issue_number: issue.number,
-                body: `✅ 已合并到 \`${appsPath}\`，稍后自动构建上线。`
+                body: `✅ 已${exists ? '覆盖' : '合并到'} \`${appsPath}\`，稍后自动构建上线。` + tail
               })
               await github.rest.issues.update({
                 ...context.repo,
