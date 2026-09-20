@@ -311,8 +311,19 @@ changes are replayed by `visitor.ts`.
    `已存在同名 Issue，跳过：[待审核] 向日葵远程 (xrkayxingz)` because issue #19 (9-18) was closed, so the
    draft sat in `submissions/` forever while the submitter was told "提交成功". Draft paths carry a
    timestamp and are unique per submission. Do not go back to title-based dedupe.
-3. A maintainer labels the issue `approved` or `rejected` → `review-submission.yml` merges the draft into
-   `软件数据/apps/<id>.json` (or deletes it), comments, and closes the issue.
+3. A maintainer labels the issue `approved`, `rejected`, or `覆盖已存在` (ASCII alias: `overwrite`) →
+   `review-submission.yml` merges the draft into `软件数据/apps/<id>.json` (or deletes it), comments, and
+   closes the issue.
+   - `approved` **refuses when a file with the same id already exists**: it comments ❌ and stops,
+     touching neither the draft nor the published file. That guard is deliberate — it is what keeps a
+     mis-click from silently overwriting published data.
+   - `覆盖已存在` is the deliberate escape hatch for exactly that case: a **whole-file replace** (icon,
+     version and download links all come from the draft). It is not silent — the bot posts a
+     field-level before/after diff plus the complete previous file into the issue, and the old version
+     also stays recoverable as `git show <parent>:软件数据/apps/<id>.json`. Prefer `rejected` when the
+     draft merely carries *less* information than the published file.
+   - The step only ever acts on paths under `submissions/` (the issue body is partially submitter-controlled,
+     so anything else — including `..` — is rejected outright).
 4. Because **pushes made with `GITHUB_TOKEN` do not trigger other workflows** (GitHub's anti-recursion
    rule), step 3 ends by **explicitly dispatching** the deploy with `gh workflow run deploy.yml`.
 5. `deploy.yml` builds the single-file bundle and publishes it to **GitHub Pages + FTP + OpenList
