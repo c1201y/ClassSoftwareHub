@@ -1,0 +1,24 @@
+{
+  "_提交时间": "2026-09-20T12:30:12.238Z",
+  "_原始ID冲突": false,
+  "id": "wxxpayxingz",
+  "name": "微信老版本",
+  "icon": "",
+  "category": "teaching",
+  "tagline": "微信的3.2.1老版本",
+  "description": "微信3.2.1版本，主流功能全部支持，可正常登录，适合给性能不怎么好的电脑使用",
+  "version": "3.2.1",
+  "size": "130.4MB",
+  "system": "WindowsXP及以上",
+  "website": "https://pc.qq.com/detail/9/detail_27349.html",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "Windows安装版",
+      "size": "130.4MB",
+      "url": "https://sw.pcmgr.qq.com/5e5f1589f6ac85c6ac1759f738383acd/6aafd107/spcmgr/download/WeChat_for_XP_SP3_To_Vista.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "wsy@yfwsy.icu"
+}
