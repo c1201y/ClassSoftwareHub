@@ -1,7 +1,7 @@
 {
   "id": "xwspztayxingz",
   "name": "希沃视频展台",
-  "icon": "",
+  "icon": "https://e.seewo.com/static/images/logo_camera_48@2x-77ceecf8ae.png",
   "category": "schedule",
   "tagline": "视频展台软件",
   "description": "一个功能齐全的视频展台软件，可以搭配希沃白板联动使用",
@@ -9,7 +9,6 @@
   "size": "142.7MB",
   "system": "Windows7及以上",
   "website": "https://e.seewo.com/product/EasiCamera",
-  "github": "",
   "downloads": [
     {
       "platform": "Windows安装版",
