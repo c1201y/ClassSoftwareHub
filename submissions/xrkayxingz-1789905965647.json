@@ -1,0 +1,25 @@
+{
+  "_提交时间": "2026-09-20T12:06:05.647Z",
+  "_原始ID冲突": true,
+  "id": "xrkayxingz",
+  "name": "向日葵远程",
+  "icon": "",
+  "category": "other",
+  "tagline": "一个远控软件",
+  "description": "类似UU远程，ToDesk的主流远控软件，基础功能免费使用，适合帮助老师操作",
+  "version": "",
+  "size": "视版本而定",
+  "system": "Windows，MacOs，Android，iOS，Linux",
+  "website": "https://sunlogin.oray.com/download",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "官方安装网站",
+      "size": "视版本而定",
+      "url": "https://sunlogin.oray.com/download"
+    }
+  ],
+  "sort": 99,
+  "notice": "该软件更新频繁，请到官网下载",
+  "_联系方式": "wsy@yfwsy.icu"
+}
