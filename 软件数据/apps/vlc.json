@@ -15,14 +15,14 @@
     {
       "platform": "Windows 64 位安装版",
       "note": "推荐；常规 64 位系统选这个",
-      "size": "46 MB",
-      "url": "https://download.videolan.org/vlc/last/win64/vlc-3.0.23-win64.exe"
+      "size": "44 MB",
+      "url": "https://get.videolan.org/vlc/last/win64/vlc-3.0.23-win64.exe"
     },
     {
       "platform": "Windows 32 位安装版",
       "note": "老机器 / 32 位系统用",
-      "size": "41 MB",
-      "url": "https://download.videolan.org/vlc/last/win32/vlc-3.0.23-win32.exe"
+      "size": "43 MB",
+      "url": "https://get.videolan.org/vlc/last/win32/vlc-3.0.23-win32.exe"
     },
     {
       "platform": "官网下载页",

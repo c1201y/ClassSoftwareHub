@@ -5,7 +5,7 @@
   "category": "system",
   "tagline": "硬件检测 / 系统维护工具箱，经典「图吧工具箱」的 WinUI3 重制版",
   "description": "图吧工具箱 CE 是经典装机工具「图吧工具箱」的 WinUI3 现代化重制版，开源免费、界面清爽。内置 CPU-Z、GPU-Z、AIDA64、CrystalDiskInfo、CrystalDiskMark、MemTest、HWiNFO 等数十款常用硬件检测与系统维护工具，还可直接从社区工具库下载更多插件，适合装机验机、排查硬件故障。安装版自带完整工具集，便携版解压即用。",
-  "version": "1.6.1",
+  "version": "1.6.4",
   "size": "226 MB ~ 418 MB",
   "system": "Windows 10/11（x64 / ARM64）",
   "website": "https://tubawinui3.cn/",
@@ -16,26 +16,26 @@
     {
       "platform": "安装版（x64）",
       "note": "推荐；自带完整工具集，安装即用",
-      "size": "313 MB",
-      "url": "https://github.com/luolangaga/tubatools/releases/download/v1.6.1/TubaWinUi3_Setup_1.6.1_x64.exe"
+      "size": "321 MB",
+      "url": "https://github.com/luolangaga/tubatools/releases/download/v1.6.4/TubaWinUi3_Setup_1.6.4_x64.exe"
     },
     {
       "platform": "便携版（x64）",
       "note": "免安装，解压即用",
-      "size": "418 MB",
-      "url": "https://github.com/luolangaga/tubatools/releases/download/v1.6.1/TubaWinUi3_Portable_1.6.1_x64.zip"
+      "size": "431 MB",
+      "url": "https://github.com/luolangaga/tubatools/releases/download/v1.6.4/TubaWinUi3_Portable_1.6.4_x64.zip"
     },
     {
       "platform": "精简版（x64）",
       "note": "内置工具较少，体积更小",
-      "size": "226 MB",
-      "url": "https://github.com/luolangaga/tubatools/releases/download/v1.6.1/TubaWinUi3_Lite_1.6.1_x64.zip"
+      "size": "225 MB",
+      "url": "https://github.com/luolangaga/tubatools/releases/download/v1.6.4/TubaWinUi3_Lite_1.6.4_x64.zip"
     },
     {
       "platform": "安装版（ARM64）",
       "note": "ARM 设备（骁龙本等）选这个",
-      "size": "309 MB",
-      "url": "https://github.com/luolangaga/tubatools/releases/download/v1.6.1/TubaWinUi3_Setup_1.6.1_arm64.exe"
+      "size": "317 MB",
+      "url": "https://github.com/luolangaga/tubatools/releases/download/v1.6.4/TubaWinUi3_Setup_1.6.4_arm64.exe"
     }
   ],
   "sort": 40

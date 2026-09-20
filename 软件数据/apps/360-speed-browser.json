@@ -13,12 +13,12 @@
     {
       "platform": "Windows 64位 官方下载",
       "note": "64位版本，推荐配置较好的电脑使用",
-      "url": "http://sedl.360tpcdn.com/cse/360csex_23.1.1253.64.exe"
+      "url": "https://sedl.360tpcdn.com/cse/360csex_23.1.1253.64.exe"
     },
     {
       "platform": "Windows 32位 官方下载",
       "note": "32位版本，适合老旧电脑",
-      "url": "https://down.360safe.com/cse/360cse_13.5.2044.0.exe"
+      "url": "https://sedl.360tpcdn.com/cse/360cse_23.0.1253.0.exe"
     }
   ],
   "sort": 26
