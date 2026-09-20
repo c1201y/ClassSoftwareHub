@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-09-20T11:50:29.992Z",
-  "_原始ID冲突": false,
   "id": "translucenttbayxingz",
   "name": "TranslucentTB",
   "icon": "",
@@ -38,6 +36,5 @@
       "url": "https://github.com/TranslucentTB/TranslucentTB/releases/download/2026.2/TranslucentTB.appinstaller"
     }
   ],
-  "sort": 99,
-  "_联系方式": "wsy@yfwsy.icu"
+  "sort": 99
 }
