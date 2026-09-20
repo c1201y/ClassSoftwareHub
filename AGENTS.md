@@ -302,8 +302,15 @@ changes are replayed by `visitor.ts`.
    empty field means the `hash` key is simply omitted from the payload. Re-running "一键读取" keeps
    hashes whose URL did not change.
 2. That push triggers `.github/workflows/create-review-issue.yml`, which opens one
-   `[待审核] <name> (<id>)` issue per **newly added** draft (label `待审核`; duplicate titles are skipped
-   idempotently).
+   `[待审核] <name> (<id>)` issue per draft that **has no issue yet** — the newly added ones from this
+   push, plus any draft that never got one (label `待审核`).
+   ⚠️ **Idempotency is keyed on the draft file path, never on the issue title.** The title is
+   `<name> (<id>)`, so re-submitting the same app yields the *same* title as the already-closed old
+   issue; title-based dedupe then silently swallowed the whole submission. That is exactly what
+   happened on 2026-09-20: the second `向日葵远程 (xrkayxingz)` draft was skipped with
+   `已存在同名 Issue，跳过：[待审核] 向日葵远程 (xrkayxingz)` because issue #19 (9-18) was closed, so the
+   draft sat in `submissions/` forever while the submitter was told "提交成功". Draft paths carry a
+   timestamp and are unique per submission. Do not go back to title-based dedupe.
 3. A maintainer labels the issue `approved` or `rejected` → `review-submission.yml` merges the draft into
    `软件数据/apps/<id>.json` (or deletes it), comments, and closes the issue.
 4. Because **pushes made with `GITHUB_TOKEN` do not trigger other workflows** (GitHub's anti-recursion
@@ -348,11 +355,20 @@ changes are replayed by `visitor.ts`.
   - what the script can prove → written back, committed and deployed **automatically** (the scheduled
     run applies by default; `workflow_dispatch` also defaults `apply=true`);
   - what it cannot prove → one rolling issue, `软件信息体检 · 待人工确认`, listing each case with a
-    title, one line of "why the script stayed put", and **two checkboxes**:
+    title, one line of "why the script stayed put", and **three checkboxes**:
     - **"已改好 → 重新检测"** — the maintainer fixes the JSON *elsewhere* (web edit, or locally then
       push), commits, then ticks this; the workflow just re-runs the whole check to verify. This path
       reads and writes nothing in the repo. The re-run is queued, not instant — the answer arrives a
       couple of minutes later, and a correct fix makes the entry disappear.
+    - **"本次跳过"** — *not now*: mutes **this version of the problem** only. The tick carries a hidden
+      **problem fingerprint** (12 hex chars, computed by `pendingKey()` from the affected URLs / the
+      upstream tag / the blocker kinds) which the workflow copies into `_skip_once` in
+      `软件数据/update-ignore.json`. The next run stays quiet **only while the fingerprint still
+      matches** — the moment upstream ships a new version or the dead links change, the entry comes
+      back by itself. This exists because "permanently ignore" used to be the only alternative to
+      being nagged every Friday, so people muted things they merely wanted to defer. The fingerprint
+      deliberately excludes HTTP status codes: a 403/404 flapping on a flaky network is not "the
+      situation changed".
     - **"不用跟进"** — ticking it once mutes that entry forever (`/ignore <id>` in a comment does the
       same).
     Detailed "how to fix it by hand" steps sit in a collapsed `<details>` block. When nothing is pending
@@ -387,6 +403,20 @@ changes are replayed by `visitor.ts`.
   set of numbers twice. Safe to restructure, because the workflow locates the issue by **title** and
   parses only the `<!-- action:id=… -->` markers — it never reads the headings.
 
+  **Exactly one set of numbers, and it has to add up.** `reconcile()` sorts every app into four
+  mutually exclusive buckets — *needs you* / *auto-fixed this run* / *tracked, nothing to do* /
+  *not trackable by design* — and the last one is derived by subtraction so the four always sum to
+  the catalogue size (a mismatch logs `账目不平`). Both the top line and the closing `本次账目` table
+  print **that** breakdown, together with the app ids, so a reader can check the arithmetic. Before
+  this, the top line had its own four counters while the footer printed a *different* set of state
+  counters, and they disagreed three ways at once: `要你裁决` counted **items after the ignore-list
+  filter** whereas `需人工` counted **apps including ignored ones** ("2" versus "1", with nothing
+  explaining the gap — the two extras were muted apps); `已自动更新` was a post-write fact while
+  `站内落后` was a pre-check snapshot; and one app can legitimately sit in both (vlc: download links
+  auto-fixed, vendor page still down, so it appeared as "auto-updated" *and* "still pending"). One
+  line of `体检状态细分` is still allowed, but it must state explicitly that it is **another view of
+  the same apps, not additional counts**.
+
   The safety rule is **all-or-nothing**: an app's `version` and its download links are one unit, so a
   single unsolvable point blocks the whole entry (otherwise you get "version 26.03, link still on the
   26.02 file"). Blockers: cross-major bumps, download items that carry a checksum (the `hash` field,
@@ -405,15 +435,19 @@ changes are replayed by `visitor.ts`.
   - `tick` job — the checkboxes. Ticking one edits the issue body → `issues.edited`; the job diffs
     `changes.body.from` against the new body and acts on rows that went `[ ]` → `[x]` only, so it is
     idempotent and cannot re-fire on its own rewrite (also filtered by `sender != github-actions[bot]`).
-    `ignore` / `unignore` ticks go through `scripts/update-ignore.mjs` into
-    `软件数据/update-ignore.json`; a `recheck` tick skips checkout and Node entirely and just dispatches
+    `ignore` / `unignore` / `skip` / `unskip` ticks go through `scripts/update-ignore.mjs` into
+    `软件数据/update-ignore.json` (`skip` also carries the fingerprint, arriving as `id=key`);
+    a `recheck` tick skips checkout and Node entirely and just dispatches
     `check-updates.yml`. ⚠️ That dispatch must always be a **full** run — never pass `--only` from
     there, because `update-pending.md` is a global snapshot and a partial one would be written over the
     issue body, wiping every other entry. (The issue step now refuses to touch the issue at all once
     `inputs.only` is set; before, it only guarded the "0 pending" case.)
     The app id travels in a hidden `<!-- ignore:id=xx -->` / `<!-- unignore:id=xx -->` /
-    `<!-- recheck:id=xx -->` HTML comment emitted by `tick()` in `scripts/check-updates.mjs` —
-    **change one side and you must change the other**. Not needing an extra auth gate is deliberate:
+    `<!-- recheck:id=xx -->` HTML comment emitted by `tick()` in `scripts/check-updates.mjs`, plus
+    `<!-- skip:id=xx key=<12-hex> -->` / `<!-- unskip:id=xx -->` from `tick2()` — the fingerprint has
+    to ride along inside the comment because the workflow can never compute it (it does not see the
+    check result). **change one side and you must change the other**.
+ Not needing an extra auth gate is deliberate:
     the issue is bot-authored, so only users with write access can edit its body at all.
   - `ignore` job — the fallback `/ignore` / `/unignore` comments. ⚠️ The repo is public, so **anyone**
     can comment — the job is gated on three conditions (it must be *that* issue / the commenter must
@@ -500,6 +534,11 @@ click, nothing to type) — or reply `/ignore <id> [updates|all] [reason]`, or r
 (`--list` and `--remove=<id>` also work). An entry can be restored by ticking its "restore" checkbox in the
 issue's collapsed *ignored* section. Records live in `软件数据/update-ignore.json`: `updates`
 stops reporting version/repo problems but still reports dead links; `all` reports nothing at all.
+
+**Deferring instead of muting**: "本次跳过" writes `--skip-once=<id> --key=<fingerprint>` into the same
+file's `_skip_once` key (keys starting with `_` are comments as far as `loadIgnore()` is concerned, so
+this never leaks into the ignore entries). `check-updates.mjs` prunes dead records on `--apply`; that is
+why `check-updates.yml` commits `软件数据/update-ignore.json` alongside `软件数据/apps`.
 
 **Extending the search**: result matching lives in `src/gallery/searchIndex.ts` (`searchApps` /
 `searchTools` / `searchAiSites` / `searchPages` → `searchGlobal`); the panel that renders it is

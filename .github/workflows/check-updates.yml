@@ -118,8 +118,9 @@ jobs:
         id: apply
         if: env.AUTO_APPLY == 'true'
         run: |
-          # 只关心 apps 目录；脚本已按原行尾写文件，这里不做任何格式化
-          if git diff --quiet -- 软件数据/apps; then
+          # 两个文件：apps 目录（版本 / 直链）+ update-ignore.json（脚本顺手清掉的过期「本次跳过」记录）。
+          # 脚本已按原行尾写文件，这里不做任何格式化。
+          if git diff --quiet -- 软件数据/apps 软件数据/update-ignore.json; then
             echo "没有需要写回的改动"
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
@@ -127,7 +128,7 @@ jobs:
 
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add 软件数据/apps
+          git add 软件数据/apps 软件数据/update-ignore.json
           git commit -m "chore(data): 自动更新软件版本与下载直链
 
           由 .github/workflows/check-updates.yml 触发 scripts/check-updates.mjs 生成。

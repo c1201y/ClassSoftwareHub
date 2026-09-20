@@ -28,6 +28,8 @@
  *   --no-link          跳过下载直链存活检查（更快、可离线）
  *   --no-channel       跳过非 GitHub 官方来源（只想快速核对 GitHub 那批时用）
  *   --jobs=4           并发请求数（默认 4）
+ *   --dump=<path>      把「每个软件落在哪一档、为什么」导出成 JSON
+ *                      （排查「Issue 里几个数字对不上账」时全靠它）
  *   --token=xxx        GitHub 令牌；默认读 GITHUB_TOKEN / GH_TOKEN
  *
  * 五条设计原则：
@@ -42,6 +44,10 @@
  *     换了文件校验值就失效，留下错的 SHA512 比不更新更糟，那种必须人工核对。
  *  5. 来源失败不改数据 —— 非 GitHub 来源大多靠解析页面，站方一改版就会失效。
  *     这类失败一律变成「退回人工」的待审条目，绝不会顺手写个猜测值进去。
+ *  6. 账要对得上 —— 对外（体检 Issue）只给**一套**数字：全部软件按「要不要人管」
+ *     分成互斥的四类，相加恒等于总数（见 reconcile()）。内部 state 计数只留在
+ *     Actions 完整报告里，绝不和上面那套混着写 —— 两套账摆在一起，
+ *     就会出现「已自动更新 7 个」和「站内落后 6 个」互相打脸的场面。
  *
  * 产出分工（配合 check-updates.yml）：
  *   --report  完整报告 → Actions 运行摘要（留档用）
@@ -51,6 +57,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { createHash } from 'node:crypto'
 import { channelFor, classify, BUCKET_LABEL } from './update-channels.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -67,6 +74,8 @@ const val = (n, d = '') => {
 const APPLY = has('apply')
 const REPORT_PATH = val('report')
 const PENDING_PATH = val('pending')
+// 把「每个软件落在哪一档、为什么」原样导出成 JSON —— 排查「Issue 里几个数字对不上账」时全靠它
+const DUMP_PATH = val('dump')
 const IGNORE_PATH = val('ignore') || path.join(ROOT, '软件数据', 'update-ignore.json')
 const NO_LINK = has('no-link')
 const NO_CHANNEL = has('no-channel')
@@ -151,6 +160,37 @@ function loadIgnore() {
     if (k.startsWith('_')) continue
     const o = typeof v === 'string' ? { reason: v } : (v && typeof v === 'object' ? v : {})
     map.set(cur(k), { skip: cur(o.skip) || 'updates', reason: cur(o.reason), at: cur(o.at) })
+  }
+  return map
+}
+
+/**
+ * 「本次跳过」记录（同一个文件的 `_skip_once` 键）——**跟「永久忽略」是两种强度**：
+ * 勾一次只压住**当前这一版问题**；问题内容一变（上游又发新版、直链又换了一批）
+ * 就自动重新出现。为什么要这样设计：只有「永久忽略」时，人面对一条暂时不想管的
+ * 提醒只剩两个选择 —— 要么放着被每周提醒一次，要么永久静音（以后真出问题也不提醒了）。
+ *
+ * 结构：`{ "<软件id>": { keys: [{ key, kind, at }] } }`
+ * （一个软件可能同时有多条待审项，所以 key 是数组，不是单个字符串）
+ * 键名 `_skip_once` 以 `_` 开头 —— loadIgnore() 会跳过所有 `_` 开头的键，不会误当软件 id。
+ */
+function loadSkipOnce() {
+  const map = new Map()
+  try {
+    if (!fs.existsSync(IGNORE_PATH)) return map
+    const raw = JSON.parse(fs.readFileSync(IGNORE_PATH, 'utf8'))
+    const o = raw && raw._skip_once
+    if (!o || typeof o !== 'object') return map
+    for (const [k, v] of Object.entries(o)) {
+      if (!k || k.startsWith('_')) continue
+      const keys = Array.isArray(v && v.keys) ? v.keys : []
+      const list = keys
+        .filter((x) => x && cur(x.key))
+        .map((x) => ({ key: cur(x.key), kind: cur(x.kind), at: cur(x.at) }))
+      if (list.length) map.set(cur(k), { keys: list })
+    }
+  } catch {
+    // 读不了就当没有：文件本身的报错已经在 loadIgnore() 里说过一次了，不重复刷屏
   }
   return map
 }
@@ -530,9 +570,14 @@ async function main() {
   })
 
   results.sort((a, b) => a.id.localeCompare(b.id))
-  const pending = collectPending(results)
-  const full = buildFullReport(results, applied, ignore)
-  const pendingMd = buildPendingReport(results, pending, applied, ignore)
+  const pendingRaw = collectPending(results)
+  const skipOnce = loadSkipOnce()
+  const { kept: pending, skipped } = applySkipOnce(pendingRaw, skipOnce)
+  // 记录只留还在生效的：问题消失了、或问题内容变了（上游又发新版）就该清掉，
+  // 否则越积越多，下次再勾同一处还会被陈年记录干扰。只体检（没 --apply）时不碰文件。
+  if (APPLY) saveSkipOnce(pruneSkipOnce(pendingRaw, skipOnce))
+  const full = buildFullReport(results, applied, ignore, { skipped })
+  const pendingMd = buildPendingReport(results, pending, applied, ignore, { skipped, skipOnce })
 
   if (REPORT_PATH) {
     fs.writeFileSync(REPORT_PATH, full, 'utf8')
@@ -545,10 +590,41 @@ async function main() {
     console.log(`待审清单已写入 ${PENDING_PATH}`)
   }
 
+  // 诊断用：把「每个软件落在哪一档」原样导出。
+  // 为什么需要：Issue 顶部那几个数字（要裁决 / 已自动更新 / 自动跟踪 / 跟不了）
+  // 和历史遗留的「全部结果」（已是最新 / 站内落后 / 需人工……）口径不同，
+  // 光看 Issue 很难判断是渲染错了还是真有两套账 —— 有这份原始数据就能逐条点名核对。
+  if (DUMP_PATH) {
+    const dump = {
+      at: new Date().toISOString(),
+      apply: APPLY,
+      noLink: NO_LINK,
+      total: results.length,
+      applied: applied.map((a) => ({ id: a.id, name: a.name, changes: a.changes })),
+      pending: pending.map((p) => ({ id: p.id, kind: p.kind, versionChanged: p.versionChanged })),
+      results: results.map((r) => ({
+        id: r.id,
+        name: r.name,
+        version: r.version,
+        tracker: r.tracker || '',
+        state: r.state,
+        releaseTag: r.releaseTag || '',
+        bucket: r.bucket || '',
+        muted: !!r.muted,
+        blockers: (r.blockers || []).map((b) => b.kind),
+        stale: [...(r.staleNonGithub || []), ...(r.staleLinks || [])].length,
+        dead: (r.deadLinks || []).length,
+        note: r.note || '',
+      })),
+    }
+    fs.writeFileSync(DUMP_PATH, JSON.stringify(dump, null, 2), 'utf8')
+    console.log(`诊断数据已写入 ${DUMP_PATH}`)
+  }
+
   const buckets = results.reduce((m, r) => ((m[r.state] = (m[r.state] || 0) + 1), m), {})
   const cov = coverageOf(results)
   console.log('\n统计：', JSON.stringify(buckets, null, 0), `| GitHub API 调用 ${apiCalls} 次`)
-  console.log(`待人工确认 ${pending.length} 条 ｜ 自动更新 ${applied.length} 个软件 ｜ 忽略清单 ${ignore.size} 条`)
+  console.log(`待人工确认 ${pending.length} 条 ｜ 自动更新 ${applied.length} 个软件 ｜ 忽略清单 ${ignore.size} 条 ｜ 本次跳过 ${skipped.length} 条（记录 ${skipOnce.size} 个）`)
   console.log(
     `覆盖：自动跟踪 ${cov.github.length}（GitHub）+ ${cov.channel.length}（官方来源）｜ 不跟 ${cov.untracked.length}` +
     `（${BUCKET_ORDER.filter((b) => cov.byBucket[b]?.length).map((b) => `${b} ${cov.byBucket[b].length}`).join('、') || '无'}）`,
@@ -932,6 +1008,134 @@ function collectPending(results) {
   return items
 }
 
+/**
+ * 一条待审项的「问题指纹」——「本次跳过」靠它判断**问题有没有变化**。
+ * 只取能代表问题本身的东西（涉及哪些链接 / 上游版本 / 阻塞类型），
+ * 刻意**不含 HTTP 状态码**：网络抖动会让 403 / 404 来回变，那不算「情况变了」，
+ * 含进去会让人点了跳过又被下周一叫醒一次。
+ */
+function pendingKey(it) {
+  let parts
+  if (it.kind === 'bump') {
+    parts = [`up=${cur(it.releaseTag)}`, `b=${(it.blockers || []).map((x) => x.kind).sort().join(',')}`]
+  } else if (it.kind === 'stale') {
+    parts = (it.stale || []).map((s) => cur(s.url)).sort()
+  } else if (it.kind === 'dead-link') {
+    parts = (it.deadLinks || []).map((d) => cur(d.url)).sort()
+  } else if (it.kind === 'verify') {
+    parts = [`site=${cur(it.version)}`, `up=${cur(it.releaseTag)}`]
+  } else {
+    parts = [cur(it.note).slice(0, 160)]
+  }
+  return createHash('sha256').update(`${it.kind}|${parts.join('|')}`).digest('hex').slice(0, 12)
+}
+
+/**
+ * 应用「本次跳过」：指纹一致的压掉，进 skipped（Issue 里单列一区）。
+ * ⚠️ 必须比对指纹，不能只看 id —— 只按 id 压就等于「永久忽略」的另一种写法，
+ *    上游一发新版就再也提醒不了，那正是「本次跳过」要避免的事。
+ * 顺带把 key 挂到每一条上：Issue 渲染「本次跳过」方框时要把它埋进隐藏标记。
+ */
+function applySkipOnce(items, skipOnce) {
+  const kept = []
+  const skipped = []
+  for (const it of items) {
+    it.key = pendingKey(it)
+    const rec = skipOnce.get(it.id)
+    if (rec && rec.keys.some((x) => x.key === it.key)) skipped.push({ ...it, skipAt: rec.keys.find((x) => x.key === it.key).at })
+    else kept.push(it)
+  }
+  return { kept, skipped }
+}
+
+/** 清掉已经不再生效的「本次跳过」记录：问题消失了、或问题内容变了（指纹对不上）就该清 */
+function pruneSkipOnce(rawItems, skipOnce) {
+  const live = new Map()
+  for (const it of rawItems) {
+    const rec = skipOnce.get(it.id)
+    if (!rec || !rec.keys.length) continue
+    const keys = rec.keys.filter((x) => x.key === it.key)
+    if (keys.length) live.set(it.id, { keys })
+  }
+  return live
+}
+
+/**
+ * 把「本次跳过」记录写回忽略清单（只在 --apply 时调用）。
+ * 保持原文件的**行尾**，并把 `_` 开头的键排在最前 —— 与 update-ignore.mjs 的写法一致，
+ * 否则两边交替写会把整个文件抖成一团无意义 diff。
+ */
+function saveSkipOnce(records) {
+  if (!fs.existsSync(IGNORE_PATH)) return
+  const raw = fs.readFileSync(IGNORE_PATH, 'utf8')
+  let obj
+  try {
+    obj = JSON.parse(raw)
+  } catch {
+    return
+  }
+  if (!obj || typeof obj !== 'object') return
+  const before = JSON.stringify(obj._skip_once || null)
+  if (!records.size) delete obj._skip_once
+  else {
+    const next = {}
+    for (const id of [...records.keys()].sort((a, b) => a.localeCompare(b))) next[id] = records.get(id)
+    obj._skip_once = next
+  }
+  if (JSON.stringify(obj._skip_once || null) === before) return
+  const eol = raw.includes('\r\n') ? '\r\n' : '\n'
+  const trailing = raw.endsWith('\n')
+  const meta = Object.keys(obj).filter((k) => k.startsWith('_'))
+  const rest = Object.keys(obj).filter((k) => !k.startsWith('_')).sort((a, b) => a.localeCompare(b))
+  const ordered = {}
+  for (const k of [...meta, ...rest]) ordered[k] = obj[k]
+  fs.writeFileSync(IGNORE_PATH, JSON.stringify(ordered, null, 2).split('\n').join(eol) + (trailing ? eol : ''), 'utf8')
+  console.log(`「本次跳过」记录已更新（${records.size} 条）`)
+}
+
+/**
+ * ★ 对账：对外只给**一套**数字 —— 全部软件按「要不要人管」分成互斥的四类。
+ *
+ * 为什么必须有这个函数：以前 Issue 顶部写「要你裁决 N 条 / 已自动更新 M 个 /
+ * 自动跟踪 K 个 / 跟不了 J 个」，文末「全部结果」又写一套「已是最新 / 站内落后 /
+ * 比上游新 / 需人工 / 查询失败 / 跟不了」。两套账口径不同、互不解释：
+ *   · 「要你裁决」的 N 是**条目数**且会被忽略清单过滤，「需人工」是**软件数**；
+ *   · 「已自动更新 M 个」是写回**之后**的事实，「站内落后」是检查**那一刻**的快照；
+ *   · 同一条软件可以既是「已自动更新」又「要你裁决」（vlc：直链修好了、官网页面仍打不开）；
+ *   · 「查询失败」那 1 条在顶部根本没有对应格子，读者找不到它去哪了。
+ * 结果就是用户看到「已自动更新 7 个 / 站内落后 6 个 / 跟不了 28 / 需人工 2」——
+ * 同一个 Issue 里三套数字互相打脸，谁也不知道该信哪个。
+ *
+ * 现在的划分（互斥，优先级从上到下）：
+ *   1. need        要你处理      —— 产生了待审条目的软件。**即使本次也修好了一部分**
+ *                                  （vlc）也只算一次，因为它仍然要人看一眼。
+ *   2. fixed       本次自动修好  —— 写回成功、且没留下待审条目的。
+ *   3. rest        跟踪中、不用管 —— 其余在跟踪的（已最新 / 比上游新 / 上游暂无发行版 /
+ *                                  查询失败但已被忽略）。用减法算，保证账目天然守恒。
+ *   4. notFollowed 本来就不跟    —— 两条腿都够不着的，与「跟不了」一节同源。
+ * 1+2+3+4 恒等于软件总数（`balanced` 就是这个断言的结论）。
+ */
+function reconcile(results, pending, applied) {
+  const cov = coverageOf(results)
+  const need = new Set(pending.map((p) => p.id))
+  const fixed = new Set()
+  for (const a of applied) if (!need.has(a.id)) fixed.add(a.id)
+  const notFollowed = new Set()
+  for (const r of cov.untracked) if (!need.has(r.id) && !fixed.has(r.id)) notFollowed.add(r.id)
+  const rest = new Set()
+  for (const r of results) if (!need.has(r.id) && !fixed.has(r.id) && !notFollowed.has(r.id)) rest.add(r.id)
+  const n = need.size + fixed.size + rest.size + notFollowed.size
+  return {
+    need: [...need].sort(),
+    fixed: [...fixed].sort(),
+    rest: [...rest].sort(),
+    notFollowed: [...notFollowed].sort(),
+    total: results.length,
+    tracked: cov.github.length + cov.channel.length,
+    balanced: n === results.length,
+  }
+}
+
 /** 把 blockers 渲染成短句（同类已归并，不会一屏 12 行） */
 function blockerTexts(blockers) {
   const q = (arr) => arr.map((s) => `\`${s}\``).join('、')
@@ -991,6 +1195,11 @@ function bumpAdvice(it) {
  *  ⚠️ 改这里的格式必须同步改那个工作流里的正则。 */
 const tick = (action, id) => `<!-- ${action}:id=${id} -->`
 
+/** 带「问题指纹」的标记：「本次跳过」必须记下**当时是哪一版问题**，
+ *  否则下次没法判断「还是老问题（继续静默）」还是「情况变了（重新提醒）」。
+ *  ⚠️ 与 update-ignore-command.yml 的正则一一对应，改一边必须同步改另一边。 */
+const tick2 = (action, id, key) => `<!-- ${action}:id=${id} key=${key} -->`
+
 /** 生成一条待审项的 markdown。
  *  正文刻意压得很短：标题、一行「为什么没自动改」、两个勾选框，长步骤收进折叠区。
  *  两个框对应维护者的两条出路：
@@ -1029,6 +1238,11 @@ function renderPendingItem(it, index) {
   //   跟进那条路**不用在这里动手** —— 人是去别处改 JSON 的，这里只负责「改完回来说一声」。
   //   两个框之间不留空行：留了 markdown 会把它们当成"松散列表"，中间多出一段间距
   L.push(`- [ ] **已改好 → 重新检测**（去别处改完并提交后，回来点这里，机器立刻重跑一次体检）${tick('recheck', it.id)}`)
+  // 「本次跳过」＝ 中等强度的第三条路：不修、也不永久静音，只是这次别再来烦我。
+  // 方框里带着**问题指纹**（tick2），工作流把它原样存下来，下次体检比对得上就继续静默。
+  // ⚠️ 指纹缺失时**不渲染这个框**：勾了也存不进有效记录（工作流那边会因为 key 不合法而拒绝），
+  //    与其给个点了没反应的方框，不如不给。
+  if (it.key) L.push(`- [ ] **本次跳过**（这次先不管；等它有变化了再提醒）${tick2('skip', it.id, it.key)}`)
   L.push(`- [ ] **不用跟进**（勾上＝永久忽略，以后不再提醒）${tick('ignore', it.id)}`, '')
 
   // 要跟进的具体步骤收进折叠区：真打算动手时才展开
@@ -1154,10 +1368,14 @@ function coverageLines(results, { withDetail = true } = {}) {
   return L
 }
 
-function buildPendingReport(results, pending, applied, ignore) {
+function buildPendingReport(results, pending, applied, ignore, ctx = {}) {
+  const { skipped = [], skipOnce = new Map() } = ctx
   const L = []
   const now = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC'
   const cov = coverageOf(results)
+  const rec = reconcile(results, pending, applied)
+  // 账目不平就是渲染逻辑出了问题，宁可当场喊出来，也别把两套打架的数字发到 Issue 上让人猜
+  if (!rec.balanced) console.error(`⚠️ 账目不平：${rec.need.length}+${rec.fixed.length}+${rec.rest.length}+${rec.notFollowed.length} ≠ ${rec.total}`)
   const groups = [
     ['bump', '有新版本，但要人工确认', '这些不是「改个版本号」那么简单（跨大版本、带校验值、附件换了名字……），脚本按规矩一个字都没动。'],
     ['verify', '版本号对不上，需要拍板', '站内版本号跟上游对不上，脚本无法判断谁新谁旧。'],
@@ -1168,14 +1386,16 @@ function buildPendingReport(results, pending, applied, ignore) {
   ]
 
   L.push('# 软件体检', '')
-  L.push(`要你裁决 **${pending.length}** 条　｜　已自动更新 **${applied.length}** 个　｜　自动跟踪 **${cov.github.length + cov.channel.length}** 个　｜　跟不了 **${cov.untracked.length}** 个`)
-  L.push('', `_${now}　·　共 ${results.length} 个软件_`, '')
+  // ★ 这四个数字是**唯一**一套账：互斥、可相加（见 reconcile）。文末「本次账目」逐条列出 id，
+  //   读者随时可以自己核对 —— 不再出现第二套口径不同的统计。
+  L.push(`要你处理 **${rec.need.length}** 条　｜　本次自动修好 **${rec.fixed.length}** 个　｜　跟踪中、不用管 **${rec.rest.length}** 个　｜　本来就不跟 **${rec.notFollowed.length}** 个`)
+  L.push('', `_${now}　·　共 ${results.length} 个软件　·　四类互不重复，合计即总数（文末「本次账目」可逐条核对）_`, '')
   if (!pending.length) {
-    L.push('## 要你裁决：没有需要处理的条目', '')
+    L.push('## 要你处理：没有需要处理的条目', '')
     L.push('> 本次没有需要人工确认的条目。', '')
   } else {
-    L.push(`## 要你裁决（${pending.length} 条）`, '')
-    L.push('> 每条**二选一点一下方框**就完事，不用打字：**要跟进** → 点开「怎么改」照做 → 提交 → 回来点「已改好 → 重新检测」；**不想管** → 点「不用跟进」（＝永久忽略）。')
+    L.push(`## 要你处理（${pending.length} 条）`, '')
+    L.push('> 每条**三选一点一下方框**就完事，不用打字：**已改好** → 点开「怎么改」照做 → 提交 → 回来点「已改好 → 重新检测」；**这次不想管** → 点「本次跳过」（问题有变化会自动回来）；**以后都不想管** → 点「不用跟进」（永久忽略）。')
     L.push('> 方框是**一次性开关**，点完这条就消失（本清单每次体检整体重写）；全部处理完本 Issue 会自动关闭，点错了在评论区回 `/unignore <软件id>`。', '')
     // ⚠️ 手动触发时可以把「自动写回」关掉，那就一条都没改 —— 不说明会让人以为数据已经动过了
     if (!APPLY) L.push('**本次只体检、没有写回任何数据**（自动写回关着）。', '')
@@ -1191,14 +1411,22 @@ function buildPendingReport(results, pending, applied, ignore) {
 
   if (applied.length) {
     L.push('<details>', `<summary>本次已自动更新（${applied.length} 个）</summary>`, '')
-    for (const a of applied) L.push(`- **${a.name}**（\`${a.id}\`）：${a.changes.join('；')}`)
+    for (const a of applied) {
+      // 同一条软件可能「修好一部分、又留下一条要人看的」（vlc：下载直链已修、官网页面仍打不开）。
+      // 不标出来，读者会以为它既彻底修好了又还没修好 —— 这正是被抱怨「数据不一样」的来源之一。
+      const also = rec.need.includes(a.id) ? '　—— 本次只修好了其中一部分，另有一条仍在上面等你处理' : ''
+      L.push(`- **${a.name}**（\`${a.id}\`）：${a.changes.join('；')}${also}`)
+    }
     L.push('', '</details>', '')
   }
 
-  // ★ 「跟不了」= 脚本不会去跟的那些（不是坏了）。按原因分档点名，明细折叠起来
-  L.push(`## 跟不了（${cov.untracked.length} 个）`, '')
-  L.push(`> 这一档脚本**不会**去跟，不是出了问题。其余 **${cov.github.length + cov.channel.length}** 个在自动跟踪（GitHub Releases ${cov.github.length} ＋ 官方来源 ${cov.channel.length}），不用管。`, '')
+  // ★ 「跟不了」= 脚本不会去跟的那些（不是坏了）。按原因分档点名，明细折叠起来。
+  //   一个都没有时整节不出现（顶部那行已经写了「本来就不跟 0 个」），免得留一个空标题。
   if (cov.untracked.length) {
+    L.push(`## 跟不了（${cov.untracked.length} 个）`, '')
+    // ⚠️ 这里的数字必须能跟顶部那行对上：跟踪中共 tracked 个，其中需要人管的只有 need 条，
+    //    直接写「其余 tracked 个」会让人拿它跟顶部「跟踪中、不用管」相减后对不上账。
+    L.push(`> 这一档脚本**不会**去跟，不是出了问题。另外 **${rec.tracked}** 个在自动跟踪（GitHub Releases ${cov.github.length} ＋ 官方来源 ${cov.channel.length}）—— 其中只有上面那 **${rec.need.length}** 条要你处理，剩下的不用管。`, '')
     L.push('<details>', '<summary>点开看是哪些、为什么不跟</summary>', '')
     L.push('| 为什么不跟 | 个数 | 哪些软件 |', '|---|---|---|')
     for (const b of BUCKET_ORDER) {
@@ -1209,6 +1437,23 @@ function buildPendingReport(results, pending, applied, ignore) {
         .map((r) => `\`${r.id}\``)
         .join('、')
       L.push(`| **${BUCKET_LABEL[b] || b}** —— ${BUCKET_SHORT[b] || ''} | ${list.length} | ${ids} |`)
+    }
+    L.push('', '</details>', '')
+  }
+
+  // ★ 「本次跳过」的记录必须列出来：否则一条提醒静默消失，人只会以为脚本坏了。
+  //   这里同时给「恢复提醒」的方框 —— 跳错了点一下就回来。
+  if (skipped.length || skipOnce.size) {
+    L.push('<details>', `<summary>本次跳过（${skipped.length} 条命中，清单里还有 ${skipOnce.size} 个软件记着）</summary>`, '')
+    if (skipped.length) {
+      L.push('这次没提醒，因为**问题跟上次跳过时一模一样**；只要它有变化就会自动回来。', '')
+      for (const s of skipped) L.push(`- \`${s.id}\` **${s.name}**　${{ bump: '有新版本待确认', verify: '版本号对不上', repo: '仓库信息有问题', source: '上游来源读不到', stale: '官网直链指着旧版', 'dead-link': '下载直链失效' }[s.kind] || s.kind}${s.skipAt ? `（${s.skipAt} 跳过）` : ''}`)
+    } else {
+      L.push('记录着的软件这次都没再出问题 —— 下次再出现时会照常提醒。', '')
+    }
+    L.push('', '想恢复提醒就点一下对应那行（点完即生效）：', '')
+    for (const id of [...skipOnce.keys()].sort((a, b) => a.localeCompare(b))) {
+      L.push(`- [ ] 恢复 \`${id}\` 的提醒（不再跳过）${tick('unskip', id)}`)
     }
     L.push('', '</details>', '')
   }
@@ -1227,16 +1472,27 @@ function buildPendingReport(results, pending, applied, ignore) {
     L.push('', '</details>', '')
   }
 
+  // ★ 这是顶部那行数字的明细版：**四类互斥、相加等于总数**。
+  //   以前这里写的是另一套 state 计数（已是最新 / 站内落后 / 需人工 / 查询失败），
+  //   口径与顶部不同、又没有任何说明，于是同一份 Issue 里出现两套互相矛盾的数字。
   const counts = results.reduce((m, r) => ((m[r.state] = (m[r.state] || 0) + 1), m), {})
-  L.push('<details>', `<summary>全部结果（${results.length} 个软件）</summary>`, '')
-  L.push(`已是最新 ${counts.ok || 0}　｜　站内落后 ${counts.outdated || 0}　｜　比上游新 ${counts.ahead || 0}　｜　需人工 ${counts.manual || 0}　｜　查询失败 ${counts.error || 0}　｜　跟不了 ${counts['no-github'] || 0}`, '')
-  L.push('完整报告见 Actions 运行摘要。', '', '</details>', '')
+  const idList = (ids) => (ids.length ? ids.map((i) => `\`${i}\``).join('、') : '（无）')
+  L.push('<details>', `<summary>本次账目（${results.length} 个软件，逐条可核对）</summary>`, '')
+  L.push('| 归属 | 个数 | 哪些软件 |', '|---|---|---|')
+  L.push(`| 要你处理 | **${rec.need.length}** | ${idList(rec.need)} |`)
+  L.push(`| 本次自动修好 | **${rec.fixed.length}** | ${idList(rec.fixed)} |`)
+  L.push(`| 跟踪中、不用管 | **${rec.rest.length}** | ${idList(rec.rest)} |`)
+  L.push(`| 本来就不跟（见上「跟不了」） | **${rec.notFollowed.length}** | ${idList(rec.notFollowed)} |`)
+  L.push(`| **合计** | **${rec.total}** | 四类互不重复，相加即总数 |`)
+  L.push('', `体检状态细分（**同一批软件的另一种看法，不另外计数**）：已是最新 ${counts.ok || 0}　｜　站内落后 ${counts.outdated || 0}　｜　比上游新 ${counts.ahead || 0}　｜　上游查询失败 ${counts.error || 0}　｜　仓库无发行版 ${counts['no-release'] || 0}`)
+  L.push('', '完整报告见 Actions 运行摘要。', '', '</details>', '')
   L.push('---', '', '<sub>由 `scripts/check-updates.mjs` 自动生成 · 工作流 `.github/workflows/check-updates.yml`</sub>')
   return L.join('\n')
 }
 
 // ── 完整报告（跑在 Actions 摘要里，留档用）──────────────────────────────
-function buildFullReport(results, applied, ignore) {
+function buildFullReport(results, applied, ignore, ctx = {}) {
+  const { skipped = [] } = ctx
   const L = []
   const now = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC'
   const outdated = results.filter((r) => r.state === 'outdated')
@@ -1262,6 +1518,7 @@ function buildFullReport(results, applied, ignore) {
   L.push(`| 上游查询失败 | ${errors.length} |`)
   L.push(`| 已是最新 | ${ok.length} |`)
   L.push(`| 没得跟（微软商店 / 固定直链 / 归档 / 仅网页 / 网盘） | ${cov.untracked.length} |`)
+  if (skipped.length) L.push(`| 本次跳过（问题没变化，已压掉） | ${skipped.length} |`)
   L.push(`| 仓库在、但没有发行版 | ${noRelease.length} |`, '')
 
   if (outdated.length) {

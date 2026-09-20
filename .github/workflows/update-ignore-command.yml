@@ -2,11 +2,16 @@ name: 更新忽略命令
 
 # 「软件信息体检」Issue 的操作入口。
 #
-#  ① 点方框（默认、最省事）：体检清单里每条下面有**两个**复选框 ——
+#  ① 点方框（默认、最省事）：体检清单里每条下面有**三个**复选框 ——
 #     「已改好 → 重新检测」＝ 维护者已经去别处（网页改 JSON / 本地改完推）改完并提交，
 #                            这里只负责**重跑一次体检**看改对没有 —— 不读不写任何仓库文件；
+#     「本次跳过」        ＝ 这类问题这次先不管，写 update-ignore.json 的 `_skip_once`。
+#                            ★ 它带着「问题指纹」：指纹不变才继续静默，问题一变
+#                            （上游又发新版、直链又换了一批）就自动重新提醒 ——
+#                            这是「永久忽略」之外的中间强度，免得人只剩「放任被提醒」和
+#                            「永久静音」两个极端选择。
 #     「不用跟进」        ＝ 永久忽略，写 软件数据/update-ignore.json。
-#     文末「已忽略」区每条还有「恢复提醒」的方框。
+#     文末「已忽略 / 本次跳过」区每条还有「恢复提醒」的方框。
 #     实现见下面的 tick job。勾选＝编辑 Issue 正文 ＝ issues.edited。
 #
 #  ② 回命令（后备，等效于「永久忽略 / 恢复提醒」）：在本 Issue 里评论
@@ -191,15 +196,18 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            // 正文里的 `<!-- ignore:id=xx -->` / `<!-- unignore:id=xx -->` / `<!-- recheck:id=xx -->`
-            // 是清单渲染时埋的隐藏标记，与 scripts/check-updates.mjs 的 tick() 一一对应 —— 改一边必须同步改另一边。
-            const TAG = /<!--\s*(ignore|unignore|recheck):id=([a-z0-9][a-z0-9-]*)\s*-->/
+            // 正文里的 `<!-- ignore:id=xx -->` / `<!-- recheck:id=xx -->` / `<!-- skip:id=xx key=指纹 -->`
+            // 是清单渲染时埋的隐藏标记，与 scripts/check-updates.mjs 的 tick() / tick2() 一一对应 ——
+            // 改一边必须同步改另一边。
+            // `skip` 额外带一个十六进制「问题指纹」：那是体检脚本对被跳过的那一条问题算出来的，
+            // 工作流自己没法算（它看不到体检结果），只能原样搬运。
+            const TAG = /<!--\s*(ignore|unignore|recheck|skip|unskip):id=([a-z0-9][a-z0-9-]*)(?:\s+key=([0-9a-f]{6,32}))?\s*-->/
             const read = (body) => {
               const m = new Map()
               for (const line of String(body || '').split('\n')) {
                 const hit = line.match(TAG)
                 if (!hit) continue
-                m.set(`${hit[1]}:${hit[2]}`, /^-\s*\[[xX]\]/.test(line.trim()))
+                m.set(`${hit[1]}:${hit[2]}`, { checked: /^-\s*\[[xX]\]/.test(line.trim()), key: hit[3] || '' })
               }
               return m
             }
@@ -207,31 +215,34 @@ jobs:
             // 代价只是可能把同一条命令再执行一遍，而写入是幂等的。
             const before = read(context.payload.changes?.body?.from || '')
             const after = read(context.payload.issue?.body || '')
-            const picked = { ignore: [], unignore: [], recheck: [] }
-            for (const [key, checked] of after) {
-              if (!checked || before.get(key)) continue
-              const [kind, id] = key.split(':')
-              picked[kind].push(id)
+            const picked = { ignore: [], unignore: [], recheck: [], skip: [], unskip: [] }
+            for (const [k, v] of after) {
+              if (!v.checked || before.get(k)?.checked) continue
+              const [kind, id] = k.split(':')
+              // 「本次跳过」用 `id=指纹` 的形式带走指纹（下面写文件时再拆开）
+              picked[kind].push(kind === 'skip' ? `${id}=${v.key || ''}` : id)
             }
-            core.info(`新勾选：忽略 ${picked.ignore.length} 条、恢复提醒 ${picked.unignore.length} 条、重新检测 ${picked.recheck.length} 条`)
-            for (const kind of ['ignore', 'unignore', 'recheck']) core.setOutput(kind, picked[kind].join(' '))
+            core.info(`新勾选：忽略 ${picked.ignore.length} 条、恢复提醒 ${picked.unignore.length} 条、重新检测 ${picked.recheck.length} 条、本次跳过 ${picked.skip.length} 条、取消跳过 ${picked.unskip.length} 条`)
+            for (const kind of ['ignore', 'unignore', 'recheck', 'skip', 'unskip']) core.setOutput(kind, picked[kind].join(' '))
 
       - name: 取出源码
-        if: steps.pick.outputs.ignore != '' || steps.pick.outputs.unignore != ''
+        if: steps.pick.outputs.ignore != '' || steps.pick.outputs.unignore != '' || steps.pick.outputs.skip != '' || steps.pick.outputs.unskip != ''
         uses: actions/checkout@v4
 
       - name: 准备 Node
-        if: steps.pick.outputs.ignore != '' || steps.pick.outputs.unignore != ''
+        if: steps.pick.outputs.ignore != '' || steps.pick.outputs.unignore != '' || steps.pick.outputs.skip != '' || steps.pick.outputs.unskip != ''
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: 写入忽略清单并提交
         id: write
-        if: steps.pick.outputs.ignore != '' || steps.pick.outputs.unignore != ''
+        if: steps.pick.outputs.ignore != '' || steps.pick.outputs.unignore != '' || steps.pick.outputs.skip != '' || steps.pick.outputs.unskip != ''
         env:
           IGNORE_IDS: ${{ steps.pick.outputs.ignore }}
           UNIGNORE_IDS: ${{ steps.pick.outputs.unignore }}
+          SKIP_IDS: ${{ steps.pick.outputs.skip }}
+          UNSKIP_IDS: ${{ steps.pick.outputs.unskip }}
         run: |
           set -uo pipefail
           # id 只可能是小写字母 / 数字 / 短横线（上一步的正则已卡住），所以直接按空格分词即可
@@ -242,6 +253,18 @@ jobs:
           for id in $UNIGNORE_IDS; do
             echo "· 恢复提醒 $id"
             node scripts/update-ignore.mjs --remove="$id" || exit 1
+          done
+          # 「本次跳过」：格式是 `软件id=问题指纹`（上一步从正文的隐藏标记里带过来的）。
+          # 两个字段都由正则卡过，可以安全地用 bash 参数展开拆开。
+          for pair in $SKIP_IDS; do
+            id="${pair%%=*}"
+            key="${pair#*=}"
+            echo "· 本次跳过 $id（指纹 $key）"
+            node scripts/update-ignore.mjs --skip-once="$id" --key="$key" || exit 1
+          done
+          for id in $UNSKIP_IDS; do
+            echo "· 取消跳过 $id"
+            node scripts/update-ignore.mjs --unskip-once="$id" || exit 1
           done
 
           if git diff --quiet -- 软件数据/update-ignore.json; then
@@ -273,7 +296,7 @@ jobs:
         # 两种情况都要重跑：① 忽略状态变了，那条该从清单里消失；
         #                    ② 点了「已改好 → 重新检测」—— 机器得亲自看一眼人改的到底对不对。
         # 派发的是**全量**体检（不带 --only）：局部结果不能代表全局，会误关 Issue。
-        if: steps.pick.outputs.recheck != '' || steps.write.outputs.changed == 'true'
+        if: steps.pick.outputs.recheck != '' || steps.pick.outputs.skip != '' || steps.pick.outputs.unskip != '' || steps.write.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh workflow run check-updates.yml --ref main
@@ -286,6 +309,8 @@ jobs:
           IGNORE_IDS: ${{ steps.pick.outputs.ignore }}
           UNIGNORE_IDS: ${{ steps.pick.outputs.unignore }}
           RECHECK_IDS: ${{ steps.pick.outputs.recheck }}
+          SKIP_IDS: ${{ steps.pick.outputs.skip }}
+          UNSKIP_IDS: ${{ steps.pick.outputs.unskip }}
         with:
           script: |
             const q = (ids) => ids.map((x) => '`' + x + '`').join('、')
@@ -294,8 +319,13 @@ jobs:
             const ig = split(process.env.IGNORE_IDS)
             const un = split(process.env.UNIGNORE_IDS)
             const rc = split(process.env.RECHECK_IDS)
+            // `skip` 的每一项是 `id=指纹`，回复里只显示 id
+            const sk = split(process.env.SKIP_IDS).map((x) => x.split('=')[0])
+            const us = split(process.env.UNSKIP_IDS)
             if (ig.length) lines.push(`已永久忽略：${q(ig)}`)
             if (un.length) lines.push(`已恢复提醒：${q(un)}`)
+            if (sk.length) lines.push(`已记为本次跳过：${q(sk)}`)
+            if (us.length) lines.push(`已取消本次跳过：${q(us)}`)
             if (rc.length) lines.push(`已重新体检：${q(rc)}`)
             lines.push('')
             if (rc.length) {
@@ -303,6 +333,9 @@ jobs:
             }
             if (ig.length || un.length) {
               lines.push('> 来自本 Issue 正文里的勾选（等价于 `/ignore` / `/unignore`）。点错了回 `/unignore <软件id>` 就能撤销；`软件数据/update-ignore.json` 里能看到这条记录。')
+            }
+            if (sk.length || us.length) {
+              lines.push('> 「本次跳过」只压住**当前这一版问题**：等它有变化（上游又发新版、直链又换了一批）会自动重新提醒；要提前取消就在文末「本次跳过」区点一下「恢复提醒」。')
             }
             await github.rest.issues.createComment({
               owner: context.repo.owner,

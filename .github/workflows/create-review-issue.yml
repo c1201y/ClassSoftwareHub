@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths:
       - 'submissions/*.json'
+  # 手动补票：把 submissions/ 里「还没有 Issue」的草稿全部捞出来建 Issue。
+  # 为什么需要：草稿只有在推送那一刻才会被建 Issue，一旦那一刻静默失败（见下面
+  # 「判重认路径不认标题」那段），草稿就会一直躺在 submissions/ 里没人审。
+  # 有了这个开关，维护者随时能一键把漏掉的草稿重新捞起来。
+  workflow_dispatch:
 
 jobs:
   create-issue:
@@ -28,6 +33,13 @@ jobs:
           #    未必是触发本次运行的那个提交。两次推送挨得近时会重复建 issue，甚至完全
           #    漏建（草稿静默滞留在 submissions/ 里，永远等不到审核）。
           #    改用事件自带的 before/after 两个 SHA，范围精确，且能覆盖一次推送多个提交。
+          # 手动 dispatch 时没有 before/after："本次新增"就是空，这时交给后面
+          # 「扫描 submissions/ 里所有还没有 Issue 的草稿」那段去补票。
+          if [ -z "$AFTER" ]; then
+            echo "手动触发：不按提交范围找草稿，改为扫描 submissions/ 里所有还没有 Issue 的草稿"
+            printf 'files<<EOF\nEOF\n' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           ZERO=0000000000000000000000000000000000000000
           if [ -z "$BEFORE" ] || [ "$BEFORE" = "$ZERO" ]; then
             NEW_FILES=$(git show --diff-filter=A --name-only --pretty=format: "$AFTER" -- 'submissions/*.json' || true)
@@ -41,7 +53,9 @@ jobs:
           echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: 为每个草稿创建 Issue
-        if: steps.find.outputs.files != ''
+        # 手动 dispatch 时 before/after 是空的（找不出「本次新增」），但正好要靠下面的
+        # 「所有还没有 Issue 的草稿」那一段补票，所以这种时候也要跑。
+        if: steps.find.outputs.files != '' || github.event_name == 'workflow_dispatch'
         uses: actions/github-script@v7
         env:
           FILES: ${{ steps.find.outputs.files }}
@@ -50,21 +64,46 @@ jobs:
             const fs = require('fs')
             const files = process.env.FILES.split('\n').map(s => s.trim()).filter(Boolean)
 
-            // 幂等保护：手动「Re-run」时 before/after 不变，不判重会重复建 issue
+            // 幂等保护：手动「Re-run」时 before/after 不变，不判重会重复建 issue。
+            // ⚠️ 判重必须认【草稿文件路径】，不能认 Issue 标题（2026-09-20 踩过）：
+            //    标题是「软件名 (id)」，同一个软件被重新提交时新标题与旧 Issue 一模一样，
+            //    而旧 Issue 早就 approved / rejected 关闭了 —— 按标题判重会把新草稿
+            //    永久静默。实测：`向日葵远程 (xrkayxingz)` 的第二次提交（9-20 12:06）
+            //    就因为 9-18 的旧 Issue #19 已关闭而被跳过，运行日志里只剩一行
+            //    「已存在同名 Issue，跳过：[待审核] 向日葵远程 (xrkayxingz)」，
+            //    草稿从此躺在 submissions/ 里，永远等不到审核（提交者看到的是「提交成功」）。
+            //    草稿路径带时间戳、天然唯一，一个路径只可能对应一条草稿。
             const opened = await github.rest.issues.listForRepo({
               ...context.repo,
               state: 'all',
               per_page: 100
             })
+            const drafted = new Set()
+            for (const i of opened.data) {
+              const m = (i.body || '').match(/\*\*提交文件\*\*：`([^`]+)`/)
+              if (m) drafted.add(m[1])
+            }
+            // 标题只用来提醒：同一个软件可能同时有多条草稿在审（比如改名重提），
+            // 那是对的，不该拦。
             const existingTitles = new Set(opened.data.map(i => i.title))
+
+            // 除了本次推送新增的草稿，再把【所有还没有 Issue 的草稿】一起捞上：
+            // 漏建过的草稿因此能在下一次提交时自动补票，不会再无声无息地卡住。
+            for (const f of (fs.existsSync('submissions') ? fs.readdirSync('submissions') : [])) {
+              const p = `submissions/${f}`
+              if (f.endsWith('.json') && !files.includes(p)) files.push(p)
+            }
 
             for (const file of files) {
               if (!fs.existsSync(file)) continue
+              if (drafted.has(file)) {
+                console.log(`该草稿已有 Issue，跳过：${file}`)
+                continue
+              }
               const data = JSON.parse(fs.readFileSync(file, 'utf8'))
               const title = `[待审核] ${data.name} (${data.id})`
               if (existingTitles.has(title)) {
-                console.log(`已存在同名 Issue，跳过：${title}`)
-                continue
+                console.log(`⚠️ 已有同名 Issue（历史记录或其它草稿），仍为这条草稿新建：${title}`)
               }
               const conflictHint = data._原始ID冲突
                 ? `\n> ⚠️ **注意**：\`软件数据/apps/${data.id}.json\` 已存在，通过前需先处理冲突。`
