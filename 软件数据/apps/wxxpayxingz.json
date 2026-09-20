@@ -1,7 +1,7 @@
 {
   "id": "wxxpayxingz",
   "name": "微信老版本",
-  "icon": "",
+  "icon": "https://pc3.gtimg.com/softmgr/logo/48/27349_48_1623835272.png",
   "category": "teaching",
   "tagline": "微信的3.2.1老版本",
   "description": "微信3.2.1版本，主流功能全部支持，可正常登录，适合给性能不怎么好的电脑使用",
@@ -9,7 +9,6 @@
   "size": "130.4MB",
   "system": "WindowsXP及以上",
   "website": "https://pc.qq.com/detail/9/detail_27349.html",
-  "github": "",
   "downloads": [
     {
       "platform": "Windows安装版",
