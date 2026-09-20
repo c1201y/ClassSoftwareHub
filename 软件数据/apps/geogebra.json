@@ -5,7 +5,7 @@
   "category": "teaching",
   "tagline": "免费开源的数学绘图工具（函数、几何、统计、3D）",
   "description": "GeoGebra 是面向数学教学的免费开源动态数学软件，把几何、代数、表格、图形、统计和微积分整合在一起。画函数图像、做几何演示、动态验证定理都很方便，还支持 3D 绘图与在线课件（GeoGebra 资源站有大量现成课件可直接用）。支持 Windows / macOS / Linux / 网页 / 手机端。",
-  "version": "6.0.929.3",
+  "version": "6.0.930.2",
   "size": "68 MB ~ 134 MB",
   "system": "Windows / macOS / Linux，另有网页版与手机版",
   "website": "https://www.geogebra.org/download?lang=zh-CN",
