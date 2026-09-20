@@ -1,12 +1,11 @@
 {
   "id": "translucenttbayxingz",
   "name": "TranslucentTB",
-  "icon": "",
+  "icon": "https://store-images.s-microsoft.com/image/apps.58066.14207443949651364.14d58b87-611d-43f5-96e3-f7ac6427a4b6.58ce0f51-544a-4e90-88a8-f7a1e3e7c3e7?h=170",
   "category": "system",
   "tagline": "A lightweight utility that makes the Windows taskbar…",
   "description": "A lightweight utility that makes the Windows taskbar translucent/transparent.",
   "version": "2026.2",
-  "size": "",
   "system": "Windows10及以上",
   "website": "https://translucenttb.github.io",
   "github": "https://github.com/TranslucentTB/TranslucentTB",
