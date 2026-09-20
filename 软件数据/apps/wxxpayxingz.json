@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-09-20T12:30:12.238Z",
-  "_原始ID冲突": false,
   "id": "wxxpayxingz",
   "name": "微信老版本",
   "icon": "",
@@ -19,6 +17,5 @@
       "url": "https://sw.pcmgr.qq.com/5e5f1589f6ac85c6ac1759f738383acd/6aafd107/spcmgr/download/WeChat_for_XP_SP3_To_Vista.exe"
     }
   ],
-  "sort": 99,
-  "_联系方式": "wsy@yfwsy.icu"
+  "sort": 99
 }
