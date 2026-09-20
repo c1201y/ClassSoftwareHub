@@ -1,0 +1,43 @@
+{
+  "_提交时间": "2026-09-20T11:50:29.992Z",
+  "_原始ID冲突": false,
+  "id": "translucenttbayxingz",
+  "name": "TranslucentTB",
+  "icon": "",
+  "category": "system",
+  "tagline": "A lightweight utility that makes the Windows taskbar…",
+  "description": "A lightweight utility that makes the Windows taskbar translucent/transparent.",
+  "version": "2026.2",
+  "size": "",
+  "system": "Windows10及以上",
+  "website": "https://translucenttb.github.io",
+  "github": "https://github.com/TranslucentTB/TranslucentTB",
+  "downloads": [
+    {
+      "platform": "其他 MSIXBUNDLE",
+      "note": "bundle.msixbundle",
+      "size": "4.0 MB",
+      "url": "https://github.com/TranslucentTB/TranslucentTB/releases/download/2026.2/bundle.msixbundle"
+    },
+    {
+      "platform": "其他 ARM64 便携版",
+      "note": "TranslucentTB-portable-arm64.zip",
+      "size": "1.6 MB",
+      "url": "https://github.com/TranslucentTB/TranslucentTB/releases/download/2026.2/TranslucentTB-portable-arm64.zip"
+    },
+    {
+      "platform": "其他 x64 便携版",
+      "note": "TranslucentTB-portable-x64.zip",
+      "size": "1.7 MB",
+      "url": "https://github.com/TranslucentTB/TranslucentTB/releases/download/2026.2/TranslucentTB-portable-x64.zip"
+    },
+    {
+      "platform": "其他 APPINSTALLER",
+      "note": "TranslucentTB.appinstaller",
+      "size": "2.5 KB",
+      "url": "https://github.com/TranslucentTB/TranslucentTB/releases/download/2026.2/TranslucentTB.appinstaller"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "wsy@yfwsy.icu"
+}
