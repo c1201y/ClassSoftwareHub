@@ -15,7 +15,7 @@ name: 更新忽略命令
 #     实现见下面的 ignore job。
 #
 # ⚠️ 本仓库是 public，任何人都能评论 —— 所以下面三重门必须都过才执行：
-#   1. 必须是在「📦 软件信息体检」这个 Issue 下（不是随便一个 Issue）
+#   1. 必须是在「软件信息体检」这个 Issue 下（不是随便一个 Issue）
 #   2. 评论者必须对本仓库有写权限（OWNER / MEMBER / COLLABORATOR）
 #   3. 命令必须是行首的 /ignore 或 /unignore
 # 评论内容一律通过环境变量传进 bash，不拼进脚本正文，避免命令注入。
@@ -38,7 +38,7 @@ jobs:
     if: |
       github.event_name == 'issue_comment'
       && !github.event.issue.pull_request
-      && startsWith(github.event.issue.title, '📦 软件信息体检')
+      && contains(github.event.issue.title, '软件信息体检')
       && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
       && (startsWith(github.event.comment.body, '/ignore') || startsWith(github.event.comment.body, '/unignore'))
     runs-on: ubuntu-latest
@@ -160,7 +160,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.payload.issue.number,
-              body: (handled ? '✅ ' : 'ℹ️ ') + summary + tail,
+              body: (handled ? '' : '[未处理] ') + summary + tail,
             })
 
   # ★ 复选框路径（2026-09-16 新增）：花一次点击，省掉记命令、复制 id。
@@ -173,7 +173,7 @@ jobs:
     if: |
       github.event_name == 'issues'
       && !github.event.issue.pull_request
-      && startsWith(github.event.issue.title, '📦 软件信息体检')
+      && contains(github.event.issue.title, '软件信息体检')
       && github.event.sender.login != 'github-actions[bot]'
     runs-on: ubuntu-latest
     concurrency:
@@ -294,9 +294,9 @@ jobs:
             const ig = split(process.env.IGNORE_IDS)
             const un = split(process.env.UNIGNORE_IDS)
             const rc = split(process.env.RECHECK_IDS)
-            if (ig.length) lines.push(`🙈 已永久忽略：${q(ig)}`)
-            if (un.length) lines.push(`🔔 已恢复提醒：${q(un)}`)
-            if (rc.length) lines.push(`🔄 已重新体检：${q(rc)}`)
+            if (ig.length) lines.push(`已永久忽略：${q(ig)}`)
+            if (un.length) lines.push(`已恢复提醒：${q(un)}`)
+            if (rc.length) lines.push(`已重新体检：${q(rc)}`)
             lines.push('')
             if (rc.length) {
               lines.push('> 几分钟后本清单会自动刷新：改对了的条目会从清单里消失；如果还在，点开它的折叠区能看到新的「没自动改」原因（也可能只是上游又发新版了）。')

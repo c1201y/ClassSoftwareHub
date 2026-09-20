@@ -81,6 +81,7 @@ stats-worker/
   └─ wrangler.toml               Deploy config (KV binding: STATS)
 submissions/                     Visitor-submitted app drafts (entry point of the submission flow; do not edit by hand)
 scripts/                         Maintenance scripts — `check-updates.mjs` (upstream version checker),
+                                 `update-channels.mjs` (registry of non-GitHub official sources for it),
                                  `update-ignore.mjs` (edits the ignore list) and `upload-webdav.py`
                                  (mirrors dist/ to the OpenList folder); see "CI Notes"
 desktop/                         ★ Electron desktop app (Windows exe / Linux deb). It **remote-loads the site**
@@ -343,10 +344,10 @@ changes are replayed by `visitor.ts`.
 - All six workflows carry Chinese comments explaining *why* they are written this way —
   **read those comments before changing anything.**
 - `check-updates.yml` runs `scripts/check-updates.mjs` **every Friday** (and on demand), comparing
-  `软件数据/apps/*.json` against upstream GitHub releases, and **splits the outcome in two**:
+  `软件数据/apps/*.json` against upstream, and **splitting the outcome in two**:
   - what the script can prove → written back, committed and deployed **automatically** (the scheduled
     run applies by default; `workflow_dispatch` also defaults `apply=true`);
-  - what it cannot prove → one rolling issue, `📦 软件信息体检 · 待人工确认`, listing each case with a
+  - what it cannot prove → one rolling issue, `软件信息体检 · 待人工确认`, listing each case with a
     title, one line of "why the script stayed put", and **two checkboxes**:
     - **"已改好 → 重新检测"** — the maintainer fixes the JSON *elsewhere* (web edit, or locally then
       push), commits, then ticks this; the workflow just re-runs the whole check to verify. This path
@@ -356,13 +357,44 @@ changes are replayed by `visitor.ts`.
       same).
     Detailed "how to fix it by hand" steps sit in a collapsed `<details>` block. When nothing is pending
     the issue **closes itself**. The full report always goes to the Job Summary.
+
+  **Two legs, not one.** Leg 1 is GitHub Releases (the `github` field). Leg 2 is
+  `scripts/update-channels.mjs`, a registry of **non-GitHub official sources** for the commercial /
+  education software that has no repo: the vendor's embedded product list (one fetch covers five seewo
+  apps and hands back the *freshly signed* object-storage URLs the site needs), the VideoLAN directory
+  index, the 360 download pages, the DiskGenius changelog, a GeoGebra redirect. Each source is a single
+  `run() -> { version, date?, files? }` that must prove itself: the version number has to actually
+  appear in the download filename, and every URL it returns must pass a hard-coded host allow-list.
+  **A source that fails to parse is never guessed at** — the entry becomes a `source` pending item and
+  no data is touched, which also tells the maintainer "the vendor changed their page" instead of
+  "something is broken". Page-scraping gotchas worth remembering: strip HTML comments *before* parsing
+  (`browser.360.cn/ee/` carries two `id="loadnew"` anchors and the first one, in a comment, points at
+  the previous release), and use `redirect: 'manual'` when a redirect is the version source, or you
+  download a 130 MB installer just to read a filename.
+
+  Whatever neither leg can reach is **labelled, not hidden**: `classify()` sorts those apps into
+  *Microsoft Store*, *official always-latest link*, *deliberately archived*, *web page only* and
+  *netdisk*, and the issue lists the whole taxonomy (`## 跟不了`) with a per-app reason. Before
+  this, ~38 apps vanished into one "not checked" bucket, so "the Store updates itself" looked identical
+  to "the page is an SPA we cannot parse" — and nobody could tell how much of the catalogue was really
+  covered. Those apps deliberately do **not** produce pending items: they are not "pending", they are
+  "not trackable by design", and a checkbox nobody can ever act on is just noise. New apps with no repo
+  should be added to `BUCKETS` when they are submitted, so this list stays truthful.
+
+  The issue body stays **deliberately terse** — one line of counts at the top, then only the items that
+  need a human; auto-updated, untrackable, ignored and the full tally all live inside `<details>`. Keep
+  it that way when you touch `buildPendingReport()`: no "summary" sub-heading, and never print the same
+  set of numbers twice. Safe to restructure, because the workflow locates the issue by **title** and
+  parses only the `<!-- action:id=… -->` markers — it never reads the headings.
+
   The safety rule is **all-or-nothing**: an app's `version` and its download links are one unit, so a
   single unsolvable point blocks the whole entry (otherwise you get "version 26.03, link still on the
   26.02 file"). Blockers: cross-major bumps, download items that carry a checksum (the `hash` field,
   or a SHA512/256 written into `note`) — swapping the file invalidates it — plus asset filenames that
   changed upstream, unresolvable `github`
   slugs, dead links, and versions that are not comparable strings (e.g. `上次更新日期 2026/8/18`).
-  Non-GitHub links (vendor sites, mirrors) are **never** touched — only reported. That report is its
+  Non-GitHub links are rewritten **only** when a registered source explicitly hands back a new URL;
+  everything else (vendor pages, mirrors) is never touched — only reported. That report is its
   **own** pending kind (`stale`), deliberately *not* attached to a bump: while it hung off the bump
   entry, the notice disappeared the moment the script finished the upgrade by itself, so the vendor link
   stayed stale with no visible warning (this is how the two `7-zip.org` links on 7-Zip went stale).
@@ -447,10 +479,16 @@ changes are replayed by `visitor.ts`.
 
 **Updating an existing app's version / links**: run
 `node scripts/check-updates.mjs --report=out.md --pending=pending.md` (add `--only=id1,id2` to narrow
-it, `--no-link` to skip the download-link liveness check). Add `--apply` to write back what the script
+it, `--no-link` to skip the download-link liveness check, `--no-channel` to skip the non-GitHub official
+sources). Add `--apply` to write back what the script
 can prove; anything it cannot prove lands in `pending.md` instead. Export `GITHUB_TOKEN` first or you
 hit the 60-requests/hour anonymous limit. This is exactly what the weekly
 `.github/workflows/check-updates.yml` run does — see "CI Notes".
+
+**Checking just the non-GitHub sources**: `node scripts/update-channels.mjs` runs every registered
+source and prints what each one returned (`--only=vlc`, `--json` also work). Run it after touching that
+file — a source that throws is not fatal (the checker turns it into a `source` pending item), so this
+CLI is the only place a broken parser shows up as a hard failure.
 
 **After fixing an entry by hand**: you do not edit anything from the issue — fix
 `软件数据/apps/<id>.json` wherever you like, **commit**, then tick "已改好 → 重新检测" under that entry.
