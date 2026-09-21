@@ -1,0 +1,67 @@
+{
+  "_提交时间": "2026-09-21T12:26:56.330Z",
+  "_原始ID冲突": false,
+  "id": "nanazip",
+  "name": "NanaZip",
+  "icon": "https://avatars.githubusercontent.com/u/19967653?v=4",
+  "category": "other",
+  "tagline": "The 7-Zip derivative intended for the modern Windows…",
+  "description": "The 7-Zip derivative intended for the modern Windows experience",
+  "version": "7.0.1843.0",
+  "size": "",
+  "system": "Windows",
+  "website": "https://nanazip.org",
+  "github": "https://github.com/M2Team/NanaZip",
+  "downloads": [
+    {
+      "platform": "其他 MSIXBUNDLE",
+      "note": "NanaZipPreview_7.0.1843.0.msixbundle",
+      "size": "11.5 MB",
+      "url": "https://github.com/M2Team/NanaZip/releases/download/7.0.1843.0/NanaZipPreview_7.0.1843.0.msixbundle"
+    },
+    {
+      "platform": "其他 XML",
+      "note": "NanaZipPreview_7.0.1843.0.xml",
+      "size": "2.6 KB",
+      "url": "https://github.com/M2Team/NanaZip/releases/download/7.0.1843.0/NanaZipPreview_7.0.1843.0.xml"
+    },
+    {
+      "platform": "其他 压缩包",
+      "note": "NanaZipPreview_7.0.1843.0_Binaries.zip",
+      "size": "7.7 MB",
+      "url": "https://github.com/M2Team/NanaZip/releases/download/7.0.1843.0/NanaZipPreview_7.0.1843.0_Binaries.zip"
+    },
+    {
+      "platform": "其他 压缩包",
+      "note": "NanaZipPreview_7.0.1843.0_DebugSymbols.zip",
+      "size": "67.5 MB",
+      "url": "https://github.com/M2Team/NanaZip/releases/download/7.0.1843.0/NanaZipPreview_7.0.1843.0_DebugSymbols.zip"
+    },
+    {
+      "platform": "其他 MSIXBUNDLE",
+      "note": "NanaZip_7.0.1843.0.msixbundle",
+      "size": "11.4 MB",
+      "url": "https://github.com/M2Team/NanaZip/releases/download/7.0.1843.0/NanaZip_7.0.1843.0.msixbundle"
+    },
+    {
+      "platform": "其他 XML",
+      "note": "NanaZip_7.0.1843.0.xml",
+      "size": "2.6 KB",
+      "url": "https://github.com/M2Team/NanaZip/releases/download/7.0.1843.0/NanaZip_7.0.1843.0.xml"
+    },
+    {
+      "platform": "其他 压缩包",
+      "note": "NanaZip_7.0.1843.0_Binaries.zip",
+      "size": "7.7 MB",
+      "url": "https://github.com/M2Team/NanaZip/releases/download/7.0.1843.0/NanaZip_7.0.1843.0_Binaries.zip"
+    },
+    {
+      "platform": "其他 压缩包",
+      "note": "NanaZip_7.0.1843.0_DebugSymbols.zip",
+      "size": "67.5 MB",
+      "url": "https://github.com/M2Team/NanaZip/releases/download/7.0.1843.0/NanaZip_7.0.1843.0_DebugSymbols.zip"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "1924200735"
+}
