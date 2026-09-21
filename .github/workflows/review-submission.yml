@@ -1,4 +1,4 @@
-name: Review Submission
+name: 审核软件提交
 
 on:
   issues:

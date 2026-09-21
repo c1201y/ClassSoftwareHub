@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages & OpenList
+name: 部署站点（Pages · FTP · OpenList）
 
 on:
   push:
