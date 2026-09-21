@@ -75,8 +75,7 @@ stats-worker/
   └─ wrangler.toml               Deploy config (KV binding: STATS)
 submissions/                     Visitor-submitted app drafts (entry point of the submission flow; do not edit by hand)
 scripts/                         Maintenance scripts — `check-updates.mjs` (upstream version checker),
-                                 `update-channels.mjs` (the "why isn't this tracked" buckets; its
-                                 non-GitHub source registry is switched off since 2026-09-21),
+                                 `untracked-buckets.mjs` (the "why isn't this tracked" registry),
                                  `update-ignore.mjs` (edits the ignore list) and `upload-webdav.py`
                                  (mirrors dist/ to the OpenList folder); see "CI Notes"
 .github/workflows/               The 5 workflows (see "CI Notes")
@@ -357,14 +356,13 @@ changes are replayed by `visitor.ts`.
     Detailed "how to fix it by hand" steps sit in a collapsed `<details>` block. When nothing is pending
     the issue **closes itself**. The full report always goes to the Job Summary.
 
-  **One leg: GitHub Releases** (the `github` field). There used to be a second leg —
-  `scripts/update-channels.mjs`, a registry of **non-GitHub official sources** that scraped vendor pages
-  (the seewo product list, the VideoLAN directory, the 360 download pages, the DiskGenius changelog, a
-  GeoGebra redirect) for the ten apps with no repo. It was **retired on 2026-09-21**: every vendor
-  redesign meant another parser to fix, and the upkeep outweighed the payoff. Those ten apps now sit in
-  the *web page only* bucket with an honest reason attached. The parsing code is **kept but switched
-  off** (`CHANNELS_ENABLED = false` in that file), so restoring the second leg is a one-line change.
-  The scraper gotchas still matter if it ever comes back: strip HTML comments *before* parsing
+  **One leg: GitHub Releases** (the `github` field). There used to be a second leg — a registry of
+  **non-GitHub official sources** that scraped vendor pages (the seewo product list, the VideoLAN
+  directory, the 360 download pages, the DiskGenius changelog, a GeoGebra redirect) for the ten apps
+  with no repo. It was **deleted outright on 2026-09-21**: every vendor redesign meant another parser to
+  fix, and the upkeep outweighed the payoff. Those ten apps now sit in the *web page only* bucket of
+  `scripts/untracked-buckets.mjs` with an honest reason attached. (Recovering it means reverting the
+  commit — the scraper gotchas, if it ever comes back: strip HTML comments *before* parsing
   (`browser.360.cn/ee/` carries two `id="loadnew"` anchors and the first one, in a comment, points at
   the previous release); use `redirect: 'manual'` when a redirect is the version source, or you download
   a 130 MB installer just to read a filename; and a source that cannot prove itself — the version number
@@ -477,17 +475,18 @@ changes are replayed by `visitor.ts`.
 
 **Updating an existing app's version / links**: run
 `node scripts/check-updates.mjs --report=out.md --pending=pending.md` (add `--only=id1,id2` to narrow
-it, `--no-link` to skip the download-link liveness check, `--no-channel` to skip the non-GitHub official
-sources). Add `--apply` to write back what the script
+it, `--no-link` to skip the download-link liveness check). Add `--apply` to write back what the script
 can prove; anything it cannot prove lands in `pending.md` instead. Export `GITHUB_TOKEN` first or you
 hit the 60-requests/hour anonymous limit. This is exactly what the weekly
 `.github/workflows/check-updates.yml` run does — see "CI Notes".
+⚠️ A narrowed run (`--only`) **never writes the ignore list** — `pending.md` from it is a partial
+snapshot, and letting it prune `_skip_once` would silently wipe every "skip this once" record.
 
-**Non-GitHub sources (currently off)**: `node scripts/update-channels.mjs` runs every registered source
-and prints what each one returned (`--only=vlc`, `--json` also work). The registry is switched off
-(`CHANNELS_ENABLED = false`, see "CI Notes"), so nothing calls it during a normal check — this CLI only
-matters if you turn the second leg back on. A source that throws is not fatal (the checker turns it into
-a `source` pending item), so this CLI is the one place a broken parser shows up as a hard failure.
+**Why an app isn't tracked**: `scripts/untracked-buckets.mjs` is the single registry — a static table of
+`{bucket, reason}` plus `classify()`. It makes no network calls. Every app without a usable GitHub repo
+falls into one of five buckets (`store` / `always-latest` / `archive` / `page-only` / `netdisk`), and
+only `page-only` genuinely needs a human to glance at it now and then. When you retire an app from
+tracking, register it here with an honest reason rather than leaving it silently unexamined.
 
 **After fixing an entry by hand**: you do not edit anything from the issue — fix
 `软件数据/apps/<id>.json` wherever you like, **commit**, then tick "已改好 → 重新检测" under that entry.
