@@ -1,4 +1,4 @@
-name: Create Review Issue
+name: 创建审核 Issue
 
 on:
   push:

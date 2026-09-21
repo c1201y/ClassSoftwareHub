@@ -32,12 +32,6 @@ npm run type-check    # vue-tsc --build (run it after touching any .ts/.vue)
 npm run build         # multi-file bundle → dist/ — this is what CI deploys
 npm run build:single  # single-file bundle → dist/index.html (~2 MB, opens offline)
 npm run check         # type-check + build
-
-# Desktop app (Electron, lives in desktop/ — separate package.json on purpose)
-cd desktop && npm install
-node scripts/make-snapshot.mjs   # built-in offline copy, reads ../dist (run build:single first)
-npm start                        # run the desktop shell
-npm run pack:win                 # → release/*.exe     (pack:linux → *.deb)
 ```
 
 ---
@@ -85,30 +79,7 @@ scripts/                         Maintenance scripts — `check-updates.mjs` (up
                                  non-GitHub source registry is switched off since 2026-09-21),
                                  `update-ignore.mjs` (edits the ignore list) and `upload-webdav.py`
                                  (mirrors dist/ to the OpenList folder); see "CI Notes"
-desktop/                         ★ Electron desktop app (Windows exe / Linux deb). It **remote-loads the site**
-  ├─ main.js                      so site updates need no app release; three-step fallback (site → retry that
-  │                               hits the Chromium disk cache → bundled offline copy). Its own package.json:
-  │                               never merge Electron into the root one. Full guide: desktop/README.md
-  ├─ shell/                       ★ Blank carrier page (index.html) + no-copy.html fallback page only.
-  │                               Status is reported by the OS, never by our own widgets: window-title
-  │                               suffix, taskbar overlay badge (assets/badge-*.png) and native dialogs
-  │                               (version info / diagnostics / offline notice).
-  │                               Do NOT reintroduce a self-drawn banner — the content area is 100% site.
-  │                               ★ No system title bar: `titleBarStyle: 'hidden'` + `titleBarOverlay`,
-  │                               so min/max/close stay OS-drawn and float over the site's own titlebar.
-  │                               The overlay height must stay 48 to match WinTitleBar.vue, and the site
-  │                               shifts itself left via env(titlebar-area-*) — no site change needed.
-  │                               The only thing injected into the site is a headless colour probe
-  │                               (OVERLAY_PROBE) mirroring --app-bg back over console-message, so the
-  │                               button strip always matches the page (theme + holiday skin included).
-  │                               No DOM nodes, no style overrides.
-  ├─ scripts/make-snapshot.mjs    Site single-file bundle → built-in offline copy (snapshot/)
-  ├─ electron-builder.yml         Packaging: win = nsis + portable, linux = deb
-  ├─ assets/icon.png|ico          App icon is the *site* icon, not a separate design: trimmed to its
-  │                               content, centred on a square canvas (512 png for Linux, 16-256 ico for Windows).
-  │                               Master: src/assets/AppIcon-source.png — regenerate both when the site icon changes.
-  └─ snapshot/                    Generated at build time, not committed
-.github/workflows/               The 6 workflows (see "CI Notes")
+.github/workflows/               The 5 workflows (see "CI Notes")
 ```
 
 Routes (hash-based):
@@ -467,25 +438,6 @@ changes are replayed by `visitor.ts`.
     comment body arrives via an env var and is parsed by bash's own word splitting — **do not switch
     back to `cut -d' ' -f2`**: when the delimiter is absent it returns the whole line, which would
     record `/ignore` itself as an app id.
-- `build-desktop.yml` builds the Electron desktop app (Windows exe + Linux deb). It is **deliberately
-  not wired to `push: main`** — the app remote-loads the site, so a site update never needs a new build.
-  **Its only trigger is a manual `workflow_dispatch` with a required `tag` input.** One run does the
-  whole release: normalises the tag (`1.0.1` / `v1.0.1` → `desktop-v1.0.1`) and fails if it already
-  exists, creates and pushes it, builds both platforms **with the version taken from that tag** (written
-  into `desktop/package.json` inside the runner only, so `${version}` filenames always match the tag),
-  then creates a Release whose notes are **the newest section of `CHANGELOG.md`**. A `push: tags:
-  desktop-v*` trigger used to exist and was **removed on purpose — do not re-add it** (a tag push would
-  kick off a second, competing build and the tag would already exist by then). `desktop/` keeps **its
-  own** `package.json`: fold Electron into the root one and every site deploy pays for ~100 MB of
-  binaries it never uses.
-- `vite.config.ts` emits `dist/version.json` (plugin `csh-version-json`). The desktop app compares it
-  against the version of the offline copy it shipped with, and reports when that copy has fallen behind —
-  via window-title suffix + taskbar overlay badge, plus one native dialog when it has to go offline.
-  With the system title bar gone, that title is only reachable from the taskbar tooltip / Alt+Tab — the
-  taskbar badge and the offline dialog are what actually reach the user.
-  `electron-builder.yml` lists `assets/**/*` on purpose: `main.js` reads the window icon and the overlay
-  badges from `__dirname` at runtime, and an unlisted folder is a silent no-op (badge simply never shows).
-  The version string still comes from `文字设置.ts` — the plugin only parses it, never restates it.
 
 ---
 
