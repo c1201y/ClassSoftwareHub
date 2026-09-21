@@ -5,13 +5,15 @@
  * 「软件信息自动更新」：扫描 软件数据/apps/*.json，去上游核对每个软件的最新版本
  * 与下载直链，并把结果写成 Markdown 报告；加 --apply 时再把**能确定**的部分写回 JSON。
  *
- * 两条腿：
- *  ① **GitHub Releases**（本站收录的绝大部分开源软件）—— 认 `github` 字段；
- *  ② **非 GitHub 官方来源**（没有 GitHub 仓库的商业 / 教育软件）—— 认
- *     `scripts/update-channels.mjs` 里的来源登记表（希沃产品清单、VideoLAN 目录、
- *     360 官方页面、DiskGenius 更新日志、GeoGebra 重定向……）。
+ * 上游来源（**2026-09-21 起只跟 GitHub**）：
+ *  **GitHub Releases** —— 认软件的 `github` 字段。这是唯一会自动跟踪的来源。
  *
- * 两条腿哪个都够不着的（微软商店分发、官方固定「最新版」直链、有意归档、
+ * 曾经还有一条「非 GitHub 官方来源」的腿（抓希沃产品清单 / VideoLAN 目录 / 360 页面…），
+ * 2026-09-21 按维护者决定停用（`scripts/update-channels.mjs` 的 `CHANNELS_ENABLED`），
+ * 因为那些厂商页面改版就得跟着改解析规则，维护成本高、收益不抵。对应的 10 个软件
+ * 现在一律走下面的「跟不了」登记，如实说明要人偶尔看一眼。
+ *
+ * 够不着上游来源的（微软商店分发、官方固定「最新版」直链、有意归档、
  * 只有网页入口、第三方网盘），**逐个写明是哪一种**，由报告与体检 Issue 如实列出 ——
  * 「没被检查到」不等于「没问题」，所以不能像以前那样让它悄悄消失。
  *
@@ -26,7 +28,8 @@
  *   --ignore=<path>    忽略清单，默认 软件数据/update-ignore.json
  *   --only=a,b,c       只处理指定 id（逗号分隔）
  *   --no-link          跳过下载直链存活检查（更快、可离线）
- *   --no-channel       跳过非 GitHub 官方来源（只想快速核对 GitHub 那批时用）
+ *   --no-channel       跳过非 GitHub 官方来源（2026-09-21 起第二腿已停用，此参数现为空操作，
+ *                      仅为将来恢复第二腿时保留）
  *   --jobs=4           并发请求数（默认 4）
  *   --dump=<path>      把「每个软件落在哪一档、为什么」导出成 JSON
  *                      （排查「Issue 里几个数字对不上账」时全靠它）
@@ -269,14 +272,42 @@ async function resolveUpstream(slug) {
   return out
 }
 
-/** 直链存活检查：返回 { status, ok } */
-async function checkLink(url) {
-  try {
-    const r = await fetch(url, { method: 'HEAD', redirect: 'follow', headers: { 'User-Agent': UA } })
-    return { status: r.status, ok: r.ok || (r.status >= 200 && r.status < 400) }
-  } catch (e) {
-    return { status: 0, ok: false, error: String(e?.message || e) }
+/**
+ * 直链存活检查：返回 { status, ok, answered, tries }
+ *
+ * ⚠️ 两条必须遵守的规矩（2026-09-20 踩过，用户直接质疑「那几条链接明明能下」）：
+ *
+ *  ① **单次 HEAD 不算数，必须重试**。CDN 抖一下就把好链接判成坏的：
+ *     体检 Issue 说「360 极速浏览器 / Lively 的直链已经打不开，装软件的人会点到 404」，
+ *     手工连打 4 次**全部 200**（151 MB / 163 MB 的文件都好好躺在上面）。
+ *     维护者照着 Issue 去换链纯属白干，还会把好链换成坏的。
+ *  ② **必须区分「服务器答复了」和「根本没连上」**。只有前者能说「链接失效」；
+ *     后者（DNS / 超时 / TLS / 代理拦截）只能记成「本次没能验证」——
+ *     中国 CDN 对 GitHub 海外 runner 不友好是常态，把它当成 404 会永远误报到天荒地老。
+ *
+ * 4xx 是服务器明确说「没有这东西」，重试没意义，直接返回；
+ * 5xx 与网络异常才退避重试。
+ */
+async function checkLink(url, tries = 3) {
+  let last = { status: 0, ok: false, answered: false, error: 'not-tried', tries: 0 }
+  for (let i = 0; i < tries; i++) {
+    try {
+      const r = await fetch(url, { method: 'HEAD', redirect: 'follow', headers: { 'User-Agent': UA } })
+      if (r.ok || (r.status >= 200 && r.status < 400)) {
+        return { status: r.status, ok: true, answered: true, tries: i + 1 }
+      }
+      last = { status: r.status, ok: false, answered: true, error: '', tries: i + 1 }
+      if (r.status < 500) return last   // 4xx：服务器已经把话说死了，重试无意义
+    } catch (e) {
+      // undici 的 `fetch failed` 本身不带信息，真正的原因藏在 `cause` 里
+      // （`Tunnel connection failed: 502` / `ECONNRESET` / `ENOTFOUND` …）—— 报告里要写清楚，
+      // 否则维护者看到「fetch failed」只会以为脚本坏了。
+      const why = String(e?.cause?.message || e?.cause?.code || e?.message || e)
+      last = { status: 0, ok: false, answered: false, error: why, tries: i + 1 }
+    }
+    if (i < tries - 1) await sleep(800 * (i + 1))   // 线性退避，躲开瞬时抖动
   }
+  return last
 }
 
 // ── 单个软件的分析 ──────────────────────────────────────────────────────
@@ -513,7 +544,10 @@ async function main() {
             if (!u || !/^https?:/i.test(u)) continue
             const r = await checkLink(u)
             res.linkChecked = (res.linkChecked || 0) + 1
-            if (!r.ok) res.deadLinks.push({ platform: it.platform || '', url: u, status: r.status })
+            if (r.ok) continue
+            // 只有「服务器明确答复了非 2xx」才敢说是失效；连不上另记一档（见 checkLink 注释）
+            if (r.answered) res.deadLinks.push({ platform: it.platform || '', url: u, status: r.status })
+            else res.unverifiedLinks = [...(res.unverifiedLinks || []), { platform: it.platform || '', url: u, error: r.error || '连不上' }]
           }
         }
         if ((res.applied || []).length) applied.push({ id: app.id, name: res.name, changes: res.applied })
@@ -547,7 +581,10 @@ async function main() {
       res.githubLinks = ghItems.length
       for (const it of ghItems) {
         const r = await checkLink(it.url)
-        if (!r.ok) res.deadLinks.push({ platform: it.platform || '', url: it.url, status: r.status })
+        if (r.ok) continue
+        // 同上游那条腿：服务器答复非 2xx 才叫失效，连不上只记「本次没能验证」
+        if (r.answered) res.deadLinks.push({ platform: it.platform || '', url: it.url, status: r.status })
+        else res.unverifiedLinks = [...(res.unverifiedLinks || []), { platform: it.platform || '', url: it.url, error: r.error || '连不上' }]
       }
     }
 
@@ -625,11 +662,14 @@ async function main() {
   const cov = coverageOf(results)
   console.log('\n统计：', JSON.stringify(buckets, null, 0), `| GitHub API 调用 ${apiCalls} 次`)
   console.log(`待人工确认 ${pending.length} 条 ｜ 自动更新 ${applied.length} 个软件 ｜ 忽略清单 ${ignore.size} 条 ｜ 本次跳过 ${skipped.length} 条（记录 ${skipOnce.size} 个）`)
+  // 第二腿停用后 channel 恒为 0，所以「＋ 官方来源」只在真有时才印（免得看着像出了故障）
+  const coverParts = [`自动跟踪 ${cov.github.length}（GitHub）`]
+  if (cov.channel.length) coverParts.push(`${cov.channel.length}（官方来源）`)
   console.log(
-    `覆盖：自动跟踪 ${cov.github.length}（GitHub）+ ${cov.channel.length}（官方来源）｜ 不跟 ${cov.untracked.length}` +
+    `覆盖：${coverParts.join(' + ')}｜ 不跟 ${cov.untracked.length}` +
     `（${BUCKET_ORDER.filter((b) => cov.byBucket[b]?.length).map((b) => `${b} ${cov.byBucket[b].length}`).join('、') || '无'}）`,
   )
-  if (NO_CHANNEL) console.log('（本次带了 --no-channel，非 GitHub 官方来源全部跳过）')
+  if (NO_CHANNEL && cov.channel.length) console.log('（本次带了 --no-channel，非 GitHub 官方来源全部跳过）')
 
   // 供工作流判断：要不要开 Issue、要不要触发部署
   if (process.env.GITHUB_OUTPUT) {
@@ -914,15 +954,20 @@ function planChannelUpdate(entry, app, ch, src, apply) {
   if (out.blockers.length) { oldLinks(); return out }
 
   out.ok = true
-  const versionWillChange = normVer(oldVer) !== normVer(newVer)
+  // ★ 判断「到底变没变」必须用**写进去的那个值**，不能用 normVer(newVer)。
+  //   来源给的版本串常常不带发布日期（`5.2.4.11441`），而站内那份带（`5.2.4.11441（2026-09-15）`）——
+  //   直接比 normVer 会判成「变了」，可 withDateSuffix 会把日期补回去，最终写出的字符串一模一样。
+  //   症状就是体检 Issue 里那句「本次已自动更新 1 个：version：5.2.4.11441（2026-09-15） → 5.2.4.11441（2026-09-15）」
+  //   —— 用户的原话是「显示有新版本但版本号都没变」，完全没错，就是这段算错了。
+  const nextVersion = verDiffers ? withDateSuffix(oldVer, newVer, src.date) : oldVer
+  const versionWillChange = normVer(nextVersion) !== normVer(oldVer)
   if (!versionWillChange && !linkPlan.length) { oldLinks(); return out }
   if (!apply) { oldLinks(); return out }
 
   // ── 真的写 ──
   if (versionWillChange) {
-    const next = withDateSuffix(oldVer, newVer, src.date)
-    app.version = next
-    out.applied.push(`version：${oldVer} → ${next}`)
+    app.version = nextVersion
+    out.applied.push(`version：${oldVer} → ${nextVersion}`)
   }
   for (const { item, f } of linkPlan) {
     const label = cur(item.platform) || f.key
@@ -1215,12 +1260,21 @@ function renderPendingItem(it, index) {
   const relUrl = it.repo && tag ? `${GH(it.repo)}/releases/tag/${encodeURIComponent(tag)}` : ''
 
   L.push(`#### ${index}. ${it.name}　\`${it.id}\``, '')
-  // 版本号本身没问题的两种：stale（链接印着旧版号）、以及「版本一致但直链要修」的 bump
+  // 版本号跟上游**完全一致**时绝不能画箭头 —— 「站内 3.0.23 → 上游 3.0.23」看着就是
+  // 「有新版本了」，可实际上要处理的是链接（VLC / 360 极速浏览器 / Lively 就这么被误会过，
+  // 用户原话：「显示有新版本但版本号都没变」）。版本号一致的统一写成「版本号没问题」。
+  const sameAsUpstream = !!tag && normVer(ver) === normVer(tag)
   if (it.kind === 'stale' || (it.kind === 'bump' && it.versionChanged === false)) {
     L.push(`站内 \`${ver}\`　·　版本号没问题，要处理的是下面这些直链`, '')
   } else if (it.kind !== 'repo' && it.kind !== 'source') {
-    const up = tag ? (relUrl ? `**[${tag}](${relUrl})**` : `**${tag}**`) : '—'
-    L.push(`站内 \`${ver}\` → 上游 ${up}`, '')
+    if (sameAsUpstream) {
+      L.push(`站内 \`${ver}\`　·　与上游同版本，要处理的是下面这些直链`, '')
+    } else if (!tag) {
+      L.push(`站内 \`${ver}\``, '')
+    } else {
+      const up = relUrl ? `**[${tag}](${relUrl})**` : `**${tag}**`
+      L.push(`站内 \`${ver}\` → 上游 ${up}`, '')
+    }
   }
 
   // 「为什么没自动改」只留一行，让人一眼扫完就知道该不该管
@@ -1310,7 +1364,7 @@ function coverageOf(results) {
 /** 展示顺序 = 该操心的排前面：只有网页入口的最需要人看，商店/固定直链的其实不用管 */
 const BUCKET_ORDER = ['page-only', 'store', 'always-latest', 'archive', 'netdisk']
 const BUCKET_DESC = {
-  'page-only': '只有官网 / 下载页入口，页面里没有可解析的版本锚点或入口失效 —— **这一档要人偶尔看一眼**',
+  'page-only': '只有官网 / 下载页入口 —— 页面里没有可解析的版本锚点，或上游没有 GitHub 仓库、已停止页面抓取（2026-09-21 起）—— **这一档要人偶尔看一眼**',
   store: '微软商店分发：商店自己会推送更新，站内只做跳转 —— **不需要跟**',
   'always-latest': '官方固定「最新版」直链：URL 永不过期，装完软件自己也会更新 —— **天生不需要跟**',
   archive: '**有意保留**的旧版 / 归档包（id 里带版本号就是信号）—— 只需盯「官方是否撤链」',
@@ -1319,7 +1373,9 @@ const BUCKET_DESC = {
 
 /** 体检 Issue 里那行「为什么不跟」的短句（长解释留给 BUCKET_DESC / 完整报告） */
 const BUCKET_SHORT = {
-  'page-only': '页面里没有现成版本号，得人偶尔看一眼',
+  // 这一档现在混着两类（2026-09-21 起）：页面抓不到版本号的，和上游没有 GitHub 仓库、
+  // 已停止页面抓取的 —— 短句要同时罩得住，逐条的准确理由见完整报告的 BUCKETS 登记
+  'page-only': '页面里没有现成版本号，或上游没有 GitHub 仓库，得人偶尔看一眼',
   store: '商店自己会更新',
   'always-latest': 'URL 永不过期，装了也会自己更新',
   archive: '有意留的旧版',
@@ -1334,7 +1390,8 @@ function coverageLines(results, { withDetail = true } = {}) {
 
   L.push('| 类别 | 个数 | 谁在跟 |', '|---|---|---|')
   L.push(`| 自动跟踪 · GitHub Releases | **${github.length}** | 脚本（每周五） |`)
-  L.push(`| 自动跟踪 · 官方来源 | **${channel.length}** | 脚本（每周五） |`)
+  // 第二腿（非 GitHub 官方来源）2026-09-21 停用 ⇒ channel 恒为 0，这一行只在真有时才印
+  if (channel.length) L.push(`| 自动跟踪 · 官方来源 | **${channel.length}** | 脚本（每周五） |`)
   for (const b of BUCKET_ORDER) {
     const list = byBucket[b]
     if (!list?.length) continue
@@ -1358,12 +1415,16 @@ function coverageLines(results, { withDetail = true } = {}) {
   }
 
   // 在自动跟踪的清单：一般不用看，折叠起来
+  // 2026-09-21 起只剩 GitHub 一条腿，所以「官方来源」那张表**有内容时才画**
+  // （否则会印出一个空表和 0，既难看又让人以为出了故障）。
   L.push('<details>', `<summary>正在自动跟踪的 ${tracked} 个（点开看来源）</summary>`, '')
   L.push(`**GitHub Releases（${github.length}）**`, '')
   L.push(github.length ? github.map((r) => `\`${r.id}\``).join('、') : '（无）', '')
-  L.push('', `**官方来源（${channel.length}）** —— 实现在 \`scripts/update-channels.mjs\`，站方改版会导致解析失败并自动退回人工`, '')
-  L.push('| 软件 | 来源 |', '|---|---|')
-  for (const r of channel) L.push(`| \`${r.id}\` ${r.name} | ${r.channelLabel || '—'} |`)
+  if (channel.length) {
+    L.push('', `**官方来源（${channel.length}）** —— 实现在 \`scripts/update-channels.mjs\`，站方改版会导致解析失败并自动退回人工`, '')
+    L.push('| 软件 | 来源 |', '|---|---|')
+    for (const r of channel) L.push(`| \`${r.id}\` ${r.name} | ${r.channelLabel || '—'} |`)
+  }
   L.push('', '</details>', '')
   return L
 }
@@ -1426,7 +1487,9 @@ function buildPendingReport(results, pending, applied, ignore, ctx = {}) {
     L.push(`## 跟不了（${cov.untracked.length} 个）`, '')
     // ⚠️ 这里的数字必须能跟顶部那行对上：跟踪中共 tracked 个，其中需要人管的只有 need 条，
     //    直接写「其余 tracked 个」会让人拿它跟顶部「跟踪中、不用管」相减后对不上账。
-    L.push(`> 这一档脚本**不会**去跟，不是出了问题。另外 **${rec.tracked}** 个在自动跟踪（GitHub Releases ${cov.github.length} ＋ 官方来源 ${cov.channel.length}）—— 其中只有上面那 **${rec.need.length}** 条要你处理，剩下的不用管。`, '')
+    const trackedParts = [`GitHub Releases ${cov.github.length}`]
+    if (cov.channel.length) trackedParts.push(`官方来源 ${cov.channel.length}`)
+    L.push(`> 这一档脚本**不会**去跟，不是出了问题。另外 **${rec.tracked}** 个在自动跟踪（${trackedParts.join(' ＋ ')}）—— 其中只有上面那 **${rec.need.length}** 条要你处理，剩下的不用管。`, '')
     L.push('<details>', '<summary>点开看是哪些、为什么不跟</summary>', '')
     L.push('| 为什么不跟 | 个数 | 哪些软件 |', '|---|---|---|')
     for (const b of BUCKET_ORDER) {
@@ -1437,6 +1500,21 @@ function buildPendingReport(results, pending, applied, ignore, ctx = {}) {
         .map((r) => `\`${r.id}\``)
         .join('、')
       L.push(`| **${BUCKET_LABEL[b] || b}** —— ${BUCKET_SHORT[b] || ''} | ${list.length} | ${ids} |`)
+    }
+    L.push('', '</details>', '')
+  }
+
+  // ★ 「本次没能验证」：连不上的链接**不能**装成「失效」，但也不能瞒着 ——
+  //   列表里明说「不是失效」，人就不用去换链，也不会以为脚本漏查了。
+  const unverified = results.filter((r) => (r.unverifiedLinks || []).length)
+  if (unverified.length) {
+    const n = unverified.reduce((s, r) => s + r.unverifiedLinks.length, 0)
+    L.push('<details>', `<summary>本次有 ${n} 条直链没能验证（网络原因，不代表失效）</summary>`, '')
+    L.push('> 只是连不上（DNS / 超时 / TLS / 被拦），**没有**收到服务器的明确答复 —— 所以既不当成失效、也不进上面的待处理清单。下次体检会重试。', '')
+    L.push('')
+    L.push('| 软件 | 平台 | 原因 | 链接 |', '|---|---|---|---|')
+    for (const r of unverified) for (const d of r.unverifiedLinks) {
+      L.push(`| ${r.name} | ${d.platform} | ${short(d.error, 36)} | ${short(d.url, 58)} |`)
     }
     L.push('', '</details>', '')
   }
@@ -1556,10 +1634,23 @@ function buildFullReport(results, applied, ignore, ctx = {}) {
     L.push('')
   }
   if (dead.length) {
-    L.push('## 下载直链可能失效（GitHub HEAD 非 2xx/3xx）', '')
+    L.push('## 下载直链可能失效（服务器明确答复非 2xx/3xx，已重试 3 次）', '')
     L.push('| 软件 | 平台 | HTTP | 链接 |', '|---|---|---|---|')
     for (const r of dead) for (const d of r.deadLinks) {
-      L.push(`| ${r.name} | ${d.platform} | ${d.status || '网络错误'} | ${short(d.url, 70)} |`)
+      L.push(`| ${r.name} | ${d.platform} | ${d.status} | ${short(d.url, 70)} |`)
+    }
+    L.push('')
+  }
+  // ⚠️ 「没能验证」必须与「失效」分开写。以前混在一起，把中国 CDN 对海外 runner
+  //    的超时、代理拦截全报成「链接打不开」，维护者照着去换链，换掉的却是好链。
+  const unverified = results.filter((r) => (r.unverifiedLinks || []).length)
+  if (unverified.length) {
+    L.push('## 本次没能验证的直链（网络原因，**不代表失效**）', '')
+    L.push('> 连不上（DNS / 超时 / TLS / 被拦），**没有**收到服务器的明确答复 —— 不当成失效、不进待审 Issue。')
+    L.push('')
+    L.push('| 软件 | 平台 | 原因 | 链接 |', '|---|---|---|---|')
+    for (const r of unverified) for (const d of r.unverifiedLinks) {
+      L.push(`| ${r.name} | ${d.platform} | ${short(d.error, 40)} | ${short(d.url, 70)} |`)
     }
     L.push('')
   }

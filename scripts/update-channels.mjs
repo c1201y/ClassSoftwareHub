@@ -4,7 +4,16 @@
  *
  * 「非 GitHub 来源」的版本来源登记表 —— check-updates.mjs 的第二条腿。
  *
- * 为什么需要它：站内 70 个软件里约 30 个没有 GitHub 仓库，官方站点又大多是
+ * ⛔ **2026-09-21 起已停用**（维护者决定：自动更新**只跟 GitHub**）。
+ *    行为上等价于这个文件不存在：`channelFor()` 恒返回 null，所有没有 GitHub 仓库的
+ *    软件一律走 `BUCKETS` 如实登记「为什么不跟」，不再抓取厂商页面。
+ *
+ *    为什么保留而不是删掉：这里的 `run()` 都是**在真实站点上实测调出来的**（希沃那个
+ *    「文件名会变、对不上就当解析失败」的安全阀尤其费事），删了将来想恢复就得从头调。
+ *    想恢复只做两步 —— ① 把下面的 `CHANNELS_ENABLED` 改回 `true`；
+ *    ② 删掉 `BUCKETS` 里这 10 个软件的条目（不删也无妨：`channelFor` 优先，条目不会被用到）。
+ *
+ * 为什么当初需要它：站内约 30 个软件没有 GitHub 仓库，官方站点又大多是
  * JS 渲染的 SPA，脚本抓不到版本锚点，于是它们**永远不进体检**：改没改、新旧与否
  * 全靠人记得去官网看一眼（`geogebra`、希沃白板这几个就是这么漏掉的）。
  *
@@ -259,6 +268,15 @@ async function geogebra() {
  *                'keep'          ＝ 来源只给版本号，链接一律不碰
  *   run()        返回 { version, date?, files?: [{key, url, size?}] }
  */
+/**
+ * ★ 第二腿总开关（2026-09-21）：`false` = 自动更新**只跟 GitHub**。
+ *
+ * 关掉之后，下面 `CHANNELS` 里的来源一条都不会被调用；对应的 10 个软件改由
+ * `BUCKETS` 登记成「只有网页入口」，如实出现在体检 Issue 的「跟不了」分区里。
+ * 想恢复第二条腿：把这里改成 `true` 即可（详见文件头注释）。
+ */
+const CHANNELS_ENABLED = false
+
 export const CHANNELS = {
   vlc: {
     label: 'VideoLAN 官方下载目录',
@@ -375,12 +393,27 @@ export const BUCKETS = {
   'wps2019ayxingz': { bucket: 'archive', reason: '有意收录 WPS2019 归档版（2022 年的包），不跟随上游' },
   'bandizip6.29': { bucket: 'archive', reason: '有意收录 6.x 末代无广告版（dl.php?old），只需盯「官方是否撤链」' },
 
+  // ── 原「第二腿」覆盖的 10 个（2026-09-21 起自动更新只跟 GitHub，改由人工看）──
+  //    ⚠️ 这 10 个的上游都**没有 GitHub 仓库**，是当初做第二条腿的全部理由。
+  //    理由如实写「按决定不再抓」而不是「页面抓不到」—— 后者对 vlc / geogebra / diskgenius /
+  //    360 这几个是假话（它们的页面本来解析得出来）。
+  vlc: { bucket: 'page-only', reason: '上游没有 GitHub 仓库；官方目录 get.videolan.org 有版本信息，但 2026-09-21 起自动更新只跟 GitHub、不再抓取 —— 要人偶尔看一眼' },
+  geogebra: { bucket: 'page-only', reason: '上游没有 GitHub 仓库；官网下载页有版本重定向，但 2026-09-21 起自动更新只跟 GitHub、不再抓取 —— 要人偶尔看一眼' },
+  diskgenius: { bucket: 'page-only', reason: '上游没有 GitHub 仓库；官网更新日志有版本信息，但 2026-09-21 起自动更新只跟 GitHub、不再抓取 —— 要人偶尔看一眼' },
+  '360-jijiuxiang': { bucket: 'page-only', reason: '上游没有 GitHub 仓库；官网页面有版本信息，但 2026-09-21 起自动更新只跟 GitHub、不再抓取 —— 要人偶尔看一眼' },
+  '360-speed-browser': { bucket: 'page-only', reason: '上游没有 GitHub 仓库；官网页面有版本信息（两条直链会随版本变），但 2026-09-21 起自动更新只跟 GitHub、不再抓取 —— 要人偶尔看一眼' },
+  'class-optimizer': { bucket: 'page-only', reason: '上游没有 GitHub 仓库；版本在希沃产品清单 e.seewo.com（EasiCare_PC），但 2026-09-21 起自动更新只跟 GitHub、不再抓取 —— 要人偶尔看一眼' },
+  xwbb5: { bucket: 'page-only', reason: '上游没有 GitHub 仓库；版本在希沃产品清单 e.seewo.com（EasiNote5），但 2026-09-21 起自动更新只跟 GitHub、不再抓取 —— 要人偶尔看一眼' },
+  'seewo-assistant': { bucket: 'page-only', reason: '上游没有 GitHub 仓库；版本在希沃产品清单 e.seewo.com（SeewoIwbAssistant），但 2026-09-21 起自动更新只跟 GitHub、不再抓取 —— 要人偶尔看一眼' },
+  xwspztayxingz: { bucket: 'page-only', reason: '上游没有 GitHub 仓库；版本在希沃产品清单 e.seewo.com（EasiCamera），但 2026-09-21 起自动更新只跟 GitHub、不再抓取 —— 要人偶尔看一眼' },
+  xiwopinke: { bucket: 'page-only', reason: '上游没有 GitHub 仓库；版本在希沃产品清单 e.seewo.com（seewoPincoTeacher），但 2026-09-21 起自动更新只跟 GitHub、不再抓取 —— 要人偶尔看一眼' },
+
   // ── 只有网页入口，抓不到版本锚点 ──
   '360-safe-guard-speed': { bucket: 'page-only', reason: '页面只有 setupbeta_jisu.exe，没有版本号锚点' },
   'huorong-security': { bucket: 'page-only', reason: '官网下载页 333 KB 里没有任何版本锚点，版本由 JS 异步加载' },
-  dingtalk: { bucket: 'page-only', reason: '页面里的版本（8.2.0）比站内（8.5.0）还旧，锚点不可信' },
-  'tencent-meeting': { bucket: 'page-only', reason: '下载页只有旧版本痕迹，真实版本要翻内部接口' },
-  xrkayxingz: { bucket: 'page-only', reason: '下载页是 Nuxt SSR，抓不到版本锚点；站内三条链本身也不自洽' },
+  dingtalk: { bucket: 'page-only', reason: '页面里唯一带版本的链接是无障碍兜底用的 DingTalk_v8.2.0.exe，比站内还旧；真实版本由 JS 从接口取' },
+  'tencent-meeting': { bucket: 'page-only', reason: '下载页是 Next.js、版本走带签名的内部接口，抓不到静态版本锚点（winget 社区清单里有维护，但那是社区来源，未接入）' },
+  xrkayxingz: { bucket: 'page-only', reason: '下载页是 Nuxt SSR，抓不到版本锚点；官方也没提供可解析的版本接口' },
   yjxzsayxingz: { bucket: 'page-only', reason: '下载页是 Vue SPA，要逆向接口才能拿到版本' },
 
   // ── 网盘 ──
@@ -395,8 +428,12 @@ export const BUCKET_LABEL = {
   netdisk: '第三方网盘',
 }
 
-/** 这个软件走不走非 GitHub 来源 */
-export const channelFor = (id) => CHANNELS[cur(id)] || null
+/**
+ * 这个软件走不走非 GitHub 来源。
+ * `CHANNELS_ENABLED` 为 `false` 时**恒返回 null** —— 调用方于是走 `classify()` 那条路，
+ * 「第二腿已停用」这件事不需要 check-updates.mjs 知道任何细节。
+ */
+export const channelFor = (id) => (CHANNELS_ENABLED ? CHANNELS[cur(id)] || null : null)
 
 /**
  * 判定一个「没有可用 GitHub 仓库」的软件属于哪一类。
