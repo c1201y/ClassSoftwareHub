@@ -81,7 +81,8 @@ stats-worker/
   └─ wrangler.toml               Deploy config (KV binding: STATS)
 submissions/                     Visitor-submitted app drafts (entry point of the submission flow; do not edit by hand)
 scripts/                         Maintenance scripts — `check-updates.mjs` (upstream version checker),
-                                 `update-channels.mjs` (registry of non-GitHub official sources for it),
+                                 `update-channels.mjs` (the "why isn't this tracked" buckets; its
+                                 non-GitHub source registry is switched off since 2026-09-21),
                                  `update-ignore.mjs` (edits the ignore list) and `upload-webdav.py`
                                  (mirrors dist/ to the OpenList folder); see "CI Notes"
 desktop/                         ★ Electron desktop app (Windows exe / Linux deb). It **remote-loads the site**
@@ -385,21 +386,21 @@ changes are replayed by `visitor.ts`.
     Detailed "how to fix it by hand" steps sit in a collapsed `<details>` block. When nothing is pending
     the issue **closes itself**. The full report always goes to the Job Summary.
 
-  **Two legs, not one.** Leg 1 is GitHub Releases (the `github` field). Leg 2 is
-  `scripts/update-channels.mjs`, a registry of **non-GitHub official sources** for the commercial /
-  education software that has no repo: the vendor's embedded product list (one fetch covers five seewo
-  apps and hands back the *freshly signed* object-storage URLs the site needs), the VideoLAN directory
-  index, the 360 download pages, the DiskGenius changelog, a GeoGebra redirect. Each source is a single
-  `run() -> { version, date?, files? }` that must prove itself: the version number has to actually
-  appear in the download filename, and every URL it returns must pass a hard-coded host allow-list.
-  **A source that fails to parse is never guessed at** — the entry becomes a `source` pending item and
-  no data is touched, which also tells the maintainer "the vendor changed their page" instead of
-  "something is broken". Page-scraping gotchas worth remembering: strip HTML comments *before* parsing
+  **One leg: GitHub Releases** (the `github` field). There used to be a second leg —
+  `scripts/update-channels.mjs`, a registry of **non-GitHub official sources** that scraped vendor pages
+  (the seewo product list, the VideoLAN directory, the 360 download pages, the DiskGenius changelog, a
+  GeoGebra redirect) for the ten apps with no repo. It was **retired on 2026-09-21**: every vendor
+  redesign meant another parser to fix, and the upkeep outweighed the payoff. Those ten apps now sit in
+  the *web page only* bucket with an honest reason attached. The parsing code is **kept but switched
+  off** (`CHANNELS_ENABLED = false` in that file), so restoring the second leg is a one-line change.
+  The scraper gotchas still matter if it ever comes back: strip HTML comments *before* parsing
   (`browser.360.cn/ee/` carries two `id="loadnew"` anchors and the first one, in a comment, points at
-  the previous release), and use `redirect: 'manual'` when a redirect is the version source, or you
-  download a 130 MB installer just to read a filename.
+  the previous release); use `redirect: 'manual'` when a redirect is the version source, or you download
+  a 130 MB installer just to read a filename; and a source that cannot prove itself — the version number
+  must actually appear in the download filename, and every returned URL must pass a hard-coded host
+  allow-list — becomes a pending item instead of touching data.
 
-  Whatever neither leg can reach is **labelled, not hidden**: `classify()` sorts those apps into
+  Whatever the GitHub leg cannot reach is **labelled, not hidden**: `classify()` sorts those apps into
   *Microsoft Store*, *official always-latest link*, *deliberately archived*, *web page only* and
   *netdisk*, and the issue lists the whole taxonomy (`## 跟不了`) with a per-app reason. Before
   this, ~38 apps vanished into one "not checked" bucket, so "the Store updates itself" looked identical
@@ -530,10 +531,11 @@ can prove; anything it cannot prove lands in `pending.md` instead. Export `GITHU
 hit the 60-requests/hour anonymous limit. This is exactly what the weekly
 `.github/workflows/check-updates.yml` run does — see "CI Notes".
 
-**Checking just the non-GitHub sources**: `node scripts/update-channels.mjs` runs every registered
-source and prints what each one returned (`--only=vlc`, `--json` also work). Run it after touching that
-file — a source that throws is not fatal (the checker turns it into a `source` pending item), so this
-CLI is the only place a broken parser shows up as a hard failure.
+**Non-GitHub sources (currently off)**: `node scripts/update-channels.mjs` runs every registered source
+and prints what each one returned (`--only=vlc`, `--json` also work). The registry is switched off
+(`CHANNELS_ENABLED = false`, see "CI Notes"), so nothing calls it during a normal check — this CLI only
+matters if you turn the second leg back on. A source that throws is not fatal (the checker turns it into
+a `source` pending item), so this CLI is the one place a broken parser shows up as a hard failure.
 
 **After fixing an entry by hand**: you do not edit anything from the issue — fix
 `软件数据/apps/<id>.json` wherever you like, **commit**, then tick "已改好 → 重新检测" under that entry.
