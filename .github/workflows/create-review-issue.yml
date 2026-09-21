@@ -73,19 +73,28 @@ jobs:
             //    「已存在同名 Issue，跳过：[待审核] 向日葵远程 (xrkayxingz)」，
             //    草稿从此躺在 submissions/ 里，永远等不到审核（提交者看到的是「提交成功」）。
             //    草稿路径带时间戳、天然唯一，一个路径只可能对应一条草稿。
-            const opened = await github.rest.issues.listForRepo({
-              ...context.repo,
-              state: 'all',
-              per_page: 100
-            })
+            //    ⚠️ 必须用 paginate **翻完全部页**，不能只取第一页 100 条
+            //    （2026-09-21 修）：下面靠遍历「已存在的 Issue 正文」收集已建过 Issue 的
+            //    草稿路径，用 `state: 'all'`（含已关闭的历史 Issue）。仓库一旦累积超过
+            //    100 个 Issue，第 101 条往前的正文就读不到了 —— 那些草稿会被判成「还没有
+            //    Issue」，于是**重复建 Issue**。仓库是公开的、Issue 只增不减，
+            //    这个上限迟早会撞上，所以这里一次性改为分页拉全。
+            //    另外 `state: 'all'` 会把已关闭的一并拉回，仓库长期跑下来条数不小，
+            //    好在这是每次推送只跑一次的低频操作，翻页的开销可以接受。
+            const opened = await github.paginate(
+              github.rest.issues.listForRepo,
+              { ...context.repo, state: 'all', per_page: 100 },
+              // 只关心编号/标题/正文，少传点数据
+              (response) => response.data.map((i) => ({ title: i.title, body: i.body }))
+            )
             const drafted = new Set()
-            for (const i of opened.data) {
+            for (const i of opened) {
               const m = (i.body || '').match(/\*\*提交文件\*\*：`([^`]+)`/)
               if (m) drafted.add(m[1])
             }
             // 标题只用来提醒：同一个软件可能同时有多条草稿在审（比如改名重提），
             // 那是对的，不该拦。
-            const existingTitles = new Set(opened.data.map(i => i.title))
+            const existingTitles = new Set(opened.map(i => i.title))
 
             // 除了本次推送新增的草稿，再把【所有还没有 Issue 的草稿】一起捞上：
             // 漏建过的草稿因此能在下一次提交时自动补票，不会再无声无息地卡住。

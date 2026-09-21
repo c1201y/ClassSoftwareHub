@@ -25,7 +25,6 @@
  *   --report=<path>    把完整 Markdown 报告写到该文件
  *   --pending=<path>   把「必须人工确认」的清单写到该文件（体检 Issue 用的就是它）
  *   --ignore=<path>    忽略清单，默认 软件数据/update-ignore.json
- *   --only=a,b,c       只处理指定 id（逗号分隔）。⚠️ 局部体检**不会**写回忽略清单
  *   --no-link          跳过下载直链存活检查（更快、可离线）
  *   --jobs=4           并发请求数（默认 4）
  *   --dump=<path>      把「每个软件落在哪一档、为什么」导出成 JSON
@@ -77,7 +76,6 @@ const DUMP_PATH = val('dump')
 const IGNORE_PATH = val('ignore') || path.join(ROOT, '软件数据', 'update-ignore.json')
 const NO_LINK = has('no-link')
 const JOBS = Math.max(1, Math.min(8, Number(val('jobs', '4')) || 4))
-const ONLY = val('only').split(',').map((s) => s.trim()).filter(Boolean)
 const TOKEN = val('token') || process.env.GITHUB_TOKEN || process.env.GH_TOKEN || ''
 
 // ── 小工具 ──────────────────────────────────────────────────────────────
@@ -200,8 +198,25 @@ function isMuted(ig, kind) {
 
 // ── GitHub API ──────────────────────────────────────────────────────────
 let apiCalls = 0
+
+/**
+ * API 基址。默认官方 `https://api.github.com`。
+ *
+ * ⚠️ 为什么允许改：**有些运行环境根本连不上 api.github.com**（公司 / 校园网出口策略、
+ *    受限沙箱都会这样），而 CI runner 偶尔也会抽风。这时整个体检会全数报「连不上」，
+ *    等于白跑一趟 —— 但改走一个能通的 GitHub 反代镜像就能正常出结果。
+ *    `check-updates.yml` 里**不设**这个变量（CI 直连没问题，也不该让第三方镜像看到 token）；
+ *    只在确实连不通的机器上临时用：`GITHUB_API_BASE=https://gh-proxy.com/https://api.github.com`。
+ *
+ * 两种写法都支持：
+ *   · 带占位符：`https://gh-proxy.com/https://api.github.com`（后面直接拼 `/repos/...`）
+ *   · 纯前缀：  `https://api.example.com`
+ * 传进来的 token 会照常以 `Authorization` 头发给这个地址 —— **所以只对你信任的地址使用**。
+ */
+const API_BASE = (process.env.GITHUB_API_BASE || 'https://api.github.com').replace(/\/+$/, '')
+
 async function ghApi(pathname, { retry = 3 } = {}) {
-  const url = 'https://api.github.com' + pathname
+  const url = API_BASE + pathname
   for (let i = 0; i < retry; i++) {
     try {
       apiCalls++
@@ -233,16 +248,27 @@ async function ghApi(pathname, { retry = 3 } = {}) {
 
 /** 查上游最新版本：优先 releases，没有 release 就退回 tags */
 async function resolveUpstream(slug) {
-  const out = { slug, releases: [], tags: [], archived: false, source: 'none', error: '' }
+  const out = { slug, releases: [], tags: [], archived: false, source: 'none', error: '', unreachable: false }
 
   const rl = await ghApi(`/repos/${slug}/releases?per_page=30`)
   if (!rl.ok && rl.status === 404) {
-    // 仓库不存在 / 改名了
+    // 仓库不存在 / 改名了 —— 这是**服务器明确答复**，可信
     out.error = '仓库 404（可能已改名或删除）'
     return out
   }
   if (!rl.ok) {
-    out.error = `releases 拉取失败（HTTP ${rl.status || '网络错误'}${rl.error ? '：' + rl.error : ''}）`
+    // ⚠️ 必须把「服务器答复了」和「根本没连上」分开（status === 0）：
+    //    CI runner 偶尔连不上 api.github.com，本机/受限网络环境更是常态。
+    //    以前两者混在一起，一次网络抽风就会把**全部**软件判成「仓库信息有问题」，
+    //    让人挨个去改 `github` 字段 —— 而字段本来就是对的（2026-09-21 实测复现：
+    //    沙箱内 32 个软件全被误报成 repo 问题）。
+    //    这与 checkLink() 里「连不上 ≠ 失效」是同一原则，别在一条腿上守、另一条腿上破。
+    if (!rl.status) {
+      out.unreachable = true
+      out.error = `连不上 API（${rl.error || '网络错误'}）—— 本次没能检查，不代表仓库有问题`
+      return out
+    }
+    out.error = `releases 拉取失败（HTTP ${rl.status}）`
     return out
   }
 
@@ -322,7 +348,8 @@ function analyze(app, up) {
     deadLinks: [],
   }
 
-  if (up.error) { res.state = 'error'; res.note = up.error; return res }
+  // 「连不上」不是数据问题，单独标出来 —— collectPending 靠它决定不进待人工清单
+  if (up.error) { res.state = 'error'; res.note = up.error; res.unreachable = !!up.unreachable; return res }
   if (up.archived) res.note = '上游仓库已归档'
   if (!res.releaseTag) { res.state = 'no-release'; res.note = res.note || '上游没有任何 release / tag'; return res }
 
@@ -503,7 +530,7 @@ async function pool(items, n, worker) {
 
 async function main() {
   const ignore = loadIgnore()
-  const entries = readApps().filter((e) => !ONLY.length || ONLY.includes(cur(e.data.id)))
+  const entries = readApps()
   console.log(`扫描 ${entries.length} 个软件（目录共有 ${fs.readdirSync(APPS_DIR).filter((f) => f.endsWith('.json') && !f.startsWith('_')).length} 个）｜忽略清单 ${ignore.size} 条`)
   if (!TOKEN) console.warn('没有 GITHUB_TOKEN / GH_TOKEN：未登录限流只有 60 次/小时，软件多时容易失败')
 
@@ -571,15 +598,10 @@ async function main() {
   // 记录只留还在生效的：问题消失了、或问题内容变了（上游又发新版）就该清掉，
   // 否则越积越多，下次再勾同一处还会被陈年记录干扰。
   //
-  // ⚠️⚠️ 两种情况**绝不能**写回，否则会静默毁掉别人的记录：
-  //   1. 只体检（没 --apply）—— 本来就不该动数据；
-  //   2. `--only` 局部体检 —— pendingRaw 只是**局部快照**，不含未被选中的软件。
-  //      pruneSkipOnce 于是在那份快照里找不到它们的记录，算出来是空 Map，
-  //      saveSkipOnce 收到空 Map 就把整个 `_skip_once` **删掉** —— 所有「本次跳过」
-  //      会被一次性清空。实测复现过：`--only=某个没跳过的软件` 跑完，别的软件的
-  //      跳过记录全没了（2026-09-21）。用户点过「本次跳过」是唯一凭据，丢了无从察觉，
-  //      表现只是「下周五又被提醒了一遍」，看起来像脚本抽风。
-  if (APPLY && !ONLY.length) saveSkipOnce(pruneSkipOnce(pendingRaw, skipOnce))
+  // ⚠️ 只体检（没 --apply）时不动数据。
+  //    （以前这里还有个 `!ONLY.length` 条件，防的是 `--only` 局部体检用局部快照
+  //     把整个 `_skip_once` 清空 —— 那个参数已删除，体检现在恒为全量，故不再需要。）
+  if (APPLY) saveSkipOnce(pruneSkipOnce(pendingRaw, skipOnce))
   const full = buildFullReport(results, applied, ignore, { skipped })
   const pendingMd = buildPendingReport(results, pending, applied, ignore, { skipped, skipOnce })
 
@@ -786,7 +808,11 @@ function collectPending(results) {
     const ig = r.ignored || null
 
     if (r.state === 'error') {
-      // 只剩 GitHub 一条腿，error 只可能是「仓库查不到 / 拉取失败」
+      // ⚠️ 「连不上 API」不进待人工清单：那不是软件数据的问题，
+      //    让维护者去改 `github` 字段只会白忙 —— 字段本来就是对的。
+      //    它单独汇总在「本次没能检查」一区，下次体检自动重试（同 checkLink 的原则）。
+      if (r.unreachable) continue
+      // 服务器明确答复了（404 / 5xx 等）才算「仓库信息有问题」
       if (!isMuted(ig, 'repo')) push(r, { kind: 'repo' })
       continue
     }
@@ -1262,6 +1288,21 @@ function buildPendingReport(results, pending, applied, ignore, ctx = {}) {
 
   // ★ 「本次没能验证」：连不上的链接**不能**装成「失效」，但也不能瞒着 ——
   //   列表里明说「不是失效」，人就不用去换链，也不会以为脚本漏查了。
+  // ★ 「本次没能检查」：连不上 API 的软件**不能**装成「仓库有问题」，但也不能瞒着 ——
+  //   明说「不是数据问题」，人就不用去动 `github` 字段，也不会以为脚本漏查了。
+  const unreachable = results.filter((r) => r.unreachable)
+  if (unreachable.length) {
+    L.push('<details>', `<summary>本次有 ${unreachable.length} 个软件没能检查（连不上 GitHub API，不代表有问题）</summary>`, '')
+    L.push('> 只是**没连上**（DNS / 超时 / TLS / 被拦），**没有**收到 GitHub 的明确答复 —— 所以既不当成「仓库信息有问题」、也不进上面的待处理清单。下次体检会重试。', '')
+    L.push('> 一两个软件这样是网络抖动；**全都这样**就说明本次运行环境根本连不上 GitHub —— 换一次运行即可，这结果不代表站内数据有问题。', '')
+    L.push('')
+    L.push('| 软件 | 仓库 | 原因 |', '|---|---|---|')
+    for (const r of unreachable) {
+      L.push(`| ${r.name} | \`${r.repo}\` | ${short(r.note, 60)} |`)
+    }
+    L.push('', '</details>', '')
+  }
+
   const unverified = results.filter((r) => (r.unverifiedLinks || []).length)
   if (unverified.length) {
     const n = unverified.reduce((s, r) => s + r.unverifiedLinks.length, 0)
