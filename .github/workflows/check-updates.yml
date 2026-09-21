@@ -53,10 +53,6 @@ on:
         description: 自动写回能确定的更新并部署（默认开；取消勾选＝只体检、不动数据）
         type: boolean
         default: true
-      only:
-        description: 只检查指定软件 id（逗号分隔，留空＝全部）
-        type: string
-        default: ''
       skip-link-check:
         description: 跳过下载直链存活检查（更快，离线友好）
         type: boolean
@@ -94,11 +90,9 @@ jobs:
         id: check
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ONLY: ${{ inputs.only }}
           SKIP_LINK: ${{ inputs.skip-link-check }}
         run: |
           ARGS="--report=update-report.md --pending=update-pending.md"
-          if [ -n "$ONLY" ]; then ARGS="$ARGS --only=$ONLY"; fi
           if [ "$SKIP_LINK" = "true" ]; then ARGS="$ARGS --no-link"; fi
           if [ "$AUTO_APPLY" = "true" ]; then
             ARGS="$ARGS --apply"
@@ -163,7 +157,6 @@ jobs:
         env:
           PENDING_COUNT: ${{ steps.check.outputs.pending }}
           UPDATED_COUNT: ${{ steps.check.outputs.updated }}
-          ONLY: ${{ inputs.only }}
         with:
           script: |
             const fs = require('fs')
@@ -178,14 +171,6 @@ jobs:
 
             const count = Number(process.env.PENDING_COUNT || 0)
             const updated = Number(process.env.UPDATED_COUNT || 0)
-
-            // ⚠️ 局部体检（--only）**一律不碰 Issue**：update-pending.md 是「全局快照」，
-            //    只含被选中的那几个软件 —— 拿它去覆盖 Issue 正文会把其它待审条目整片抹掉，
-            //    比不更新危险得多。（以前只挡了「待审 0 条」，待审 >0 时照样会残本覆盖。）
-            if (process.env.ONLY) {
-              core.info(`本次是局部体检（--only=${process.env.ONLY}），不改动 Issue`)
-              return
-            }
 
             const TITLE = '软件信息体检 · 待人工确认'
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
