@@ -52,14 +52,16 @@ src/
   ├─ main.ts                     Mount entry
   ├─ gallery/                  ★ This site's application code
   │   ├─ App.vue                 Shell: nav pane / theme / holiday skin / welcome dialog / data-error bar
-  │   ├─ router.ts               The 7 routes (table below)
-  │   ├─ pages/                  HomePage / DownloadDetailPage / SettingsPage / SubmitPage / AiNavPage
+  │   ├─ router.ts               The 8 routes (table below)
+  │   ├─ pages/                  HomePage / DownloadDetailPage / SettingsPage / SubmitPage / AiNavPage / FeedbackPage
   │   ├─ tools/                  ★ Built-in tools: index.ts registry + ToolShell.vue + one .vue per tool
   │   │                           (adding a tool = one registry entry; its route is generated from it)
   │   ├─ aiSiteIcons.ts          Site icons for the AI-nav page (inlined base64, no third-party icon service)
   │   ├─ appIcons.ts             ★ App-icon resolver: prefers the local 64 px copy, falls back to the `icon` URL
   │   ├─ data/index.ts           Data loader: types + fault-tolerant parsing (⚠️ do not edit)
   │   ├─ githubImport.ts         "Import from GitHub" (从 GitHub 一键读取) on the submit page
+  │   ├─ feedback.ts             Feedback-centre logic: the kind / sub-kind tables, the six GitHub labels,
+  │   │                           issue title+body assembly, validation, draft and clipboard helpers
   │   ├─ searchIndex.ts          ★ Search index behind the global search panel (apps / tools / AI sites / pages)
   │   ├─ GlobalSearch.vue        The Ctrl+K search panel: grouped results, ↑↓ / Enter / Esc
   │   ├─ visitor.ts              Self-hosted visit counter + Baidu Analytics SPA pageview replay
@@ -70,6 +72,7 @@ src/
   │   └─ styles/                 Home / detail page styles (extracted verbatim from the original HTML)
   ├─ components/ styles/ utils/ assets/   ⛔ WinUIonWeb library (upstream source — see "Hard Rules")
   │                                        └ site assets under `assets/`: icons/ · holiday/ · Fonts/ · AppIcon-*
+  │                                          · feedback/ (the two 3D feedback-centre icons)
 stats-worker/
   ├─ worker.js                   Cloudflare Worker: visit stats + GitHub API proxy (600+ lines)
   └─ wrangler.toml               Deploy config (KV binding: STATS)
@@ -92,6 +95,7 @@ Routes (hash-based):
 | `#/tools` | Built-in tools (card list, 11 client-side utilities — searched via the global panel) |
 | `#/tools/<id>` | A single built-in tool; routes are generated from the `src/gallery/tools/index.ts` registry |
 | `#/ai` | AI nav (21 Chinese AI sites, full-width clickable rows) |
+| `#/feedback` | Feedback centre (报告问题 / 提出建议), modelled on the Microsoft Feedback Hub |
 
 ---
 
@@ -299,6 +303,77 @@ changes are replayed by `visitor.ts`.
    rule), step 3 ends by **explicitly dispatching** the deploy with `gh workflow run deploy.yml`.
 5. `deploy.yml` builds the single-file bundle and publishes it to **GitHub Pages + FTP + OpenList
    (WebDAV)** at once.
+
+---
+
+## 5.5 Feedback Centre (`#/feedback`)
+
+A nav-pane entry (between **首页** and the category list) opening a page modelled on the Microsoft
+Feedback Hub: pick a kind → fill the form → land on a **pre-filled GitHub issue**. There is **no
+feedback backend** — the site is static, and `submit-worker/` is a backup for the *submission* flow
+only, so "POST first, fall back to a link" would always have failed. The whole feature is therefore
+**client-side + GitHub's own issue form**: the page collects the text, then opens
+`https://github.com/c1201y/ClassSoftwareHub/issues/new?title=…&body=…&labels=…` in a new tab.
+
+**Two levels of classification** (`src/gallery/feedback.ts`, pure logic, no Vue import):
+
+- `FeedbackKind` — `report` (报告问题) / `suggestion` (提出建议).
+- `ReportSubKind` — `interaction` (逻辑交互) / `link` (链接失效) / `other` (其他问题).
+  Shown **only for `report`**; a suggestion deliberately carries no sub-kind, so the dropdown
+  disappears the moment you switch. `watch(activeKind)` clears `form.subKind` on that switch.
+
+**Six labels, and they must exist in the repo first.** Each submission attaches three at most:
+`用户反馈` always, plus the kind, plus (for a report) the sub-kind. ⚠️ GitHub **silently ignores** a
+`labels=` value the repo does not have — the issue still opens, just untagged and unfilterable, with
+no error anywhere. So the six labels are a **manual one-time setup**: `用户反馈` · `报告问题` ·
+`提出建议` · `逻辑交互` · `链接失效` · `其他问题`. A fine-grained PAT **cannot** create them
+(`POST /labels` → `403 Resource not accessible by personal access token`), so this cannot be
+automated from here. **Rename one side and you must rename it in the repo too** — `feedback.ts` is
+the only place the strings live, and the issue body prints the label names as plain text.
+
+The kind/sub-kind `tag` fields are the literal GitHub label names; `titleKey`/`descKey`/`labelKey`
+are the i18n keys. **Do not merge the two** — the UI needs localized copy, GitHub needs the ASCII
+label.
+
+- JSON, not Markdown-only: the body is assembled from the draft plus, when a `appId` is set, a
+  **涉及软件** row carrying the app name, its backticked `id` and a link to
+  `https://classsoftwarehub.us.ci/#/download/<id>` (always the main domain — see "SEO & the share
+  card"). Free text is the last section.
+- **URL length is capped** (`URL_MAX = 7000`): browsers and GitHub both choke on very long `?body=`.
+  On overflow the detail is cut with a **binary search** for the longest prefix that still fits
+  (never a fixed slice), and a note tells the reader to use the page's "复制反馈内容" button for the
+  full text. Copying works even when the tab fails to open.
+- **Draft persistence**: `localStorage['csh-feedback-draft']`, restored on mount. ⚠️ It is
+  deliberately **not** cleared after a successful open — the new tab is cross-origin, so we cannot
+  know whether the user actually submitted; wiping it would destroy text they may still need.
+- **Kind icons are 3D PNGs**, not icon-font glyphs: `src/assets/feedback/report.png` (报告问题) and
+  `suggest.png` (提出建议), imported in `FeedbackPage.vue` and mapped through `kindIcons`. They are
+  deliberately imported (not dropped in `public/`) so `vite-plugin-singlefile` inlines them and the
+  offline single-file build still shows them. `feedback.ts` only carries the **word** `report` /
+  `suggestion` in its `icon` field — that file stays free of Vue and Vite so it can be verified in
+  isolation; the page does the mapping.
+  - The artwork is a **compound shape** (a grey document with a coloured badge overlapping its lower
+    right). It needs ≥64 px to read: below that the badge collapses into an unreadable dot. Do not
+    shrink the card icon back to 48 px.
+  - Trimmed to a **square** with equal padding on both axes before scaling — cropping to the raw
+    `getbbox()` leaves a portrait rectangle that `object-fit: contain` then letterboxes, which makes
+    the two icons render at visibly different sizes side by side.
+- Icon-font glyphs are still used for the **chevron** (`\uE76C`) and the **back arrow** (`\uE72B`)
+  only. Those codepoints come from the remapped `SEGOEICONS.TTF` subset and were **rendered and
+  eyeballed** — `\uE945` looks like a bulb in the docs but renders as a **lightning bolt** here.
+  Never trust the codepoint table, check the glyph. The quickest way is to inject a span with
+  `font-family:'WinUIOnWebIcons'` into the running page: the `@font-face` lives in `App.vue`'s
+  scoped styles, so a standalone probe page cannot load it.
+- **The hero banner (帮助改进 ClassSoftwareHub) only renders in the choose-a-kind state** and is
+  hidden once a kind is picked — inside the form the specific kind heading already owns that slot.
+  Its background is a horizontal gradient over `--accent-fill-rest` → `--card-bg`, deliberately
+  built from theme variables rather than a hard-coded dark colour, so it stays legible in both
+  light and dark themes. **It is text-only by design** — a decorative illustration on the right was
+  tried and removed on request; do not put the kind icons back up there, it competes with the cards
+  directly below.
+- Registering the page in **`SEARCH_PAGES`** (searchIndex.ts) is what makes Ctrl+K find it; the nav
+  entry lives in the `navMenuItems` computed in `App.vue`, and `'feedback'` must also be in its
+  `pageTags` set or the nav item never lights up.
 
 ---
 

@@ -5,7 +5,7 @@
 //   ① 软件    软件名 / 一句话简介 / 详细介绍（数据在 软件数据/apps/）
 //   ② 内置工具 工具名 / 说明 / 分组名（注册表在 src/gallery/tools/index.ts）
 //   ③ AI 导航 站点名 / 说明 / 域名（清单在根目录 AI导航文本.ts）
-//   ④ 页面    首页 / 内置工具 / AI 导航 / 提交软件 / 设置
+//   ④ 页面    首页 / 内置工具 / AI 导航 / 提交软件 / 反馈中心 / 设置
 //
 // 规则：不知道软件叫什么、只记得“它是干嘛的”也能搜到 ——
 //       名称命中的结果排在同组的简介命中之前；组内不超过 limit 条。
@@ -87,6 +87,15 @@ const SEARCH_PAGES: SearchPageDef[] = [
     descKey: 'search.page-submit-desc',
     icon: '\uE11C',
     keywords: 'submit 提交 投稿 收录 添加软件'
+  },
+  {
+    key: 'feedback',
+    route: 'feedback',
+    // 图标 E7BA(警告三角)——与左侧导航栏「反馈中心」用同一个字形
+    titleKey: 'search.page-feedback',
+    descKey: 'search.page-feedback-desc',
+    icon: '\uE7BA',
+    keywords: 'feedback 反馈 报错 出错 问题 bug 建议 意见 issue 修正 有误 失效 打不开'
   },
   {
     key: 'settings',

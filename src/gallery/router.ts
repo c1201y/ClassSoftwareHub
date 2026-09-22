@@ -7,6 +7,7 @@ import { TOOLS } from './tools';
 //   #/download/:id      软件详情页（id 见数据区的软件 id）
 //   #/settings          设置页
 //   #/submit            提交新软件页
+//   #/feedback          反馈中心（报告问题 / 提出建议 → 生成 GitHub Issue 预填链接）
 //   #/ai                AI 导航（国产 AI 网址，一行一个、整行可点）
 //   #/tools             内置工具（工具集合入口，卡片式）
 //   #/tools/<工具id>     具体工具（路由由 tools/index.ts 注册表自动生成）
@@ -33,6 +34,11 @@ const routes: RouteRecordRaw[] = [
     path: '/submit',
     name: 'submit',
     component: () => import('./pages/SubmitPage.vue')
+  },
+  {
+    path: '/feedback',
+    name: 'feedback',
+    component: () => import('./pages/FeedbackPage.vue')
   },
   {
     path: '/ai',

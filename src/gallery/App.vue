@@ -254,7 +254,7 @@ interface NavItem {
   MenuItems?: NavItem[];
 }
 
-const pageTags = new Set(['home', 'settings', 'submit', 'tools', 'ai']);
+const pageTags = new Set(['home', 'settings', 'submit', 'tools', 'ai', 'feedback']);
 
 // ── 底部导航：AI 导航 + 内置工具 + 提交软件（Footer 菜单项；工具页在上，方便后面继续加工具）──
 const footerMenuItems = computed<NavItem[]>(() => [
@@ -267,6 +267,9 @@ const footerMenuItems = computed<NavItem[]>(() => [
 
 const navMenuItems = computed<NavItem[]>(() => [
   { Tag: 'home', Icon: '\uE80F', Content: t('nav.home') },
+  // 图标 E7BA(警告三角)：反馈中心。⚠️ SEGOEICONS.TTF 是重映射过的子集，
+  // 码点顺序与标准 Segoe MDL2 不同 —— E7BA 实测就是警告三角（见 src/gallery/feedback.ts）
+  { Tag: 'feedback', Icon: '\uE7BA', Content: t('nav.feedback') },
   ...categories.map((category) => ({
     Tag: `category:${category.key}`,
     Icon: category.icon,
@@ -297,6 +300,9 @@ const selectedNavigationItem = computed<NavItem | null>({
     }
     if (currentPage.value === 'ai') return footerMenuItems.value.find((item) => item.Tag === 'ai') ?? null;
     if (currentPage.value === 'submit') return footerMenuItems.value.find((item) => item.Tag === 'submit') ?? null;
+    if (currentPage.value === 'feedback') {
+      return navMenuItems.value.find((item) => item.Tag === 'feedback') ?? null;
+    }
     return null;
   },
   set: (item) => {
