@@ -25,8 +25,8 @@
                仿微软反馈中心：一块横幅把「这是什么、能做什么」先讲清楚，
                再往下才是类型卡片。进了表单后让位给具体类型标题，不再显示。
                刻意不放装饰插画：纯文字的主视觉更克制，也避免和卡片图标打架。
-               右侧那排标签用来填掉大标题留出的空白，同时把「公开」「免登录」
-               这两个最影响用户是否肯填的前提提前说掉。 -->
+               右侧原有「公开可查 / 无账号也能反馈 / 维护者跟进」三个胶囊标签，
+               已移除；「公开」「免登录」这两个前提改由副标题承担。 -->
           <section v-if="!activeKind" class="feedback-hero">
             <div class="feedback-hero-inner">
               <div class="feedback-hero-main">
@@ -45,12 +45,6 @@
                   TextWrapping="Wrap"
                   :Text="t('feedback.subtitle')" />
               </div>
-              <ul class="feedback-hero-tags">
-                <li v-for="tagKey in HERO_TAGS" :key="tagKey" class="feedback-hero-tag">
-                  <span class="feedback-hero-tag-glyph" aria-hidden="true">&#xE73E;</span>
-                  <span>{{ t(tagKey) }}</span>
-                </li>
-              </ul>
             </div>
           </section>
 
@@ -307,13 +301,6 @@ const kindIcons: Record<FeedbackKind, string> = {
   suggestion: suggestIcon
 };
 
-/** 主视觉右侧的文字标签（提前讲清「公开」「免登录」两个前提） */
-const HERO_TAGS = [
-  'feedback.hero-tag-public',
-  'feedback.hero-tag-no-account',
-  'feedback.hero-tag-tracked'
-] as const;
-
 /** 提交后流程三步（序号由 CSS 计数器画，这里只管文案 key） */
 const FLOW_STEPS = [
   { titleKey: 'feedback.flow-step-1-title', descKey: 'feedback.flow-step-1-desc' },
@@ -520,15 +507,10 @@ onMounted(() => {
     );
 }
 
-/* 横幅内两栏：文字在左，前提标签在右。
-   窄屏会折叠成一栏（见文件末尾媒体查询），所以布局用 grid 而非绝对定位。 */
+/* 横幅内只剩文字一栏（右侧标签列已移除），故不再需要 grid 分栏 */
 .feedback-hero-inner {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 32px;
 }
 
 .feedback-hero-main {
@@ -546,37 +528,6 @@ onMounted(() => {
 .feedback-hero-desc {
   display: block;
   color: var(--text-secondary);
-}
-
-/* ── 主视觉右侧的前提标签 ─────────────────────────────────────────── */
-.feedback-hero-tags {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.feedback-hero-tag {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 14px 7px 10px;
-  border: 1px solid var(--card-stroke, var(--ctrl-border, rgba(0, 0, 0, 0.1)));
-  border-radius: 999px;
-  background: var(--card-bg, rgba(255, 255, 255, 0.55));
-  color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 18px;
-  white-space: nowrap;
-}
-
-.feedback-hero-tag-glyph {
-  font-family: 'WinUIOnWebIcons';
-  font-size: 12px;
-  line-height: 1;
-  color: var(--SystemFillColorSuccessBrush, var(--accent, #0f7b0f));
 }
 
 /* ── 选择态：两张并排卡片 ─────────────────────────────────────────── */
@@ -880,20 +831,9 @@ onMounted(() => {
   line-height: 18px;
 }
 
-/* 窄屏：卡片改成上下堆叠；横幅收窄内边距，右侧标签折到标题下面；
-   三步流程与入口行同样改成竖向排列 */
+/* 窄屏：三步流程与入口行改成竖向排列
+   （横幅右侧标签列已移除，这里不再需要处理分栏折叠） */
 @media (max-width: 820px) {
-  .feedback-hero-inner {
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
-    gap: 22px;
-  }
-
-  .feedback-hero-tags {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
   .feedback-flow-list {
     grid-template-columns: minmax(0, 1fr);
   }
