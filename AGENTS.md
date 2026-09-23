@@ -370,10 +370,26 @@ label.
   built from theme variables rather than a hard-coded dark colour, so it stays legible in both
   light and dark themes. **It is text-only by design** — a decorative illustration on the right was
   tried and removed on request; do not put the kind icons back up there, it competes with the cards
-  directly below.
-- Registering the page in **`SEARCH_PAGES`** (searchIndex.ts) is what makes Ctrl+K find it; the nav
-  entry lives in the `navMenuItems` computed in `App.vue`, and `'feedback'` must also be in its
-  `pageTags` set or the nav item never lights up.
+  directly below. Instead the right column carries three pill-shaped **claim tags**
+  (`公开可查` / `无账号也能反馈` / `维护者跟进`) that fill the empty half and pre-empt the two
+  questions that most decide whether someone bothers to fill the form. Its horizontal padding is
+  **28 px, not the usual 36 px** — with no illustration, 36 px pushes the large title markedly
+  further right than the cards below it and reads as a misalignment.
+- **Two more choose-state sections sit below the cards** and are easy to miss when editing the
+  template, because both are `v-if="!activeKind"` alongside the hero:
+  - **提交之后会怎样** — a three-step list (`在本页填写` → `跳转到 GitHub` → `维护者跟进`). It exists
+    because the flow otherwise asks the user to give and never shows what they get back. The step
+    numbers are drawn by a **CSS counter** (`counter-reset` on the list, `counter-increment` in
+    `.feedback-flow-index::before`), so adding or removing a step needs no copy change.
+  - **先看看有没有人提过** — a low-key row linking to `REPO_URL + '/issues'`, so people can search
+    for a duplicate before filing. It reuses `REPO_URL` exported from `feedback.ts` rather than
+    hard-coding the repo again.
+- Registering the page in **`SEARCH_PAGES`** (searchIndex.ts) is what makes Ctrl+K find it.
+- ⚠️ **The nav entry lives in `footerMenuItems`, not `navMenuItems`.** It was moved there because it
+  is a "do something with the site" action like 提交软件, not a content category — sitting among the
+  category menu made it read as the Nth software category. `'feedback'` must also be in the
+  `pageTags` set or the nav item never lights up, and the `selectedNavigationItem` getter must look
+  it up in `footerMenuItems`; leaving that pointing at `navMenuItems` silently drops the highlight.
 
 ---
 
