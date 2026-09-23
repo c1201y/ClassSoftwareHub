@@ -272,6 +272,22 @@ export default {
       // 改文案只动引号里的字；分几张卡片、几个子类型由 src/gallery/feedback.ts 决定。
       "feedback.title": "帮助改进 ClassSoftwareHub",
       "feedback.subtitle": "报告软件信息错误、下载链接失效或其他使用问题；也可以提出功能建议。每条反馈都会进入公开的议题列表，由维护者跟进。",
+      // 主视觉右侧的文字型数据点（不要插画，保持克制）
+      "feedback.hero-tag-public": "公开可查",
+      "feedback.hero-tag-no-account": "无账号也能反馈",
+      "feedback.hero-tag-tracked": "维护者跟进",
+      // 选择态「接下来会怎样」三步说明
+      "feedback.flow-title": "提交之后会怎样",
+      "feedback.flow-step-1-title": "在本页填写",
+      "feedback.flow-step-1-desc": "选择反馈类型，说明问题或建议。内容会先在本地存一份草稿，中途离开也不会丢。",
+      "feedback.flow-step-2-title": "跳转到 GitHub",
+      "feedback.flow-step-2-desc": "标题与正文已自动填入议题表单。登录后点击提交，内容即公开可见。",
+      "feedback.flow-step-3-title": "维护者跟进",
+      "feedback.flow-step-3-desc": "反馈进入公开议题列表，处理进度可在议题下方查看，也可继续补充说明。",
+      // 已有反馈入口
+      "feedback.existing-title": "先看看有没有人提过",
+      "feedback.existing-desc": "已有反馈都记录在公开议题列表里，搜索关键词可以避免重复提交。",
+      "feedback.existing-open": "打开议题列表",
       "feedback.kind-report": "报告问题",
       "feedback.kind-report-desc": "软件信息有误、下载链接失效、页面无法正常使用",
       "feedback.kind-suggestion": "提出建议",

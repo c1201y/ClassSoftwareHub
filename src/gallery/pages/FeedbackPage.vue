@@ -24,23 +24,33 @@
           <!-- ══ 主视觉区（仅选择态）═══════════════════════════════
                仿微软反馈中心：一块横幅把「这是什么、能做什么」先讲清楚，
                再往下才是类型卡片。进了表单后让位给具体类型标题，不再显示。
-               刻意不放装饰插画：纯文字的主视觉更克制，也避免和卡片图标打架。 -->
+               刻意不放装饰插画：纯文字的主视觉更克制，也避免和卡片图标打架。
+               右侧那排标签用来填掉大标题留出的空白，同时把「公开」「免登录」
+               这两个最影响用户是否肯填的前提提前说掉。 -->
           <section v-if="!activeKind" class="feedback-hero">
             <div class="feedback-hero-inner">
-              <WinTextBlock
-                class="feedback-hero-title"
-                AutomationProperties.HeadingLevel="Level2"
-                FontSize="40"
-                FontWeight="600"
-                LineHeight="48"
-                TextWrapping="Wrap"
-                :Text="t('feedback.title')" />
-              <WinTextBlock
-                class="feedback-hero-desc"
-                FontSize="14"
-                LineHeight="22"
-                TextWrapping="Wrap"
-                :Text="t('feedback.subtitle')" />
+              <div class="feedback-hero-main">
+                <WinTextBlock
+                  class="feedback-hero-title"
+                  AutomationProperties.HeadingLevel="Level2"
+                  FontSize="40"
+                  FontWeight="600"
+                  LineHeight="48"
+                  TextWrapping="Wrap"
+                  :Text="t('feedback.title')" />
+                <WinTextBlock
+                  class="feedback-hero-desc"
+                  FontSize="14"
+                  LineHeight="22"
+                  TextWrapping="Wrap"
+                  :Text="t('feedback.subtitle')" />
+              </div>
+              <ul class="feedback-hero-tags">
+                <li v-for="tagKey in HERO_TAGS" :key="tagKey" class="feedback-hero-tag">
+                  <span class="feedback-hero-tag-glyph" aria-hidden="true">&#xE73E;</span>
+                  <span>{{ t(tagKey) }}</span>
+                </li>
+              </ul>
             </div>
           </section>
 
@@ -62,6 +72,45 @@
               <span class="feedback-kind-chevron" aria-hidden="true">&#xE76C;</span>
             </button>
           </div>
+
+          <!-- ══ 提交后流程（仅选择态）═════════════════════════════
+               点开链接就跳走了，用户全程在「付出」，从没见过「回报」。
+               这里把三步讲清楚，解决「我提了有人看吗」的犹豫。
+               编号用 CSS 计数器画，不写死数字 —— 将来加删步骤不用改文案。 -->
+          <section v-if="!activeKind" class="feedback-flow">
+            <WinTextBlock
+              class="feedback-flow-title"
+              AutomationProperties.HeadingLevel="Level2"
+              FontSize="16"
+              FontWeight="600"
+              :Text="t('feedback.flow-title')" />
+            <ol class="feedback-flow-list">
+              <li v-for="step in FLOW_STEPS" :key="step.titleKey" class="feedback-flow-step">
+                <span class="feedback-flow-index" aria-hidden="true" />
+                <span class="feedback-flow-text">
+                  <span class="feedback-flow-step-title">{{ t(step.titleKey) }}</span>
+                  <span class="feedback-flow-step-desc">{{ t(step.descKey) }}</span>
+                </span>
+              </li>
+            </ol>
+          </section>
+
+          <!-- ══ 已有反馈入口（仅选择态）═══════════════════════════
+               议题列表本来就是公开的，不给入口等于让用户盲填。
+               做成一行低调的链接，不抢类型卡片的注意力。 -->
+          <section v-if="!activeKind" class="feedback-existing">
+            <span class="feedback-existing-text">
+              <span class="feedback-existing-title">{{ t('feedback.existing-title') }}</span>
+              <span class="feedback-existing-desc">{{ t('feedback.existing-desc') }}</span>
+            </span>
+            <WinButton
+              class="feedback-existing-button"
+              Style="SubtleButtonStyle"
+              @Click="openIssueList">
+              <span>{{ t('feedback.existing-open') }}</span>
+              <span class="feedback-external-glyph" aria-hidden="true">&#xE8A7;</span>
+            </WinButton>
+          </section>
 
           <!-- ══ 表单态 ════════════════════════════════════════════ -->
           <template v-else>
@@ -238,6 +287,7 @@ import suggestIcon from '../../assets/feedback/suggest.png';
 import {
   FEEDBACK_KINDS,
   REPORT_SUBKINDS,
+  REPO_URL,
   TITLE_MAX,
   buildIssueUrl,
   copyText,
@@ -255,6 +305,28 @@ const route = useRoute();
 const kindIcons: Record<FeedbackKind, string> = {
   report: reportIcon,
   suggestion: suggestIcon
+};
+
+/** 主视觉右侧的文字标签（提前讲清「公开」「免登录」两个前提） */
+const HERO_TAGS = [
+  'feedback.hero-tag-public',
+  'feedback.hero-tag-no-account',
+  'feedback.hero-tag-tracked'
+] as const;
+
+/** 提交后流程三步（序号由 CSS 计数器画，这里只管文案 key） */
+const FLOW_STEPS = [
+  { titleKey: 'feedback.flow-step-1-title', descKey: 'feedback.flow-step-1-desc' },
+  { titleKey: 'feedback.flow-step-2-title', descKey: 'feedback.flow-step-2-desc' },
+  { titleKey: 'feedback.flow-step-3-title', descKey: 'feedback.flow-step-3-desc' }
+] as const;
+
+/** 议题列表直链。复用 feedback.ts 的 REPO_URL，避免仓库地址两处维护 */
+const ISSUE_LIST_URL = `${REPO_URL}/issues`;
+
+/** 打开公开议题列表（先查重，再决定要不要提交） */
+const openIssueList = () => {
+  window.open(ISSUE_LIST_URL, '_blank', 'noopener,noreferrer');
 };
 
 /** 空串 = 还在选类型；有值 = 展开表单 */
@@ -432,7 +504,10 @@ onMounted(() => {
   position: relative;
   overflow: hidden;
   margin-top: 4px;
-  padding: 40px 36px 44px;
+  /* 左右内边距比常见的 36px 收小：本条横幅只有文字与标签、没有插画，
+     再留 36px 会让大标题明显比下方卡片右缩进，看着「没对齐」。
+     收窄到 28px 后标题与卡片基本在同一条视觉起线上。 */
+  padding: 36px 28px 40px;
   border: 1px solid var(--card-stroke, var(--ctrl-border, rgba(0, 0, 0, 0.12)));
   border-radius: 8px;
   /* 横向渐变：左侧主题色逐渐淡出，比纯色块更有层次 */
@@ -445,11 +520,21 @@ onMounted(() => {
     );
 }
 
+/* 横幅内两栏：文字在左，前提标签在右。
+   窄屏会折叠成一栏（见文件末尾媒体查询），所以布局用 grid 而非绝对定位。 */
 .feedback-hero-inner {
   position: relative;
   z-index: 1;
-  /* 没有插画占位了，说明文字可以铺得宽一些；仍留上限，太长会不好读 */
-  max-width: 860px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 32px;
+}
+
+.feedback-hero-main {
+  min-width: 0;
+  /* 说明文字铺得太宽不好读，留上限；大标题（约 40px）需要更宽才不断行 */
+  max-width: 680px;
 }
 
 .feedback-hero-title {
@@ -461,6 +546,37 @@ onMounted(() => {
 .feedback-hero-desc {
   display: block;
   color: var(--text-secondary);
+}
+
+/* ── 主视觉右侧的前提标签 ─────────────────────────────────────────── */
+.feedback-hero-tags {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feedback-hero-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px 7px 10px;
+  border: 1px solid var(--card-stroke, var(--ctrl-border, rgba(0, 0, 0, 0.1)));
+  border-radius: 999px;
+  background: var(--card-bg, rgba(255, 255, 255, 0.55));
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.feedback-hero-tag-glyph {
+  font-family: 'WinUIOnWebIcons';
+  font-size: 12px;
+  line-height: 1;
+  color: var(--SystemFillColorSuccessBrush, var(--accent, #0f7b0f));
 }
 
 /* ── 选择态：两张并排卡片 ─────────────────────────────────────────── */
@@ -544,6 +660,121 @@ onMounted(() => {
   line-height: 1;
   color: var(--TextFillColorSecondaryBrush, var(--text-secondary));
   opacity: 0.7;
+}
+
+/* ── 提交后流程（三步）────────────────────────────────────────────── */
+.feedback-flow {
+  margin-top: 28px;
+}
+
+.feedback-flow-title {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.feedback-flow-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* 序号由这里数，模板里不写死数字 */
+  counter-reset: feedback-step;
+}
+
+.feedback-flow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 18px 20px;
+  border: 1px solid var(--card-stroke, var(--ctrl-border, rgba(0, 0, 0, 0.1)));
+  border-radius: 8px;
+  background: var(--card-bg-secondary, var(--ctrl-fill-default, rgba(255, 255, 255, 0.4)));
+}
+
+/* 序号：圆底 + 计数内容，颜色取主题强调色 */
+.feedback-flow-index {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent-fill-rest, rgba(0, 95, 184, 0.14));
+  color: var(--accent-text, var(--accent, #005fb8));
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.feedback-flow-index::before {
+  counter-increment: feedback-step;
+  content: counter(feedback-step);
+}
+
+.feedback-flow-text {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.feedback-flow-step-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.feedback-flow-step-desc {
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--TextFillColorSecondaryBrush, var(--text-secondary));
+}
+
+/* ── 已有反馈入口 ─────────────────────────────────────────────────── */
+.feedback-existing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 16px 20px;
+  border: 1px solid var(--card-stroke, var(--ctrl-border, rgba(0, 0, 0, 0.1)));
+  border-radius: 8px;
+  background: var(--subtle-secondary, rgba(0, 0, 0, 0.02));
+}
+
+.feedback-existing-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.feedback-existing-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.feedback-existing-desc {
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--TextFillColorSecondaryBrush, var(--text-secondary));
+}
+
+.feedback-existing-button {
+  flex: 0 0 auto;
+}
+
+/* 外链字形：提示「会离开本站」，与站内跳转区分 */
+.feedback-external-glyph {
+  font-family: 'WinUIOnWebIcons';
+  font-size: 12px;
+  line-height: 1;
+  margin-left: 8px;
 }
 
 /* ── 表单态 ─────────────────────────────────────────────────────── */
@@ -649,7 +880,25 @@ onMounted(() => {
   line-height: 18px;
 }
 
-/* 窄屏：卡片改成上下堆叠；横幅收窄内边距，装饰字形缩小免得压住文字 */
+/* 窄屏：卡片改成上下堆叠；横幅收窄内边距，右侧标签折到标题下面；
+   三步流程与入口行同样改成竖向排列 */
+@media (max-width: 820px) {
+  .feedback-hero-inner {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 22px;
+  }
+
+  .feedback-hero-tags {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .feedback-flow-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 640px) {
   .feedback-kind-list {
     grid-template-columns: minmax(0, 1fr);
@@ -659,8 +908,25 @@ onMounted(() => {
     padding: 28px 24px 30px;
   }
 
+  .feedback-hero-title {
+    /* 窄屏 40px 会撑爆标题，收一档 */
+    font-size: 30px !important;
+    line-height: 38px !important;
+  }
+
+  /* 步骤卡片窄屏是竖排，序号和文字之间不需要那么宽 */
+  .feedback-flow-step {
+    gap: 10px;
+    padding: 16px 16px 18px;
+  }
+
   .feedback-form-head {
     flex-wrap: wrap;
+  }
+
+  .feedback-existing {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 </style>
