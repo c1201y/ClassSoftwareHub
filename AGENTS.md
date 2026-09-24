@@ -6,8 +6,8 @@
 > and curates with a clear bias: **no ads, no bundled junk, open source first**.
 >
 > This file is the minimum context an AI agent (or a new contributor) needs. **Read it before
-> making any change** — especially "Hard Rules" and "Directory Map". `README.md` is written for
-> content maintainers; this file is written for people changing code.
+> making any change** — especially "Hard Rules" and "Directory Map". `README.md` is the repo's public
+> description (what it is, how to run and maintain it); this file is the code-level guide.
 
 ---
 
@@ -16,9 +16,9 @@
 | | |
 |---|---|
 | Stack | Vue 3.5 + Vue Router 4 (**hash routing**) + Vite 8 + TypeScript. Pure static front end, no backend |
-| Boot path | `index.html` → `src/main.ts` → `src/gallery/App.vue` (shell) → `src/gallery/router.ts` (7 routes: home / detail / settings / submit / tools / single tool / AI nav) |
+| Boot path | `index.html` → `src/main.ts` → `src/gallery/App.vue` (shell) → `src/gallery/router.ts` (8 routes: home / detail / settings / submit / feedback / tools / single tool / AI nav) |
 | App code | Everything lives in `src/gallery/` — **the only place you should change code** |
-| Data | `软件数据/apps/*.json` (one file per app, 60 today) + `软件数据/categories.json` (4 categories) |
+| Data | `软件数据/apps/*.json` (one file per app; 71 today, plus `_模板.json`) + `软件数据/categories.json` (4 categories) |
 | Strings | Chinese = `文字设置.ts` at repo root; English = `src/gallery/Strings/en-US/Resources.ts` |
 | Live site | https://classsoftwarehub.us.ci (main) — mirrors: classsoftwarehub.132614.xyz (see `CNAME`) · classsoftwarehub.xfane.com |
 | Output | `npm run build` → `dist/` (multi-file, **what CI ships**); `SINGLEFILE=1` → one HTML file (offline / double-click) |
@@ -73,9 +73,10 @@ src/
   ├─ components/ styles/ utils/ assets/   ⛔ WinUIonWeb library (upstream source — see "Hard Rules")
   │                                        └ site assets under `assets/`: icons/ · holiday/ · Fonts/ · AppIcon-*
   │                                          · feedback/ (the two 3D feedback-centre icons)
-stats-worker/
-  ├─ worker.js                   Cloudflare Worker: visit stats + GitHub API proxy (600+ lines)
-  └─ wrangler.toml               Deploy config (KV binding: STATS)
+  │                                          · welcome-sticker.gif (the welcome dialog's artwork)
+stats-worker/                    ⛔ NOT in this repo — the self-hosted Cloudflare Worker behind
+                                 `service.132614.xyz` (see §4). Its source is kept in the
+                                 maintainer's local archive, not committed.
 submissions/                     Visitor-submitted app drafts (entry point of the submission flow; do not edit by hand)
 scripts/                         Maintenance scripts — `check-updates.mjs` (upstream version checker),
                                  `untracked-buckets.mjs` (the "why isn't this tracked" registry),
@@ -194,7 +195,7 @@ keep a local copy too:
 
 | Purpose | Endpoint | Notes |
 |---|---|---|
-| Visit stats | `https://service.132614.xyz` | Self-hosted CF Worker (`stats-worker/worker.js`); KV aggregates counts across domains |
+| Visit stats | `https://service.132614.xyz` | Self-hosted CF Worker (**source not in this repo** — local archive only); KV aggregates counts across domains |
 | GitHub API proxy | `service.132614.xyz/api/gh/*` | Server-side call that carries the token; reachable from mainland China |
 | App submission | `https://cshapi.132614.xyz` → `https://submit.132614.xyz` | Two endpoints tried in order, `POST /api/submit` |
 
@@ -259,8 +260,9 @@ changes are replayed by `visitor.ts`.
    Worker named `classhub` (behind `cshapi.132614.xyz` / `submit.132614.xyz`); it now copies
    **every `_`-prefixed key from the request body** into the draft — matched by prefix, not by name —
    while refusing to overwrite the two keys it writes itself (`_提交时间`, `_原始ID冲突`). The same
-   patch stopped `downloads[].hash` from being dropped. Source: `submit-worker/` (read its README
-   first — it is a backup, not a deployment source).
+   patch stopped `downloads[].hash` from being dropped. Source backup: the `submit-worker`
+   branch (NOT `main` — do not look for the folder in the working tree); read its README first,
+   it is a backup, not a deployment source.
    ⚠️ Drafts submitted **before** that date genuinely lack the key; a missing contact there is
    expected, not a submitter mistake.
    Required before submission: `id`, `name`, `category`, `tagline`, `description`, `system`, a contact
@@ -310,9 +312,10 @@ changes are replayed by `visitor.ts`.
 
 A nav-pane entry (between **首页** and the category list) opening a page modelled on the Microsoft
 Feedback Hub: pick a kind → fill the form → land on a **pre-filled GitHub issue**. There is **no
-feedback backend** — the site is static, and `submit-worker/` is a backup for the *submission* flow
-only, so "POST first, fall back to a link" would always have failed. The whole feature is therefore
-**client-side + GitHub's own issue form**: the page collects the text, then opens
+feedback backend** — the site is static, and the only server-side piece (`submit-worker`) serves
+the *submission* flow only, so "POST first, fall back to a link" would always have failed. The
+whole feature is therefore **client-side + GitHub's own issue form**: the page collects the text,
+then opens
 `https://github.com/c1201y/ClassSoftwareHub/issues/new?title=…&body=…&labels=…` in a new tab.
 
 **Two levels of classification** (`src/gallery/feedback.ts`, pure logic, no Vue import):
@@ -369,12 +372,12 @@ label.
   Its background is a horizontal gradient over `--accent-fill-rest` → `--card-bg`, deliberately
   built from theme variables rather than a hard-coded dark colour, so it stays legible in both
   light and dark themes. **It is text-only by design** — a decorative illustration on the right was
-  tried and removed on request; do not put the kind icons back up there, it competes with the cards
-  directly below. Instead the right column carries three pill-shaped **claim tags**
-  (`公开可查` / `无账号也能反馈` / `维护者跟进`) that fill the empty half and pre-empt the two
-  questions that most decide whether someone bothers to fill the form. Its horizontal padding is
-  **28 px, not the usual 36 px** — with no illustration, 36 px pushes the large title markedly
-  further right than the cards below it and reads as a misalignment.
+  tried and removed on request; the three pill-shaped claim tags that briefly took its place
+  (`公开可查` / `无账号也能反馈` / `维护者跟进`) were removed too, so the banner is now a single text
+  column with **no right-hand column at all** (`.feedback-hero-inner` is not a grid any more). Do not
+  put either back — they compete with the cards directly below. Its horizontal padding is
+  **28 px, not the usual 36 px** — with nothing filling the right-hand side, 36 px pushes the large
+  title markedly further right than the cards below it and reads as a misalignment.
 - **Two more choose-state sections sit below the cards** and are easy to miss when editing the
   template, because both are `v-if="!activeKind"` alongside the hero:
   - **提交之后会怎样** — a three-step list (`在本页填写` → `跳转到 GitHub` → `维护者跟进`). It exists
@@ -406,8 +409,8 @@ label.
   in `submissions/` indefinitely). That is also why `fetch-depth: 0` is required.
 - `deploy.yml` builds **once** in the `build` job (`npm run build`, multi-file) and passes the
   artifact to the three upload jobs (previously every upload job rebuilt on its own, consuming extra runner minutes).
-  The artifact is the whole `dist/` — `index.html` plus an `assets/` folder of content-hashed,
-  per-route chunks (~66 files, ~2 MB total).
+  The artifact is the whole `dist/` — `index.html`, the `public/` copies, and an `assets/` folder of
+  content-hashed, per-route chunks (~66 chunks in `assets/`, ~2 MB; ~72 files in `dist/` overall).
   - **Pages** takes `dist/` as-is. **FTP** mirrors it (FTP-Deploy-Action also deletes remote files
     that are no longer in `dist/`, so stale hashed chunks do not pile up).
   - **OpenList (WebDAV)** runs `scripts/upload-webdav.py`: mkcol → PUT every file → verify → prune.
@@ -421,7 +424,7 @@ label.
     depths. The same file also sanitises chunk names to ASCII — a Chinese module filename
     (`AI导航文本.ts`) would otherwise emit `assets/AI导航文本-xxxx.js`, and some servers mishandle
     percent-encoded paths.
-- All six workflows carry Chinese comments explaining *why* they are written this way —
+- All five workflows carry Chinese comments explaining *why* they are written this way —
   **read those comments before changing anything.**
 - `check-updates.yml` runs `scripts/check-updates.mjs` **every Friday** (and on demand), comparing
   `软件数据/apps/*.json` against upstream, and **splitting the outcome in two**:
@@ -542,11 +545,13 @@ label.
   at the top of `package-lock.json` (npm normally syncs these)
 - The codename is part of the public version string and **may be an English phrase**
   (`- Autumn`, `- September 18 Incident`) — the suffix stays in user-facing copy.
-- Release tags are named `vX.Y.Z-<season codename>` — `-Autumn` for every release so far
-  (`v2.0.0-Autumn`, `v2.1.0-Autumn`, `v2.2.0-Autumn`, `v2.3.0-Autumn`). ⚠️ That suffix is the
-  **season codename, not the release headline**: `v2.3.0-Autumn` is correct even though the CHANGELOG
-  entry for that release is titled `v2.3.0 - September 18 Incident`. Do **not** build a tag out of the
-  headline — `v2.3.0-September18Incident` was created once that way and had to be deleted.
+- Release tags are named `vX.Y.Z-<codename>`. The six so far: `v2.0.0-Autumn`, `v2.1.0-Autumn`,
+  `v2.2.0-Autumn`, `v2.3.0-Autumn`, `v2.3.1-Autumn`, `v2.3.2-Tangram`. ⚠️ That suffix is a
+  **codename, not necessarily the release headline**: `v2.3.0-Autumn` is correct even though the
+  CHANGELOG entry for that release is titled `v2.3.0 - September 18 Incident`. Do **not** build a tag
+  by concatenating the headline — `v2.3.0-September18Incident` was created once that way and had to
+  be deleted. (`v2.3.2-Tangram` carries the version codename, which happens to match its CHANGELOG
+  headline.)
   A tag points at the **last commit of that version's cycle**, not at the commit that bumped the
   version — `v2.2.0-Autumn` is the AGENTS.md commit, `v2.1.0-Autumn` is the
   `docs: 添加 v2.1.0 更新日志` commit.
@@ -609,7 +614,7 @@ preview image shown when the link is posted in QQ / WeChat). **Every absolute UR
 use the main domain `https://classsoftwarehub.us.ci/`** — Bing rejects a sitemap that lists another
 domain ("not contained in this site"); the two mirrors (132614.xyz / xfane.com) are folded into the
 main domain by `canonical`. Vite copies `public/` verbatim into
-`dist/`, so they reach GitHub Pages and the FTP mirror; the OpenList step uploads `index.html` only.
+`dist/`, so all three deploy targets (Pages · FTP · OpenList) carry them.
 Keep this copy in step with the real site — search engines index the static `<title>`/`description`
 and the `<noscript>` block, **not** the runtime i18n strings. Two limits worth repeating: the site
 uses **hash routing**, so `/#/download/<id>` is not a distinct URL to a crawler (only the home page
@@ -630,6 +635,7 @@ submission path goes through Cloudflare.
 ## Appendix: Sandbox Notes (optional, sandbox-only)
 
 Inside the WorkBuddy sandbox: `ls` / `head` / `rm` / `cat` may be missing (fall back to the managed
-Python interpreter); git over HTTPS is blocked by a certificate-revocation check (push via
-`api.github.com` + the Contents / Git Data API instead); **`git rebase` is forbidden**. The full set of
-workarounds lives in `.workbuddy/memory/MEMORY.md` (that directory is not committed).
+Python interpreter); git over HTTPS also fails on a certificate-revocation check until the proxy's
+own root certificate is merged into a CA bundle (`http.sslBackend=openssl` + `http.sslCAInfo`;
+`sslVerify=false` is not the fix); **`git rebase` is forbidden**. The rest of the workarounds lives
+in the local notes under `.workbuddy/memory/` (that directory is not committed).
