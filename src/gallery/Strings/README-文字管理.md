@@ -27,7 +27,7 @@
 | 关于区：作者首页 / 回声洞 / 投喂作者 / QQ 群 | `about.author-home*` `about.echo-cave*` `about.reward*` `about.qq-group*` |
 | 版权行 / 版本号 | `text.about-copyright` `app.author` `app.version` |
 | 欢迎弹窗：标题 / 正文 / 按钮 / 相关文章 | `welcome.*`（`welcome.hello` 标题、`welcome.intro` 正文、`welcome.explore` 按钮、`welcome.article`+`welcome.article-url` 相关文章；仓库/作者/QQ 群/投喂链接复用 `about.*-url`） |
-| 全站搜索（Ctrl + K 面板）：入口文字 / 占位提示 / 结果"来源"称呼 / 分组名 / 页面条目 / 快捷键提示 | `search.titlebar` `search.placeholder` `search.no-results` `search.empty-hint`；`search.source-name`（应用名称）`search.source-intro`（相关简介）；`search.group-*`（软件 / 内置工具 / AI 导航 / 页面）；`search.page-*`（五个页面条目及其说明）；`search.keys-*` `search.footer-note`；`search.tools-hint` `search.tools-count`（工具页提示与数量） |
+| 全站搜索（Ctrl + K 面板）：入口文字 / 占位提示 / 结果"来源"称呼 / 分组名 / 页面条目 / 快捷键提示 | `search.titlebar` `search.placeholder` `search.no-results` `search.empty-hint`；`search.source-name`（应用名称）`search.source-intro`（相关简介）；`search.group-*`（软件 / 内置工具 / AI 导航 / 页面）；`search.page-*`（**六个**页面条目及其说明：首页 / 内置工具 / AI 导航 / 提交软件 / 反馈中心 / 设置）；`search.keys-*` `search.footer-note`；`search.tools-hint` `search.tools-count`（工具页提示与数量） |
 
 ## 软件名、软件简介、下载链接？
 
