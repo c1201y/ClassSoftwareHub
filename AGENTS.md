@@ -535,10 +535,10 @@ label.
 - Public version: `X.Y.Z` + a **codename suffix, which is kept** (e.g. `- Autumn`).
   X = major (architecture / UI overhaul); Y = feature update; Z = small fix.
 - Internal version: `AAAABBCCPRDD` (year / month / day / file revision), e.g. `20260915PR01`.
-- Update all of these together — current value is `v2.3.2 - September 18 Incident (20260919PR03)`:
+- Update all of these together — current value is `v2.3.3 - Tangram (20260924PR01)`:
   - `文字设置.ts` → `app.version`, `home.subtitle`, `welcome.intro` (**3 places**)
   - `src/gallery/Strings/en-US/Resources.ts` → `app.version`
-  - `package.json` → `version` (bare `2.3.2`, no codename / internal number); also bump the two `"version"` fields
+  - `package.json` → `version` (bare `2.3.3`, no codename / internal number); also bump the two `"version"` fields
   at the top of `package-lock.json` (npm normally syncs these)
 - The codename is part of the public version string and **may be an English phrase**
   (`- Autumn`, `- September 18 Incident`) — the suffix stays in user-facing copy.

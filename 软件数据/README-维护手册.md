@@ -359,7 +359,7 @@ Issue 正文：顶部一行数字，下面**仅列出需要处理的条目** —
 - 同一版本另有内部版本号 `AAAABBCCPRDD`（AAAA 年 / BB 月 / CC 日期 / DD 文件版次），
   例 `20260915PR01`。
 - 对外与内部版本号均写入 `文字设置.ts` 的 `app.version`
-  （当前 `v2.3.2 - September 18 Incident (20260919PR03)`）。
+  （当前 `v2.3.3 - Tangram (20260924PR01)`）。
 - 英文站需同步修改 `src/gallery/Strings/en-US/Resources.ts` 的 `app.version`
   （设置页「关于」展示的即为此值）。
 
