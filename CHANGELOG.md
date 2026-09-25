@@ -30,7 +30,7 @@
 ### 其他内容
 
 - 网站链接1：[电教委员常用软件下载站](https://classsoftwarehub.us.ci/#/home)
-- 网站链接2：[备yo站](https://classsoftwarehub.132614.xyz/#/home)
+- 网站链接2：[备用站](https://classsoftwarehub.132614.xyz/#/home)
   > 【提示】福建闽北，闽西地区的用户可能会遇上打不开的问题。
 - 夸克网盘：[夸克网盘分享](https://pan.quark.cn/s/7cbf21203ad9)
 - 投喂作者：[爱发电 · 连接创作者与粉丝的会员制平台](https://ifdian.net/a/TinyNickCSHub)
