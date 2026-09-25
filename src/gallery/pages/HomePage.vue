@@ -46,6 +46,24 @@
           </div>
         </section>
 
+        <!-- 桌面应用版推广卡：整页宽、矮高度，链到桌面版 Release 页（在「内置工具 / AI 导航」上方）
+             文案写在下面 desktopPromo（跟 toolsCard 一样不进 文字设置.ts，方便自己改） -->
+        <a
+          class="home-desktop-promo"
+          :href="desktopPromo.url"
+          target="_blank"
+          rel="noopener noreferrer">
+          <span class="home-desktop-promo-icon" aria-hidden="true">&#xE977;</span>
+          <span class="home-desktop-promo-text">
+            <span class="home-desktop-promo-title">{{ desktopPromo.title }}</span>
+            <span class="home-desktop-promo-desc">{{ desktopPromo.desc }}</span>
+          </span>
+          <span class="home-desktop-promo-action">
+            {{ desktopPromo.action }}
+            <span class="home-desktop-promo-link-icon" aria-hidden="true">&#xE8A7;</span>
+          </span>
+        </a>
+
         <!-- 两个入口卡片：内置工具 + AI 导航（各占一半，在分类筛选条上方） -->
         <div class="home-jump-row">
           <button
@@ -204,6 +222,26 @@ const showIwbCard = computed(
 
 const openDetail = (app: SoftwareApp) => {
   void router.push({ name: 'download-detail', params: { id: app.id } });
+};
+
+/**
+ * 首页「体验桌面应用版」推广卡（整页宽、矮高度，在 内置工具/AI 导航 卡片上方）：
+ * 链到桌面版仓库的 Release 页（Insider 预发布 + 稳定版都在这页）。
+ * 文案直接写在这里（和 toolsCard 一样不进 文字设置.ts），title 或 desc 留空即隐藏整张卡。
+ */
+const desktopPromo = {
+  url: 'https://github.com/c1201y/ClassSoftwareHub-Desktop/releases',
+  ...(locale === 'zh-CN'
+    ? {
+        title: '体验桌面应用版',
+        desc: '原生 WinUI 界面 · 内置工具 · 托盘常驻 · 自动更新，不用打开浏览器',
+        action: '前往下载'
+      }
+    : {
+        title: 'Try the desktop app',
+        desc: 'Native WinUI shell · built-in tools · tray · auto updates',
+        action: 'Get it on GitHub'
+      })
 };
 
 /** 首页「内置工具」入口卡片：文案直接写在这里（工具相关文案不进 文字设置.ts） */
