@@ -5,7 +5,7 @@
   "category": "system",
   "tagline": "一款主要清理磁盘的工具",
   "description": "该软件主要可以清理磁盘、旧驱动，系统瘦身（通过关闭休眠等实现），同时还可以清理失效的右键菜单项和此电脑中的第三方外壳图标。而且安全系数较高，清理时不易造成损坏。有安装版、便携版、离线安装版等。",
-  "version": "v2.16.11",
+  "version": "v2.16.12",
   "size": "20~25MB",
   "system": "Windows",
   "website": "https://www.lightc.app/",
@@ -15,19 +15,19 @@
       "platform": "Windows x64 安装版",
       "note": "LightC_2.16.11_x64-setup.exe",
       "size": "5.7 MB",
-      "url": "https://github.com/Chunyu33/light-c/releases/download/v2.16.11/LightC_2.16.11_x64-setup.exe"
+      "url": "https://github.com/Chunyu33/light-c/releases/download/v2.16.12/LightC_2.16.12_x64-setup.exe"
     },
     {
       "platform": "其他 x64 便携版",
       "note": "LightC_portable_x64_v2.16.11.zip",
       "size": "7.5 MB",
-      "url": "https://github.com/Chunyu33/light-c/releases/download/v2.16.11/LightC_portable_x64_v2.16.11.zip"
+      "url": "https://github.com/Chunyu33/light-c/releases/download/v2.16.12/LightC_portable_x64_v2.16.12.zip"
     },
     {
       "platform": "Windows x64 离线安装版",
       "note": "LightC_webview2_offline_x64_v2.16.11.exe（可在离线时安装）",
-      "size": "211 MB",
-      "url": "https://github.com/Chunyu33/light-c/releases/download/v2.16.11/LightC_webview2_offline_x64_v2.16.11.exe"
+      "size": "212 MB",
+      "url": "https://github.com/Chunyu33/light-c/releases/download/v2.16.12/LightC_webview2_offline_x64_v2.16.12.exe"
     }
   ],
   "sort": 99
