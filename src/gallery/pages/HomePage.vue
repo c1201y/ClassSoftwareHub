@@ -46,23 +46,40 @@
           </div>
         </section>
 
-        <!-- 桌面应用版推广卡：整页宽、矮高度，链到桌面版 Release 页（在「内置工具 / AI 导航」上方）
-             文案写在下面 desktopPromo（跟 toolsCard 一样不进 文字设置.ts，方便自己改） -->
-        <a
-          class="home-desktop-promo"
-          :href="desktopPromo.url"
-          target="_blank"
-          rel="noopener noreferrer">
+        <!-- 桌面应用版推广卡：整页宽、矮高度，在「内置工具 / AI 导航」上方。
+             两个按钮直接下 exe（走 GitHub 镜像加速，镜像全挂自动跳该版本 Release 页），
+             版本号由 desktopDownload.ts 动态取；文案写在下面 desktopPromo。 -->
+        <div class="home-desktop-promo">
           <span class="home-desktop-promo-icon" aria-hidden="true">&#xE977;</span>
           <span class="home-desktop-promo-text">
             <span class="home-desktop-promo-title">{{ desktopPromo.title }}</span>
             <span class="home-desktop-promo-desc">{{ desktopPromo.desc }}</span>
           </span>
-          <span class="home-desktop-promo-action">
-            {{ desktopPromo.action }}
-            <span class="home-desktop-promo-link-icon" aria-hidden="true">&#xE8A7;</span>
+          <span class="home-desktop-promo-actions">
+            <button
+              type="button"
+              class="home-desktop-download-btn"
+              :disabled="desktopDownloading !== null"
+              @click="downloadDesktop('stable')">
+              {{ desktopDownloading === 'stable' ? desktopPromo.pending : desktopPromo.stable }}
+            </button>
+            <button
+              type="button"
+              class="home-desktop-download-btn is-insider"
+              :disabled="desktopDownloading !== null"
+              @click="downloadDesktop('insider')">
+              {{ desktopDownloading === 'insider' ? desktopPromo.pending : desktopPromo.insider }}
+            </button>
+            <a
+              class="home-desktop-promo-action"
+              :href="desktopPromo.releasePage"
+              target="_blank"
+              rel="noopener noreferrer">
+              {{ desktopPromo.allVersions }}
+              <span class="home-desktop-promo-link-icon" aria-hidden="true">&#xE8A7;</span>
+            </a>
           </span>
-        </a>
+        </div>
 
         <!-- 两个入口卡片：内置工具 + AI 导航（各占一半，在分类筛选条上方） -->
         <div class="home-jump-row">
@@ -160,7 +177,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref } from 'vue';
+import { computed, inject, onMounted, ref } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { HolidayTheme } from '../holidayTheme';
@@ -171,6 +188,13 @@ import { useI18n } from '../../components/i18n/index';
 import { apps, categories, categoryName } from '../data';
 import type { SoftwareApp } from '../data';
 import { appIconUrlSafe, markIconBroken } from '../appIcons';
+// 桌面应用版的 exe 直下（取最新版本 + 镜像加速 + Release 页兜底）
+import {
+  DESKTOP_RELEASES_URL,
+  downloadDesktopBuild,
+  resolveDesktopBuilds
+} from '../desktopDownload';
+import type { DesktopChannel } from '../desktopDownload';
 import '../styles/home-page.css';
 // 软件清单模板：与根目录 软件数据/apps/_模板.json 保持同源（打包时内联进单文件）
 import softwareTemplateRaw from '../../../软件数据/apps/_模板.json?raw';
@@ -226,23 +250,52 @@ const openDetail = (app: SoftwareApp) => {
 
 /**
  * 首页「体验桌面应用版」推广卡（整页宽、矮高度，在 内置工具/AI 导航 卡片上方）：
- * 链到桌面版仓库的 Release 页（Insider 预发布 + 稳定版都在这页）。
- * 文案直接写在这里（和 toolsCard 一样不进 文字设置.ts），title 或 desc 留空即隐藏整张卡。
+ * 右边两个按钮直接下 exe —— 安装包版本由 desktopDownload.ts 动态取（桌面版发新版不用改这里），
+ * 下载走 GitHub 镜像加速，镜像全挂会自动跳去该版本的 Release 页。
+ * 文案直接写在这里（和 toolsCard 一样不进 文字设置.ts）；title 或 desc 留空即隐藏整张卡。
  */
 const desktopPromo = {
-  url: 'https://github.com/c1201y/ClassSoftwareHub-Desktop/releases',
+  releasePage: DESKTOP_RELEASES_URL,
   ...(locale === 'zh-CN'
     ? {
         title: '体验桌面应用版',
         desc: '原生 WinUI 界面 · 内置工具 · 托盘常驻 · 自动更新，不用打开浏览器',
-        action: '前往下载'
+        stable: '下载稳定版',
+        insider: '试用 Insider 版',
+        pending: '连接中…',
+        allVersions: '全部版本'
       }
     : {
         title: 'Try the desktop app',
         desc: 'Native WinUI shell · built-in tools · tray · auto updates',
-        action: 'Get it on GitHub'
+        stable: 'Download stable',
+        insider: 'Try Insider build',
+        pending: 'Connecting…',
+        allVersions: 'All releases'
       })
 };
+
+/** 正在下的通道（null = 空闲）：用来禁用按钮，并把按钮文字换成「连接中…」 */
+const desktopDownloading = ref<DesktopChannel | null>(null);
+
+const downloadDesktop = async (channel: DesktopChannel) => {
+  if (desktopDownloading.value) return;
+  desktopDownloading.value = channel;
+  try {
+    await downloadDesktopBuild(channel);
+  } catch {
+    // 兜底中的兜底：连下载流程本身都抛了，至少把用户送到 Release 页
+    window.open(desktopPromo.releasePage, '_blank');
+  } finally {
+    desktopDownloading.value = null;
+  }
+};
+
+// 预热：进首页就先把版本查好，点按钮时不必等接口。
+// 接口不通也没关系 —— 模块内部会退回写死的版本，按钮照样能用。
+onMounted(() => {
+  void resolveDesktopBuilds();
+});
 
 /** 首页「内置工具」入口卡片：文案直接写在这里（工具相关文案不进 文字设置.ts） */
 const toolsCard =

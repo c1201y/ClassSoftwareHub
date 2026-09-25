@@ -106,26 +106,24 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 12px;
+  row-gap: 8px;
   margin: 20px 36px 0;
   padding: 10px 16px;
   min-width: 0;
-  text-decoration: none;
   border: 1px solid color-mix(in srgb, var(--accent-base, #0067C0) 32%, transparent);
   border-radius: 8px;
   background: color-mix(in srgb, var(--accent-base, #0067C0) 8%, transparent);
   color: var(--text-primary);
-  cursor: pointer;
-  transition: background var(--faster-duration, 83ms) linear;
 }
-.home-desktop-promo:hover:not(:active) {
-  background: color-mix(in srgb, var(--accent-base, #0067C0) 15%, transparent);
-}
-.home-desktop-promo:active {
-  background: color-mix(in srgb, var(--accent-base, #0067C0) 22%, transparent);
-}
-.home-desktop-promo:focus-visible {
-  outline: 2px solid var(--accent-base, #0067C0);
-  outline-offset: 2px;
+/* 卡片本身不再是链接（下载动作在右边按钮上），所以没有整卡 hover / focus 态。
+   右侧一栏：两个下载按钮 + 「全部版本」链接；放不下就整体换行。 */
+.home-desktop-promo-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
 }
 .home-desktop-promo-icon {
   width: 34px;
@@ -169,11 +167,60 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--accent-base, #0067C0);
+  text-decoration: none;
   white-space: nowrap;
+}
+.home-desktop-promo-action:hover {
+  text-decoration: underline;
 }
 .home-desktop-promo-link-icon {
   font-family: "WinUIOnWebIcons";
   font-size: 13px;
+}
+/* 下载按钮：跟页头「下载软件清单模板」同款胶囊按钮，主按钮用 accent 实底。
+   Insider 走描边次要样式 —— 它是给想先试新功能的人，不该跟稳定版抢注意力。 */
+.home-desktop-download-btn {
+  box-sizing: border-box;
+  height: 32px;
+  color: var(--accent-text);
+  background: var(--accent-base);
+  border: 1px solid var(--accent-base);
+  border-radius: 16px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+  padding: 0 14px;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--faster-duration, 83ms) linear;
+}
+.home-desktop-download-btn:hover:not(:disabled) {
+  background: var(--accent-hover, var(--accent-base));
+}
+.home-desktop-download-btn:active:not(:disabled) {
+  background: var(--accent-pressed, var(--accent-base));
+  transform: scale(0.97);
+}
+.home-desktop-download-btn:focus-visible {
+  outline: 2px solid var(--accent-base, #0067C0);
+  outline-offset: 2px;
+}
+.home-desktop-download-btn.is-insider {
+  color: var(--accent-base, #0067C0);
+  background: transparent;
+}
+.home-desktop-download-btn.is-insider:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-base, #0067C0) 12%, transparent);
+}
+.home-desktop-download-btn.is-insider:active:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-base, #0067C0) 20%, transparent);
+}
+/* 探测镜像的这几秒里两个按钮一起禁用（文字会变成「连接中…」），避免重复触发 */
+.home-desktop-download-btn:disabled {
+  cursor: default;
+  opacity: 0.65;
 }
 /* ── 首页两个入口卡片（内置工具 / AI 导航，各占一半，在分类筛选条上方）──
    内置工具的文案在 HomePage.vue 里硬编码（工具相关文案不进 文字设置.ts）；
@@ -610,11 +657,17 @@ html.theme-dark .category-badge {
     gap: 10px;
     margin: 16px 16px 0;
   }
-  /* 窄屏：桌面应用版推广卡跟着收边距，文字改成上下两行 */
+  /* 窄屏：桌面应用版推广卡跟着收边距，文字改成上下两行；
+     下载按钮另起一行、靠左排（挤在右边会把标题压没） */
   .home-desktop-promo {
     margin: 16px 16px 0;
     padding: 10px 14px;
     column-gap: 10px;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .home-desktop-promo-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
   }
   .home-desktop-promo-icon {
     width: 30px;
