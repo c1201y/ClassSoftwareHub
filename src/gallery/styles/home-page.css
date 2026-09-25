@@ -1,8 +1,8 @@
 /* 首页卡片 + 分类筛选栏样式 —— 从单文件版 indexV20260831.html 提取（原 scoped 属性已剥离） */
 .home-page {
   grid-template-columns: minmax(0, 1fr);
-  /* 行：页头 / 两个入口卡片 / 分类筛选条 / 软件列表（推荐卡在软件列表内部，不占行） */
-  grid-template-rows: auto auto auto 1fr;
+  /* 行：页头 / 桌面应用版推广卡 / 两个入口卡片 / 分类筛选条 / 软件列表（推荐卡在软件列表内部，不占行） */
+  grid-template-rows: auto auto auto auto 1fr;
   width: 100%;
   min-width: 0;
   margin: 0;
@@ -97,6 +97,83 @@
   .category-promo-card {
     animation: none;
   }
+}
+/* ── 首页「体验桌面应用版」推广卡（整页宽、矮高度，在「内置工具 / AI 导航」上方）──
+   和分类推荐卡同款外链卡片样式，只是压扁一点；文案在 HomePage.vue 的 desktopPromo。 */
+.home-desktop-promo {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  margin: 20px 36px 0;
+  padding: 10px 16px;
+  min-width: 0;
+  text-decoration: none;
+  border: 1px solid color-mix(in srgb, var(--accent-base, #0067C0) 32%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent-base, #0067C0) 8%, transparent);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background var(--faster-duration, 83ms) linear;
+}
+.home-desktop-promo:hover:not(:active) {
+  background: color-mix(in srgb, var(--accent-base, #0067C0) 15%, transparent);
+}
+.home-desktop-promo:active {
+  background: color-mix(in srgb, var(--accent-base, #0067C0) 22%, transparent);
+}
+.home-desktop-promo:focus-visible {
+  outline: 2px solid var(--accent-base, #0067C0);
+  outline-offset: 2px;
+}
+.home-desktop-promo-icon {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--accent-base, #0067C0) 25%, transparent);
+  background: color-mix(in srgb, var(--accent-base, #0067C0) 14%, transparent);
+  color: var(--accent-base, #0067C0);
+  font-family: "WinUIOnWebIcons";
+  font-size: 18px;
+  line-height: 1;
+}
+.home-desktop-promo-text {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: 10px;
+  row-gap: 1px;
+}
+.home-desktop-promo-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  white-space: nowrap;
+}
+.home-desktop-promo-desc {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+.home-desktop-promo-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-base, #0067C0);
+  white-space: nowrap;
+}
+.home-desktop-promo-link-icon {
+  font-family: "WinUIOnWebIcons";
+  font-size: 13px;
 }
 /* ── 首页两个入口卡片（内置工具 / AI 导航，各占一半，在分类筛选条上方）──
    内置工具的文案在 HomePage.vue 里硬编码（工具相关文案不进 文字设置.ts）；
@@ -532,6 +609,25 @@ html.theme-dark .category-badge {
     grid-template-columns: minmax(0, 1fr);
     gap: 10px;
     margin: 16px 16px 0;
+  }
+  /* 窄屏：桌面应用版推广卡跟着收边距，文字改成上下两行 */
+  .home-desktop-promo {
+    margin: 16px 16px 0;
+    padding: 10px 14px;
+    column-gap: 10px;
+  }
+  .home-desktop-promo-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
+  .home-desktop-promo-text {
+    flex-direction: column;
+    align-items: flex-start;
+    row-gap: 0;
+  }
+  .home-desktop-promo-action {
+    font-size: 12px;
   }
   .home-jump-card {
     padding: 12px 14px;
