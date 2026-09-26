@@ -12,9 +12,10 @@
   "downloads": [
     {
       "platform": "Windows 安装版",
-      "note": "希沃课堂助手（教师端），支持 Win10/11",
+      "note": "希沃课堂助手（教师端），支持 Win10/11；官方按产品码下发，永远是最新版",
       "size": "164 MB",
-      "url": "https://cstore-pub-cos-seewo-report-tx.seewo.com/seewo-report_uwizpymphhulnhlwhxqwpmmwxihhihhh?sign=q-sign-algorithm%3Dsha1%26q-ak%3DAKIDJUXMxJRLzPaeMp20jDSTFl23pLcdPwDF%26q-sign-time%3D1782895047%3B2098255047%26q-key-time%3D1782895047%3B2098255047%26q-header-list%3Dhost%26q-url-param-list%3Dresponse-content-disposition%26q-signature%3Dc4a971f3265fb805ed934b00fde98d6a628fdc0b&response-content-disposition=attachment%3Bfilename%3D%22SeewoIwbAssistant_0.0.3.1309.exe%22%3Bfilename%2A%3Dutf-8%27%27SeewoIwbAssistant_0.0.3.1309.exe"
+      "kind": "file",
+      "url": "https://e.seewo.com/download/file?code=SeewoIwbAssistant"
     }
   ],
   "sort": 4,

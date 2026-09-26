@@ -5,14 +5,16 @@
   "category": "schedule",
   "tagline": "WPS Office 官方正版下载",
   "description": "WPS Office 官方安装包。体积小、启动快，文字 / 表格 / 演示三件套齐全，兼容微软 Office 的文档格式，教室电脑上打开课件、做表格、看文档都很顺手，个人版免费使用。",
-  "version": "跟随官网",
+  "version": "12.2.0.23196",
   "size": "未知",
   "system": "Windows 7+",
   "website": "https://www.wps.cn/",
   "downloads": [
     {
-      "platform": "该应用更新频繁，故引导至官网下载",
-      "url": "https://www.wps.cn/"
+      "platform": "Windows 安装版",
+      "url": "https://wdl1.pcfg.cache.wpscdn.com/wpsdl/wpsoffice/download/12.2.0.23196/500.1001/WPSOffice_23196.exe",
+      "kind": "file",
+      "size": "255 MB"
     }
   ],
   "sort": 19,

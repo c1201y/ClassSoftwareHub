@@ -14,10 +14,16 @@
   "store": "https://apps.microsoft.com/detail/xp89dcgq3k6vld",
   "downloads": [
     {
-      "platform": "GitHub 最新版",
-      "note": "打开最新 Release 页，下载 PowerToysUserSetup-x64.exe（单用户）或 PowerToysSetup-x64.exe（全机器）",
-      "size": "网页",
-      "url": "https://github.com/microsoft/PowerToys/releases/latest"
+      "platform": "Windows x64 安装版（当前用户）",
+      "note": "单用户安装，不需要管理员权限，教室公共账号也能装",
+      "size": "283 MB",
+      "url": "https://github.com/microsoft/PowerToys/releases/download/v0.101.2362.0/PowerToysUserSetup-0.101.2362.0-x64.exe"
+    },
+    {
+      "platform": "Windows x64 安装版（全机器）",
+      "note": "per-machine 安装，需要管理员权限；新版发布后地址由体检流程自动更新",
+      "size": "283 MB",
+      "url": "https://github.com/microsoft/PowerToys/releases/download/v0.101.2362.0/PowerToysSetup-0.101.2362.0-x64.exe"
     },
     {
       "platform": "微软官方介绍 / 下载",

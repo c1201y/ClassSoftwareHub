@@ -10,8 +10,10 @@
   "website": "https://www.huorong.cn/",
   "downloads": [
     {
-      "platform": "该应用更新频繁，故引导至官网下载",
-      "url": "https://www.huorong.cn/"
+      "platform": "Windows x64 安装版（官方直链）",
+      "note": "官网下载入口的固定地址，会自动 301 到当前最新版；64 位系统选这条",
+      "kind": "file",
+      "url": "https://www.huorong.cn/product/downloadHr60.php?pro=hr60&plat=x64UrlAll"
     }
   ],
   "sort": 24

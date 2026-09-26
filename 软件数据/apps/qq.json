@@ -5,14 +5,16 @@
   "category": "schedule",
   "tagline": "QQ Windows 版官方下载",
   "description": "QQ Windows 版官方安装包，支持消息、文件传输、屏幕共享、远程协助等功能。教室里收发课件、传大文件都很方便，遇到老师电脑出问题还能用远程协助应急帮一把。",
-  "version": "官网",
+  "version": "9.9.33.52230",
   "size": "未知",
   "system": "Windows 7+",
   "website": "https://im.qq.com/index/#/",
   "downloads": [
     {
-      "platform": "该应用更新频繁，故引导至官网下载",
-      "url": "https://im.qq.com/index/#/"
+      "platform": "Windows 安装版",
+      "url": "https://qqdl.gtimg.cn/qqfile/QQNT/9.9.33/release/497e2f1f/QQ_9.9.33_260813_x64_01.exe",
+      "kind": "file",
+      "size": "300 MB"
     }
   ],
   "sort": 17,

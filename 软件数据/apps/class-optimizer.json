@@ -12,8 +12,10 @@
   "downloads": [
     {
       "platform": "Windows 官方下载",
-      "note": "官网源获取下载",
-      "url": "https://care.seewo.com/pc/download"
+      "note": "希沃官方按产品码下发，永远是最新版",
+      "size": "147 MB",
+      "kind": "file",
+      "url": "https://e.seewo.com/download/file?code=EasiCare_PC"
     }
   ],
   "sort": 33
