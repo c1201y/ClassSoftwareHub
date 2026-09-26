@@ -16,6 +16,10 @@ push one ``index.html``.  The site is now built as a normal **multi-file** bundl
    would otherwise pile up forever.  The target root is never pruned — it may
    hold files we do not own, and our own top-level files have stable names that
    are simply overwritten.
+   Note that a collection which vanished from ``dist/`` entirely is removed as a
+   leftover child of its parent (WebDAV ``DELETE`` on a collection is recursive),
+   so an old ``assets/old-subdir/`` does not survive.  Only a top-level folder
+   that is missing from the build is left alone, by the rule above.
 
 Every HTTP request is retried with a connect timeout: this OpenList host is a
 small domestic box that occasionally drops connections (see repo history).
@@ -88,11 +92,26 @@ CTX = _ssl_context()
 BASE_PATH = urllib.parse.unquote(urllib.parse.urlsplit(BASE).path).rstrip('/')
 
 
+class DavError(RuntimeError):
+    """一个 DAV 请求在重试若干次后仍失败。
+
+    `status` 带上最后一次的 HTTP 状态码（网络层异常时为 None）—— 调用方需要按码分流时
+    （见 mkcol：301/302 是重定向，不能当「目录已存在」）不必去解析错误字符串。
+    """
+
+    def __init__(self, method: str, url: str, last: str, status: int | None = None) -> None:
+        super().__init__(f'{method} {url} → {last}')
+        self.method = method
+        self.url = url
+        self.status = status
+
+
 def dav(method: str, url: str, data: bytes | None = None,
         headers: dict[str, str] | None = None,
         ok: tuple[int, ...] = (200, 201, 204, 207)) -> bytes:
     """One WebDAV request, retried with a linear back-off."""
     last = 'unknown'
+    last_status: int | None = None
     for attempt in range(1, ATTEMPTS + 1):
         req = urllib.request.Request(url, data=data, method=method)
         req.add_header('Authorization', 'Basic ' + AUTH)
@@ -104,19 +123,44 @@ def dav(method: str, url: str, data: bytes | None = None,
                 body = resp.read()
                 if resp.status not in ok:
                     last = f'HTTP {resp.status} {resp.reason}'
+                    last_status = resp.status
                 else:
                     return body
         except urllib.error.HTTPError as exc:
             if exc.code in ok:          # e.g. 405 when MKCOL finds an existing folder
                 return b''
             last = f'HTTP {exc.code} {exc.reason}'
+            last_status = exc.code
         except Exception as exc:        # noqa: BLE001 — network layer, retry anything
             last = f'{type(exc).__name__}: {exc}'
+            last_status = None
         if attempt < ATTEMPTS:
             delay = attempt * 10
             print(f'      ... {method} 第 {attempt} 次失败（{last}），{delay}s 后重试', flush=True)
             time.sleep(delay)
-    raise RuntimeError(f'{method} {url} → {last}')
+    raise DavError(method, url, last, last_status)
+
+
+def mkcol(rel_dir: str) -> None:
+    """建一个集合（目录）；已经存在算成功。
+
+    成功码只有 2xx 与 405（RFC 4918：对已存在的集合执行 MKCOL 回 405）。
+
+    ⚠️ 以前这里还把 **301 当成功**，注释写的理由是「和 405 一样表示目录在」—— 并不成立：
+    301/302 是**重定向**（WebDAV 服务器常要求集合 URL 以 `/` 结尾，于是重定向到带斜杠的地址），
+    它既不保证目录存在、也不保证 MKCOL 生效。而 urllib 收到重定向后是拿 **GET** 去跟的，
+    于是目录根本没建出来，紧接着的 PUT 报 409，报错完全指不到这里（2026-09-25 审计发现）。
+    现在改成：遇到重定向就带尾斜杠再试一次（这才是服务器想要的写法），仍失败就抛出去 ——
+    宁可这一次部署红掉、也不要静默留下一个半成品镜像。
+    """
+    url = url_for(rel_dir)
+    try:
+        dav('MKCOL', url, ok=(200, 201, 204, 405))
+    except DavError as exc:
+        if exc.status not in (301, 302, 307, 308):
+            raise
+        print(f'      MKCOL {rel_dir} 被重定向（HTTP {exc.status}），按「集合 URL 要带尾斜杠」重试', flush=True)
+        dav('MKCOL', url + '/', ok=(200, 201, 204, 405))
 
 
 # --------------------------------------------------------------------------- #
@@ -192,10 +236,8 @@ def main() -> int:
     print('全部按原样上传（不压缩、不打包）\n')
 
     # 1) directories ---------------------------------------------------------- #
-    # MKCOL on a collection that already exists answers 405 (RFC 4918) or 301 —
-    # both mean "it is there", so they count as success.
     for rel_dir in sorted(dirs):
-        dav('MKCOL', url_for(rel_dir), ok=(200, 201, 204, 301, 405))
+        mkcol(rel_dir)
     print(f'[1/3] 目录就绪：{len(dirs)} 个')
 
     # 2) files ---------------------------------------------------------------- #

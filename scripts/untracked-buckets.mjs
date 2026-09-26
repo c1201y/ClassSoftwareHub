@@ -95,7 +95,11 @@ export const BUCKET_LABEL = {
  */
 export function classify(app) {
   const id = cur(app?.id)
-  const hit = BUCKETS[id]
+  // ⚠️ 必须用 hasOwnProperty 而不是 `BUCKETS[id]` 直接读：BUCKETS 是普通对象字面量，
+  //    id 为 `constructor` / `toString` / `__proto__` 时会顺着原型链命中 Object.prototype，
+  //    拿回一个「看起来登记过、bucket 却是 undefined」的假记录（下游会静默退化成 page-only）。
+  //    站点数据里目前没有这种 id，但 id 来自外部提交，不能假设它永远干净。
+  const hit = Object.prototype.hasOwnProperty.call(BUCKETS, id) ? BUCKETS[id] : null
   if (hit) return { bucket: hit.bucket, label: BUCKET_LABEL[hit.bucket] || hit.bucket, reason: hit.reason, explicit: true }
   // ⚠️ 不要写 `(^|\.)` 前缀匹配：站点 URL 是 `https://apps.microsoft.com/...`，
   //    主机名前一个字符是 `/`，那样写会一条都匹配不到（firefox / snipaste 就这样被判成「只有网页入口」过）。

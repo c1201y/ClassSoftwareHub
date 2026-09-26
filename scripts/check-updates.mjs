@@ -115,6 +115,25 @@ function cmpVer(a, b) {
   }
   return 0
 }
+/**
+ * 从一堆 tag 名里挑出「最新那个」。
+ *
+ * 只在「仓库一个 release 都没有、只能退回 tags」时用（见 resolveUpstream）。
+ * GitHub 的 /tags 大致按提交时间倒序返回，所以 tags[0] 一般就是最新；
+ * 但为了让「站内版本 vs 上游版本」的比较结果稳定，这里在**可比较版本号**里挑数字段最大的，
+ * 挑不出来（清一色不是版本串）才退回 tags[0]。
+ */
+function latestTag(tags) {
+  const list = (tags || []).filter(Boolean)
+  if (!list.length) return ''
+  const verLike = list.filter((t) => isVerLike(t) && verNums(t))
+  if (!verLike.length) return list[0]
+  return verLike.reduce((best, t) => (cmpVer(t, best) > 0 ? t : best), verLike[0])
+}
+
+/** 这个软件本次**没能检查**（连不上 / 被限流 / 服务端错误）—— 不算数据问题，不进待人工清单 */
+const isNotChecked = (r) => !!(r.unreachable || r.deferred)
+
 const isVerLike = (s) => /^v?\d+(\.\d+)*/i.test(cur(s))
 
 /**
@@ -248,7 +267,8 @@ async function ghApi(pathname, { retry = 3 } = {}) {
 
 /** 查上游最新版本：优先 releases，没有 release 就退回 tags */
 async function resolveUpstream(slug) {
-  const out = { slug, releases: [], tags: [], archived: false, source: 'none', error: '', unreachable: false }
+  const out = { slug, releases: [], tags: [], archived: false, source: 'none', error: '',
+                unreachable: false, deferred: false, tagLatest: '' }
 
   const rl = await ghApi(`/repos/${slug}/releases?per_page=30`)
   if (!rl.ok && rl.status === 404) {
@@ -257,18 +277,29 @@ async function resolveUpstream(slug) {
     return out
   }
   if (!rl.ok) {
-    // ⚠️ 必须把「服务器答复了」和「根本没连上」分开（status === 0）：
-    //    CI runner 偶尔连不上 api.github.com，本机/受限网络环境更是常态。
-    //    以前两者混在一起，一次网络抽风就会把**全部**软件判成「仓库信息有问题」，
+    // ⚠️ 必须把三类分开，判据是「这个答复到底在说谁有问题」：
+    //   status === 0      —— 根本没连上（DNS / 超时 / TLS / 代理拦截）：CI runner 偶尔连不上
+    //                        api.github.com，本机/受限网络环境更是常态；
+    //   401/403/429/5xx   —— 服务器答复了，但说的是「**我们这边**不行」（令牌无效或过期、
+    //                        次级限流、GitHub 自己抽风），跟这个软件的 `github` 字段毫无关系；
+    //   404               —— 服务器明确说「这个仓库不存在」，这才是数据问题。
+    //    以前后两类混在一起，一次网络抽风或令牌过期就会把**全部**软件判成「仓库信息有问题」，
     //    让人挨个去改 `github` 字段 —— 而字段本来就是对的（2026-09-21 实测复现：
-    //    沙箱内 32 个软件全被误报成 repo 问题）。
-    //    这与 checkLink() 里「连不上 ≠ 失效」是同一原则，别在一条腿上守、另一条腿上破。
+    //    沙箱内 32 个软件全被误报成 repo 问题；2026-09-25 审计又发现限流/令牌过期同样会误报）。
+    //    前两类统一记为「本次没能检查」（unreachable 字样沿用，含义已扩为「没能检查」），
+    //    不进待人工清单、下次体检自动重试。这与 checkLink() 里「连不上 ≠ 失效」是同一条原则，
+    //    别在一条腿上守、另一条腿上破。
     if (!rl.status) {
       out.unreachable = true
       out.error = `连不上 API（${rl.error || '网络错误'}）—— 本次没能检查，不代表仓库有问题`
       return out
     }
-    out.error = `releases 拉取失败（HTTP ${rl.status}）`
+    out.unreachable = true
+    out.deferred = true
+    const why = rl.status === 401 ? '，令牌无效或过期'
+      : (rl.status === 403 || rl.status === 429) ? '，被限流'
+      : rl.status >= 500 ? '，GitHub 服务端错误' : ''
+    out.error = `本次没能检查（HTTP ${rl.status}${why}）—— 不代表仓库有问题`
     return out
   }
 
@@ -283,7 +314,13 @@ async function resolveUpstream(slug) {
     const tl = await ghApi(`/repos/${slug}/tags?per_page=50`)
     if (tl.ok && Array.isArray(tl.data)) {
       out.tags = tl.data.map((t) => cur(t.name)).filter(Boolean)
-      out.source = out.tags.length ? 'tags' : 'none'
+      // ★ 回退命中时必须把「最新 tag」**提升出来**：analyze() / planUpdate() 只认
+      //   up.stable / up.any，而零 release 时这两个恒为 null，于是 releaseTag 一直是空，
+      //   这类「有 tag、没 release」的仓库会永远停在 state='no-release'：
+      //   既不会被自动跟进，还会附上一句「上游没有任何 release / tag」的**错话**
+      //   （明明 tag 就在手里）。这里补上那条一直缺失的搬运。
+      out.tagLatest = latestTag(out.tags)
+      out.source = out.tagLatest ? 'tags' : 'none'
     }
   }
 
@@ -338,7 +375,7 @@ function analyze(app, up) {
     version: cur(app.version),
     state: 'unknown',
     note: '',
-    releaseTag: cur((up.stable || up.any)?.tag_name),
+    releaseTag: cur((up.stable || up.any)?.tag_name) || cur(up.tagLatest),
     publishedAt: (up.stable || up.any)?.published_at || '',
     // 上游一个正式版都没有、只剩预发布（alpha/beta/rc 或草稿）时，站内是否跟进交给维护者
     prereleaseOnly: !up.stable && !!up.any,
@@ -348,8 +385,15 @@ function analyze(app, up) {
     deadLinks: [],
   }
 
-  // 「连不上」不是数据问题，单独标出来 —— collectPending 靠它决定不进待人工清单
-  if (up.error) { res.state = 'error'; res.note = up.error; res.unreachable = !!up.unreachable; return res }
+  // 「没能检查」不是数据问题，单独标出来 —— collectPending 靠它决定不进待人工清单。
+  // 两种成因：unreachable（根本没连上）/ deferred（服务器答复了，但说的是我们这边不行）
+  if (up.error) {
+    res.state = 'error'
+    res.note = up.error
+    res.unreachable = !!up.unreachable
+    res.deferred = !!up.deferred
+    return res
+  }
   if (up.archived) res.note = '上游仓库已归档'
   if (!res.releaseTag) { res.state = 'no-release'; res.note = res.note || '上游没有任何 release / tag'; return res }
 
@@ -579,6 +623,19 @@ async function main() {
       res.blockers = plan.blockers
       res.staleNonGithub = plan.staleNonGithub
       res.autoUpdatable = plan.ok && !plan.blockers.length
+      // ⚠️ 以前这里只把结果推进全局 applied、从没写回 res —— 于是报告里
+      //    `(r.applied || []).length` 恒为 0，「已是最新」区那句「★本次修正了直链」永不出现。
+      res.applied = plan.applied
+      if (plan.applied.length) applied.push({ id: app.id, name: res.name, changes: plan.applied })
+    } else if (res.state === 'ok') {
+      // ★ 「版本号没变、但直链还指着本仓库的**旧** release」—— 比如 version 已经是 2.0，
+      //   下载项却还写着 /releases/download/v1.9/App.exe。这类修正以前**根本不会发生**
+      //   （planUpdate 只在 outdated 时被调用），所以上面那句标记从来没机会出现。
+      //   这里补一条 linkOnly 计划：只修直链与体积，不碰版本号、不产生 blockers
+      //   —— blockers 会进待审清单的「有新版本要拍板」档，可这种情况压根没有新版本。
+      //   怎么改、改成哪条，都会由 applied 进入「本次自动写回」一节，改了什么看得见。
+      const plan = planUpdate(e, app, up, APPLY && !res.muted, { linkOnly: true })
+      res.applied = plan.applied
       if (plan.applied.length) applied.push({ id: app.id, name: res.name, changes: plan.applied })
     }
 
@@ -687,12 +744,19 @@ const itemHasChecksum = (item) => hasChecksum(item?.note) || !!cur(item?.hash)
  *   sha    {platforms[]}       下载项带校验值（hash 字段，或 note 里写着 SHA512/SHA256），换了文件校验值就失效
  *   verify {text}              站内版本号不等于上游任何 tag，搞不清它对应哪个版本，不敢动
  *
+ * `opts.linkOnly`（站内版本号**已经**是最新、只为修直链时用）：
+ *   只做「直链 / 体积」的修正，不判断版本号、也不产生 blockers ——
+ *   因为 blockers 的下场是进待审清单的「有新版本要拍板」那一档，而这种情况压根没有新版本。
+ *
  * @returns {{ok: boolean, applied: string[], blockers: {kind: string, text: string}[], staleNonGithub: object[]}}
  */
-function planUpdate(entry, app, up, apply) {
+function planUpdate(entry, app, up, apply, opts = {}) {
+  const linkOnly = !!opts.linkOnly
   const out = { ok: false, applied: [], blockers: [], staleNonGithub: [] }
   const oldVer = cur(app.version)
-  const newTag = cur((up.stable || up.any)?.tag_name)
+  // 与 analyze() 取同一个「上游最新版本」：release 优先，零 release 时用退回的 tag
+  // （否则这类仓库永远走到下面 `!newTag` 那条「上游没有任何可用的发行版」上）
+  const newTag = cur((up.stable || up.any)?.tag_name) || cur(up.tagLatest)
   // 非 GitHub 的旧直链（官网 / 镜像）脚本不会动，但必须提示，否则会留下版本不一致
   const stale = () => { out.staleNonGithub = findStaleNonGithubLinks(app, oldVer) }
 
@@ -701,10 +765,10 @@ function planUpdate(entry, app, up, apply) {
     return out
   }
 
-  // ── 跨大版本：整体不动 ──
+  // ── 跨大版本：整体不动 ──（linkOnly 不看版本号，只修直链）
   const a = verNums(oldVer)
   const b = verNums(newTag)
-  if (!a || !b || a[0] !== b[0]) {
+  if (!linkOnly && (!a || !b || a[0] !== b[0])) {
     out.blockers.push({
       kind: 'bump',
       crossMajor: true,
@@ -716,8 +780,8 @@ function planUpdate(entry, app, up, apply) {
 
   // ── 版本号能不能改 ──
   const inHistory = (up.tags || []).some((t) => normVer(t) === normVer(oldVer))
-  const versionWillChange = inHistory && normVer(oldVer) !== normVer(newTag)
-  if (!inHistory) {
+  const versionWillChange = !linkOnly && inHistory && normVer(oldVer) !== normVer(newTag)
+  if (!linkOnly && !inHistory) {
     out.blockers.push({ kind: 'verify', text: `站内版本 \`${oldVer}\` 不等于上游任何 tag，不确定它是从哪来的` })
   }
 
@@ -737,16 +801,18 @@ function planUpdate(entry, app, up, apply) {
     linkPlan.push({ item, r, noChange: false })
   }
 
-  // 同类原因合并成一条，避免「12 个下载项……」被写成 12 行
-  if (noMatchBlocked.length) out.blockers.push({ kind: 'link', files: noMatchBlocked })
-  if (shaBlocked.length) out.blockers.push({ kind: 'sha', platforms: shaBlocked })
-  if (!inHistory) out.blockers.push({ kind: 'verify', text: `站内版本 \`${oldVer}\` 不等于上游任何 tag，不确定它是从哪来的` })
+  if (!linkOnly) {
+    // 同类原因合并成一条，避免「12 个下载项……」被写成 12 行
+    if (noMatchBlocked.length) out.blockers.push({ kind: 'link', files: noMatchBlocked })
+    if (shaBlocked.length) out.blockers.push({ kind: 'sha', platforms: shaBlocked })
+    if (!inHistory) out.blockers.push({ kind: 'verify', text: `站内版本 \`${oldVer}\` 不等于上游任何 tag，不确定它是从哪来的` })
+    if (out.blockers.length) { stale(); return out }
+  }
 
-  if (out.blockers.length) { stale(); return out }
   if (!versionWillChange && !linkPlan.some((x) => !x.noChange)) { out.ok = true; return out }
 
   out.ok = true
-  if (!apply) { stale(); return out }
+  if (!apply) { if (!linkOnly) stale(); return out }
 
   // ── 真的写 ──
   if (versionWillChange) {
@@ -774,7 +840,9 @@ function planUpdate(entry, app, up, apply) {
     const text = JSON.stringify(app, null, 2).split('\n').join(entry.eol) + (entry.trailingNewline ? entry.eol : '')
     fs.writeFileSync(entry.file, text, 'utf8')
   }
-  stale()
+
+  // linkOnly 不参与「版本升级会带旧官网链过期」那套提示（版本没动，也就没有过期一说）
+  if (!linkOnly) stale()
   return out
 }
 
@@ -808,11 +876,12 @@ function collectPending(results) {
     const ig = r.ignored || null
 
     if (r.state === 'error') {
-      // ⚠️ 「连不上 API」不进待人工清单：那不是软件数据的问题，
-      //    让维护者去改 `github` 字段只会白忙 —— 字段本来就是对的。
-      //    它单独汇总在「本次没能检查」一区，下次体检自动重试（同 checkLink 的原则）。
-      if (r.unreachable) continue
-      // 服务器明确答复了（404 / 5xx 等）才算「仓库信息有问题」
+      // ⚠️ 「本次没能检查」不进待人工清单：
+      //    ① 连不上 API —— 那不是软件数据的问题，让维护者去改 `github` 字段只会白忙；
+      //    ② 被限流 / 令牌过期 / 5xx —— 服务器答复了，但说的是**我们这边**不行，同样不是数据问题。
+      //    两者都单独汇总在「本次没能检查」一区，下次体检自动重试（同 checkLink 的原则）。
+      if (isNotChecked(r)) continue
+      // 到这里就只剩 404 一类「服务器明确说这个仓库不存在」了，才算「仓库信息有问题」
       if (!isMuted(ig, 'repo')) push(r, { kind: 'repo' })
       continue
     }
@@ -1288,13 +1357,18 @@ function buildPendingReport(results, pending, applied, ignore, ctx = {}) {
 
   // ★ 「本次没能验证」：连不上的链接**不能**装成「失效」，但也不能瞒着 ——
   //   列表里明说「不是失效」，人就不用去换链，也不会以为脚本漏查了。
-  // ★ 「本次没能检查」：连不上 API 的软件**不能**装成「仓库有问题」，但也不能瞒着 ——
-  //   明说「不是数据问题」，人就不用去动 `github` 字段，也不会以为脚本漏查了。
-  const unreachable = results.filter((r) => r.unreachable)
+  // ★ 「本次没能检查」：连不上 API、或 GitHub 这一侧没答复好（令牌过期 / 限流 / 5xx）的软件
+  //   **不能**装成「仓库有问题」，但也不能瞒着 —— 明说「不是数据问题」，
+  //   人就不用去动 `github` 字段（字段本来就是对的），也不会以为脚本漏查了。
+  const unreachable = results.filter(isNotChecked)
   if (unreachable.length) {
-    L.push('<details>', `<summary>本次有 ${unreachable.length} 个软件没能检查（连不上 GitHub API，不代表有问题）</summary>`, '')
-    L.push('> 只是**没连上**（DNS / 超时 / TLS / 被拦），**没有**收到 GitHub 的明确答复 —— 所以既不当成「仓库信息有问题」、也不进上面的待处理清单。下次体检会重试。', '')
-    L.push('> 一两个软件这样是网络抖动；**全都这样**就说明本次运行环境根本连不上 GitHub —— 换一次运行即可，这结果不代表站内数据有问题。', '')
+    L.push('<details>', `<summary>本次有 ${unreachable.length} 个软件没能检查（连不上 / 被限流 / GitHub 服务端错误，不代表有问题）</summary>`, '')
+    L.push('> 两种成因都说明不了站内数据有问题：① **根本没连上**（DNS / 超时 / TLS / 被拦）；'
+      + '② **连上了但对方没给答复**（令牌无效或过期、次级限流、5xx）—— 后者是运行环境的问题，'
+      + '跟这个软件的 `github` 字段毫无关系。', '')
+    L.push('> 所以它们既不当成「仓库信息有问题」、也不进上面的待处理清单，下次体检会重试。', '')
+    L.push('> 一两个软件这样是抖动；**全都这样**就说明本次运行环境本身出了问题（网络或令牌）—— '
+      + '换一次运行、或检查工作流用的 `GITHUB_TOKEN` 即可。', '')
     L.push('')
     L.push('| 软件 | 仓库 | 原因 |', '|---|---|---|')
     for (const r of unreachable) {
@@ -1376,6 +1450,10 @@ function buildFullReport(results, applied, ignore, ctx = {}) {
   const ahead = results.filter((r) => r.state === 'ahead')
   const manual = results.filter((r) => r.state === 'manual' || r.state === 'diff')
   const errors = results.filter((r) => r.state === 'error')
+  // ⚠️ 必须把「本次没能检查」（连不上 / 被限流 / 令牌过期 / 5xx）从「查询失败」里拆出来：
+  //    它们的成因是**运行环境**，不是站内数据，混成一行会让人以为有一批仓库信息要修。
+  const notChecked = errors.filter(isNotChecked)
+  const repoErrors = errors.filter((r) => !isNotChecked(r))
   const dead = results.filter((r) => (r.deadLinks || []).length)
   const ok = results.filter((r) => r.state === 'ok')
   const noRelease = results.filter((r) => r.state === 'no-release')
@@ -1392,7 +1470,8 @@ function buildFullReport(results, applied, ignore, ctx = {}) {
   L.push(`| 下载直链可能失效 | ${dead.length} |`)
   L.push(`| 需人工确认 | ${manual.length} |`)
   L.push(`| 站内版本比上游新 | ${ahead.length} |`)
-  L.push(`| 上游查询失败 | ${errors.length} |`)
+  L.push(`| 仓库信息有问题（404 等） | ${repoErrors.length} |`)
+  L.push(`| 本次没能检查（连不上 / 限流 / 令牌 / 5xx） | ${notChecked.length} |`)
   L.push(`| 已是最新 | ${ok.length} |`)
   L.push(`| 没得跟（微软商店 / 固定直链 / 归档 / 仅网页 / 网盘） | ${cov.untracked.length} |`)
   if (skipped.length) L.push(`| 本次跳过（问题没变化，已压掉） | ${skipped.length} |`)
@@ -1453,15 +1532,27 @@ function buildFullReport(results, applied, ignore, ctx = {}) {
     }
     L.push('')
   }
-  if (errors.length) {
-    L.push('## 上游查询失败', '')
-    for (const r of errors) {
-      // 被忽略的（比如 everything 的仓库本来就是 404）标一下，免得人以为还得去修
-      const tag = r.muted ? '　（已在忽略清单里，不会进待审 Issue）' : ''
-      const src = r.repo || '无仓库'
-      L.push(`- ${r.name}（\`${r.id}\`，${src}）：${r.note}${tag}`)
+  if (repoErrors.length || notChecked.length) {
+    L.push('## 上游查询情况', '')
+    if (repoErrors.length) {
+      L.push('**仓库信息有问题**（服务器明确答复：仓库不存在 / 已改名，得人去改 `github` 字段）：', '')
+      for (const r of repoErrors) {
+        // 被忽略的（比如 everything 的仓库本来就是 404）标一下，免得人以为还得去修
+        const tag = r.muted ? '　（已在忽略清单里，不会进待审 Issue）' : ''
+        const src = r.repo || '无仓库'
+        L.push(`- ${r.name}（\`${r.id}\`，${src}）：${r.note}${tag}`)
+      }
+      L.push('')
     }
-    L.push('')
+    if (notChecked.length) {
+      L.push('**本次没能检查**（运行环境问题：连不上 / 被限流 / 令牌无效或过期 / GitHub 5xx；'
+        + '不代表站内数据有问题，下次体检会自动重试）：', '')
+      for (const r of notChecked) {
+        const src = r.repo || '无仓库'
+        L.push(`- ${r.name}（\`${r.id}\`，${src}）：${r.note}`)
+      }
+      L.push('')
+    }
   }
   if (manual.length) {
     L.push('## 需人工确认', '')
