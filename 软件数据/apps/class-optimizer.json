@@ -8,12 +8,12 @@
   "version": "2.1.0.3825",
   "size": "148 MB",
   "system": "Windows 7 ~ 11",
-  "website": "http://care.seewo.com/",
+  "website": "https://care.seewo.com/",
   "downloads": [
     {
       "platform": "Windows 官方下载",
       "note": "官网源获取下载",
-      "url": "http://care.seewo.com/pc/download"
+      "url": "https://care.seewo.com/pc/download"
     }
   ],
   "sort": 33
