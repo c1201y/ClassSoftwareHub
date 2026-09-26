@@ -87,6 +87,7 @@ import WinToolTipService from '../components/WinToolTipService.vue';
 import WelcomeDialog from './WelcomeDialog.vue';
 import GlobalSearch from './GlobalSearch.vue';
 import { syncHolidayTheme, isHolidaySeason, type HolidayTheme } from './holidayTheme';
+import { appIconUrl } from './appIcons';
 import { trackVisit, hasTracked } from './visitor';
 import appIcon from '../assets/AppIcon.ico';
 import { useRoute, useRouter } from 'vue-router';
@@ -104,13 +105,27 @@ const { t } = useI18n();
 const showDataIssueBanner = ref(true);
 
 // ── 设置项（读写 localStorage，供 SettingsPage 修改）──────────────────
+// ⚠️ 这里必须整段包 try/catch：浏览器禁用存储时（关了 Cookie / 无痕 / 某些 WebView）
+//    `localStorage.setItem` 会抛 QuotaExceededError，而 persistSetting 带 { immediate: true }
+//    是**在 setup 阶段同步执行**的 —— 抛出来就会中断整个应用壳的初始化。
+//    项目里其它 5 个模块（feedback / githubImport / githubMirror / SubmitPage / PickNumberTool）
+//    都老老实实包了，这里是唯一漏掉的地方（2026-09-25 审计发现），现在补齐。
 const readStoredSetting = (key: string, fallback: string, allowedValues: string[]) => {
-  const value = localStorage.getItem(key);
-  return allowedValues.includes(value as string) ? (value as string) : fallback;
+  try {
+    const value = localStorage.getItem(key);
+    return allowedValues.includes(value as string) ? (value as string) : fallback;
+  } catch {
+    // 读不到就用默认值，不影响使用（只是这次不记住用户的选择）
+    return fallback;
+  }
 };
 const persistSetting = (key: string, source: Ref<string>) => {
   watch(source, (value) => {
-    localStorage.setItem(key, value);
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // 隐私模式 / 配额满 / 存储被禁：写不进去就算了，主题当次仍然生效
+    }
   }, { immediate: true });
 };
 
@@ -145,7 +160,14 @@ const materialSetting = ref(readStoredSetting('winui-material-setting', 'mica', 
 // 规则：暗色模式 → 中秋主题（青 + 中秋海报）；亮色模式 → 国庆主题（红 + 国庆海报）。
 // 开关默认值 = 是否在档期内（档期内默认开，档期外默认关）；用户手动改过就一直听他的。
 // 关掉 = 背景海报 + 节日配色一起撤，回默认蓝。
-const storedHolidaySkin = localStorage.getItem('winui-holiday-skin');
+// 读的时候同样要兜底：存储被禁时这里也处在 setup 阶段，抛出来一样会白屏
+const storedHolidaySkin = (() => {
+  try {
+    return localStorage.getItem('winui-holiday-skin');
+  } catch {
+    return null;
+  }
+})();
 const holidaySkinEnabled = ref(storedHolidaySkin ? storedHolidaySkin === 'on' : isHolidaySeason());
 const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 const systemDark = ref(systemThemeQuery.matches);
@@ -166,7 +188,11 @@ const refreshActiveHoliday = () => {
 watch(isDarkMode, refreshActiveHoliday);
 watch(holidaySkinEnabled, (enabled) => {
   refreshActiveHoliday();
-  localStorage.setItem('winui-holiday-skin', enabled ? 'on' : 'off');
+  try {
+    localStorage.setItem('winui-holiday-skin', enabled ? 'on' : 'off');
+  } catch {
+    // 同上：记不住就当次生效，不影响节日皮肤的显示
+  }
 });
 refreshActiveHoliday();
 provide('holidaySkinEnabled', holidaySkinEnabled);
@@ -279,7 +305,10 @@ const navMenuItems = computed<NavItem[]>(() => [
     SelectsOnInvoked: false,
     MenuItems: apps
       .filter((app) => app.category === category.key)
-      .map((app) => ({ Tag: `app:${app.id}`, Content: app.name, Icon: app.icon ?? '' }))
+      // 图标走 appIconUrl（本地 64px 优先，没有才回退数据里的外链）——
+      // 与首页卡片 / 详情页保持一致。以前这里直接用 app.icon，于是本地那 13 张
+      // 「国内不稳的图」的兜底在导航栏不生效，同一个软件两处图标来源还能不一样。
+      .map((app) => ({ Tag: `app:${app.id}`, Content: app.name, Icon: appIconUrl(app) }))
   }))
 ]);
 

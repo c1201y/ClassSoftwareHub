@@ -110,7 +110,7 @@ import WinCheckBox from '../../components/WinCheckBox.vue';
 import WinComboBox from '../../components/WinComboBox.vue';
 import WinNumberBox from '../../components/WinNumberBox.vue';
 
-const { toast } = useCopy();
+const { toast, flash } = useCopy();
 
 const CFG_KEY = 'tool.pick.cfg';
 const USED_KEY = 'tool.pick.used';
@@ -250,7 +250,7 @@ const start = () => {
 
 const resetUsed = () => {
   used.value = [];
-  toast.value = '已重置抽号记录';
+  flash('已重置抽号记录');
 };
 
 /** 本次会抽几个（界面上显示的，跟 start 里保持一致） */
@@ -278,7 +278,7 @@ const fairCheck = ref<{ bars: FairBar[]; note: string } | null>(null);
 const runFairCheck = () => {
   const size = poolSize.value;
   if (size <= 1) {
-    toast.value = '请先填有效的号码范围';
+    flash('请先填有效的号码范围', 2600);
     return;
   }
   const buckets = Math.min(10, size);
@@ -328,7 +328,7 @@ const doGroup = () => {
   const size = poolSize.value;
   const v = Math.max(1, Math.floor(groupValue.value || 1));
   if (size <= 1) {
-    toast.value = '请填写有效的号码范围';
+    flash('请填写有效的号码范围', 2600);
     return;
   }
   const nums: number[] = [];

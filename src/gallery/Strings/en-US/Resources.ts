@@ -209,6 +209,8 @@ export default {
     "submit.submit": "Submit",
     "submit.submitting": "Submitting…",
     "submit.error-required": "Please fill in all fields marked with *",
+    "submit.error-id": "The app ID may only contain lowercase letters, digits and hyphens, and cannot start with a hyphen (e.g. notepad-plus-plus, 7-zip). It becomes part of the URL and is used to name the data file, so no other characters are allowed.",
+    "submit.error-sort": "Sort must be a number (lower comes first). Leave it empty to place the app last — do not type text.",
     "submit.error-hash": "The checksum in download {index} is not valid: use hex characters only, with 32 / 40 / 56 / 64 / 96 / 128 digits (MD5 / SHA-1 / SHA-224 / SHA-256 / SHA-384 / SHA-512)",
     "submit.error-network": "Network error: {message}",
     "submit.error-timeout": "Request timed out (no response in {seconds}s)",

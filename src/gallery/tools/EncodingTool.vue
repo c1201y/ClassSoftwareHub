@@ -65,7 +65,7 @@ import { md5 } from './md5';
 import WinTextBox from '../../components/WinTextBox.vue';
 import WinButton from '../../components/WinButton.vue';
 
-const { toast, copy } = useCopy();
+const { toast, copy, flash } = useCopy();
 
 const input = ref('');
 const output = ref('');
@@ -88,10 +88,10 @@ const fromBase64 = (text: string) => {
   return dec.decode(bytes);
 };
 
-const b64enc = () => { try { output.value = toBase64(input.value); } catch { toast.value = '编码失败'; } };
-const b64dec = () => { try { output.value = fromBase64(input.value); } catch { toast.value = '解码失败，请检查 Base64 内容'; } };
+const b64enc = () => { try { output.value = toBase64(input.value); } catch { flash('编码失败', 2600); } };
+const b64dec = () => { try { output.value = fromBase64(input.value); } catch { flash('解码失败，请检查 Base64 内容', 2600); } };
 const urlenc = () => { output.value = encodeURIComponent(input.value); };
-const urldec = () => { try { output.value = decodeURIComponent(input.value); } catch { toast.value = '解码失败，请检查内容'; } };
+const urldec = () => { try { output.value = decodeURIComponent(input.value); } catch { flash('解码失败，请检查内容', 2600); } };
 
 const useOutputAsInput = () => { input.value = output.value; };
 

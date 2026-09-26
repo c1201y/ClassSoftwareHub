@@ -212,7 +212,17 @@ import {
 
 const { t } = useI18n();
 const slots = useSlots();
-const isIconImage = (icon) => /^(https?:)?\/\//i.test(String(icon ?? ''));
+/**
+ * 本项目对上游 WinUIonWeb 的**唯一**改动点（见 AGENTS.md 硬规则 3）：允许导航项用图片图标。
+ *
+ * 判定要认三种写法，否则会把 URL 当成字形**当文字显示**出来（整串 base64 糊在菜单上）：
+ *   · `https://…` / `//…`              —— 站点数据里的 `icon` 大多是厂商外链
+ *   · `data:image/…`                    —— ★ 本地那批 64px 图标被 Vite 内联后就是这个形态
+ *                                          （≤ assetsInlineLimit 的图片一律内联成 data:URL）
+ *   · `/…` `./…` `../…`                —— 站内相对路径（没被内联时会走到这里）
+ * 其余一律当字形（`\uE80F` 这类）渲染成字体图标。
+ */
+const isIconImage = (icon) => /^(?:https?:)?\/\/|^data:image\/|^\.{0,2}\//i.test(String(icon ?? ''));
 
 const officialProps = defineProps({
   PaneDisplayMode: { type: String, default: 'Auto' },

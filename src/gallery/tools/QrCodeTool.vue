@@ -57,7 +57,7 @@ import WinComboBox from '../../components/WinComboBox.vue';
 import WinNumberBox from '../../components/WinNumberBox.vue';
 import WinTextBox from '../../components/WinTextBox.vue';
 
-const { toast, copy } = useCopy();
+const { toast, copy, flash } = useCopy();
 
 const text = ref('https://classsoftwarehub.us.ci');
 const ec = ref<'L' | 'M' | 'Q' | 'H'>('M');
@@ -142,8 +142,8 @@ const copyImage = () => {
   cv.toBlob((blob) => {
     if (!blob) return;
     navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-      .then(() => toast.value = '已复制二维码图片')
-      .catch(() => toast.value = '复制图片失败');
+      .then(() => flash('已复制二维码图片'))
+      .catch(() => flash('复制图片失败', 2600));
   }, 'image/png');
 };
 

@@ -15,6 +15,7 @@
     "check": "npm run type-check && npm run build-only"
   },
   "dependencies": {
+    "dompurify": "^3.4.16",
     "marked": "^18.0.13",
     "qrcode-generator": "^2.0.4",
     "vue": "^3.5.32",
