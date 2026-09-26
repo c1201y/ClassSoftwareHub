@@ -26,6 +26,10 @@ export interface DownloadItem {
   /** 校验值（可选）：只写十六进制，算法按长度识别（64=SHA-256 / 128=SHA-512 等）。
       详情页只显示首尾几位，点一下可复制完整值。 */
   hash?: string;
+  /** 落地方式（可选）：file=文件直链（本页直接下）/ store=应用商店 / netdisk=网盘 / page=官网下载页。
+      不写就按 URL 推断（见 src/gallery/downloadLink.ts）；**没有扩展名的直链必须显式写 file**，
+      例如 geogebra 的 /package/win-autoupdate、bandizip 的 dl.php?old。 */
+  kind?: 'file' | 'store' | 'netdisk' | 'page';
   url?: string;
 }
 

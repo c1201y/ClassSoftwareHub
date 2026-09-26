@@ -98,6 +98,8 @@
                 <div class="detail-download-platform">{{ download.platform }}</div>
                 <div v-if="download.note" class="detail-download-note">{{ download.note }}</div>
                 <div v-if="download.size" class="detail-download-size">{{ download.size }}</div>
+                <!-- 不是文件直链的项（网盘 / 官网下载页），如实说明点了会去哪儿 -->
+                <div v-if="downloadHint(download)" class="detail-download-kind">{{ downloadHint(download) }}</div>
                 <!-- 校验值：只有数据里填了 hash 才出现；默认只显示首尾，点一下复制完整值 -->
                 <button
                   v-if="download.hash"
@@ -113,7 +115,7 @@
               <div class="detail-download-actions">
                 <WinButton
                   class="detail-download-button"
-                  :Content="t('detail.download')"
+                  :Content="downloadButtonText(download)"
                   Style="AccentButtonStyle"
                   @click="openDownload(download)" />
                 <!-- GitHub 的链接才多给一条国内加速路（通道清单见 githubMirror.ts） -->
@@ -167,6 +169,7 @@ import { useI18n } from '../../components/i18n/index';
 import { findAppById, categoryName } from '../data';
 import type { DownloadItem } from '../data';
 import { appIconUrlSafe, markIconBroken } from '../appIcons';
+import { kindOf, triggerDownload } from '../downloadLink';
 import {
   MIRROR_CHANNELS,
   isMirrorableUrl,
@@ -183,28 +186,48 @@ const route = useRoute();
 /** 网址 #/download/<id> 里的 id 对应的软件 */
 const app = computed(() => findAppById(String(route.params.id ?? '')));
 
-/** 判断一个下载链接是不是 Microsoft Store 应用页 */
-const isStoreUrl = (url?: string) =>
-  /^https?:\/\/(apps\.microsoft\.com|www\.microsoft\.com\/store|store\.microsoft\.com)|^ms-windows-store:/i.test(url || '');
-
 /** 商店入口：优先用 store 字段；没有就把 downloads 里指向商店的那条自动提上来 */
 const storeLink = computed(() => {
   const value = app.value;
   if (!value) return '';
   if (value.store) return value.store;
-  const matched = (value.downloads || []).find((item) => isStoreUrl(item.url));
-  return matched ? matched.url : '';
+  const matched = (value.downloads || []).find((item) => kindOf(item) === 'store');
+  return matched ? matched.url || '' : '';
 });
 
 /** 除商店外的普通下载项 */
 const otherDownloads = computed(() =>
-  ((app.value?.downloads) || []).filter((item) => !isStoreUrl(item.url))
+  ((app.value?.downloads) || []).filter((item) => kindOf(item) !== 'store')
 );
 
+// ── 下载项的落地方式（判定规则见 src/gallery/downloadLink.ts）───────────
+// 文件直链在本页直接下：隐藏 <a> 一戳就走下载，当前页不动、不闪新标签。
+// 网盘 / 官网下载页只能跳转 —— 那就把按钮文案和说明写清楚，别让用户点完才发现被带走了。
+
 const openDownload = (download: DownloadItem) => {
-  if (download.url) {
-    window.open(download.url, '_blank', 'noopener,noreferrer');
+  const url = download.url;
+  if (!url) return;
+  if (kindOf(download) === 'file') {
+    triggerDownload(url);
+    return;
   }
+  window.open(url, '_blank', 'noopener,noreferrer');
+};
+
+/** 主按钮文案：能直下的说「下载」，要跳走的说清楚去哪儿 */
+const downloadButtonText = (download: DownloadItem) => {
+  const kind = kindOf(download);
+  if (kind === 'netdisk') return t('detail.open-netdisk');
+  if (kind === 'page') return t('detail.open-page');
+  return t('detail.download');
+};
+
+/** 跳转项的说明；文件直链返回空串（不显示这一行） */
+const downloadHint = (download: DownloadItem) => {
+  const kind = kindOf(download);
+  if (kind === 'netdisk') return t('detail.hint-netdisk');
+  if (kind === 'page') return t('detail.hint-page');
+  return '';
 };
 
 /** 打开应用商店页面（新标签页） */

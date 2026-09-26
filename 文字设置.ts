@@ -154,6 +154,12 @@ export default {
       "detail.hash-checksum": "校验值",
       "detail.mirror-desc": "下面的镜像站会把上面的链接原样转发一份，国内下载通常快很多。这条不通就换一条，或者直接用上面的「下载」走 GitHub 官方。",
       "detail.mirror-note": "镜像由第三方公益提供：本站只做跳转，不中转、不修改文件，也不保证它们一直可用。装之前建议核对官方公布的哈希值。",
+      // 下载项的落地方式：能直下的按钮写「下载」（点了本页直接开始下，不跳走）；
+      // 只能跳转的按来源写「前往官网 / 前往网盘」，下面再补一句说明
+      "detail.open-page": "前往官网",
+      "detail.open-netdisk": "前往网盘",
+      "detail.hint-page": "该软件只提供官方下载页，点按钮会跳转到官网获取安装包",
+      "detail.hint-netdisk": "网盘分享，点按钮会跳转到网盘页面获取安装包",
       "app.shortTitle": "电教委员常用软件下载站",
       "app.author": "Tiny-Nick",
       "app.version": "v2.3.3 - Tangram (20260924PR01)",
