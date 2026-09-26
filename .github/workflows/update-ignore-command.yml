@@ -25,8 +25,14 @@ name: 更新忽略命令
 #   3. 命令必须是行首的 /ignore 或 /unignore
 # 评论内容一律通过环境变量传进 bash，不拼进脚本正文，避免命令注入。
 #
-# ⚠️ 点方框那条路（tick job）**不需要额外鉴权**：本 Issue 是机器人建的，
-#    GitHub 只允许有写权限的人编辑它的正文 —— 能改正文的人本来就能改仓库。
+# ⚠️ 点方框那条路（tick job）与上面三重门**同等严格**，判据是「这个 Issue 是不是机器人建的」：
+#    本 Issue 由体检工作流（actions/github-script + 仓库自带的 GITHUB_TOKEN）创建 / 更新，
+#    作者恒为 github-actions[bot]。**别人自己新建一个同名标题的 Issue**，正文就是他随便写的，
+#    此时「能编辑正文」不再等价于「有仓库写权限」—— 所以 tick job 里除了标题，还校验：
+#      · `github.event.issue.user.login == 'github-actions[bot]'`（Issue 是机器人开的）
+#      · 以及编辑者（sender）有写权限（OWNER / MEMBER / COLLABORATOR）
+#    缺了这两条，任何人在自己建的「软件信息体检」Issue 里勾一下方框，就能以 contents:write
+#    提交并 push 到 main（2026-09-25 审计发现的真实缺口，别把它们删掉）。
 
 on:
   issue_comment:
@@ -47,6 +53,9 @@ jobs:
       && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
       && (startsWith(github.event.comment.body, '/ignore') || startsWith(github.event.comment.body, '/unignore'))
     runs-on: ubuntu-latest
+    # ⚠️ `update-ignore` 这个并发组**故意**和 check-updates.yml 的 check job 同名：
+    #    两者都会整份重写 软件数据/update-ignore.json（体检那边由 --apply 清理过期的 _skip_once）。
+    #    分组一旦不同就互不排队，后写的一方会基于旧快照把对方的改动覆盖掉。
     concurrency:
       group: update-ignore
       queue: max
@@ -179,8 +188,11 @@ jobs:
       github.event_name == 'issues'
       && !github.event.issue.pull_request
       && contains(github.event.issue.title, '软件信息体检')
+      && github.event.issue.user.login == 'github-actions[bot]'
+      && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.sender.author_association)
       && github.event.sender.login != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    # 同 ignore job：`update-ignore` 是「所有会重写 update-ignore.json 的地方」共用的串行队列
     concurrency:
       group: update-ignore
       queue: max

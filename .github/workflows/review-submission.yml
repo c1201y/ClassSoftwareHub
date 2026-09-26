@@ -37,6 +37,7 @@ jobs:
         with:
           script: |
             const fs = require('fs')
+            const path = require('path')
             const label = process.env.LABEL
             const issue = context.payload.issue
             const body = issue.body || ''
@@ -53,7 +54,12 @@ jobs:
 
             // 只允许操作 submissions/ 下的草稿：Issue 正文里有一部分是外部可控文本，
             // 万一被伪造成别的路径，绝不能让这一步写到 软件数据/ 或仓库外。
-            if (!submissionPath.startsWith('submissions/') || submissionPath.includes('..')) {
+            // 用 resolve 之后做包含性判断（比字符串 startsWith 更难绕过：`submissions/../x`、
+            // 绝对路径、Windows 反斜杠都由它一并挡住）。
+            const stage = process.cwd()
+            const subsDir = path.resolve(stage, 'submissions')
+            const resolved = path.resolve(stage, submissionPath)
+            if (resolved !== subsDir && !resolved.startsWith(subsDir + path.sep)) {
               await github.rest.issues.createComment({
                 ...context.repo,
                 issue_number: issue.number,
@@ -71,8 +77,66 @@ jobs:
               return
             }
 
-            const data = JSON.parse(fs.readFileSync(submissionPath, 'utf8'))
-            const appsPath = `软件数据/apps/${data.id}.json`
+            // ⚠️ 草稿内容**整份**由提交者决定，`data.id` 也是 —— 而它会被拼成写入路径。
+            //    `"id": "../../package"` 会覆盖仓库根目录的 package.json，换成 `../../package-lock`
+            //    就能让 CI 的 `npm ci` 跑攻击者给的依赖图。所以这里必须自己校验，不能指望上游
+            //    （SubmitPage.vue 的 buildPayload 只是 trim()）。
+            //    判据与 scripts/update-ignore.mjs、SubmitPage.vue 的 ID_PATTERN 一致。
+            const ID_RE = /^[a-z0-9][a-z0-9-]*$/
+            const appsDir = path.resolve(stage, '软件数据', 'apps')
+
+            let data
+            try {
+              data = JSON.parse(fs.readFileSync(submissionPath, 'utf8'))
+            } catch (e) {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: issue.number,
+                body: `❌ 提交文件不是合法 JSON：\`${submissionPath}\``
+              })
+              return
+            }
+            if (!data || typeof data !== 'object' || Array.isArray(data)) {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: issue.number,
+                body: `❌ 提交文件的内容不是一个软件对象（顶层必须是 JSON 对象）：\`${submissionPath}\``
+              })
+              return
+            }
+            if (typeof data.id !== 'string' || !data.id) {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: issue.number,
+                body: `❌ 提交里的 \`id\` 不是非空字符串：\`${JSON.stringify(data.id)}\``
+              })
+              return
+            }
+
+            const appsPath = path.join(appsDir, `${data.id}.json`)
+            // 评论里给维护者看的永远是仓库相对路径（appsPath 是 runner 上的绝对路径）
+            const appsDisplay = `软件数据/apps/${data.id}.json`
+            // ① 路径包含性：dirname 与 appsDir 相等 ⇒ id 里没有任何路径分隔符（`..`/`/` 都不可能）
+            const contained = path.dirname(appsPath) === appsDir
+            // ② 字符集：新 ID 按约定卡死；**目标文件已存在**时额外放行 ——
+            //    站内历史上有 5 个不合规的 ID（`WPS` / `Supermium` / `bandizip6.29` …），
+            //    若一律拒绝，打「覆盖已存在」就再也修不了它们了。
+            //    这条放行不构成风险：写入目标是一个**已经存在**的单段文件名，不可能跑到别处。
+            const conforming = ID_RE.test(data.id)
+            const legacyExisting = !conforming && fs.existsSync(appsPath)
+            if (!contained || !(conforming || legacyExisting)) {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: issue.number,
+                body: `❌ 提交里的 \`id\` 不合法：\`${JSON.stringify(data.id)}\`\n\n`
+                  + '> 只允许**小写字母、数字、短横线**，且不能以短横线开头（例：`classisland`、`7-zip`）。'
+                  + '请让提交者改 ID 后重新提交。'
+              })
+              return
+            }
+            if (legacyExisting) {
+              core.warning(`id \`${data.id}\` 不符合命名约定，但因为目标文件已存在（属覆盖通道），予以放行`)
+            }
 
             // ── 幂等保护：确认这条草稿还没被本轮（或既往）的审核消费掉 ──
             // ⚠️ 同一个 Issue 被**连续打两个标签**时（例如先 `approved`、又想改成
@@ -124,7 +188,7 @@ jobs:
                 await github.rest.issues.createComment({
                   ...context.repo,
                   issue_number: issue.number,
-                  body: `❌ 已存在同名文件 \`${appsPath}\`。请先删除旧文件或让提交者改 ID 后重新提交。\n\n`
+                  body: `❌ 已存在同名文件 \`${appsDisplay}\`。请先删除旧文件或让提交者改 ID 后重新提交。\n\n`
                     + `> 若确实要用**本次提交**整份覆盖站内那份，请改打 \`${OVERWRITE_LABEL}\` 标签`
                     + `（图标 / 版本号 / 下载直链都会以本次提交为准；旧内容会自动附在本 Issue 评论里）。`
                 })
@@ -160,7 +224,7 @@ jobs:
               await github.rest.issues.createComment({
                 ...context.repo,
                 issue_number: issue.number,
-                body: `✅ 已${exists ? '覆盖' : '合并到'} \`${appsPath}\`，稍后自动构建上线。` + tail
+                body: `✅ 已${exists ? '覆盖' : '合并到'} \`${appsDisplay}\`，稍后自动构建上线。` + tail
               })
               await github.rest.issues.update({
                 ...context.repo,
@@ -183,6 +247,10 @@ jobs:
 
       - name: 提交更改
         id: commit
+        # 标签名 / Issue 号一律经 env 传进来，不直接拼进脚本正文（与仓库其它工作流一致的写法）
+        env:
+          LABEL_NAME: ${{ github.event.label.name }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -190,7 +258,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
-            git commit -m "review: ${{ github.event.label.name }} #${{ github.event.issue.number }}"
+            git commit -m "review: $LABEL_NAME #$ISSUE_NUMBER"
             # 兜底：万一仍有并发（队列未生效等），反复 rebase 到最新 main 重试
             ok=""
             for i in $(seq 1 8); do

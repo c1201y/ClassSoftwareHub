@@ -11,8 +11,15 @@ permissions:
   id-token: write
 
 concurrency:
+  # ⚠️ 必须 false（GitHub 官方 Pages 模板也是 false）：
+  #    deploy 这一趟要往**三个**目标分别发布（Pages / FTP / OpenList），
+  #    中途被 cancel 就留下「Pages 是新的、网盘还是旧的」这种半成品镜像 —— 而且不会有任何报错。
+  #    而本工作流除了 push 之外还会被 check-updates.yml / review-submission.yml 主动派发，
+  #    两处接连派发是常态，用 true 就等于给「发布到一半被掐掉」留了后门。
+  #    false 时新来的那一次只是排队（GitHub 只保留 1 个 running + 1 个 pending，
+  #    更新的 pending 会顶掉旧的 pending），永远不会打断正在进行的上传。
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   # 只在这里构建一次，产物由后面三个上传任务共用。
