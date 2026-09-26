@@ -1,13 +1,11 @@
 {
   "id": "easiauto",
   "name": "EasiAuto",
-  "icon": "https://avatars.githubusercontent.com/u/77066831?v=4",
+  "icon": "https://easiauto.0xabcd.dev/images/EasiAuto.webp",
   "category": "teaching",
   "tagline": "一款自动登录希沃白板的小工具！",
   "description": "一款自动登录希沃白板的小工具，旨在带来更智能、更方便、更易用的希沃白板登录体验，简化课前准备流程。",
   "version": "v1.2.1",
-  "size": "",
-  "system": "",
   "website": "https://easiauto.0xabcd.dev",
   "github": "https://github.com/hxabcd/EasiAuto",
   "downloads": [
