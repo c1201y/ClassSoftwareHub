@@ -1,0 +1,23 @@
+{
+  "_提交时间": "2026-09-26T04:11:08.072Z",
+  "_原始ID冲突": false,
+  "id": "test",
+  "name": "测试",
+  "icon": "",
+  "category": "teaching",
+  "tagline": "111",
+  "description": "111",
+  "version": "",
+  "size": "",
+  "system": "111",
+  "website": "",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "",
+      "url": "https://classsoftwarehub.us.ci/#/submit.zip"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "111"
+}
