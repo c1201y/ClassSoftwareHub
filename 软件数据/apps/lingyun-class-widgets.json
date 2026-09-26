@@ -1,12 +1,11 @@
 {
   "id": "lingyun-class-widgets",
   "name": "LingYun-Class-Widgets",
-  "icon": "https://avatars.githubusercontent.com/u/196129825?v=4",
+  "icon": "https://www.yamikani.cn/assets/logo-BvjMWvo_.svg",
   "category": "teaching",
   "tagline": "电子桌面课程表",
   "description": "凌云班级组件",
   "version": "v1.6.18",
-  "size": "",
   "system": "Windows",
   "website": "https://t.me/ECSchedule",
   "github": "https://github.com/Yamikani-Flipped/LingYun-Class-Widgets",
