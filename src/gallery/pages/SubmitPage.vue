@@ -659,6 +659,17 @@ function isHashLike(value: string): boolean {
 }
 
 /**
+ * 软件 ID 允许的字符集。
+ * ⚠️ 必须与这三处保持一致，改一处就得改三处：
+ *   · scripts/update-ignore.mjs 的 id 校验
+ *   · .github/workflows/review-submission.yml 里的 ID_RE（它拿 id 拼写入路径）
+ *   · .github/workflows/update-ignore-command.yml 从 Issue 正文里解析 id 的正则
+ * 这不是「好看」的问题：`data.id` 会被拼成 `软件数据/apps/<id>.json` 再写文件，
+ * `../../package` 这种能跑到仓库外去（2026-09-25 审计发现的路径穿越）。
+ */
+const ID_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
+
+/**
  * 从表单拼出要提交的 payload。
  * 必填项不全、或校验值填了但格式不对时，payload 为 null，error 里带上要显示的提示
  * （error 为空表示按通用的「请填写带 * 的必填项」提示）。
@@ -709,6 +720,19 @@ function buildPayload(): { payload: Record<string, unknown> | null; error: strin
     !payload.system ||
     (payload.downloads as unknown[]).length === 0;
   if (missing) return { payload: null, error: '' };
+
+  // 软件 ID 字符集：提交页的说明文字（submit.id-desc）早就写了规则，但一直没真的校验；
+  // 而这个值会被 CI 拼成写入路径，所以在这里就要拦下来（理由见 ID_PATTERN 的注释）。
+  if (!ID_PATTERN.test(String(payload.id))) {
+    return { payload: null, error: t('submit.error-id') };
+  }
+
+  // 排序值：填了就必须是数字。
+  // ⚠️ 不能只靠下面的 `=== undefined` 清理 —— Number('abc') 得到 NaN，NaN !== undefined
+  //    所以那个键会被留下，JSON.stringify 再把它写成 `"sort": null`，污染数据。
+  if (payload.sort !== undefined && !Number.isFinite(payload.sort as number)) {
+    return { payload: null, error: t('submit.error-sort') };
+  }
 
   // 校验值格式检查：填了就必须是合法写法 —— 写错的哈希比不写更糟（用户会照着核对下载文件）
   const downloadItems = payload.downloads as { hash?: string }[];

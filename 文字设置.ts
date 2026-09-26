@@ -247,6 +247,8 @@ export default {
       "submit.submit": "提交",
       "submit.submitting": "提交中…",
       "submit.error-required": "请填写带 * 的必填项",
+      "submit.error-id": "软件 ID 只能用小写英文、数字和短横线，且不能以短横线开头（例：notepad-plus-plus、7-zip）。它会成为网址的一部分，也会被用来命名数据文件，所以不能有别的字符。",
+      "submit.error-sort": "排序只能是数字（越小越靠前）。留空表示排在最后，不要填文字。",
       "submit.error-hash": "下载项 {index} 的校验值格式不对：只填十六进制字符，位数应为 32 / 40 / 56 / 64 / 96 / 128（对应 MD5 / SHA-1 / SHA-224 / SHA-256 / SHA-384 / SHA-512）",
       "submit.error-network": "网络错误：{message}",
       "submit.error-timeout": "请求超时（{seconds} 秒无响应）",

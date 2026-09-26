@@ -36,6 +36,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
 import WinTextBox from '../../components/WinTextBox.vue';
@@ -45,9 +46,32 @@ const { toast, copy } = useCopy();
 
 const input = ref('# 你好，Markdown\n\n这是一个**实时预览**的编辑器。\n\n- 支持列表\n- 支持 `行内代码`\n\n> 引用也可以\n\n```js\nconsole.log("代码块");\n```');
 
+/**
+ * 渲染 + 消毒。
+ *
+ * ⚠️ `marked` **不做** HTML 消毒：它会把 Markdown 里原样的 HTML 直接放进输出，
+ *    所以 `<img src=x onerror="alert(1)">` 会真的被执行。这里的输入目前只来自用户自己
+ *    （属「自 XSS」，危害有限），但这个工具是公开的，一旦以后支持「从网址载入 md」
+ *    「粘贴同学发来的文档」，就会变成可被利用的 XSS —— 所以渲染管线里就先把这扇门关上。
+ *
+ *    用 DOMPurify 而不是自己写白名单：手搓的标签/属性白名单是 XSS 的经典翻车点
+ *    （`<svg>` 里的 `<script>`、`javascript:` 变形、属性里的换行……），
+ *    这类过滤该交给专门维护的库。
+ */
 const html = computed(() => {
   try {
-    return marked.parse(input.value, { async: false }) as string;
+    const raw = marked.parse(input.value, { async: false }) as string;
+    return DOMPurify.sanitize(raw, {
+      // 只留「Markdown 会长出来」的标签，多一个都不给：没有 script / iframe / form / style
+      ALLOWED_TAGS: [
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'blockquote', 'pre', 'code',
+        'ul', 'ol', 'li', 'strong', 'em', 'del', 's', 'a', 'img', 'table', 'thead', 'tbody',
+        'tr', 'th', 'td', 'span', 'div', 'sup', 'sub', 'input'
+      ],
+      // `input` 是任务列表的复选框，只保留 type/checked/disabled，其余属性一律不留
+      ALLOWED_ATTR: ['href', 'title', 'alt', 'src', 'class', 'type', 'checked', 'disabled', 'align'],
+      ALLOW_DATA_ATTR: false,
+    });
   } catch (err) {
     return `<p>渲染出错：${err instanceof Error ? err.message : String(err)}</p>`;
   }

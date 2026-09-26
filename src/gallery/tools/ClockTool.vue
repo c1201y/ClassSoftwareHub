@@ -166,7 +166,7 @@ import WinComboBox from '../../components/WinComboBox.vue';
 import WinInfoBar from '../../components/WinInfoBar.vue';
 import WinSlider from '../../components/WinSlider.vue';
 
-const { toast } = useCopy();
+const { toast, flash } = useCopy();
 
 type Mode = 'normal' | 'web' | 'screen';
 type Veil = 'none' | 'white' | 'black' | 'acrylic' | 'mica';
@@ -335,11 +335,11 @@ const stageClass = computed(() => ({
 /* ── 背景图片 ─────────────────────────────────────────────── */
 const applyImageFile = (file: File) => {
   if (!file.type.startsWith('image/')) {
-    toast.value = '请选择图片文件';
+    flash('请选择图片文件', 2600);
     return;
   }
   if (file.size > 12 * 1024 * 1024) {
-    toast.value = '图片太大了（建议 12MB 以内）';
+    flash('图片太大了（建议 12MB 以内）', 2600);
     return;
   }
   if (bgUrl.value) URL.revokeObjectURL(bgUrl.value);
@@ -404,7 +404,7 @@ const enterScreen = async () => {
   try {
     await overlayEl.value?.requestFullscreen?.();
   } catch {
-    toast.value = '浏览器拒绝了全屏请求，可以用「网页全屏」';
+    flash('浏览器拒绝了全屏请求，可以用「网页全屏」', 3000);
   }
   void requestWakeLock();
 };
