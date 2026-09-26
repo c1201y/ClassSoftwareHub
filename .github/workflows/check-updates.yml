@@ -64,8 +64,14 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
+    # ⚠️ 并发组必须与 update-ignore-command.yml 的 tick / ignore 两个 job **同名**。
+    #    三者都会「读 软件数据/update-ignore.json → 改 → 整份重写」（这里由 --apply 顺手清
+    #    过期的 `_skip_once` 记录），而并发组不同就是**互不排队**：
+    #    每周体检清理 `_skip_once` 的同时，维护者正好点一下「本次跳过」，
+    #    后写的一方基于旧快照整份覆盖 → 刚记下的记录凭空消失（2026-09-25 审计发现）。
+    #    推送重试里的 rebase 只解决「推不上去」，救不回「基于旧快照算出来的写入」。
     concurrency:
-      group: check-updates
+      group: update-ignore
       queue: max
     permissions:
       contents: write
