@@ -1,14 +1,11 @@
 {
   "id": "classtools",
   "name": "ClassTools",
-  "icon": "https://avatars.githubusercontent.com/u/18461360?v=4",
+  "icon": "https://store-images.s-microsoft.com/image/apps.52863.14109399796739009.657e7b75-563b-43b8-8aa9-b92803b83cd0.d71ff4ea-419b-43ae-ae69-1d0bb479d5e0?h=134",
   "category": "teaching",
   "tagline": "一个用在班级电脑上面的动态壁纸系统，显示高考倒计时、作业、课程表、值日生等",
   "description": "一个用在班级电脑上面的动态壁纸系统，显示高考倒计时、作业、课程表、值日生等",
   "version": "v3.1.0",
-  "size": "",
-  "system": "",
-  "website": "",
   "github": "https://github.com/clansty/ClassTools",
   "downloads": [
     {
