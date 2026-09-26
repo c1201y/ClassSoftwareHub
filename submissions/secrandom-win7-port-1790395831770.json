@@ -1,0 +1,73 @@
+{
+  "_提交时间": "2026-09-26T04:10:31.770Z",
+  "_原始ID冲突": false,
+  "id": "secrandom-win7-port",
+  "name": "SecRandom-Win7-Port",
+  "icon": "https://avatars.githubusercontent.com/u/264530092?v=4",
+  "category": "teaching",
+  "tagline": "SecRandom 的移植版本，适配Windows7",
+  "description": "SecRandom 的移植版本，适配Windows7",
+  "version": "v3.1.5.1",
+  "size": "",
+  "system": "Windows",
+  "website": "",
+  "github": "https://github.com/c1201y/SecRandom-Win7-Port",
+  "downloads": [
+    {
+      "platform": "Windows ARM64 便携版",
+      "note": "SecRandom-v3.1.5.1-win-arm64-portable-full.zip",
+      "size": "136 MB",
+      "url": "https://github.com/c1201y/SecRandom-Win7-Port/releases/download/v3.1.5.1/SecRandom-v3.1.5.1-win-arm64-portable-full.zip"
+    },
+    {
+      "platform": "Windows ARM64 便携版",
+      "note": "SecRandom-v3.1.5.1-win-arm64-portable-light.zip",
+      "size": "79.9 MB",
+      "url": "https://github.com/c1201y/SecRandom-Win7-Port/releases/download/v3.1.5.1/SecRandom-v3.1.5.1-win-arm64-portable-light.zip"
+    },
+    {
+      "platform": "Windows ARM64 安装版",
+      "note": "SecRandom-v3.1.5.1-win-arm64-setup.exe",
+      "size": "85.6 MB",
+      "url": "https://github.com/c1201y/SecRandom-Win7-Port/releases/download/v3.1.5.1/SecRandom-v3.1.5.1-win-arm64-setup.exe"
+    },
+    {
+      "platform": "Windows x64 便携版",
+      "note": "SecRandom-v3.1.5.1-win-x64-portable-full.zip",
+      "size": "172 MB",
+      "url": "https://github.com/c1201y/SecRandom-Win7-Port/releases/download/v3.1.5.1/SecRandom-v3.1.5.1-win-x64-portable-full.zip"
+    },
+    {
+      "platform": "Windows x64 便携版",
+      "note": "SecRandom-v3.1.5.1-win-x64-portable-light.zip",
+      "size": "113 MB",
+      "url": "https://github.com/c1201y/SecRandom-Win7-Port/releases/download/v3.1.5.1/SecRandom-v3.1.5.1-win-x64-portable-light.zip"
+    },
+    {
+      "platform": "Windows x64 安装版",
+      "note": "SecRandom-v3.1.5.1-win-x64-setup.exe",
+      "size": "111 MB",
+      "url": "https://github.com/c1201y/SecRandom-Win7-Port/releases/download/v3.1.5.1/SecRandom-v3.1.5.1-win-x64-setup.exe"
+    },
+    {
+      "platform": "Windows x86 便携版",
+      "note": "SecRandom-v3.1.5.1-win-x86-portable-full.zip",
+      "size": "159 MB",
+      "url": "https://github.com/c1201y/SecRandom-Win7-Port/releases/download/v3.1.5.1/SecRandom-v3.1.5.1-win-x86-portable-full.zip"
+    },
+    {
+      "platform": "Windows x86 便携版",
+      "note": "SecRandom-v3.1.5.1-win-x86-portable-light.zip",
+      "size": "104 MB",
+      "url": "https://github.com/c1201y/SecRandom-Win7-Port/releases/download/v3.1.5.1/SecRandom-v3.1.5.1-win-x86-portable-light.zip"
+    },
+    {
+      "platform": "Windows x86 安装版",
+      "note": "SecRandom-v3.1.5.1-win-x86-setup.exe",
+      "size": "103 MB",
+      "url": "https://github.com/c1201y/SecRandom-Win7-Port/releases/download/v3.1.5.1/SecRandom-v3.1.5.1-win-x86-setup.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "1"
+}
