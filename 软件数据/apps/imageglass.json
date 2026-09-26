@@ -1,7 +1,7 @@
 {
   "id": "imageglass",
   "name": "ImageGlass",
-  "icon": "https://github.com/d2phap/ImageGlass/blob/develop/source/__assets/logo_c_512.png?raw=true",
+  "icon": "https://cdn.jsdelivr.net/gh/d2phap/ImageGlass@develop/source/__assets/logo_c_512.png",
   "category": "system",
   "tagline": "一款快速、IC 等，专图像 Windows、macOS 和 Linux 上流畅浏览而设计。VIF、JXL、HEIC 等，专为在 Windows、macOS 和 Linux 上流畅浏览而设计。",
   "description": "ImageGlass 是一款快速目标，结开源图像RAW 图像，并可实现无缝、快速的浏览。PEG 、JPEG、 JPEG 、JPEG 、JPEG 和 RAW 图像，并可实现无缝、快速的浏览。PEG 、JPEG、 JPEG 、JPEG 、JPEG 和 RAW 图像，并可实现无缝、快速的浏览。PEG 、JPEG、 JPEG 、JPEG 、JPEG 和 RAW 图像，并可实现无缝、快速的浏览。",
