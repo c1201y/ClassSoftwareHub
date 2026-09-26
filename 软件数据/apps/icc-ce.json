@@ -8,28 +8,28 @@
   "version": "1.8.0.6",
   "size": "62 MB+",
   "system": "Windows 10/11（x64）",
-  "website": "https://www.iccce.dpdns.org/",
+  "website": "https://inkcanvasforclass.github.io/",
   "github": "https://github.com/InkCanvasForClass/community",
   "downloads": [
     {
       "platform": "InkCanvasForClass.CE.1.8.0.4-x64.Setup.exe",
-      "url": "https://github.com/InkCanvasForClass/community/releases/download/1.8.0.6/InkCanvasForClass.CE.1.8.0.6-x64.Setup.exe",
-      "size": "61 MB"
+      "size": "61 MB",
+      "url": "https://github.com/InkCanvasForClass/community/releases/download/1.8.0.6/InkCanvasForClass.CE.1.8.0.6-x64.Setup.exe"
     },
     {
       "platform": "InkCanvasForClass.CE.1.8.0.4-x64.zip",
-      "url": "https://github.com/InkCanvasForClass/community/releases/download/1.8.0.6/InkCanvasForClass.CE.1.8.0.6-x64.zip",
-      "size": "73 MB"
+      "size": "73 MB",
+      "url": "https://github.com/InkCanvasForClass/community/releases/download/1.8.0.6/InkCanvasForClass.CE.1.8.0.6-x64.zip"
     },
     {
       "platform": "InkCanvasForClass.CE.1.8.0.4.Setup.exe",
-      "url": "https://github.com/InkCanvasForClass/community/releases/download/1.8.0.6/InkCanvasForClass.CE.1.8.0.6.Setup.exe",
-      "size": "61 MB"
+      "size": "61 MB",
+      "url": "https://github.com/InkCanvasForClass/community/releases/download/1.8.0.6/InkCanvasForClass.CE.1.8.0.6.Setup.exe"
     },
     {
       "platform": "InkCanvasForClass.CE.1.8.0.4.zip",
-      "url": "https://github.com/InkCanvasForClass/community/releases/download/1.8.0.6/InkCanvasForClass.CE.1.8.0.6.zip",
-      "size": "73 MB"
+      "size": "73 MB",
+      "url": "https://github.com/InkCanvasForClass/community/releases/download/1.8.0.6/InkCanvasForClass.CE.1.8.0.6.zip"
     }
   ],
   "sort": 7
