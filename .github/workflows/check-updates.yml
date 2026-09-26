@@ -8,11 +8,17 @@ name: 检查应用更新
 #                              「跟进」＝去别处改 JSON → 提交 → 回来点那条的「已改好 → 重新检测」方框
 #                              「不管」＝点那条的「不用跟进」方框（永久忽略）；全部处理完自动关闭。
 #
-# **上游来源只有 GitHub Releases 一条**（见 scripts/check-updates.mjs）：
+# **版本来源只有 GitHub Releases 一条**（见 scripts/check-updates.mjs）：
 #   认 apps/*.json 的 `github` 字段，本站收录的开源软件走这条。
 #   （2026-09-21 起，原「非 GitHub 官方来源」那条腿**已整体删除**：它靠抓希沃 / 360 / VLC /
 #    DiskGenius / GeoGebra 的厂商页面，来跟 10 个没有仓库的软件，但厂商一改版就得跟着改解析规则，
 #    维护成本不划算。那些软件现改由 scripts/untracked-buckets.mjs 登记为「跟不了」。）
+#
+#   ⚠️ 2026-09-26 补了**第二条腿，但它不管版本、只管直链**：scripts/resolve-direct-links.mjs
+#      （本文件下面那一步）按厂商产品码 / winget 官方清单，把「官网下载页」换成文件直链，
+#      让详情页能**原地下载**而不是把用户送去官网自己找安装包。
+#      它故意不碰 version 字段（跨大版本、日期后缀这类判断留给人工），
+#      所以**版本仍只有 GitHub 一条腿**，两句话不矛盾。
 #   确认跟不了上游的（微软商店分发、官方固定「最新版」直链、有意归档、只有网页入口、第三方网盘）
 #   **逐个写明是哪一种**（scripts/untracked-buckets.mjs 的 BUCKETS 表），由 Issue 的「跟不了」分区如实列出 ——
 #   它们**不产生待审条目**：不是「待确认」，而是「本来就跟踪不了」，点不动的方框只会变成噪音。
@@ -108,12 +114,26 @@ jobs:
           echo "运行：node scripts/check-updates.mjs $ARGS"
           node scripts/check-updates.mjs $ARGS
 
+      - name: 解析非 GitHub 应用的下载直链
+        # 「没有 GitHub 仓库」的软件（微信 / QQ / WPS / 钉钉 / 腾讯会议 / 希沃全家桶…）
+        # 靠它把「官网下载页」换成文件直链，详情页才能原地下载 —— 见 scripts/resolve-direct-links.mjs。
+        # 与上面的体检共用同一次提交（写入的也是 软件数据/apps，已包含在下方 git add 里）。
+        if: env.AUTO_APPLY == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/resolve-direct-links.mjs --apply --report=resolve-report.md
+
       - name: 把完整报告写进运行摘要
         if: always()
         run: |
-          if [ -f update-report.md ]; then
-            cat update-report.md >> "$GITHUB_STEP_SUMMARY"
-          else
+          for f in update-report.md resolve-report.md; do
+            if [ -f "$f" ]; then
+              echo "## $f" >> "$GITHUB_STEP_SUMMARY"
+              cat "$f" >> "$GITHUB_STEP_SUMMARY"
+              echo >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+          if [ ! -f update-report.md ] && [ ! -f resolve-report.md ]; then
             echo "没有生成报告文件" >> "$GITHUB_STEP_SUMMARY"
           fi
 

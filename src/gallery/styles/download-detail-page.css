@@ -184,6 +184,18 @@ html.theme-dark .detail-category-badge {
   margin-top: 2px;
   font-size: 12px;
 }
+/* 跳转项（网盘 / 官网下载页）的说明 —— 让用户点之前就知道会被带到本站之外 */
+.detail-download-kind {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 1px 7px;
+  border: 1px solid var(--card-stroke);
+  border-radius: 5px;
+  background: var(--ctrl-fill-secondary, rgba(0, 0, 0, 0.04));
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.75;
+}
 /* 校验值：只显示首尾各几位，完整值在 title 里，点一下复制全部 */
 .detail-download-hash {
   align-items: center;
