@@ -11,14 +11,9 @@
   "website": "https://e.seewo.com/#/",
   "downloads": [
     {
-      "platform": "Windows 教师端",
+      "platform": "Windows",
       "size": "340 MB",
       "url": "https://cstore-public.seewo.com/pinco-ota/seewoPincoTeacher_1.2.43.7298(20250930112805).exe"
-    },
-    {
-      "platform": "Windows 小组端",
-      "size": "163 MB",
-      "url": "https://cstore-public.seewo.com/pinco-ota/seewoPincoGroupSetup_1.2.38.1673.exe"
     }
   ],
   "sort": 15,
