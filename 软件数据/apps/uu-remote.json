@@ -15,12 +15,14 @@
       "platform": "Windows 安装包",
       "note": "推荐；网易官方下载接口，点了直接下最新版安装包",
       "size": "约 40 MB",
+      "kind": "file",
       "url": "https://api.nrd.nie.163.com/api/v1/release/dl/1?channel=gwqd"
     },
     {
       "platform": "官网下载页",
       "note": "还有 macOS / 手机端下载",
       "size": "网页",
+      "kind": "page",
       "url": "https://uuyc.163.com/download/"
     }
   ],

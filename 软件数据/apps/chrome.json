@@ -6,13 +6,35 @@
   "tagline": "谷歌 Chrome 离线安装包下载",
   "description": "Google Chrome 官方浏览器的离线安装包下载入口。网络环境不好、或者要给一批电脑装机时，用离线包比在线安装省事得多。Chrome 兼容性好、扩展丰富，是教室电脑上的常用浏览器。",
   "version": "跟随官网",
-  "size": "未知",
+  "size": "约 12 MB ~ 159 MB",
   "system": "Windows 10+",
   "website": "https://www.google.cn/chrome/",
   "downloads": [
     {
-      "platform": "该应用更新频繁，故引导至官网下载",
+      "platform": "Windows 64位 离线安装包",
+      "note": "推荐；官方「始终最新」离线包，装机不用联网等",
+      "size": "约 159 MB",
+      "kind": "file",
+      "url": "https://dl.google.com/chrome/install/standalonesetup64.exe"
+    },
+    {
+      "platform": "Windows 64位 在线安装包",
+      "note": "体积小、下载快，安装时需要联网",
+      "size": "约 12 MB",
+      "kind": "file",
+      "url": "https://dl.google.com/chrome/install/latest/chrome_installer.exe"
+    },
+    {
+      "platform": "Windows 64位 企业版 MSI",
+      "note": "适合批量静默部署（msiexec /i），同样是官方始终最新地址",
+      "size": "约 160 MB",
+      "kind": "file",
+      "url": "https://dl.google.com/dl/chrome/install/googlechromestandaloneenterprise64.msi"
+    },
+    {
+      "platform": "官网下载页",
       "note": "如果使用 edge 浏览器打开，收到 edge 浏览器挽留小广告的就是正版！",
+      "kind": "page",
       "url": "https://www.google.cn/chrome/"
     }
   ],

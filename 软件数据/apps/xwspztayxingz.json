@@ -12,8 +12,10 @@
   "downloads": [
     {
       "platform": "Windows安装版",
-      "size": "Windows7及以上",
-      "url": "https://imlizhi-store-https.seewo.com/EasiCamera_2.1.0.4410(20260731145539).exe"
+      "size": "143 MB",
+      "note": "官方按产品码下发，永远是最新版",
+      "kind": "file",
+      "url": "https://e.seewo.com/download/file?code=EasiCamera"
     }
   ],
   "sort": 99

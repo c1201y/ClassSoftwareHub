@@ -16,18 +16,21 @@
       "platform": "Classic 6 自动更新版",
       "note": "推荐；官方「始终最新」安装包，装了以后能自动更新",
       "size": "134 MB",
+      "kind": "file",
       "url": "https://download.geogebra.org/package/win-autoupdate"
     },
     {
       "platform": "Classic 5 安装版",
       "note": "旧版界面，兼容老课件；同样是官方最新地址",
       "size": "69 MB",
+      "kind": "file",
       "url": "https://download.geogebra.org/package/win"
     },
     {
       "platform": "官网下载页",
       "note": "可选 Classic 套件、几何、3D 等不同应用",
       "size": "网页",
+      "kind": "page",
       "url": "https://www.geogebra.org/download?lang=zh-CN"
     }
   ],

@@ -6,16 +6,40 @@
   "tagline": "注重隐私的开源浏览器（提供 MSI 安装包）",
   "description": "Firefox 由 Mozilla 打造，开源免费、注重用户隐私和数据安全，支持 Windows、macOS、Linux 全平台。这里提供 64 位 MSI 安装包，方便给教室电脑静默安装或批量部署。",
   "version": "跟随官网",
-  "size": "391.8 MB",
+  "size": "约 78 MB ~ 89 MB",
   "system": "Windows 7 ~ 11、macOS、Linux",
   "website": "https://www.mozilla.org/zh-CN/firefox/",
   "downloads": [
     {
       "platform": "通过 Microsoft Store 下载",
+      "kind": "store",
       "url": "https://apps.microsoft.com/detail/9nzvdkpmr9rd?hl=zh-Hans&gl=US"
     },
     {
-      "platform": "该应用更新频繁，其他版本下载故引导至官网",
+      "platform": "Windows 64位 安装版",
+      "note": "官方「始终最新」地址，点了在本页直接开始下载",
+      "size": "约 89 MB",
+      "kind": "file",
+      "url": "https://download.mozilla.org/?product=firefox-latest&os=win64&lang=zh-CN"
+    },
+    {
+      "platform": "Windows 64位 MSI 安装包",
+      "note": "适合批量静默部署；同样是官方最新地址",
+      "size": "约 89 MB",
+      "kind": "file",
+      "url": "https://download.mozilla.org/?product=firefox-msi-latest-ssl&os=win64&lang=zh-CN"
+    },
+    {
+      "platform": "Windows 32位 安装版",
+      "note": "32 位系统使用；同样是官方最新地址",
+      "size": "约 78 MB",
+      "kind": "file",
+      "url": "https://download.mozilla.org/?product=firefox-latest&os=win&lang=zh-CN"
+    },
+    {
+      "platform": "官网下载页",
+      "note": "还有 macOS / Linux 与各语言版本",
+      "kind": "page",
       "url": "https://www.firefox.com/zh-CN/download/all/desktop-release/"
     }
   ],

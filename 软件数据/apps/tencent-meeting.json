@@ -5,14 +5,17 @@
   "category": "schedule",
   "tagline": "腾讯出品的高清视频会议 / 网课工具",
   "description": "腾讯会议是腾讯推出的高清流畅、便捷易用的云视频会议产品，支持屏幕共享、美颜、背景虚化、会议录制等功能，网课和远程开会都很常用。支持 Windows、macOS、手机端，也提供网页入会方式。",
-  "version": "3.46.1.409",
+  "version": "3.46.11.413",
   "size": "约 280 MB",
   "system": "Windows 7+",
   "website": "https://meeting.tencent.com/",
   "downloads": [
     {
-      "platform": "该应用更新频繁，其他版本下载故引导至官网",
-      "url": "https://meeting.tencent.com/download/"
+      "platform": "Windows 安装版",
+      "url": "https://updatecdn.meeting.qq.com/cos/ea5a12b3227f8be5c785cda6dbfb73f6/TencentMeeting_0300000000_3.46.11.413_x86_64.publish.exe",
+      "kind": "file",
+      "size": "288 MB",
+      "note": "其他版本（macOS / 手机端等）见官网"
     }
   ],
   "sort": 31

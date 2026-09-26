@@ -11,8 +11,15 @@
   "website": "https://www.diskgenius.cn/",
   "downloads": [
     {
-      "platform": "官方下载",
-      "note": "磁盘管理软件涉及数据安全，官方建议始终使用最新版本。不要将软件下载安装到要恢复数据的分区！",
+      "platform": "Windows x64 绿色版（官方直链）",
+      "note": "磁盘管理软件涉及数据安全，官方建议始终使用最新版本，新版发布后此地址会随之变化（体检 Issue 会提醒）。不要将软件下载安装到要恢复数据的分区！解压即用，无需安装。",
+      "size": "37 MB",
+      "url": "https://download_cn.eassos.com/DG6201829_x64.zip"
+    },
+    {
+      "platform": "官网下载页",
+      "note": "官网默认跳蓝奏云网盘，也有 32 位 / XP 版；地址不带版本号、始终最新",
+      "size": "网页",
       "url": "https://www.diskgenius.cn/download.php"
     }
   ],
