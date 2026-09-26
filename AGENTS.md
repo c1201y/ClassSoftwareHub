@@ -80,8 +80,10 @@ stats-worker/                    ⛔ NOT in this repo — the self-hosted Cloudf
 submissions/                     Visitor-submitted app drafts (entry point of the submission flow; do not edit by hand)
 scripts/                         Maintenance scripts — `check-updates.mjs` (upstream version checker),
                                  `untracked-buckets.mjs` (the "why isn't this tracked" registry),
-                                 `update-ignore.mjs` (edits the ignore list) and `upload-webdav.py`
-                                 (mirrors dist/ to the OpenList folder); see "CI Notes"
+                                 `update-ignore.mjs` (edits the ignore list), `upload-webdav.py`
+                                 (mirrors dist/ to the OpenList folder) and `icon-sync.py`
+                                 (localises slow/heavy app icons into `src/assets/icons/`);
+                                 see "CI Notes"
 .github/workflows/               The 5 workflows (see "CI Notes")
 ```
 
@@ -109,7 +111,9 @@ Routes (hash-based):
    (that is the loader).
 3. **`src/components`, `src/styles`, `src/utils`, `src/assets` are upstream WinUIonWeb source.**
    Keep the directory layout intact so it can be diffed against upstream releases. The one deviation:
-   `WinNavigationView` was patched to support **image icons** (put an image URL in a nav item's `icon`).
+   `WinNavigationView` was patched to support **image icons** (put an image URL in a nav item's `icon`;
+   the `isIconImage()` test accepts `http(s)://`, `data:image/…` and site-relative `/ ./ ../` — anything
+   else is still drawn as a glyph, and a URL that fails the test shows up as literal text in the menu).
    Write page-specific styles as **scoped rules inside the page component** instead.
    Exception: `src/assets/` also holds **site-owned** assets (`icons/`, `holiday/`, `Fonts/`,
    `AppIcon-*`). Keep those in their own files / subfolders so the upstream tree stays diffable.
@@ -179,15 +183,37 @@ Icons point at each vendor's own CDN, which is fine for domestic vendors. Icons 
 (avatars / raw / `github.com/…/raw/…`) or jsDelivr** are however unreliable from mainland China, so those
 keep a local copy too:
 
-- `src/assets/icons/<id>.webp` — a 64×64 WebP, usually 1–3 KB. **The file name must equal the app `id`.**
-  A missing file just falls back to the `icon` URL, so adding one is always safe.
+- `src/assets/icons/<id>.webp` — a **64×64 square** WebP, usually 1–3 KB. **The file name must equal the
+  app `id`.** A missing file just falls back to the `icon` URL, so adding one is always safe.
+  Two hard requirements: the image must be square (the card/detail CSS uses `object-fit: cover`, which
+  centre-crops anything non-square) and ≤ 4096 bytes (that is Vite's default `assetsInlineLimit` for the
+  multi-file build — above it the icon becomes an extra request instead of an inlined `data:` URL).
+- ⚠️ **Horizontal "logo lockups" (mark + wordmark) must not be letterboxed into the square.** The tile is
+  44 px (`home-page.css`) / 72 px (`download-detail-page.css`); a 3.5:1 lockup squeezed into it fills only
+  a thin middle strip and reads as a smudge — 火绒's icon did exactly that (58×16 of ink inside 64×64).
+  `scripts/icon-sync.py` handles this in `_lockup_mark()`: if the *ink* bounding box is ≥ 2× wider than
+  tall it crops the leading square (where the mark is) instead of fitting the whole lockup. Anything it
+  does not catch can be fixed by hand: crop the mark, re-save as `<id>.webp`.
+- A source with an **opaque** background keeps it (many GitHub avatars and app-store-style squares have
+  no alpha). That is faithful to the upstream image — the fix, if wanted, is to change the `icon` URL to a
+  transparent PNG and re-run the script, not to key out white in the pipeline.
 - Resolution lives in `src/gallery/appIcons.ts`: `appIconUrl()` prefers the local file,
   `appIconUrlSafe()` additionally drops an icon that already failed once in this session.
-- `HomePage.vue` / `DownloadDetailPage.vue` render `<img loading="lazy" referrerpolicy="no-referrer"
-  @error="markIconBroken(app.id)">` and fall back to a first-letter tile — a dead icon never leaves a
-  blank hole.
+- `HomePage.vue` / `DownloadDetailPage.vue` **and the left nav pane** (`App.vue`) all render through
+  `appIconUrl()`, so the fallback applies everywhere; the pages add `<img loading="lazy"
+  referrerpolicy="no-referrer" @error="markIconBroken(app.id)">` and fall back to a first-letter tile —
+  a dead icon never leaves a blank hole.
 - The single-file build inlines these (they are tiny; `assetsInlineLimit` is 1e8 there), so the offline
   copy carries them as well.
+
+**Refreshing the local copies**: `python scripts/icon-sync.py` (needs Pillow) probes every remote icon and
+prints a plan — it picks the ones that are **≥ 16 KB, ≥ 1.5 s to fetch, on a GitHub-family host, or that
+failed outright**, plus apps whose `icon` is empty (it tries the site's own favicon). Add `--apply` to
+download/convert (`--all` = every remote icon, `--only a,b` = redo specific ones). It always emits 64×64
+and tunes the WebP quality down until the file fits the 4096-byte inline budget. It also unwraps
+"shell SVGs" (a base64 PNG inside an `<svg>` — 火绒's was 484 KB of that) and falls back to
+`verify=False` for CDNs with a broken TLS chain (希沃's `care.seewo.com`), flagging the result as
+`证书不校验` rather than letting the card go blank.
 
 ---
 
