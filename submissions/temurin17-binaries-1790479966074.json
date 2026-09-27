@@ -1,0 +1,31 @@
+{
+  "_提交时间": "2026-09-27T03:32:46.074Z",
+  "_原始ID冲突": false,
+  "id": "temurin17-binaries",
+  "name": "temurin17-binaries",
+  "icon": "https://avatars.githubusercontent.com/u/67165372?v=4",
+  "category": "system",
+  "tagline": "Temurin 17 binaries",
+  "description": "Temurin 17 binaries",
+  "version": "jdk-17.0.9+9.1",
+  "size": "",
+  "system": "Windows",
+  "website": "https://adoptium.net",
+  "github": "https://github.com/adoptium/temurin17-binaries",
+  "downloads": [
+    {
+      "platform": "Windows x64（MSI 安装版）",
+      "note": "OpenJDK17U-jre_x64_windows_hotspot_17.0.9_9.msi",
+      "size": "30.1 MB",
+      "url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.9%2B9.1/OpenJDK17U-jre_x64_windows_hotspot_17.0.9_9.msi"
+    },
+    {
+      "platform": "Windows x64 压缩包",
+      "note": "OpenJDK17U-jre_x64_windows_hotspot_17.0.9_9.zip",
+      "size": "41.4 MB",
+      "url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.9%2B9.1/OpenJDK17U-jre_x64_windows_hotspot_17.0.9_9.zip"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "3814699931"
+}
