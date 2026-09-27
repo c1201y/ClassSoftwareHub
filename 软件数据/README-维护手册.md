@@ -135,6 +135,12 @@ npm run build   # 正式打包 → dist/
   可将版本维护交由商店完成。
   > 无需刻意填写 `store`：只要 `downloads` 中有一项 `url` 指向 `apps.microsoft.com` 商店页，
   > 详情页会**自动识别**并渲染为同一张商店卡片。两种写法均可。
+  > 若本机没有「应用商店」（LTSC / 精简版 / 被卸载过），商店链接会变成死循环 ——
+  > 商店让你先去商店里装商店。详情页对「只有商店这一个入口」的软件（`downloads` 里没有
+  > 其他可用项）会自动补一行说明：按 `Win+R` 输入 `wsreset -i` 即可让 Windows 联网装回商店，
+  > 备用命令 `winget install 9WZDNCRFJBMP`。**这条由前端自动出现，维护者无需在 JSON 里做任何事**；
+  > 唯一需要手写的是 Microsoft Store 本体（`9wzdncrfjbmp`）那条 `notice`，因为点进那一页的人
+  > 多半正是「没有商店」的人。
 
 ### 2.6 处理他人提交的草稿
 

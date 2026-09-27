@@ -148,6 +148,7 @@ export default {
       "detail.store-desc": "由应用商店托管，安装后自动更新，不用手动跟版本。",
       "detail.store-button": "下载",
       "detail.store-only": "该软件通过 Microsoft Store 分发，点上方按钮打开商店页面即可获取",
+      "detail.store-nostore": "本机没有「应用商店」（LTSC / 精简版 / 被卸载过）时，上面的商店按钮会打不开或反过来让你去商店里装商店。这时按 Win+R 输入 wsreset -i 回车，联网状态下 Windows 会自动把商店装回来（1–3 分钟，期间没有进度条）；若仍无效，用管理员身份打开 PowerShell 执行 winget install 9WZDNCRFJBMP。",
       "detail.mirror-button": "加速下载",
       "detail.hash-copy": "复制",
       "detail.hash-copied": "已复制",

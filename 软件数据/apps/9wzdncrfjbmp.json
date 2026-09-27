@@ -5,6 +5,7 @@
   "category": "schedule",
   "tagline": "微软应用商店，正版软件一键装",
   "description": "直达微软官方的应用商店（Microsoft Store）。商店里的软件都经过微软审核、由商店统一更新，装完不用自己盯版本；不少常用的免费软件在商店里都有正版版本，适合教室里图省事的装机方式。",
+  "notice": "本机若没有「应用商店」，上面的商店链接会打不开，或反过来让你「先去商店里下载商店」——变成死循环。联网状态下按 Win+R 输入 wsreset -i 回车，Windows 会自动把商店装回来（1–3 分钟，期间没有进度条）；若仍无效，用管理员身份打开 PowerShell 执行 winget install 9WZDNCRFJBMP。装好后回到本页点「下载」即可。",
   "version": "上次更新日期  2026/8/28",
   "size": "132.4 MB",
   "system": "Windows 10 +",
