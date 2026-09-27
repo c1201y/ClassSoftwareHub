@@ -20,15 +20,20 @@ name: 检查应用更新
 #      它故意不碰 version 字段（跨大版本、日期后缀这类判断留给人工），
 #      所以**版本仍只有 GitHub 一条腿**，两句话不矛盾。
 #   确认跟不了上游的（微软商店分发、官方固定「最新版」直链、有意归档、只有网页入口、第三方网盘）
-#   **逐个写明是哪一种**（scripts/untracked-buckets.mjs 的 BUCKETS 表），由 Issue 的「跟不了」分区如实列出 ——
+#   **逐个写明是哪一种**（scripts/untracked-buckets.mjs 的 BUCKETS 表），由 Issue 的「不纳入自动跟踪」分区如实列出 ——
 #   它们**不产生待审条目**：不是「待确认」，而是「本来就跟踪不了」，点不动的方框只会变成噪音。
 #
-# Issue 正文**刻意写得很短**（顶部一行数字 + 一张分档导航表 + 只列要人裁决的条目，其余全折叠）——
-# 改 buildPendingReport() 时别加「一句话结论」这类小标题、别把同一批数字印两遍。
+# Issue 正文是**固定骨架的正式报告**：顶部一句结论（四类数字）→ 一、待人工处理（处理方式表 + 分档概览表 +
+# 分档明细）→ 二、本次已自动修复 → 三、不纳入自动跟踪 → 四、本次检查的例外情况 → 附录、本次账目。
+# 四节**无论是否为空都照常出现**（空则写一句结论），这样每周的报告结构一致，读者不必先找「这周少了哪一段」。
+# 顶部结论那四个数字**只在这一处与文末「本次账目」各出现一次**，口径相同（互斥、可相加），
+# 不要再从内部 state 计数（ok / outdated / ahead…）另印一套 —— 两套口径并存会互相打脸。
 # 本工作流**按标题**定位 Issue、只解析 `<!-- action:id=… -->` 标记，**不解析正文章节**，故正文可自由重构。
+# ⚠️ 标题必须保留「软件信息体检」字样：本工作流与 update-ignore-command.yml 都靠它定位 Issue。
 #
 # 待审条目按「人要做哪一件事」分成 5 档（见 buildPendingReport 的 groups）：
-#   ① 直链打不开 → 换链接　② 有新版本但要拍板　③ 版本号对不上　④ 仓库信息有问题　⑤ 官网链指着旧版
+#   ① 下载直链已失效 → 更换链接　② 上游有新版本 → 决定是否升级　③ 站内版本号与上游不一致 → 确认版本归属
+#   ④ 仓库信息有误 → 修改或删除 `github` 字段　⑤ 官网直链仍指向旧版本 → 手工更新非 GitHub 链接
 #
 # 脚本不敢动的情况（都会进 Issue）：跨大版本、下载项带校验值（hash 字段 / note 里的 SHA512）、
 # 来源里找不到对应的下载文件、仓库地址查不到、下载直链失效，
@@ -198,7 +203,7 @@ jobs:
             const count = Number(process.env.PENDING_COUNT || 0)
             const updated = Number(process.env.UPDATED_COUNT || 0)
 
-            const TITLE = '软件信息体检 · 待人工确认'
+            const TITLE = '软件信息体检报告 · 待人工处理'
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             const stamp = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC'
             // ⚠️ 清单正文（update-pending.md）自带 H1 标题与「最近一次检查」时间，

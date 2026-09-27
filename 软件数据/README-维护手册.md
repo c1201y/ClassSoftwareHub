@@ -249,9 +249,11 @@ npm run type-check   # TypeScript 类型检查
 
 ## 七、软件版本自动核对
 
-网站仓库**每周五上午**自动核对每个软件的版本号、下载直链与体积，核对来源只有 **GitHub**：
+网站仓库**每周五上午**自动核对每个软件的版本号、下载直链与体积，核对来源有 **两条**：
 
-- 依据 `github` 字段读取 GitHub Releases，本站收录的开源软件都走这条；
+- **GitHub Releases** —— 依据 `github` 字段读取，本站收录的开源软件都走这条（`scripts/check-updates.mjs`）；
+- **官方下载源** —— 没有 GitHub 仓库的软件（微信 / Chrome / VLC / 火绒 / 希沃系 / QQ / WPS …）
+  由 `scripts/resolve-direct-links.mjs` 去探厂商的固定入口或 winget 官方清单，直链与版本号同样每周刷新；
 - **可确定的更新由脚本自动写入**（版本号、直链、体积），无需人工介入；
 - **无法确定的条目**汇总到「软件信息体检」Issue，每条注明「需跟进」与「不跟进」两种处理方式。
 
@@ -264,6 +266,8 @@ node scripts/update-ignore.mjs --list                                    # 查�
 ```
 
 - 仅检查指定软件：`--only=7-zip,classisland`；跳过直链存活检查（提速）：`--no-link`。
+- 非 GitHub 应用的直链解析是**另一个脚本**，可以单独跑（见 §7.6）：
+  `node scripts/resolve-direct-links.mjs --report=解析报告.md`（只读，加 `--apply` 才写回）。
 - 建议配置 GitHub 令牌（不配置也可运行，匿名接口限流 60 次/小时）：
   `export GITHUB_TOKEN=xxx`（Windows CMD 使用 `set GITHUB_TOKEN=xxx`）。
 
@@ -287,7 +291,8 @@ node scripts/update-ignore.mjs --list                                    # 查�
 - 下载项带 **校验值**（`hash` 字段；早期写法写在 `note` 里）—— 文件更换后校验值即失效；
 - 上游**更换了附件文件名**，脚本无法判断新旧对应关系；
 - `github` 字段指向不存在的仓库，或填写的并非仓库地址；
-- **非 GitHub 直链** —— 脚本不会代为修改，需人工到官网或镜像站查找新地址；
+- **非 GitHub 直链** —— 已由 `scripts/resolve-direct-links.mjs` 每周自动解析并写回（见 §7.6）；
+  只有厂商页面改成 SPA / 接口下发、或上游清单比站内还旧时，才会落进「跟不了」等人看；
 - 下载直链已失效（HTTP 404 等）。
 
 ### 7.4 Issue 中的操作方式
@@ -323,7 +328,8 @@ Issue 正文：顶部一行数字，下面**仅列出需要处理的条目** —
 | **跟踪中、无需处理** | 其余在自动跟踪的（已最新 / 比上游新 / 上游暂无发行版） |
 | **本来就不跟踪** | 无 GitHub 仓库的 |
 
-「跟不了」表格将**无法自动跟踪**的软件按原因分档列出，**它们不会成为待办条目**：
+「跟不了」表格将**无法自动跟踪**的软件按原因分档列出，**它们不会成为待办条目**。
+**已在自动跟踪的不列进来** —— 除了 GitHub Releases，还有一批「官方下载源」也在每周自动跟（见 §7.6）。
 
 | 档位 | 含义 | 需人工处理吗 |
 |---|---|---|
@@ -332,6 +338,42 @@ Issue 正文：顶部一行数字，下面**仅列出需要处理的条目** —
 | **官方固定「最新版」直链** | URL 永不过期（如 `.../Version/Latest/`），安装后软件自身也会更新 | 不需要 |
 | **有意归档 / 已停更** | 故意收录的旧版（id 中带版本号即为信号） | 只需关注「官方是否撤链」 |
 | **第三方网盘** | 蓝奏云 / 百度网盘分发，链接无法自动验证 | 偶尔查看发布页 |
+
+### 7.6 没有 GitHub 仓库的软件，怎么自动跟
+
+`scripts/resolve-direct-links.mjs` 负责这批（微信、Chrome、VLC、火绒、希沃全家桶、QQ、WPS、
+腾讯会议、360、DiskGenius…）的**直链与版本号**。它跑在 CI 上，同源策略管不到它，
+**不需要任何自建后端**。登记表就是脚本里的 `RESOLVERS` —— 加一行就能让一个软件自动跟。
+
+| 来源 | 做法 | 例子 |
+|---|---|---|
+| `seewo` | 厂商按产品码下发的固定接口，URL 里不带版本号 | 希沃白板 / 课堂助手 / 视频展台 / 班级优化大师 / 品课 |
+| `winget` | 读 microsoft/winget-pkgs 官方清单，直链带版本号、**链接与版本一起刷新** | 微信、QQ、WPS、腾讯会议 |
+| `winget` + `keepUrl` | 只借清单里的**版本号**，站内那条「始终最新」直链一个字不动 | Chrome、PotPlayer、RAMMap、Geek Uninstaller、UU 远程 |
+| `probe` | 探一个不会变的入口，从**产物本身**读版本号：重定向的最终地址、目录清单、或页面里抠出的安装包名 | Firefox、火绒、GeoGebra、VLC、360 极速浏览器 / 急救箱、DiskGenius |
+| `probe` + `rewrite` | 链接文件名里带版本号、发新版就 404 的那类，按模板重建每条下载项的地址 | VLC（`.../last/win64/vlc-<版本>-win64.exe`） |
+
+两条硬规则：
+
+1. **版本号只向前、不后退** —— 写回的版本必须来自我们**实际分发的那个产物**
+   （重定向后的地址 / `Content-Disposition` 文件名 / 页面里抠出的安装包名 / winget 清单），
+   且只在比站内更新时才覆盖。**上游比站内旧就整条跳过** —— winget 的钉钉清单停在 7.1.0、
+   站内已是 8.5.0，宁可什么都不动，也不能把用户从新版拽回旧版。
+2. **只处理没有 `github` 字段的软件** —— 有仓库的归 `check-updates.mjs`，两边都写会互相打架。
+
+```bash
+node scripts/resolve-direct-links.mjs --report=解析报告.md            # 只看，不改任何文件
+node scripts/resolve-direct-links.mjs --apply --report=解析报告.md    # 写回
+node scripts/resolve-direct-links.mjs --only=vlc,diskgenius           # 只处理指定软件
+```
+
+> **找安装包地址时别忘了「协议相对」写法**（`//dl.360safe.com/x.zip`）。只按 `https://` 搜
+> 会以为人家「没有直链」—— 360 系统急救箱就这样被误判了很久。
+
+**目前确实跟不了的**（`scripts/untracked-buckets.mjs` 里逐条写明理由）：
+向日葵（页面是 Nuxt SSR，整页一个安装包地址都没有）、海康易教学助手（Vue SPA，地址由接口下发）、
+360 安全卫士极速版（页面没有版本锚点，winget 也没收录 360）、驱动总裁（在线安装器 + JS 页面）、
+钉钉 / ToDesk（上游清单比站内旧，被闸门拦下）、仅 Microsoft Store 分发的若干、以及网盘分发的 DirectX 修复工具。
 
 ---
 
@@ -386,7 +428,7 @@ Issue 正文：顶部一行数字，下面**仅列出需要处理的条目** —
 - 同一版本另有内部版本号 `AAAABBCCPRDD`（AAAA 年 / BB 月 / CC 日期 / DD 文件版次），
   例 `20260915PR01`。
 - 对外与内部版本号均写入 `文字设置.ts` 的 `app.version`
-  （当前 `v2.3.3 - Tangram (20260924PR01)`）。
+  （当前 `v2.3.4 - Tangram (20260927PR01)`）。
 - 英文站需同步修改 `src/gallery/Strings/en-US/Resources.ts` 的 `app.version`
   （设置页「关于」展示的即为此值）。
 

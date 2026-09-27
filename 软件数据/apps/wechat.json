@@ -5,17 +5,17 @@
   "category": "schedule",
   "tagline": "微信 Windows 版官方下载",
   "description": "微信 Windows 版官方安装包。教室电脑上装一个，方便接收老师、家长发来的课件、通知和文件，也支持截图、文件传输与聊天记录备份，很多班级群的消息也不用再掏手机看。",
-  "version": "官网",
-  "size": "约 270 MB",
+  "version": "4.1.15.13",
+  "size": "约 245 MB",
   "system": "Windows 7+",
   "website": "https://weixin.qq.com/",
   "downloads": [
     {
       "platform": "Windows 安装版",
-      "note": "官方「始终最新」安装包，点了在本页直接开始下载",
-      "size": "约 270 MB",
+      "note": "官方最新版安装包，点了在本页直接开始下载；版本由体检每周自动核对更新",
+      "size": "245 MB",
       "kind": "file",
-      "url": "https://dldir1.qq.com/weixin/Windows/WeChatSetup.exe"
+      "url": "https://dldir1v6.qq.com/weixin/Universal/Windows/WeChatWin_4.1.15.exe"
     },
     {
       "platform": "官网下载页",

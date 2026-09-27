@@ -12,8 +12,10 @@
   "downloads": [
     {
       "platform": "Windows安装版",
+      "note": "腾讯官方 CDN 稳定地址，无需签名、不会过期",
       "size": "130.4MB",
-      "url": "https://sw.pcmgr.qq.com/5e5f1589f6ac85c6ac1759f738383acd/6aafd107/spcmgr/download/WeChat_for_XP_SP3_To_Vista.exe"
+      "kind": "file",
+      "url": "https://dldir1.qq.com/weixin/Windows/WeChat_for_XP_SP3_To_Vista.exe"
     }
   ],
   "sort": 99

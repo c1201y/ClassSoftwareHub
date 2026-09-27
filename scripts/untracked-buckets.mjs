@@ -20,20 +20,34 @@
  * 本文件只做**登记与判定**，不发任何网络请求。
  */
 
+import { RESOLVERS } from './resolve-direct-links.mjs'
+
 const cur = (s) => String(s ?? '').trim()
+
+/**
+ * 已经有人在跟的软件 —— **唯一真相是 resolve-direct-links.mjs 的 RESOLVERS**。
+ * 这里只是把那张登记表读过来，不再手抄一份 id 清单，免得两边慢慢对不上。
+ */
+const AUTO_TRACKED = new Set(Object.keys(RESOLVERS))
 
 /**
  * 无法自动跟踪的软件，逐个写明**为什么**。体检 Issue 靠它把话说清楚：
  * 「没被检查到」不等于「没问题」，更不等于「提交者漏填」。
  *
- * bucket 的四个取值就是 Issue 里分区的依据：
+ * bucket 的取值就是 Issue 里分区的依据：
+ *   auto         官方源自动跟 —— 直链与版本号由 resolve-direct-links.mjs 每周刷新
  *   store        微软商店分发 —— 商店自己会更新，站内不跟版本
  *   always-latest 官方固定「最新版」直链 —— URL 永不过期，天生不需要跟
  *   archive      有意归档 / 已停更 —— 刻意留着老版本
  *   page-only    只有官网 / 下载页入口，页面里没有可解析的版本锚点
  *   netdisk      第三方网盘分发 —— 版本能读、链接没法自动化
  *
- * `store` 一类不必手工登记：只要 downloads[] 里出现 apps.microsoft.com 就自动归入。
+ * `store` 与 `auto` **都不必手工登记**：
+ *   · 下载项里出现 apps.microsoft.com → 自动归入 store
+ *   · id 出现在 scripts/resolve-direct-links.mjs 的 RESOLVERS 登记表里 → 自动归入 auto
+ *     ⚠️ 所以**不要**再给那批软件在这里写一份「跟不了」的理由：显式登记会盖掉 auto，
+ *     让体检报告以为它们没人跟 —— 那正是这报告最容易被骂不准的地方。
+ *     只有「登记了、但当前跟不动」的个例（钉钉 / ToDesk）才值得显式写下来。
  */
 export const BUCKETS = {
   // ── 微软商店分发（另 3 个由 downloads 里的 apps.microsoft.com 自动识别）──
@@ -43,55 +57,35 @@ export const BUCKETS = {
   xpfp7f8rl7mb1w: { bucket: 'store', reason: '只在 Microsoft Store 上架' },
   snipaste: { bucket: 'store', reason: '以 Microsoft Store 分发为主；另有 download.snipaste.com 的锁版本直链，官网页面里没有版本锚点' },
 
-  // ── 官方固定「最新版」直链 ──
-  // officetoolplus：2026-09-26 起**已脱离本表** —— 补上了 github 字段（YerongAI/Office-Tool）
-  // 与该仓库的 release 直链，现由 check-updates.mjs 正常跟踪，不再需要人工登记「跟不了」。
-  'uu-remote': { bucket: 'always-latest', reason: '站内版本字段写「最新版（官网自动更新）」，直链是网易分发接口，永远指向最新包' },
-  potplayer: { bucket: 'always-latest', reason: '版本字段写「最新版（官网自动更新）」，三条 daumcdn 直链都在 Version/Latest 下' },
-  todesk: { bucket: 'always-latest', reason: '版本字段写「以安装时官网版本为准」；直链是在线安装器，装完自己拉最新版' },
-  rammap: { bucket: 'always-latest', reason: '微软 Sysinternals 直链固定为 RAMMap.zip，永远是最新版；要版本号得把包下下来读 PE 信息，不值得' },
-  'geek-uninstaller': { bucket: 'always-latest', reason: '官网只给 /geek.zip 固定直链，页面里没有版本号' },
-  'driver-ceo': { bucket: 'always-latest', reason: '直链是在线安装器（安装时联网匹配最新驱动），不吃版本号' },
-  chrome: { bucket: 'always-latest', reason: '直链是谷歌固定「始终最新」离线包（standalonesetup64.exe，地址里无版本号），装了 Chrome 自己也会更新；站内版本字段写「跟随官网」，不跟' },
-  WPS: { bucket: 'always-latest', reason: '直链由 scripts/resolve-direct-links.mjs 从 winget 清单解析（带版本号，每周自动刷新）；版本号随之自动填，天生不需要人工跟' },
-  qq: { bucket: 'always-latest', reason: '直链由 scripts/resolve-direct-links.mjs 从 winget 清单解析（带版本号，每周自动刷新）；版本号随之自动填，天生不需要人工跟' },
-  wechat: { bucket: 'always-latest', reason: '直链是腾讯固定「始终最新」地址（dldir1.qq.com/weixin/Windows/WeChatSetup.exe，路径里无版本号）；微信自己也会提示更新，站内版本字段写「官网」' },
+  // ── 官方固定「最新版」直链，且上游没有可用的版本源 ──
+  //    注：chrome / potplayer / rammap / geek-uninstaller / uu-remote / WPS / qq / wechat
+  //    都已登记进 resolve-direct-links.mjs（直链 + 版本号每周自动刷新）→ 自动落进 auto，
+  //    本表不再列它们。todesk 虽也登记了，但上游清单比站内旧、被降级闸门拦下，所以留在这里。
+  'driver-ceo': { bucket: 'always-latest', reason: '直链是在线安装器（安装时联网匹配最新驱动），不吃版本号；官网页面由 JS 渲染，抓不到版本锚点' },
+  todesk: { bucket: 'always-latest', reason: '直链是在线安装器，装完自己拉最新版；winget 清单（Youqu.ToDesk 4.7.4.3）比站内写的 5.x 旧、被降级闸门拦下，版本号暂无人跟' },
 
   // ── 有意归档 ──
   'wps2019ayxingz': { bucket: 'archive', reason: '有意收录 WPS2019 归档版（2022 年的包），不跟随上游' },
   'bandizip6.29': { bucket: 'archive', reason: '有意收录 6.x 末代无广告版（dl.php?old），只需盯「官方是否撤链」' },
+  //    直链原先挂在 sw.pcmgr.qq.com 的**带签名**地址上（路径里两段十六进制），签名一到期就 403 ——
+  //    2026-09-27 实测确已失效，换成腾讯官方 CDN 的免签名同文件地址。只需盯「官方是否撤链」。
+  'wxxpayxingz': { bucket: 'archive', reason: '有意收录微信 3.2.1 老版本（给老机器用），不跟随上游；直链已改用腾讯官方 CDN 免签名地址，只需盯「官方是否撤链」' },
 
-  // ── 上游只有厂商页面、没有 GitHub 仓库的 10 个（2026-09-21 起改由人工看）──
-  //    ⚠️ 这 10 个的上游都**没有 GitHub 仓库**，是当初做第二条腿的全部理由。
-  //    理由如实写「按决定不再抓」而不是「页面抓不到」—— 后者对 vlc / geogebra / diskgenius /
-  //    360 这几个是假话（它们的页面本来解析得出来）。
-  //    → 其中 vlc / geogebra / 360-safe-guard-speed 的**直链**已在站内（固定「最新版」地址），
-  //      xwbb5 / seewo-assistant / class-optimizer / xwspztayxingz 的直链由
-  //      resolve-direct-links.mjs 用产品码自动保鲜；**这里剩下的都是「版本号」没人跟**。
-  vlc: { bucket: 'page-only', reason: '上游没有 GitHub 仓库；官方目录 get.videolan.org 有版本信息，但自动更新只跟 GitHub、这类页面已不再抓取 —— 要人偶尔看一眼' },
-  geogebra: { bucket: 'page-only', reason: '上游没有 GitHub 仓库；官网下载页有版本重定向，但自动更新只跟 GitHub、这类页面已不再抓取 —— 要人偶尔看一眼' },
-  diskgenius: { bucket: 'page-only', reason: '直链已补（download_cn.eassos.com/DG6201829_x64.zip，官方 CDN），但文件名带版本号、上游无 GitHub 仓库、winget 清单（Eassos.DiskGenius）还停在 6.0.0 比站内旧 —— 新版发布后直链要人工更新，体检 Issue 会提醒' },
-  '360-jijiuxiang': { bucket: 'page-only', reason: '上游没有 GitHub 仓库；官网页面有版本信息，但自动更新只跟 GitHub、这类页面已不再抓取 —— 要人偶尔看一眼' },
-  '360-speed-browser': { bucket: 'page-only', reason: '上游没有 GitHub 仓库；官网页面有版本信息（两条直链会随版本变），但自动更新只跟 GitHub、这类页面已不再抓取 —— 要人偶尔看一眼' },
-  'class-optimizer': { bucket: 'page-only', reason: '直链已由 resolve-direct-links.mjs 用产品码 EasiCare_PC 自动保鲜；版本号页面里没有锚点，**仍需人偶尔看一眼**' },
-  xwbb5: { bucket: 'page-only', reason: '直链已由 resolve-direct-links.mjs 用产品码 EasiNote5 自动保鲜；版本号页面里没有锚点，**仍需人偶尔看一眼**' },
-  'seewo-assistant': { bucket: 'page-only', reason: '直链已由 resolve-direct-links.mjs 用产品码 SeewoIwbAssistant 自动保鲜；版本号页面里没有锚点，**仍需人偶尔看一眼**' },
-  xwspztayxingz: { bucket: 'page-only', reason: '直链已由 resolve-direct-links.mjs 用产品码 EasiCamera 自动保鲜；版本号页面里没有锚点，**仍需人偶尔看一眼**' },
-  xiwopinke: { bucket: 'page-only', reason: '上游没有 GitHub 仓库；版本在希沃产品清单 e.seewo.com（seewoPincoTeacher），但自动更新只跟 GitHub、这类页面已不再抓取 —— 要人偶尔看一眼' },
-
-  // ── 只有网页入口，抓不到版本锚点 ──
-  '360-safe-guard-speed': { bucket: 'page-only', reason: '直链已换成官方固定「始终最新」地址 dl.360scdn.com/setupbeta_jisu.exe（页面里没有版本号锚点，版本号只能人看）' },
-  'huorong-security': { bucket: 'page-only', reason: '直链已补（官网 downloadHr60.php?plat=x64UrlAll 固定入口，301 到最新版 CDN，无需维护），但版本号只在 301 的 Location 里、页面本身没有锚点 —— 版本仍要人看' },
-  dingtalk: { bucket: 'page-only', reason: '页面里唯一带版本的链接是无障碍兜底用的 DingTalk_v8.2.0.exe，比站内还旧；真实版本由 JS 从接口取。winget 清单停在 7.1.0，**比站内 8.5.0 还旧，已被解析器拦下**，暂只能跳官网' },
-  'tencent-meeting': { bucket: 'page-only', reason: '直链已由 resolve-direct-links.mjs 从 winget 清单解析并每周刷新；版本号随之自动填，**基本不用人管**' },
-  xrkayxingz: { bucket: 'page-only', reason: '下载页是 Nuxt SSR，抓不到版本锚点；官方也没提供可解析的版本接口，**只能跳官网**' },
-  yjxzsayxingz: { bucket: 'page-only', reason: '下载页是 Vue SPA，要逆向接口才能拿到版本，**只能跳官网**' },
+  // ── 只有网页入口：既抓不到直链、也抓不到版本号 ──
+  //    原先列在这里的 vlc / geogebra / diskgenius / 360 急救箱 / 360 极速浏览器 /
+  //    huorong-security / tencent-meeting / 希沃 5 个，都已登记进 resolve-direct-links.mjs，
+  //    直链与版本号每周自动刷新 → 自动落进 auto，不再需要人偶尔看一眼。
+  '360-safe-guard-speed': { bucket: 'page-only', reason: '直链已换成官方固定「始终最新」地址 dl.360scdn.com/setupbeta_jisu.exe，无需维护；但页面里没有任何版本锚点、winget 也没收录 360 —— 版本号只能人看' },
+  dingtalk: { bucket: 'page-only', reason: 'winget 清单停在 7.1.0、官网页面里那条固定链接是 8.2.0，**两者都比站内 8.5.0 旧**，被解析器的降级闸门拦下 —— 暂只能跳官网，等上游清单跟上' },
+  xrkayxingz: { bucket: 'page-only', reason: '下载页是 Nuxt SSR，整页里一个安装包地址都没有（down.oray.com 那条固定名只是 302 回下载页）；也没有可解析的版本接口，**只能跳官网**' },
+  yjxzsayxingz: { bucket: 'page-only', reason: '下载页是 Vue SPA，安装包地址由接口下发（yunmdload.hik-cloud.com/…/V\<版本\>/…），要逆向接口才跟得上，**只能跳官网**' },
 
   // ── 网盘 ──
   'directx-repair': { bucket: 'netdisk', reason: '分发在蓝奏云 + 百度网盘；版本号能读，但链接没法自动验证' },
 }
 
 export const BUCKET_LABEL = {
+  auto: '官方下载源自动跟',
   store: '微软商店分发',
   'always-latest': '官方固定「最新版」直链',
   archive: '有意归档 / 已停更',
@@ -111,6 +105,17 @@ export function classify(app) {
   //    站点数据里目前没有这种 id，但 id 来自外部提交，不能假设它永远干净。
   const hit = Object.prototype.hasOwnProperty.call(BUCKETS, id) ? BUCKETS[id] : null
   if (hit) return { bucket: hit.bucket, label: BUCKET_LABEL[hit.bucket] || hit.bucket, reason: hit.reason, explicit: true }
+  // ── 登记进 resolve-direct-links.mjs 的：直链与版本号每周自动刷新，属于「有人在跟」──
+  //    必须排在显式登记**之后**：钉钉 / ToDesk 也登记了，但上游清单比站内旧、被闸门拦下，
+  //    那两个在 BUCKETS 里显式写明「跟不动」，不能被这一条盖成 auto 假装有人跟。
+  if (AUTO_TRACKED.has(id)) {
+    return {
+      bucket: 'auto',
+      label: BUCKET_LABEL.auto,
+      reason: '直链与版本号由 scripts/resolve-direct-links.mjs 每周从官方源自动刷新',
+      explicit: false,
+    }
+  }
   // ⚠️ 不要写 `(^|\.)` 前缀匹配：站点 URL 是 `https://apps.microsoft.com/...`，
   //    主机名前一个字符是 `/`，那样写会一条都匹配不到（firefox / snipaste 就这样被判成「只有网页入口」过）。
   const storeLink = (app?.downloads || []).find((d) => /apps\.microsoft\.com/i.test(cur(d.url)))
