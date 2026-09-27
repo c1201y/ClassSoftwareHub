@@ -1,0 +1,37 @@
+{
+  "_提交时间": "2026-09-27T03:28:02.194Z",
+  "_原始ID冲突": false,
+  "id": "mindustry",
+  "name": "Mindustry",
+  "icon": "https://avatars.githubusercontent.com/u/10100000?v=4",
+  "category": "other",
+  "tagline": "The automation tower defense RTS",
+  "description": "The automation tower defense RTS",
+  "version": "v160.5",
+  "size": "",
+  "system": "win10",
+  "website": "https://mindustrygame.github.io",
+  "github": "https://github.com/Anuken/Mindustry",
+  "downloads": [
+    {
+      "platform": "其他 JAR",
+      "note": "assets.jar",
+      "size": "34.0 MB",
+      "url": "https://github.com/Anuken/Mindustry/releases/download/v160.5/assets.jar"
+    },
+    {
+      "platform": "其他 JAR",
+      "note": "dependencies.jar",
+      "size": "14.7 MB",
+      "url": "https://github.com/Anuken/Mindustry/releases/download/v160.5/dependencies.jar"
+    },
+    {
+      "platform": "其他 JAR",
+      "note": "Mindustry.jar",
+      "size": "84.8 MB",
+      "url": "https://github.com/Anuken/Mindustry/releases/download/v160.5/Mindustry.jar"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "3814699931"
+}
