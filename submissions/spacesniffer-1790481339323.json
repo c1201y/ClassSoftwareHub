@@ -1,0 +1,25 @@
+{
+  "_提交时间": "2026-09-27T03:55:39.323Z",
+  "_原始ID冲突": false,
+  "id": "spacesniffer",
+  "name": "spacesniffer",
+  "icon": "https://avatars.githubusercontent.com/u/54786587?v=4",
+  "category": "system",
+  "tagline": "SpaceSniffer 是一款免费的 Windows 磁盘空间分析工具",
+  "description": "用经典的SpaceSniffer树状图视图，追踪存储密集的文件夹。目前官方的x64版本依然便携、带过滤且快速扫描，即使你不断深入硬盘。",
+  "version": "v1.3.0.2",
+  "size": "",
+  "system": "仅支持Windows10/11x64位版本",
+  "website": "http://www.uderzo.it/main_products/space_sniffer/",
+  "github": "https://github.com/redtrillix/SpaceSniffer",
+  "downloads": [
+    {
+      "platform": "github/官方网站 压缩包",
+      "note": "spacesniffer_1_3_0_2.zip",
+      "size": "1.6 MB",
+      "url": "https://github.com/redtrillix/SpaceSniffer/releases/download/v1.3.0.2/spacesniffer_1_3_0_2.zip"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "TUDOU-123@outlook.com"
+}
