@@ -1,5 +1,37 @@
 # 更新日志 (Changelog)
 
+## v2.3.4 - Tangram（20260927PR01）发布！
+
+本次更新把「软件信息自动更新」从一条腿扩成两条：除 GitHub Releases 外，新增对**没有 GitHub 仓库**的软件按厂商官方源自动跟踪直链与版本号（微信、QQ、WPS、腾讯会议、Chrome、火绒、VLC、希沃系列等 21 款）。同时改版体检议题，并修正一批已失效的下载直链。
+
+### 更新日志
+
+- 【新增】 **非 GitHub 软件纳入自动跟踪**：新增解析脚本 `scripts/resolve-direct-links.mjs`，在 CI 上按厂商产品码（如希沃 `e.seewo.com/download/file?code=…`）或 winget 官方清单解析安装包直链，并从中读出真实版本号，每周自动刷新。本次覆盖 **21 款**：微信、QQ、WPS Office、腾讯会议、Google Chrome、火绒安全软件、VLC、PotPlayer、GeoGebra、DiskGenius、360 系统急救箱、360 极速浏览器、班级优化大师、希沃白板 / 课堂助手 / 视频展台 / 品课、Geek Uninstaller、UU 远程、RAMMap、Firefox。（by[@椰汁](https://github.com/c1201y/)）
+- 【变更】 上述软件的「跟随官网」占位版本号（如 `version: "官网"`）已全部替换为可比较的真实版本号；详情页除「官网下载页」入口外，多了一条**本页直接下载**的直链。（by[@椰汁](https://github.com/c1201y/)）
+- 【优化】 解析遵循两条硬规则：**版本只许前进**（上游版本更旧时整项跳过，绝不把用户带回旧版）、**不读取安装包正文**（仅在响应为 HTML / 文本 / JSON 时才读取内容，避免为了取文件名而下载数百兆）。（by[@椰汁](https://github.com/c1201y/)）
+- 【修复】 **体检报告数字口径**：21 款已由官方源自动跟踪的软件，原先被计入「没得跟」一栏，于是报告写着「大量软件无人跟踪」、而实际直链早已自动更新。现拆分为「自动跟踪 · GitHub Releases」与「自动跟踪 · 官方下载源」两行，`没得跟` 由 38 降至 17。（by[@椰汁](https://github.com/c1201y/)）
+- 【修复】 **微信安装包长期停留在旧版**：站内直链指向的 `WeChatSetup.exe` 自 2025 年 9 月起不再更新（仍为 3.x），已改用官方新版地址（4.1.15.13）。（by[@椰汁](https://github.com/c1201y/)）
+- 【修复】 **VLC 下载链接已失效**：3.0.23 的两条链接在新版发布后返回 500，用户点击即下载失败；现改为按版本号模板重建链接（3.0.24）。（by[@椰汁](https://github.com/c1201y/)）
+- 【修复】 **微信老版本（3.2.1）下载链接已失效**：原地址是腾讯 CDN 的带签名地址，签名到期后返回 403；现改用官方 CDN 的免签名同文件地址。（by[@椰汁](https://github.com/c1201y/)）
+- 【修复】 **360 系统急救箱的直链被漏判**：其下载页使用协议相对写法（`//dl.360safe.com/…`），原先仅匹配 `https://`，一直被误判为「没有直链」。（by[@椰汁](https://github.com/c1201y/)）
+- 【修复】 **Geek Uninstaller 的 `github` 字段误填**：原值是一个 Bilibili 视频链接，导致体检将其当作仓库地址反复报错，已删除该字段。（by[@椰汁](https://github.com/c1201y/)）
+- 【变更】 **体检议题改版为固定骨架的报告**：正文重排为「结论 → 一、待人工处理 → 二、本次已自动修复 → 三、不纳入自动跟踪 → 四、本次检查的例外情况 → 附录、本次账目」，四节无论是否为空都会出现；「待人工处理」下新增「处理方式」表与「分档概览」表，措辞统一。议题标题由「软件信息体检 · 待人工确认」改为「软件信息体检报告 · 待人工处理」。（by[@椰汁](https://github.com/c1201y/)）
+- 【优化】 希沃品课改用官方产品码入口（`e.seewo.com/download/file?code=seewoPincoTeacher`），替代原先带版本号、随发版即失效的 CDN 地址。（by[@椰汁](https://github.com/c1201y/)）
+
+### 其他内容
+
+- 网站链接1：[电教委员常用软件下载站](https://classsoftwarehub.us.ci/#/home)
+- 网站链接2：[备用站](https://classsoftwarehub.132614.xyz/#/home)
+  > 【提示】福建闽北，闽西地区的用户可能会遇上打不开的问题。
+- 夸克网盘：[夸克网盘分享](https://pan.quark.cn/s/7cbf21203ad9)
+- 投喂作者：[爱发电 · 连接创作者与粉丝的会员制平台](https://ifdian.net/a/TinyNickCSHub)
+- Github 主页：[c1201y/ClassSoftwareHub](https://github.com/c1201y/ClassSoftwareHub)
+- Github 更新文章：[Releases · c1201y/ClassSoftwareHub](https://github.com/c1201y/ClassSoftwareHub/releases)
+- 智教论坛：[Programmer\_Nick - 智教联盟论坛](https://forum.smart-teach.cn/u/Programmer_Nick)
+- 此项目由人类构建。
+
+---
+
 ## v2.3.3 - Tangram（20260924PR01）发布！
 
 本次更新新增「反馈中心」页面，收敛「软件信息自动更新」与「提交审核」两条后台通道，首页新增桌面应用版入口，并新增 6 款电教委员常用软件。
