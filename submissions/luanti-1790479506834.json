@@ -1,0 +1,61 @@
+{
+  "_提交时间": "2026-09-27T03:25:06.834Z",
+  "_原始ID冲突": false,
+  "id": "luanti",
+  "name": "luanti",
+  "icon": "https://avatars.githubusercontent.com/u/181835281?v=4",
+  "category": "other",
+  "tagline": "Luanti (formerly Minetest) is an open source voxel…",
+  "description": "Luanti (formerly Minetest) is an open source voxel game-creation platform with easy modding and game creation",
+  "version": "5.17.0",
+  "size": "",
+  "system": "Windows / macOS /",
+  "website": "https://www.luanti.org/",
+  "github": "https://github.com/luanti-org/luanti",
+  "downloads": [
+    {
+      "platform": "Windows 压缩包",
+      "note": "luanti-5.17.0-win32.zip",
+      "size": "17.0 MB",
+      "url": "https://github.com/luanti-org/luanti/releases/download/5.17.0/luanti-5.17.0-win32.zip"
+    },
+    {
+      "platform": "Windows 压缩包",
+      "note": "luanti-5.17.0-win64.zip",
+      "size": "16.7 MB",
+      "url": "https://github.com/luanti-org/luanti/releases/download/5.17.0/luanti-5.17.0-win64.zip"
+    },
+    {
+      "platform": "Android x86（APK）",
+      "note": "luanti-5.17.0-x86.apk",
+      "size": "17.4 MB",
+      "url": "https://github.com/luanti-org/luanti/releases/download/5.17.0/luanti-5.17.0-x86.apk"
+    },
+    {
+      "platform": "Android x64（APK）",
+      "note": "luanti-5.17.0-x86_64.apk",
+      "size": "17.1 MB",
+      "url": "https://github.com/luanti-org/luanti/releases/download/5.17.0/luanti-5.17.0-x86_64.apk"
+    },
+    {
+      "platform": "Windows 安装版",
+      "note": "luanti-5.17.0.exe",
+      "size": "11.6 MB",
+      "url": "https://github.com/luanti-org/luanti/releases/download/5.17.0/luanti-5.17.0.exe"
+    },
+    {
+      "platform": "macOS（Apple 芯片）",
+      "note": "luanti_5.17.0_macos12.3_arm64.zip",
+      "size": "13.0 MB",
+      "url": "https://github.com/luanti-org/luanti/releases/download/5.17.0/luanti_5.17.0_macos12.3_arm64.zip"
+    },
+    {
+      "platform": "macOS（Intel）",
+      "note": "luanti_5.17.0_macos12.3_x86_64.zip",
+      "size": "13.6 MB",
+      "url": "https://github.com/luanti-org/luanti/releases/download/5.17.0/luanti_5.17.0_macos12.3_x86_64.zip"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "3814699931"
+}
