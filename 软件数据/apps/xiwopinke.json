@@ -13,7 +13,8 @@
     {
       "platform": "Windows",
       "size": "340 MB",
-      "url": "https://cstore-public.seewo.com/pinco-ota/seewoPincoTeacher_1.2.43.7298(20250930112805).exe"
+      "kind": "file",
+      "url": "https://e.seewo.com/download/file?code=seewoPincoTeacher"
     }
   ],
   "sort": 15,

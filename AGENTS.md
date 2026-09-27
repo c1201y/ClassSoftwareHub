@@ -79,6 +79,8 @@ stats-worker/                    ⛔ NOT in this repo — the self-hosted Cloudf
                                  maintainer's local archive, not committed.
 submissions/                     Visitor-submitted app drafts (entry point of the submission flow; do not edit by hand)
 scripts/                         Maintenance scripts — `check-updates.mjs` (upstream version checker),
+                                 `resolve-direct-links.mjs` (direct links + versions for apps that have
+                                 no GitHub repo — vendor endpoints / winget manifests / page probes),
                                  `untracked-buckets.mjs` (the "why isn't this tracked" registry),
                                  `update-ignore.mjs` (edits the ignore list), `upload-webdav.py`
                                  (mirrors dist/ to the OpenList folder) and `icon-sync.py`
@@ -476,22 +478,46 @@ label.
     Detailed "how to fix it by hand" steps sit in a collapsed `<details>` block. When nothing is pending
     the issue **closes itself**. The full report always goes to the Job Summary.
 
-  **One leg: GitHub Releases** (the `github` field). There used to be a second leg — a registry of
-  **non-GitHub official sources** that scraped vendor pages (the seewo product list, the VideoLAN
-  directory, the 360 download pages, the DiskGenius changelog, a GeoGebra redirect) for the ten apps
-  with no repo. It was **deleted outright on 2026-09-21**: every vendor redesign meant another parser to
-  fix, and the upkeep outweighed the payoff. Those ten apps now sit in the *web page only* bucket of
-  `scripts/untracked-buckets.mjs` with an honest reason attached. (Recovering it means reverting the
-  commit — the scraper gotchas, if it ever comes back: strip HTML comments *before* parsing
-  (`browser.360.cn/ee/` carries two `id="loadnew"` anchors and the first one, in a comment, points at
-  the previous release); use `redirect: 'manual'` when a redirect is the version source, or you download
-  a 130 MB installer just to read a filename; and a source that cannot prove itself — the version number
-  must actually appear in the download filename, and every returned URL must pass a hard-coded host
-  allow-list — becomes a pending item instead of touching data.
+  **Two legs.**
+  1. **GitHub Releases** — the `github` field, handled by `scripts/check-updates.mjs`.
+  2. **Vendor / winget sources** — `scripts/resolve-direct-links.mjs` (added 2026-09-27) for the apps
+     with no repo: WeChat, Chrome, VLC, 火绒, the seewo family, QQ, WPS, Tencent Meeting, 360,
+     DiskGenius … It probes a *stable* entry point and reads the version out of **the artifact we
+     actually ship** — the post-redirect URL, the `Content-Disposition` filename, a directory listing,
+     or an installer name scraped from a vendor page — and falls back to `winget-pkgs` manifests for
+     anything the community keeps current. It runs in CI, so no CORS and no worker are involved.
 
-  Whatever the GitHub leg cannot reach is **labelled, not hidden**: `classify()` sorts those apps into
-  *Microsoft Store*, *official always-latest link*, *deliberately archived*, *web page only* and
-  *netdisk*, and the issue lists the whole taxonomy (`## 跟不了`) with a per-app reason. Before
+     A second leg **used to** exist and was deleted outright on 2026-09-21 (every vendor redesign meant
+     another parser to fix). It came back on 2026-09-27 because the scraper gotchas are now encoded as
+     rules rather than goodwill — read these before adding a source:
+     - **Versions only ever move forward.** A version is written only when it comes from the artifact we
+       ship, and only when it beats the site's. A lagging upstream skips the whole app: winget's
+       `Alibaba.DingTalk` is stuck at 7.1.0 while the site is on 8.5.0, and silently dragging users back
+       to an old build is worse than doing nothing.
+     - **Look for protocol-relative URLs** (`//dl.360safe.com/x.zip`). Matching only `https://` is why
+       360 系统急救箱 sat in the "no direct link" bucket for months while its link was right there.
+     - **Never read an installer body.** A stable entry redirects to an 80 MB exe more often than not.
+       Read the body only when the response is html/text; prefer `HEAD` when the version comes from a
+       redirect.
+     - **An item that declares `"kind": "file"`** is the one the resolver may rewrite — otherwise a
+       same-page "官网下载页" entry steals the slot (that is exactly what bit WeChat).
+     - Every rebuilt URL is probed first: an unreachable rebuild aborts that app rather than writing a
+       404 into the data.
+     - Versions sitting in a *directory listing* or a page that lists several builds take the **highest**
+       one (`versionMax` / `pickUrlMax`) — 360's download page carries both the 64-bit and 32-bit zips.
+
+     The registry is `RESOLVERS` inside that script (one line per app). `untracked-buckets.mjs`
+     **imports** it so "who is tracked" has exactly one source of truth — so never hand-list those ids
+     in the bucket table: an explicit entry overrides the derived `auto` bucket and makes the issue
+     claim those apps are untracked.
+
+  Whatever the two legs cannot reach is **labelled, not hidden**: `classify()` sorts those apps into
+  *official download source (auto)*, *Microsoft Store*, *official always-latest link*, *deliberately
+  archived*, *web page only* and *netdisk*, and the issue lists the taxonomy (`## 跟不了`) with a
+  per-app reason. The `auto` bucket is **derived from `RESOLVERS`** and is subtracted from the "not
+  followed" tally — leave it in and the issue contradicts itself ("every link updates itself" vs
+  "38 apps have nobody watching"), which is precisely the complaint that triggered the 2026-09-27
+  rework. Before
   this, ~38 apps vanished into one "not checked" bucket, so "the Store updates itself" looked identical
   to "the page is an SPA we cannot parse" — and nobody could tell how much of the catalogue was really
   covered. Those apps deliberately do **not** produce pending items: they are not "pending", they are
@@ -564,10 +590,10 @@ label.
 - Public version: `X.Y.Z` + a **codename suffix, which is kept** (e.g. `- Autumn`).
   X = major (architecture / UI overhaul); Y = feature update; Z = small fix.
 - Internal version: `AAAABBCCPRDD` (year / month / day / file revision), e.g. `20260915PR01`.
-- Update all of these together — current value is `v2.3.3 - Tangram (20260924PR01)`:
+- Update all of these together — current value is `v2.3.4 - Tangram (20260927PR01)`:
   - `文字设置.ts` → `app.version`, `home.subtitle`, `welcome.intro` (**3 places**)
   - `src/gallery/Strings/en-US/Resources.ts` → `app.version`
-  - `package.json` → `version` (bare `2.3.3`, no codename / internal number); also bump the two `"version"` fields
+  - `package.json` → `version` (bare `2.3.4`, no codename / internal number); also bump the two `"version"` fields
   at the top of `package-lock.json` (npm normally syncs these)
 - The codename is part of the public version string and **may be an English phrase**
   (`- Autumn`, `- September 18 Incident`) — the suffix stays in user-facing copy.
@@ -604,11 +630,14 @@ hit the 60-requests/hour anonymous limit. This is exactly what the weekly
 ⚠️ A narrowed run (`--only`) **never writes the ignore list** — `pending.md` from it is a partial
 snapshot, and letting it prune `_skip_once` would silently wipe every "skip this once" record.
 
-**Why an app isn't tracked**: `scripts/untracked-buckets.mjs` is the single registry — a static table of
+**Why an app isn't tracked**: `scripts/untracked-buckets.mjs` is the registry — a table of
 `{bucket, reason}` plus `classify()`. It makes no network calls. Every app without a usable GitHub repo
-falls into one of five buckets (`store` / `always-latest` / `archive` / `page-only` / `netdisk`), and
-only `page-only` genuinely needs a human to glance at it now and then. When you retire an app from
-tracking, register it here with an honest reason rather than leaving it silently unexamined.
+falls into one of six buckets: `auto` (its id sits in `resolve-direct-links.mjs`'s `RESOLVERS`, so links
+*and* versions are refreshed weekly), `store`, `always-latest`, `archive`, `page-only`, `netdisk`.
+Only `page-only` genuinely needs a human glance now and then. `auto` and `store` are **derived**, never
+hand-listed — an explicit entry for a resolver-managed id overrides `auto` and makes the report claim
+that app is untracked. When you retire an app from tracking, or discover a source can no longer prove
+itself, register it here with an honest reason rather than leaving it silently unexamined.
 
 **After fixing an entry by hand**: you do not edit anything from the issue — fix
 `软件数据/apps/<id>.json` wherever you like, **commit**, then tick "已改好 → 重新检测" under that entry.

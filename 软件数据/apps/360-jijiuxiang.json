@@ -11,8 +11,10 @@
   "website": "https://weishi.360.cn/jijiuxiang/index.html",
   "downloads": [
     {
-      "platform": "该应用更新频繁，故引导至官网下载",
-      "url": "https://weishi.360.cn/jijiuxiang/index.html"
+      "platform": "Windows 安装版",
+      "url": "https://dl.360safe.com/360c0mpkill_5.1.64.1289-0701.zip",
+      "kind": "file",
+      "size": "53 MB"
     }
   ],
   "sort": 23

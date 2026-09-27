@@ -710,7 +710,7 @@ async function main() {
   console.log(`待人工确认 ${pending.length} 条 ｜ 自动更新 ${applied.length} 个软件 ｜ 忽略清单 ${ignore.size} 条 ｜ 本次跳过 ${skipped.length} 条（记录 ${skipOnce.size} 个）`)
   // 只剩 GitHub 一条腿，所以这里不再有「＋ 官方来源」
   console.log(
-    `覆盖：自动跟踪 ${cov.github.length}（GitHub）｜ 不跟 ${cov.untracked.length}` +
+    `覆盖：自动跟踪 ${cov.github.length}（GitHub）+ ${cov.auto.length}（官方下载源）｜ 不跟 ${cov.untracked.length}` +
     `（${BUCKET_ORDER.filter((b) => cov.byBucket[b]?.length).map((b) => `${b} ${cov.byBucket[b].length}`).join('、') || '无'}）`,
   )
 
@@ -1036,7 +1036,8 @@ function reconcile(results, pending, applied) {
     rest: [...rest].sort(),
     notFollowed: [...notFollowed].sort(),
     total: results.length,
-    tracked: cov.github.length,
+    // 「在自动跟踪」= GitHub Releases + 官方下载源（直链解析），两者都是脚本每周在跟
+    tracked: cov.github.length + cov.auto.length,
     balanced: n === results.length,
   }
 }
@@ -1145,19 +1146,19 @@ function renderPendingItem(it, index) {
     why = it.upgraded
       ? `版本号已经自动升到 \`${ver}\`，但下面这些不在 GitHub 上的直链脚本不会去动，很可能还指着旧版文件`
       : `${it.stale.length} 条不在 GitHub 上的直链，里面的版本号跟站内 \`${ver}\` 对不上`
-  } else why = `${it.deadLinks.length} 条下载直链已经打不开（装软件的人会点到 404）`
-  L.push(`> **没自动改**：${why}`, '')
+  } else why = `${it.deadLinks.length} 条下载直链已失效（用户点击后将无法下载）`
+  L.push(`> **未自动修改的原因**：${why}`, '')
 
   // ★ 决策只有一步：点一下勾选框（点勾＝编辑 Issue 正文＝触发工作流，幂等）。
   //   跟进那条路**不用在这里动手** —— 人是去别处改 JSON 的，这里只负责「改完回来说一声」。
   //   两个框之间不留空行：留了 markdown 会把它们当成"松散列表"，中间多出一段间距
-  L.push(`- [ ] **已改好 → 重新检测**（去别处改完并提交后，回来点这里，机器立刻重跑一次体检）${tick('recheck', it.id)}`)
+  L.push(`- [ ] **已改好 → 重新检测**（在别处修改并提交后勾选，将立即重跑一次体检）${tick('recheck', it.id)}`)
   // 「本次跳过」＝ 中等强度的第三条路：不修、也不永久静音，只是这次别再来烦我。
   // 方框里带着**问题指纹**（tick2），工作流把它原样存下来，下次体检比对得上就继续静默。
   // ⚠️ 指纹缺失时**不渲染这个框**：勾了也存不进有效记录（工作流那边会因为 key 不合法而拒绝），
   //    与其给个点了没反应的方框，不如不给。
-  if (it.key) L.push(`- [ ] **本次跳过**（这次先不管；等它有变化了再提醒）${tick2('skip', it.id, it.key)}`)
-  L.push(`- [ ] **不用跟进**（勾上＝永久忽略，以后不再提醒）${tick('ignore', it.id)}`, '')
+  if (it.key) L.push(`- [ ] **本次跳过**（本次暂不处理；问题一旦有变化将自动恢复提醒）${tick2('skip', it.id, it.key)}`)
+  L.push(`- [ ] **不用跟进**（勾选即永久忽略，此后不再提醒）${tick('ignore', it.id)}`, '')
 
   // 要跟进的具体步骤收进折叠区：真打算动手时才展开
   const advice = []
@@ -1178,7 +1179,7 @@ function renderPendingItem(it, index) {
       advice.push(`确认最新版本后，改 \`version\`（上游当前是 \`${tag}\`）`)
     }
   } else if (it.kind === 'repo') {
-    advice.push('确认仓库地址后改 `github`；如果这软件本来就没有 GitHub 仓库（不是 GitHub 分发的），把 `github` 那行删掉即可 —— 删掉后它会自动落进「跟不了」那一档，由 `scripts/untracked-buckets.mjs` 登记说明，不再进待处理清单')
+    advice.push('确认仓库地址后改 `github`；如果这软件本来就没有 GitHub 仓库（不是 GitHub 分发的），把 `github` 那行删掉即可 —— 删掉后它会自动落进「不纳入自动跟踪」那一档，由 `scripts/untracked-buckets.mjs` 登记说明，不再进待处理清单')
   } else {
     for (const d of it.deadLinks) {
       advice.push(`\`${d.platform || '默认'}\`：HTTP ${d.status || '网络错误'}　${d.url}`)
@@ -1186,11 +1187,11 @@ function renderPendingItem(it, index) {
     advice.push('换一条可用的直链；上游已停止分发的话，考虑改用别的平台或下架该条目')
   }
 
-  L.push('<details>', '<summary>要跟进的话，怎么改（点开看步骤）</summary>', '')
+  L.push('<details>', '<summary>如需处理，点开查看具体步骤</summary>', '')
   for (const a of advice) L.push(`- ${a}`)
-  L.push(`- 要改的文件：[在网页上打开 \`${file}\`](${jsonUrl})`)
-  L.push('- **改完记得提交**（网页上就点 Commit changes），然后回上面点一下「已改好 → 重新检测」：机器会立刻重跑一次体检，改对了这条就从本清单消失；没消失就再点开这里看新的「没自动改」原因')
-  L.push(`- 也可以照旧在评论区回 \`/ignore ${it.id}\`（等价于点「不用跟进」）`)
+  L.push(`- 需要修改的文件：[在网页上打开 \`${file}\`](${jsonUrl})`)
+  L.push('- **修改后请提交**（网页上即 Commit changes），再回到上方勾选「已改好 → 重新检测」：机器会立即重跑一次体检，改动正确则本条从清单消失；若未消失，可再点开此处查看新的「未自动修改的原因」')
+  L.push(`- 也可在评论区回复 \`/ignore ${it.id}\`（等同于勾选「不用跟进」）`)
   L.push('', '</details>', '')
   return L
 }
@@ -1205,14 +1206,19 @@ function renderPendingItem(it, index) {
  */
 function coverageOf(results) {
   const github = results.filter((r) => r.tracker === 'github')
-  const untracked = results.filter((r) => !r.tracker)
+  const rest = results.filter((r) => !r.tracker)
+  // ★ 「官方下载源自动跟」的这批**是有人在跟的**（resolve-direct-links.mjs 每周刷新
+  //   直链与版本号），必须从「没得跟」里拆出来。混在一起报，用户就会看到
+  //   「明明直链都自动更新了，报告还说 38 个没人跟」—— 数字没错，口径错了，一样是假账。
+  const auto = rest.filter((r) => r.bucket === 'auto')
+  const untracked = rest.filter((r) => r.bucket !== 'auto')
   const byBucket = {}
   for (const r of untracked) {
     const b = r.bucket || 'page-only'
     byBucket[b] = byBucket[b] || []
     byBucket[b].push(r)
   }
-  return { github, untracked, byBucket }
+  return { github, auto, untracked, byBucket }
 }
 
 /** 展示顺序 = 该操心的排前面：只有网页入口的最需要人看，商店/固定直链的其实不用管 */
@@ -1229,26 +1235,29 @@ const BUCKET_DESC = {
 const BUCKET_SHORT = {
   // 这一档混着两类：页面抓不到版本号的，和上游没有 GitHub 仓库的 ——
   // 短句要同时罩得住，逐条的准确理由见 scripts/untracked-buckets.mjs 的登记
-  'page-only': '页面里没有现成版本号，或上游没有 GitHub 仓库，得人偶尔看一眼',
-  store: '商店自己会更新',
-  'always-latest': 'URL 永不过期，装了也会自己更新',
-  archive: '有意留的旧版',
-  netdisk: '网盘，链接没法自动验',
+  'page-only': '页面无可用版本号，或上游无 GitHub 仓库，需人工偶尔查看',
+  store: '由 Microsoft Store 自行更新',
+  'always-latest': 'URL 永不过期，安装后自动更新',
+  archive: '有意保留的旧版',
+  netdisk: '第三方网盘分发，链接无法自动校验',
 }
 
 /** 覆盖情况的分区正文（体检 Issue 用；summaryLine=true 时只给汇总表） */
 function coverageLines(results, { withDetail = true } = {}) {
   const L = []
-  const { github, untracked, byBucket } = coverageOf(results)
+  const { github, auto, untracked, byBucket } = coverageOf(results)
 
   L.push('| 类别 | 个数 | 谁在跟 |', '|---|---|---|')
   L.push(`| 自动跟踪 · GitHub Releases | **${github.length}** | 脚本（每周五） |`)
+  if (auto.length) {
+    L.push(`| 自动跟踪 · 官方下载源（直链解析） | **${auto.length}** | 脚本（每周五） |`)
+  }
   for (const b of BUCKET_ORDER) {
     const list = byBucket[b]
     if (!list?.length) continue
     L.push(`| ${BUCKET_LABEL[b] || b} | ${list.length} | 没人跟（就是这样设计的） |`)
   }
-  L.push('', `合计 **${results.length}** 个软件，其中 **${github.length}** 个在自动跟踪、**${untracked.length}** 个不跟。`, '')
+  L.push('', `合计 **${results.length}** 个软件，其中 **${github.length + auto.length}** 个在自动跟踪、**${untracked.length}** 个不跟。`, '')
 
   if (!withDetail) return L
 
@@ -1265,9 +1274,14 @@ function coverageLines(results, { withDetail = true } = {}) {
     L.push('')
   }
 
-  // 在自动跟踪的清单：一般不用看，折叠起来
-  L.push('<details>', `<summary>正在自动跟踪的 ${github.length} 个（点开看是哪些）</summary>`, '')
-  L.push(github.length ? github.map((r) => `\`${r.id}\``).join('、') : '（无）', '')
+  // 在自动跟踪的清单：一般不用看，折叠起来。**两条腿分开列** —— 混成一句会让人以为
+  // 「官方下载源」那批也找回 GitHub 仓库了。
+  const trackedTotal = github.length + auto.length
+  L.push('<details>', `<summary>正在自动跟踪的 ${trackedTotal} 个（点开看是哪些）</summary>`, '')
+  L.push(`**GitHub Releases（${github.length}）**：${github.length ? github.map((r) => `\`${r.id}\``).join('、') : '（无）'}`, '')
+  if (auto.length) {
+    L.push(`**官方下载源 · 直链解析（${auto.length}）**：${auto.map((r) => `\`${r.id}\``).join('、')}`, '')
+  }
   L.push('', '</details>', '')
   return L
 }
@@ -1284,47 +1298,61 @@ function buildPendingReport(results, pending, applied, ignore, ctx = {}) {
   //   标题用动词短语（做什么），正文第一句说清「为什么脚本不动它」。
   //   排序 = 从「必须马上管」到「有空再看」：链接已经坏了的最急，官网链指着旧版的最不急。
   const groups = [
-    ['dead-link', '① 直链已经打不开', '换链接', '这些下载地址已经 404 / 拒绝访问，装软件的人点下去会扑空。**最急的一档。**'],
-    ['bump', '② 有新版本，但要你先拍板', '决定改不改', '脚本按「全有或全无」的规矩一个字都没动 —— 原因逐条写在下面（跨大版本、带校验值、附件换了名字…）。'],
-    ['verify', '③ 版本号对不上', '确认谁新谁旧', '站内写的版本号和上游对不上（常见于 `version` 填成了日期），脚本判断不了该不该改。'],
-    ['repo', '④ 仓库信息有问题', '改或删 `github` 字段', '`github` 字段查不到仓库、或填的根本不是仓库地址，体检跑不下去。不是 GitHub 分发的软件，把该字段删掉即可。'],
-    ['stale', '⑤ 官网直链还指着旧版本', '手工换非 GitHub 链接', '站内版本号已经是新的，但不在 GitHub 上的直链（官网 / 镜像）脚本不会去动 —— 装软件的人可能下到旧版文件。'],
+    ['dead-link', '① 下载直链已失效', '更换下载链接', '这些地址已返回 404 或拒绝访问，用户点击后无法下载。**优先级最高。**'],
+    ['bump', '② 上游有新版本，需人工裁决', '决定是否升级', '脚本遵循「全有或全无」原则，本次未改动该软件的任何字段 —— 逐条原因见下（跨大版本、下载项带校验值、附件改名等）。'],
+    ['verify', '③ 站内版本号与上游不一致', '确认版本归属', '站内 `version` 与上游任何发布都对不上（常见于把版本号填成了日期），脚本无法判断是否应当更新。'],
+    ['repo', '④ 仓库信息有误', '修改或删除 `github` 字段', '`github` 字段无法解析为有效仓库，该软件的体检无法进行。非 GitHub 分发的软件，删除该字段即可。'],
+    ['stale', '⑤ 官网直链仍指向旧版本', '手工更新非 GitHub 链接', '站内版本号已是新版，但非 GitHub 的下载直链（官网 / 镜像）不在脚本管辖范围内，用户可能下载到旧版文件。'],
   ]
 
-  L.push('# 软件体检', '')
+  L.push('# 软件信息体检报告', '')
   // ★ 这四个数字是**唯一**一套账：互斥、可相加（见 reconcile）。文末「本次账目」逐条列出 id，
   //   读者随时可以自己核对 —— 不再出现第二套口径不同的统计。
-  L.push(`要你处理 **${rec.need.length}** 条　｜　本次自动修好 **${rec.fixed.length}** 个　｜　跟踪中、不用管 **${rec.rest.length}** 个　｜　本来就不跟 **${rec.notFollowed.length}** 个`)
-  L.push('', `_${now}　·　共 ${results.length} 个软件　·　四类互不重复，合计即总数（文末「本次账目」可逐条核对）_`, '')
+  L.push(`**本次结论**：共检查 **${results.length}** 个软件 —— 需人工处理 **${rec.need.length}** 条，已自动修复 **${rec.fixed.length}** 个，正常跟踪 **${rec.rest.length}** 个，不纳入自动跟踪 **${rec.notFollowed.length}** 个。`)
+  L.push('', `_${now}　·　数据来源 \`软件数据/apps/*.json\`　·　由 \`scripts/check-updates.mjs\` 自动生成_`, '')
+  L.push('> 上述四类**互不重复、相加即总数**；文末「本次账目」逐条列出软件 id，可自行核对。', '')
   if (!pending.length) {
-    L.push('## 要你处理：没有需要处理的条目', '')
-    L.push('> 本次没有需要人工确认的条目 —— GitHub 那条腿能自动处理的都处理完了。', '')
+    L.push('## 一、待人工处理', '')
+    L.push('本次**没有**需要人工处理的条目。', '')
+    L.push('> GitHub Releases 与官方下载源两条跟踪链路能自动处理的，本次均已处理完毕。', '')
   } else {
-    L.push(`## 要你处理（${pending.length} 条）`, '')
+    L.push(`## 一、待人工处理（${pending.length} 条）`, '')
     // ★ 先给一张「哪几档、各几条、要做什么」的导航表：
     //   条目多的时候人需要一个总览决定从哪开始，而不是从头往下滚。
-    L.push('| 分档 | 条数 | 你要做什么 |', '|---|---|---|')
+    L.push('### 处理方式', '')
+    L.push('以下三种处理方式都只需**勾选**，不需要输入文字：', '')
+    L.push('| 勾选项 | 作用 | 适用情形 |', '|---|---|---|')
+    L.push('| **已改好 → 重新检测** | 按下方指引修改后勾选，下次体检复核结果 | 本次即着手修改 |')
+    L.push('| **本次跳过** | 本次不再提醒；问题一旦有变化会自动恢复 | 暂缓处理 |')
+    L.push('| **不用跟进** | 永久忽略该软件的此类问题 | 属有意保留，并非问题 |')
+    L.push('')
+    L.push('> 勾选框为**一次性开关**，勾选后该条目即从本清单移除（本清单每次体检整体重写）。全部处理完毕后本 Issue 会自动关闭；若误勾，可在评论区回复 `/unignore <软件id>` 恢复。')
+    L.push('')
+    // ⚠️ 手动触发时可以把「自动写回」关掉，那就一条都没改 —— 不说明会让人以为数据已经动过了
+    if (!APPLY) L.push('> ⚠️ **本次仅体检、未写回任何数据**（自动写回处于关闭状态）。', '')
+    L.push('### 分档概览', '')
+    L.push('| 分档 | 条数 | 需采取的行动 |', '|---|---|---|')
     for (const [kind, title, action] of groups) {
       const c = pending.filter((p) => p.kind === kind).length
       if (c) L.push(`| ${title} | **${c}** | ${action} |`)
     }
     L.push('')
-    L.push('> **每条三选一点一下方框就完事**，不用打字：**已改好** → 点开「怎么改」照做 → 提交 → 回来点「已改好 → 重新检测」；**这次不想管** → 点「本次跳过」（问题有变化会自动回来）；**以后都不想管** → 点「不用跟进」（永久忽略）。')
-    L.push('> 方框是**一次性开关**，点完这条就消失（本清单每次体检整体重写）；全部处理完本 Issue 会自动关闭，点错了在评论区回 `/unignore <软件id>`。', '')
-    // ⚠️ 手动触发时可以把「自动写回」关掉，那就一条都没改 —— 不说明会让人以为数据已经动过了
-    if (!APPLY) L.push('**本次只体检、没有写回任何数据**（自动写回关着）。', '')
+    L.push('### 条目明细', '')
     let n = 0
     for (const [kind, title, action, desc] of groups) {
       const list = pending.filter((p) => p.kind === kind)
       if (!list.length) continue
       L.push(`### ${title}（${list.length}）`, '')
-      L.push(`> **你要做的**：${action}。${desc}`, '')
+      L.push(`> **需采取的行动**：${action}。${desc}`, '')
       for (const it of list) L.push(...renderPendingItem(it, ++n))
     }
   }
 
+  // ★ 固定骨架：即使本次没有自动修复，这一节也照常出现 ——
+  //   每周的报告结构一致，读者不用每次先找「这周少的是哪一段」。
+  L.push(`## 二、本次已自动修复（${applied.length} 个）`, '')
   if (applied.length) {
-    L.push('<details>', `<summary>本次已自动更新（${applied.length} 个）</summary>`, '')
+    L.push('<details>', '<summary>点开看是哪些软件、改了什么</summary>', '')
     for (const a of applied) {
       // 同一条软件可能「修好一部分、又留下一条要人看的」（vlc：下载直链已修、官网页面仍打不开）。
       // 不标出来，读者会以为它既彻底修好了又还没修好 —— 这正是被抱怨「数据不一样」的来源之一。
@@ -1332,17 +1360,19 @@ function buildPendingReport(results, pending, applied, ignore, ctx = {}) {
       L.push(`- **${a.name}**（\`${a.id}\`）：${a.changes.join('；')}${also}`)
     }
     L.push('', '</details>', '')
+  } else {
+    L.push('本次没有自动修改任何数据。', '')
   }
 
-  // ★ 「跟不了」= 脚本不会去跟的那些（不是坏了）。按原因分档点名，明细折叠起来。
-  //   一个都没有时整节不出现（顶部那行已经写了「本来就不跟 0 个」），免得留一个空标题。
+  // ★ 「不纳入自动跟踪」= 脚本不会去跟的那些（不是坏了）。按原因分档点名，明细折叠起来。
+  //   同样固定出现，保持报告骨架一致。
+  L.push(`## 三、不纳入自动跟踪（${cov.untracked.length} 个）`, '')
   if (cov.untracked.length) {
-    L.push(`## 跟不了（${cov.untracked.length} 个）`, '')
     // ⚠️ 这里的数字必须能跟顶部那行对上：跟踪中共 tracked 个，其中需要人管的只有 need 条，
-    //    直接写「其余 tracked 个」会让人拿它跟顶部「跟踪中、不用管」相减后对不上账。
-    L.push(`> 这一档脚本**不会**去跟，不是出了问题。另外 **${rec.tracked}** 个在自动跟踪（GitHub Releases）—— 其中只有上面那 **${rec.need.length}** 条要你处理，剩下的不用管。`, '')
-    L.push('<details>', '<summary>点开看是哪些、为什么不跟</summary>', '')
-    L.push('| 为什么不跟 | 个数 | 哪些软件 |', '|---|---|---|')
+    //    直接写「其余 tracked 个」会让人拿它跟顶部「正常跟踪」相减后对不上账。
+    L.push(`> 这一档脚本**不会**去跟踪，**这不是问题**（属设计如此）。另有 **${rec.tracked}** 个在自动跟踪（GitHub Releases + 官方下载源）—— 其中只有上面那 **${rec.need.length}** 条需要你处理。`, '')
+    L.push('<details>', '<summary>点开看是哪些软件、为什么不跟踪</summary>', '')
+    L.push('| 为什么不跟踪 | 个数 | 哪些软件 |', '|---|---|---|')
     for (const b of BUCKET_ORDER) {
       const list = cov.byBucket[b]
       if (!list?.length) continue
@@ -1353,6 +1383,8 @@ function buildPendingReport(results, pending, applied, ignore, ctx = {}) {
       L.push(`| **${BUCKET_LABEL[b] || b}** —— ${BUCKET_SHORT[b] || ''} | ${list.length} | ${ids} |`)
     }
     L.push('', '</details>', '')
+  } else {
+    L.push('本次所有软件都在自动跟踪范围内。', '')
   }
 
   // ★ 「本次没能验证」：连不上的链接**不能**装成「失效」，但也不能瞒着 ——
@@ -1361,8 +1393,16 @@ function buildPendingReport(results, pending, applied, ignore, ctx = {}) {
   //   **不能**装成「仓库有问题」，但也不能瞒着 —— 明说「不是数据问题」，
   //   人就不用去动 `github` 字段（字段本来就是对的），也不会以为脚本漏查了。
   const unreachable = results.filter(isNotChecked)
+  const unverified = results.filter((r) => (r.unverifiedLinks || []).length)
+  const ignoredList = [...ignore.entries()]
+  // ★ 固定骨架：所有「例外情况」（连不上 / 直链没能验证 / 本次跳过 / 已忽略）统一收在第四节，
+  //   一条都没有时也给一句明确结论 —— 读者不必猜「这周为什么少了这一段」。
+  L.push('## 四、本次检查的例外情况', '')
+  if (!unreachable.length && !unverified.length && !skipped.length && !skipOnce.size && !ignoredList.length) {
+    L.push('本次没有任何例外：全部软件都完成了检查与直链验证，也没有跳过或忽略记录。', '')
+  }
   if (unreachable.length) {
-    L.push('<details>', `<summary>本次有 ${unreachable.length} 个软件没能检查（连不上 / 被限流 / GitHub 服务端错误，不代表有问题）</summary>`, '')
+    L.push('<details>', `<summary>本次有 ${unreachable.length} 个软件未能完成检查（连接失败 / 被限流 / GitHub 服务端错误；不代表数据有问题）</summary>`, '')
     L.push('> 两种成因都说明不了站内数据有问题：① **根本没连上**（DNS / 超时 / TLS / 被拦）；'
       + '② **连上了但对方没给答复**（令牌无效或过期、次级限流、5xx）—— 后者是运行环境的问题，'
       + '跟这个软件的 `github` 字段毫无关系。', '')
@@ -1377,11 +1417,10 @@ function buildPendingReport(results, pending, applied, ignore, ctx = {}) {
     L.push('', '</details>', '')
   }
 
-  const unverified = results.filter((r) => (r.unverifiedLinks || []).length)
   if (unverified.length) {
     const n = unverified.reduce((s, r) => s + r.unverifiedLinks.length, 0)
-    L.push('<details>', `<summary>本次有 ${n} 条直链没能验证（网络原因，不代表失效）</summary>`, '')
-    L.push('> 只是连不上（DNS / 超时 / TLS / 被拦），**没有**收到服务器的明确答复 —— 所以既不当成失效、也不进上面的待处理清单。下次体检会重试。', '')
+    L.push('<details>', `<summary>本次有 ${n} 条下载直链未能验证（连接失败；不代表链接已失效）</summary>`, '')
+    L.push('> 只是连不上（DNS / 超时 / TLS / 被拦），**没有**收到服务器的明确答复 —— 因此既不当成失效、也不进上面的待处理清单。下次体检会重试。', '')
     L.push('')
     L.push('| 软件 | 平台 | 原因 | 链接 |', '|---|---|---|---|')
     for (const r of unverified) for (const d of r.unverifiedLinks) {
@@ -1393,7 +1432,7 @@ function buildPendingReport(results, pending, applied, ignore, ctx = {}) {
   // ★ 「本次跳过」的记录必须列出来：否则一条提醒静默消失，人只会以为脚本坏了。
   //   这里同时给「恢复提醒」的方框 —— 跳错了点一下就回来。
   if (skipped.length || skipOnce.size) {
-    L.push('<details>', `<summary>本次跳过（${skipped.length} 条命中，清单里还有 ${skipOnce.size} 个软件记着）</summary>`, '')
+    L.push('<details>', `<summary>本次跳过（命中 ${skipped.length} 条；清单中另有 ${skipOnce.size} 个软件的记录）</summary>`, '')
     if (skipped.length) {
       L.push('这次没提醒，因为**问题跟上次跳过时一模一样**；只要它有变化就会自动回来。', '')
       for (const s of skipped) L.push(`- \`${s.id}\` **${s.name}**　${{ bump: '有新版本待确认', verify: '版本号对不上', repo: '仓库信息有问题', source: '上游来源读不到', stale: '官网直链指着旧版', 'dead-link': '下载直链失效' }[s.kind] || s.kind}${s.skipAt ? `（${s.skipAt} 跳过）` : ''}`)
@@ -1407,9 +1446,8 @@ function buildPendingReport(results, pending, applied, ignore, ctx = {}) {
     L.push('', '</details>', '')
   }
 
-  const ignoredList = [...ignore.entries()]
   if (ignoredList.length) {
-    L.push('<details>', `<summary>已忽略（${ignoredList.length} 条）</summary>`, '')
+    L.push('<details>', `<summary>已忽略的软件（${ignoredList.length} 条）</summary>`, '')
     L.push('| 软件 id | 范围 | 理由 |', '|---|---|---|')
     for (const [id, v] of ignoredList) {
       L.push(`| \`${id}\` | ${v.skip === 'all' ? '全部忽略' : '仅版本类'} | ${v.reason || '—'} |`)
@@ -1429,15 +1467,16 @@ function buildPendingReport(results, pending, applied, ignore, ctx = {}) {
   //   以前这里也印过一套，两套口径摆在一起会出现「已自动修好 7 个」与
   //   「站内落后 6 个」互相打脸的场面，已删除（2026-09-21）。
   const idList = (ids) => (ids.length ? ids.map((i) => `\`${i}\``).join('、') : '（无）')
-  L.push('<details>', `<summary>本次账目（${results.length} 个软件，逐条可核对）</summary>`, '')
+  L.push('## 附录、本次账目', '')
+  L.push('<details>', `<summary>${results.length} 个软件的归属，点开可逐条核对</summary>`, '')
   L.push('| 归属 | 个数 | 哪些软件 |', '|---|---|---|')
-  L.push(`| 要你处理 | **${rec.need.length}** | ${idList(rec.need)} |`)
-  L.push(`| 本次自动修好 | **${rec.fixed.length}** | ${idList(rec.fixed)} |`)
-  L.push(`| 跟踪中、不用管 | **${rec.rest.length}** | ${idList(rec.rest)} |`)
-  L.push(`| 本来就不跟（见上「跟不了」） | **${rec.notFollowed.length}** | ${idList(rec.notFollowed)} |`)
+  L.push(`| 需人工处理（见第一节） | **${rec.need.length}** | ${idList(rec.need)} |`)
+  L.push(`| 本次已自动修复（见第二节） | **${rec.fixed.length}** | ${idList(rec.fixed)} |`)
+  L.push(`| 正常跟踪、无需干预 | **${rec.rest.length}** | ${idList(rec.rest)} |`)
+  L.push(`| 不纳入自动跟踪（见第三节） | **${rec.notFollowed.length}** | ${idList(rec.notFollowed)} |`)
   L.push(`| **合计** | **${rec.total}** | 四类互不重复，相加即总数 |`)
   L.push('', '完整报告见 Actions 运行摘要。', '', '</details>', '')
-  L.push('---', '', '<sub>由 `scripts/check-updates.mjs` 自动生成 · 工作流 `.github/workflows/check-updates.yml`</sub>')
+  L.push('---', '', '<sub>本报告由 `scripts/check-updates.mjs` 自动生成，工作流 `.github/workflows/check-updates.yml`；正文请勿手工编辑（勾选框除外）。</sub>')
   return L.join('\n')
 }
 
@@ -1474,6 +1513,7 @@ function buildFullReport(results, applied, ignore, ctx = {}) {
   L.push(`| 本次没能检查（连不上 / 限流 / 令牌 / 5xx） | ${notChecked.length} |`)
   L.push(`| 已是最新 | ${ok.length} |`)
   L.push(`| 没得跟（微软商店 / 固定直链 / 归档 / 仅网页 / 网盘） | ${cov.untracked.length} |`)
+  L.push(`| 自动跟踪 · 官方下载源（直链解析，非 GitHub） | ${cov.auto.length} |`)
   if (skipped.length) L.push(`| 本次跳过（问题没变化，已压掉） | ${skipped.length} |`)
   L.push(`| 仓库在、但没有发行版 | ${noRelease.length} |`, '')
 
