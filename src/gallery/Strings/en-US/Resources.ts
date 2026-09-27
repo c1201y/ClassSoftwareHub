@@ -113,6 +113,7 @@ export default {
     "detail.store-desc": "Hosted by Microsoft Store and keeps itself up to date automatically.",
     "detail.store-button": "Open Microsoft Store",
     "detail.store-only": "This app is distributed through Microsoft Store. Use the button above to open its Store page — the Store version updates itself automatically.",
+    "detail.store-nostore": "If this PC has no Microsoft Store (LTSC / stripped builds / removed), the button above will not work — it just sends you back to the Store to get the Store. Press Win+R, type wsreset -i and hit Enter while online: Windows then downloads and reinstalls the Store by itself (1–3 min, no progress bar). If that still fails, run winget install 9WZDNCRFJBMP in an admin PowerShell.",
     "detail.mirror-button": "Mirror download",
     "detail.hash-copy": "Copy",
     "detail.hash-copied": "Copied",

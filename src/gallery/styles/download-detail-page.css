@@ -154,6 +154,13 @@ html.theme-dark .detail-category-badge {
   font-size: 13px;
   margin: 0;
 }
+/* 只有商店一个入口的软件（如 Microsoft Store 本体）：本机没商店时的自救办法 */
+.detail-store-nostore {
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  line-height: 1.7;
+  margin: 6px 0 0;
+}
 .detail-download-row {
   background: var(--card-bg);
   border: 1px solid var(--card-stroke);

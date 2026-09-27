@@ -150,6 +150,10 @@
           </div>
         </div>
         <p v-else-if="storeLink" class="detail-store-only-hint">{{ t('detail.store-only') }}</p>
+
+        <!-- 这条软件只有商店一个入口：本机要是没商店就会死循环（商店让你去商店装商店），
+             所以补一句「自己怎么把商店装回来」——wsreset -i 是 Windows 内置的静默重装开关 -->
+        <p v-if="storeLink && !otherDownloads.length" class="detail-store-nostore">{{ t('detail.store-nostore') }}</p>
       </template>
 
       <!-- 找不到该软件 -->
