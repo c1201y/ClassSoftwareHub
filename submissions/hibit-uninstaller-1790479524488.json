@@ -1,0 +1,24 @@
+{
+  "_提交时间": "2026-09-27T03:25:24.488Z",
+  "_原始ID冲突": false,
+  "id": "hibit-uninstaller",
+  "name": "HiBit Uninstaller",
+  "icon": "https://www.hibitsoft.ir/images/Uninstaller-icon.png",
+  "category": "system",
+  "tagline": "HiBit Uninstaller 是一款免费专业的软件卸载工具",
+  "description": "HiBit Uninstaller 是一款轻量、免费、无广告的 Windows 平台第三方卸载工具。相比系统自带的“应用和功能”，它支持强制卸载、深度残留扫描、浏览器扩展管理、上下文菜单清理、开机启动项管理等功能，适用于彻底移除顽固软件、流氓程序或已损坏的应用。\n和Geek相比完全免费，批量卸载免费",
+  "version": "4.0.10",
+  "size": "4.32 MB",
+  "system": "Windows 7~11",
+  "website": "https://www.hibitsoft.ir/",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "HiBitUninstaller-setup-4.0.10",
+      "size": "4.32 MB",
+      "url": "https://www.hibitsoft.ir/HiBitUninstaller/HiBitUninstaller-setup-4.0.10.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "QQ:3815764522"
+}
