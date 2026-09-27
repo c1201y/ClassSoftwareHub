@@ -1,0 +1,43 @@
+{
+  "_提交时间": "2026-09-27T03:19:06.808Z",
+  "_原始ID冲突": false,
+  "id": "vcredist",
+  "name": "vcredist",
+  "icon": "https://avatars.githubusercontent.com/u/33669284?v=4",
+  "category": "system",
+  "tagline": "AIO Repack for latest Microsoft Visual C++ Redistributable…",
+  "description": "AIO Repack for latest Microsoft Visual C++ Redistributable Runtimes",
+  "version": "v0.105.0",
+  "size": "",
+  "system": "Windows",
+  "website": "",
+  "github": "https://github.com/abbodi1406/vcredist",
+  "downloads": [
+    {
+      "platform": "Windows ARM64 安装版",
+      "note": "VisualCppRedist_AIO-arm64.exe",
+      "size": "19.3 MB",
+      "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.105.0/VisualCppRedist_AIO-arm64.exe"
+    },
+    {
+      "platform": "Windows x86 安装版",
+      "note": "VisualCppRedist_AIO_x86only.exe",
+      "size": "17.8 MB",
+      "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.105.0/VisualCppRedist_AIO_x86only.exe"
+    },
+    {
+      "platform": "Windows x64 安装版",
+      "note": "VisualCppRedist_AIO_x86_x64.exe",
+      "size": "30.7 MB",
+      "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.105.0/VisualCppRedist_AIO_x86_x64.exe"
+    },
+    {
+      "platform": "其他 x64 压缩包",
+      "note": "VisualCppRedist_AIO_x86_x64_105.zip",
+      "size": "30.7 MB",
+      "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.105.0/VisualCppRedist_AIO_x86_x64_105.zip"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "3814699931"
+}
