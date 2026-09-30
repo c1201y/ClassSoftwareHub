@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-09-27T03:25:06.834Z",
-  "_原始ID冲突": false,
   "id": "luanti",
   "name": "luanti",
   "icon": "https://avatars.githubusercontent.com/u/181835281?v=4",
@@ -56,6 +54,5 @@
       "url": "https://github.com/luanti-org/luanti/releases/download/5.17.0/luanti_5.17.0_macos12.3_x86_64.zip"
     }
   ],
-  "sort": 99,
-  "_联系方式": "3814699931"
+  "sort": 99
 }
