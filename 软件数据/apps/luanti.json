@@ -1,24 +1,24 @@
 {
   "id": "luanti",
-  "name": "luanti",
+  "name": "Luanti（原 Minetest）",
   "icon": "https://avatars.githubusercontent.com/u/181835281?v=4",
   "category": "other",
-  "tagline": "Luanti (formerly Minetest) is an open source voxel…",
-  "description": "Luanti (formerly Minetest) is an open source voxel game-creation platform with easy modding and game creation",
+  "tagline": "开源免费的像素方块游戏平台，自带小游戏还能装海量模组",
+  "description": "Luanti 原名 Minetest，是一个开源免费的像素方块（体素）游戏平台：装好之后自带几款小游戏，也能从社区下载海量模组、地图和材质包，从生存建造到跑酷应有尽有。代码和模组全部免费，不联网也能单机玩，适合班级电脑上装一个课间放松。\nWindows 用户建议直接下 64 位压缩包，解压即可玩；也提供安装版。",
   "version": "5.17.0",
-  "size": "",
-  "system": "Windows / macOS /",
+  "size": "约 17 MB（Windows 64 位压缩包）",
+  "system": "Windows / macOS / Linux / Android",
   "website": "https://www.luanti.org/",
   "github": "https://github.com/luanti-org/luanti",
   "downloads": [
     {
-      "platform": "Windows 压缩包",
+      "platform": "Windows 32 位压缩包",
       "note": "luanti-5.17.0-win32.zip",
       "size": "17.0 MB",
       "url": "https://github.com/luanti-org/luanti/releases/download/5.17.0/luanti-5.17.0-win32.zip"
     },
     {
-      "platform": "Windows 压缩包",
+      "platform": "Windows 64 位压缩包",
       "note": "luanti-5.17.0-win64.zip",
       "size": "16.7 MB",
       "url": "https://github.com/luanti-org/luanti/releases/download/5.17.0/luanti-5.17.0-win64.zip"

@@ -3,11 +3,11 @@
   "name": "微信老版本",
   "icon": "https://pc3.gtimg.com/softmgr/logo/48/27349_48_1623835272.png",
   "category": "teaching",
-  "tagline": "微信的3.2.1老版本",
-  "description": "微信3.2.1版本，主流功能全部支持，可正常登录，适合给性能不怎么好的电脑使用",
+  "tagline": "微信 3.2.1 老版本，给带不动新版微信的老电脑用",
+  "description": "微信 3.2.1，Windows 版微信的老版本安装包。基础聊天、图片与文件收发、群聊等主流功能都在，能正常登录使用；体积比 4.x 版小得多，对 CPU、内存的要求也低，适合教室里那些装不上新版微信、或者装上新版就卡的旧电脑。注意：微信官方已停止为 3.x 版本推送更新，部分新功能不可用；如果机器性能允许，建议优先用站内的微信新版。",
   "version": "3.2.1",
-  "size": "130.4MB",
-  "system": "WindowsXP及以上",
+  "size": "约 130 MB",
+  "system": "Windows XP 及以上",
   "website": "https://pc.qq.com/detail/9/detail_27349.html",
   "downloads": [
     {

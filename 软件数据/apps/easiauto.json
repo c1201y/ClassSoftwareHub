@@ -3,9 +3,11 @@
   "name": "EasiAuto",
   "icon": "https://easiauto.0xabcd.dev/images/EasiAuto.webp",
   "category": "teaching",
-  "tagline": "一款自动登录希沃白板的小工具！",
-  "description": "一款自动登录希沃白板的小工具，旨在带来更智能、更方便、更易用的希沃白板登录体验，简化课前准备流程。",
+  "tagline": "自动登录希沃白板的小工具，省掉每次手动输账号密码",
+  "description": "EasiAuto 是一款自动登录希沃白板的小工具，省掉每次手动输账号、密码的那一步：电脑开机后它会自动把希沃白板登录好，直接进到上课界面，简化课前准备流程。适合教室电脑使用固定账号、又不希望密码人尽皆知的场景。",
   "version": "v1.2.1",
+  "size": "约 97 MB",
+  "system": "Windows 10 / 11（64 位）",
   "website": "https://easiauto.0xabcd.dev",
   "github": "https://github.com/hxabcd/EasiAuto",
   "downloads": [
