@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-09-27T11:18:04.941Z",
-  "_原始ID冲突": false,
   "id": "dreamscene2",
   "name": "DreamScene2",
   "icon": "https://avatars.githubusercontent.com/u/40764272?v=4",
@@ -26,6 +24,5 @@
       "url": "https://download.visualstudio.microsoft.com/download/pr/1f5af042-d0e4-4002-9c59-9ba66bcf15f6/124d2afe5c8f67dfa910da5f9e3db9c1/ndp472-kb4054531-web.exe"
     }
   ],
-  "sort": 99,
-  "_联系方式": "3647808286@qq.com"
+  "sort": 99
 }
