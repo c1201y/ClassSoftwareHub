@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-09-27T03:19:06.808Z",
-  "_原始ID冲突": false,
   "id": "vcredist",
   "name": "vcredist",
   "icon": "https://avatars.githubusercontent.com/u/33669284?v=4",
@@ -38,6 +36,5 @@
       "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.105.0/VisualCppRedist_AIO_x86_x64_105.zip"
     }
   ],
-  "sort": 99,
-  "_联系方式": "3814699931"
+  "sort": 99
 }
