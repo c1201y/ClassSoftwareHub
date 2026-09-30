@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-09-27T03:28:02.194Z",
-  "_原始ID冲突": false,
   "id": "mindustry",
   "name": "Mindustry",
   "icon": "https://avatars.githubusercontent.com/u/10100000?v=4",
@@ -32,6 +30,5 @@
       "url": "https://github.com/Anuken/Mindustry/releases/download/v160.5/Mindustry.jar"
     }
   ],
-  "sort": 99,
-  "_联系方式": "3814699931"
+  "sort": 99
 }
