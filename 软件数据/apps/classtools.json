@@ -3,9 +3,11 @@
   "name": "ClassTools",
   "icon": "https://store-images.s-microsoft.com/image/apps.52863.14109399796739009.657e7b75-563b-43b8-8aa9-b92803b83cd0.d71ff4ea-419b-43ae-ae69-1d0bb479d5e0?h=134",
   "category": "teaching",
-  "tagline": "一个用在班级电脑上面的动态壁纸系统，显示高考倒计时、作业、课程表、值日生等",
-  "description": "一个用在班级电脑上面的动态壁纸系统，显示高考倒计时、作业、课程表、值日生等",
+  "tagline": "用在班级电脑上的教室看板：高考倒计时、课程表、作业、值日生",
+  "description": "ClassTools 把班级电脑的桌面变成一块信息看板，用动态壁纸的方式常驻显示：时钟、高考倒计时、实时天气、课程表、作业布置与独立作业看板、班级标语、值日生安排。设置界面简单易用，改完立刻生效，不用每次重新配置，适合「一开机就能看到今天第几节课、还剩几天高考、作业是什么」的场景。基于 Electron + Vue3 开发，开源免费（GPLv3），另有一个网页版可以在线试用。",
   "version": "v3.1.0",
+  "size": "约 64 MB",
+  "system": "Windows 10 / 11（32 / 64 位）",
   "github": "https://github.com/clansty/ClassTools",
   "downloads": [
     {

@@ -4,11 +4,26 @@
   "icon": "https://ts3.tc.mm.bing.net/th/id/OIP-C.jpJ_nRsuWnOpLIHCQ9QonAHaHa?w=108&h=108&c=1&bgcl=963369&r=0&o=7&dpr=2&pid=ImgRC&rm=3",
   "category": "schedule",
   "tagline": "微软官方浏览器（附企业版 MSI 离线包）",
-  "description": "Microsoft Edge 是基于 Chromium 的现代化浏览器，与 Windows 系统深度集成，支持扩展、集锦、垂直标签页等功能。这里提供企业版离线安装包（MSI 格式），适合教室大屏批量部署，或在没有网络的机器上安装。",
+  "description": "Microsoft Edge 是基于 Chromium 的现代化浏览器，与 Windows 系统深度集成，支持扩展、集锦、垂直标签页、朗读等功能，装完即用、无需额外配置。这里提供两种装法：企业版 MSI 离线安装包（x64 / x86），地址由微软官方固定维护、始终指向最新版，适合教室大屏批量部署或给没有网络的机器安装；机器能联网的话，也可以直接走 Microsoft Store 安装。",
   "version": "跟随官网",
+  "size": "约 203 MB（x64 离线包）",
   "system": "Windows 7 ~ 11、macOS、Linux",
   "website": "https://www.microsoft.com/zh-cn/edge",
   "downloads": [
+    {
+      "platform": "Windows x64 离线安装包（MSI）",
+      "note": "企业版离线包，适合教室大屏批量部署或没网的机器；微软官方固定地址，始终指向最新版",
+      "size": "约 203 MB",
+      "kind": "file",
+      "url": "https://go.microsoft.com/fwlink/?linkid=2093437"
+    },
+    {
+      "platform": "Windows x86 离线安装包（MSI）",
+      "note": "32 位系统 / 老机器用",
+      "size": "约 180 MB",
+      "kind": "file",
+      "url": "https://go.microsoft.com/fwlink/?linkid=2093505"
+    },
     {
       "platform": "通过 Microsoft Store 下载",
       "url": "https://apps.microsoft.com/detail/xpfftq037jwmhs?gl=CN&hl=zh-CN"

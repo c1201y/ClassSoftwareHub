@@ -3,11 +3,11 @@
   "name": "Mindustry",
   "icon": "https://avatars.githubusercontent.com/u/10100000?v=4",
   "category": "other",
-  "tagline": "The automation tower defense RTS",
-  "description": "The automation tower defense RTS",
+  "tagline": "自动化塔防 + 沙盒建造，开源免费的像素风即时战略",
+  "description": "Mindustry 是一款开源免费的沙盒塔防 / 即时战略游戏：一边用传送带、钻头、工厂搭出全自动生产线，一边架起炮台抵挡一波波来袭的敌人；也可以纯造基地，或多人联机对战和合作打战役。像素风画面对配置要求很低，适合班级电脑。\n注意：下载的是 JAR 包，必须先装 Java 运行环境才能打开（本页不含 Java）。",
   "version": "v160.5",
-  "size": "",
-  "system": "win10",
+  "size": "约 135 MB（JAR 版全部文件）",
+  "system": "Windows / macOS / Linux（需自备 Java 8 或更高版本）",
   "website": "https://mindustrygame.github.io",
   "github": "https://github.com/Anuken/Mindustry",
   "downloads": [
@@ -30,5 +30,6 @@
       "url": "https://github.com/Anuken/Mindustry/releases/download/v160.5/Mindustry.jar"
     }
   ],
-  "sort": 99
+  "sort": 99,
+  "notice": "下载的是 JAR 包，需要先装 Java 运行环境才能运行；本站已收录 Eclipse Temurin 17，装完即可。"
 }

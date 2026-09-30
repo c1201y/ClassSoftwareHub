@@ -314,6 +314,30 @@ export const RESOLVERS = {
     pickUrl: /https?:\/\/[^"'\s<>]+\.(?:zip|exe)/i,
     keepVersion: true,
   },
+  //    HiBit Uninstaller：官网下载页里挂着**当期**的安装包名（HiBitUninstaller-setup-4.0.10.exe），
+  //    版本号从页面白拿；但站内用的是官网那条**固定文件名**地址
+  //    （…/HiBitUninstaller/HiBitUninstaller-setup.exe，不带版本号、发新版就用同名覆盖，
+  //    2026-09-30 实测与当期版本化包的 Last-Modified 完全一致）——
+  //    所以 keepUrl：只借页面里的版本号与体积，URL 永不过期。
+  'hibit-uninstaller': {
+    kind: 'probe',
+    entry: 'https://www.hibitsoft.ir/Uninstaller.html',
+    keepUrl: true,
+    pickUrl: /HiBitUninstaller\/HiBitUninstaller-setup-[0-9.]+\.exe/gi,
+    versionRe: /HiBitUninstaller-setup-(\d+(?:\.\d+)+)\.exe/i,
+  },
+  //    SpaceSniffer：官网首页推荐的**主镜像 dAppCDN 对脚本恒 403**（带 Referer 也没用），
+  //    幸好官网「备用下载」页把每个历史版本的直链都列了出来
+  //    （files/spacesniffer_2_2_0_27_x64.zip）——取版本号最大的那条即可。
+  //    2.x 只有 x64 版；文件名里版本是下划线写法，用 versionFix 换回点号。
+  spacesniffer: {
+    kind: 'probe',
+    entry: 'https://www.uderzo.it/main_products/space_sniffer/download_alt.html',
+    pickUrl: /files\/spacesniffer_[0-9_]+_x64\.zip/gi,
+    pickUrlMax: true,
+    versionRe: /spacesniffer_(\d+(?:_\d+)+)_x64\.zip/i,
+    versionFix: (s) => cur(s).replace(/_/g, '.'),
+  },
 
   // ── winget 官方清单：直链带版本号，链接与版本号一起自动刷新 ───────────────
   //    微信 4.x 的安装包换了目录（weixin/Universal/Windows/WeChatWin_<版本>.exe），

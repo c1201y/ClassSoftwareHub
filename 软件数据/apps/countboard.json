@@ -3,10 +3,11 @@
   "name": "CountBoard",
   "icon": "https://img1.runjiapp.com/duoteimg/dtnew_softup_img/202111/939d7f8724616ab4.png",
   "category": "teaching",
-  "tagline": "CountBoard 是一个基于Tkinter简单的,开源的桌面日程倒计时应用。",
-  "description": "CountBoard 是一个基于Tkinter简单的,开源的桌面日程倒计时应用。",
+  "tagline": "把考试 / 高考倒计时做成桌面磁贴，一眼看到还剩几天",
+  "description": "CountBoard 是一个开源的桌面日程倒计时工具，把「高考还剩多少天」「下次月考还有几天」做成一块贴在桌面上的磁贴。磁贴提供亚克力与毛玻璃两种质感，既可以嵌进桌面（跟着桌面显示、不挡操作），也可以做成独立窗体并设置置顶；双击磁贴直接修改或删除日程，右键可以新建。提醒支持「每天固定时间」和「每隔一段时间」两种方式，计时还能选普通模式（24 小时内算一天）或紧迫模式（24 小时内算零天）。体积小、免安装依赖，放在教室电脑上很合适。",
   "version": "V1.3.0.2",
-  "system": "Windows",
+  "size": "约 18 MB",
+  "system": "Windows（64 位）",
   "github": "https://github.com/Gaoyongxian666/CountBoard",
   "downloads": [
     {

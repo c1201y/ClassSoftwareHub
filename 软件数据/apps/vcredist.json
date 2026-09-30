@@ -1,13 +1,13 @@
 {
   "id": "vcredist",
-  "name": "vcredist",
+  "name": "Visual C++ 运行库合集（AIO Repack）",
   "icon": "https://avatars.githubusercontent.com/u/33669284?v=4",
   "category": "system",
-  "tagline": "AIO Repack for latest Microsoft Visual C++ Redistributable…",
-  "description": "AIO Repack for latest Microsoft Visual C++ Redistributable Runtimes",
+  "tagline": "一次装齐 VC++ 2005~2026 运行库，专治「缺少 msvcp140.dll」打不开",
+  "description": "装软件或玩游戏时常见的「缺少 msvcp140.dll」「找不到 VCRUNTIME140.dll」，基本都是系统里的 Visual C++ 运行库没装全。这个合集（AIO Repack）把 VC++ 2005 / 2008 / 2010 / 2012 / 2013 / 2022 / 2026 的 x86、x64 版本打包在一起，一次装完；安装前会自动清理已有的旧版运行库，避免版本打架。\n注意：这是第三方重打包版，不是微软官方安装包；Win7 / 8.1 上装的是 2022 版运行库，只有 Win10 / 11 才支持 2026 版。",
   "version": "v0.105.0",
-  "size": "",
-  "system": "Windows",
+  "size": "约 30 MB（x64 安装版）",
+  "system": "Windows 7 / 8 / 8.1 / 10 / 11（x86 / x64 / ARM64）",
   "website": "",
   "github": "https://github.com/abbodi1406/vcredist",
   "downloads": [
@@ -36,5 +36,6 @@
       "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.105.0/VisualCppRedist_AIO_x86_x64_105.zip"
     }
   ],
-  "sort": 99
+  "sort": 99,
+  "notice": "第三方重打包版（非微软官方安装包）：安装前会自动清理系统里已有的旧版 VC++ 运行库。"
 }

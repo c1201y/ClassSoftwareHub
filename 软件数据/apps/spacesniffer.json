@@ -1,22 +1,22 @@
 {
   "id": "spacesniffer",
-  "name": "spacesniffer",
-  "icon": "https://avatars.githubusercontent.com/u/54786587?v=4",
+  "name": "SpaceSniffer",
   "category": "system",
-  "tagline": "SpaceSniffer 是一款免费的 Windows 磁盘空间分析工具",
-  "description": "用经典的SpaceSniffer树状图视图，追踪存储密集的文件夹。目前官方的x64版本依然便携、带过滤且快速扫描，即使你不断深入硬盘。",
-  "version": "v1.3.0.2",
-  "size": "",
-  "system": "仅支持Windows10/11x64位版本",
+  "tagline": "免费便携的磁盘空间分析工具，方块图一眼看出谁占满了磁盘",
+  "description": "SpaceSniffer 用「方块图」（Treemap）展示磁盘占用：方块越大，对应的文件或文件夹就越大，一眼就能看出到底是哪个文件夹把 C 盘塞满了。单击可以展开看细节、双击放大，支持按文件名、大小、日期过滤（例如输入 *.jpg 只看图片、>2years 只看两年前的老文件），还能给文件打颜色标签、导出报告。绿色便携版，解压双击即用，不写注册表。",
+  "version": "2.2.0.27",
+  "size": "约 2.9 MB",
+  "system": "Windows 7 / 8 / 10 / 11（x64，便携版）",
   "website": "http://www.uderzo.it/main_products/space_sniffer/",
-  "github": "https://github.com/redtrillix/SpaceSniffer",
   "downloads": [
     {
-      "platform": "github/官方网站 压缩包",
-      "note": "spacesniffer_1_3_0_2.zip",
-      "size": "1.6 MB",
-      "url": "https://github.com/redtrillix/SpaceSniffer/releases/download/v1.3.0.2/spacesniffer_1_3_0_2.zip"
+      "platform": "Windows x64 便携版（压缩包）",
+      "note": "spacesniffer_2_2_0_27_x64.zip",
+      "size": "2.9 MB",
+      "kind": "file",
+      "url": "https://www.uderzo.it/main_products/space_sniffer/files/spacesniffer_2_2_0_27_x64.zip"
     }
   ],
-  "sort": 99
+  "sort": 99,
+  "维护备注": "官网首页推荐的主镜像 dAppCDN 对脚本/爬虫恒 403（带 Referer 也没用），所以直链取官网「备用下载」页的版本化 zip，已登记进 scripts/resolve-direct-links.mjs（kind=probe，pickUrlMax 取最高版本）。原 github 字段指向 redtrillix/SpaceSniffer —— 那是别人建的**非官方**镜像（仓库自己写明 unofficial），2022-06 起停更，会让体检报告误以为「有人在跟」，故移除。图标原本是那个镜像站的头像（显示 RedTrillix），已换成 src/assets/icons/spacesniffer.webp。"
 }
