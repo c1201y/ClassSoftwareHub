@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-09-27T03:55:39.323Z",
-  "_原始ID冲突": false,
   "id": "spacesniffer",
   "name": "spacesniffer",
   "icon": "https://avatars.githubusercontent.com/u/54786587?v=4",
@@ -20,6 +18,5 @@
       "url": "https://github.com/redtrillix/SpaceSniffer/releases/download/v1.3.0.2/spacesniffer_1_3_0_2.zip"
     }
   ],
-  "sort": 99,
-  "_联系方式": "TUDOU-123@outlook.com"
+  "sort": 99
 }
