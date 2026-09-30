@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-09-27T03:25:33.944Z",
-  "_原始ID冲突": false,
   "id": "hibit-uninstaller",
   "name": "HiBit Uninstaller",
   "icon": "https://www.hibitsoft.ir/images/Uninstaller-icon.png",
@@ -19,6 +17,5 @@
       "url": "https://www.hibitsoft.ir/HiBitUninstaller/HiBitUninstaller-setup-4.0.10.exe"
     }
   ],
-  "sort": 99,
-  "_联系方式": "QQ:3815764522"
+  "sort": 99
 }
