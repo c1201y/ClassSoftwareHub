@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-01T09:38:29.584Z",
-  "_原始ID冲突": false,
   "id": "maxhub-whiteboard",
   "name": "MAXHUB 白板书写",
   "icon": "https://cstore-pri-pinco-bs.seewo.com/seewo-pinco-private/uwiwlhvkhjkljhhvhypqpjpuhiphihhh.ico?Expires=1790854208&OSSAccessKeyId=LTAI5tDfDk7waUMpMY5x13JB&Signature=4leIk9Xkmdn%2BZJJa6l17r77yVpY%3D&response-content-disposition=attachment%3Bfilename%3D%22WhiteBoard.ico%22%3Bfilename%2A%3Dutf-8%27%27WhiteBoard.ico",
@@ -20,6 +18,5 @@
     }
   ],
   "sort": 99,
-  "notice": "更新频繁，直链易失效",
-  "_联系方式": "3332146962"
+  "notice": "更新频繁，直链易失效"
 }
