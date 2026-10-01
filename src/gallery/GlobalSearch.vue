@@ -165,13 +165,15 @@ const activateActive = (): boolean => {
 
 defineExpose({ moveActive, activateActive });
 
-/* ── 定位：贴在标题栏输入框下方，并保证不超出视口 ─────────────────── */
+/* ── 定位：贴在标题栏搜索框下方，左右边缘与搜索框对齐，并保证不超出视口 ── */
 const updatePosition = () => {
   const anchor = props.anchor;
   if (!anchor) return;
   const rect = anchor.getBoundingClientRect();
   const vw = window.innerWidth;
-  const width = Math.min(Math.max(rect.width, 380), 560, vw - 16);
+  // 锚点已是搜索框容器（含图标/输入框/清空按钮外包块），直接让面板宽度 = 容器宽度，
+  // 左右边缘与搜索框对齐；不再用固定 380 把面板拉宽导致偏右。
+  const width = Math.min(rect.width, vw - 16);
   let left = rect.left;
   if (left + width > vw - 8) left = Math.max(8, vw - 8 - width);
   const top = rect.bottom + 6;
