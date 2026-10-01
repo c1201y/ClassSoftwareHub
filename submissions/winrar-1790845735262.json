@@ -1,0 +1,23 @@
+{
+  "_提交时间": "2026-10-01T09:08:55.262Z",
+  "_原始ID冲突": false,
+  "id": "winrar",
+  "name": "WinRAR",
+  "icon": "",
+  "category": "system",
+  "tagline": "很好用的解压工具",
+  "description": "用于解压压缩包",
+  "version": "",
+  "size": "",
+  "system": "WinRAR 7.10及以上支持最低系统win7 x64或更高版本",
+  "website": "",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "",
+      "url": "WinRAR 简体中文官方下载页：https://www.winrar.com.cn/download.htm"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "QQ 3866006879"
+}
