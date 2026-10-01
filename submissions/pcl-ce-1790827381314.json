@@ -1,0 +1,25 @@
+{
+  "_提交时间": "2026-10-01T04:03:01.314Z",
+  "_原始ID冲突": false,
+  "id": "pcl-ce",
+  "name": "PCL-CE",
+  "icon": "https://avatars.githubusercontent.com/u/165488354?v=4",
+  "category": "other",
+  "tagline": "PCL 社区版 由社区开发者维护与管理",
+  "description": "PCL 社区版 由社区开发者维护与管理",
+  "version": "v2.15.0",
+  "size": "",
+  "system": "Windows",
+  "website": "https://pclce-web.demo.fis.ink/",
+  "github": "https://github.com/PCL-Community/PCL-CE",
+  "downloads": [
+    {
+      "platform": "Windows x64 安装版",
+      "note": "PCL2_CE_Release_x64.exe",
+      "size": "21.3 MB",
+      "url": "https://github.com/PCL-Community/PCL-CE/releases/download/v2.15.0/PCL2_CE_Release_x64.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "3814699931"
+}
