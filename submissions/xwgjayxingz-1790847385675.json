@@ -1,0 +1,45 @@
+{
+  "_提交时间": "2026-10-01T09:36:25.675Z",
+  "_原始ID冲突": false,
+  "id": "xwgjayxingz",
+  "name": "希沃管家",
+  "icon": "",
+  "category": "schedule",
+  "tagline": "希沃管家软件",
+  "description": "需要加入学校集控用",
+  "version": "",
+  "size": "121MB(Windows)",
+  "system": "Windows7及以上，通信UOS，银河麒麟",
+  "website": "",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "Windows x86安装版",
+      "size": "121MB",
+      "url": "https://cstore-pub-cos-seewo-report-tx.seewo.com/seewo-report_uwiwkinhhhulnhlwhypiyvohpzphihhh?sign=q-sign-algorithm%3Dsha1%26q-ak%3DAKIDJUXMxJRLzPaeMp20jDSTFl23pLcdPwDF%26q-sign-time%3D1790592368%3B2105952368%26q-key-time%3D1790592368%3B2105952368%26q-header-list%3Dhost%26q-url-param-list%3Dresponse-content-disposition%26q-signature%3Db47aa561b42129a4202583066edb0ac822246aa2&response-content-disposition=attachment%3Bfilename%3D%22SeewoServiceSetup_1.6.7.4018.exe%22%3Bfilename%2A%3Dutf-8%27%27SeewoServiceSetup_1.6.7.4018.exe"
+    },
+    {
+      "platform": "统信UOS x86安装版",
+      "size": "245MB",
+      "url": "https://cstore-pub-cos-seewo-report-tx.seewo.com/seewo-report_uwixlyiphhulnhlwhyhmmzwvyvhhihhh?sign=q-sign-algorithm%3Dsha1%26q-ak%3DAKIDJUXMxJRLzPaeMp20jDSTFl23pLcdPwDF%26q-sign-time%3D1786413405%3B2101773405%26q-key-time%3D1786413405%3B2101773405%26q-header-list%3Dhost%26q-url-param-list%3Dresponse-content-disposition%26q-signature%3De58cf6355fed3e07995accf90753bf6ed44964ba&response-content-disposition=attachment%3Bfilename%3D%22com.seewo.terminalmanager_neutral_3.0.6.716_uos_amd64.deb%22%3Bfilename%2A%3Dutf-8%27%27com.seewo.terminalmanager_neutral_3.0.6.716_uos_amd64.deb"
+    },
+    {
+      "platform": "银河麒麟 x86安装版",
+      "size": "239MB",
+      "url": "https://cstore-pub-cos-seewo-report-tx.seewo.com/seewo-report_uwixnlnxhhulnhlwhyhoyiwwvxhhihhh?sign=q-sign-algorithm%3Dsha1%26q-ak%3DAKIDJUXMxJRLzPaeMp20jDSTFl23pLcdPwDF%26q-sign-time%3D1786497518%3B2101857518%26q-key-time%3D1786497518%3B2101857518%26q-header-list%3Dhost%26q-url-param-list%3Dresponse-content-disposition%26q-signature%3Dacad03d0e6204bb52cfcc0a2a8b7bce6bf91576d&response-content-disposition=attachment%3Bfilename%3D%22com.seewo.terminalmanager_neutral_3.0.6.716_kylin_amd64.deb%22%3Bfilename%2A%3Dutf-8%27%27com.seewo.terminalmanager_neutral_3.0.6.716_kylin_amd64.deb"
+    },
+    {
+      "platform": "银河麒麟ARM安装版",
+      "size": "216MB",
+      "url": "https://cstore-pub-cos-seewo-report-tx.seewo.com/seewo-report_uwixjjizhhulnhlwhwvluimyovphihhh?sign=q-sign-algorithm%3Dsha1%26q-ak%3DAKIDJUXMxJRLzPaeMp20jDSTFl23pLcdPwDF%26q-sign-time%3D1775114135%3B2090474135%26q-key-time%3D1775114135%3B2090474135%26q-header-list%3Dhost%26q-url-param-list%3Dresponse-content-disposition%26q-signature%3D2bc841709607e514f4ba201d889f3a27a2f0b269&response-content-disposition=attachment%3Bfilename%3D%22com.seewo.terminalmanager_neutral_3.0.5.619_kylin_aarch64.deb%22%3Bfilename%2A%3Dutf-8%27%27com.seewo.terminalmanager_neutral_3.0.5.619_kylin_aarch64.deb"
+    },
+    {
+      "platform": "银河麒麟龙芯架构安装版",
+      "size": "227MB",
+      "url": "https://cstore-pub-cos-seewo-report-tx.seewo.com/seewo-report_uwiwzuizhhulnhlwhwvljmyyzphhihhh?sign=q-sign-algorithm%3Dsha1%26q-ak%3DAKIDJUXMxJRLzPaeMp20jDSTFl23pLcdPwDF%26q-sign-time%3D1775097960%3B2090457960%26q-key-time%3D1775097960%3B2090457960%26q-header-list%3Dhost%26q-url-param-list%3Dresponse-content-disposition%26q-signature%3D05819b3ef2b70c373b838e2b071b2abfefbfece5&response-content-disposition=attachment%3Bfilename%3D%22com.seewo.terminalmanager_neutral_3.0.5.619_kylin_loongarch64.deb%22%3Bfilename%2A%3Dutf-8%27%27com.seewo.terminalmanager_neutral_3.0.5.619_kylin_loongarch64.deb"
+    }
+  ],
+  "sort": 99,
+  "notice": "如遇链接失效，建议去官网下载",
+  "_联系方式": "wsy@yfwsy.icu"
+}
