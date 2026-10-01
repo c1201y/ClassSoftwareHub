@@ -8,7 +8,7 @@
     ref="searchRef"
     v-model:open="searchOpen"
     :query="searchQuery"
-    :anchor="searchInputRef" />
+    :anchor="searchContainerRef" />
   <Teleport to="body">
     <div v-if="isNavigationFrozen" class="gallery-navigation-freeze" aria-hidden="true"></div>
   </Teleport>
@@ -27,6 +27,7 @@
     <!-- 搜索框：标题栏里唯一、可直接输入的真输入框，结果就地下拉
          （软件 / 内置工具 / AI 站点 / 页面），快捷键 Ctrl + K 聚焦 -->
     <div
+      ref="searchContainerRef"
       class="gallery-titlebar-search"
       :class="{ 'is-open': searchOpen }"
       @click="onSearchContainerClick">
@@ -171,6 +172,9 @@ const searchRef = ref<{
   activateActive: () => boolean;
 } | null>(null);
 const searchInputRef = ref<HTMLInputElement | null>(null);
+/** 搜索框容器（输入框 + 图标 + 清空按钮外包的那块）：下拉面板锚定到它，
+ *  这样面板左右边缘与搜索框对齐，而不是锚定到被内缩的输入框。 */
+const searchContainerRef = ref<HTMLElement | null>(null);
 const searchQuery = ref('');
 const searchOpen = ref(false);
 
