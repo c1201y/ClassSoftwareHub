@@ -1,91 +1,63 @@
-<!-- 全站搜索面板（Ctrl + K / 点标题栏搜索按钮打开）。
+<!-- 全站搜索结果下拉（标题栏搜索框一输入，结果就在它下方弹出）。
      结果分四组：软件 / 内置工具 / AI 导航 / 页面 —— 匹配逻辑全在 src/gallery/searchIndex.ts。
-     文案（分组名、快捷键提示、页面标题等）在根目录 文字设置.ts 的 search.* 键。
-     键盘：↑↓ 选择 · Enter 打开 · Esc 关闭 · 点面板外空白处关闭。 -->
+     本组件【不再自带输入框】：唯一输入框在标题栏（见 App.vue 的 .gallery-titlebar-search）。
+     ↑↓ / Enter / Esc 由标题栏输入框转发进来（App.vue 的 onSearchKeydown → moveActive/activateActive）。
+     文案（分组名、快捷键提示、页面标题等）在根目录 文字设置.ts 的 search.* 键。 -->
 <template>
   <Teleport to="body">
     <Transition name="gs-fade">
       <div
         v-if="open"
-        class="gs-overlay"
-        @pointerdown.self="close">
-        <div
-          class="gs-panel"
-          role="dialog"
-          aria-modal="true"
-          :aria-label="t('text.search')"
-          @keydown="onKeydown">
-          <!-- 输入框：自动聚焦，回车打开当前选中项 -->
-          <div class="gs-field-row" @pointerdown.stop>
-            <span class="gs-field-icon" aria-hidden="true">&#xE721;</span>
-            <input
-              ref="fieldRef"
-              class="gs-field"
-              type="text"
-              role="searchbox"
-              autocomplete="off"
-              autocapitalize="off"
-              spellcheck="false"
-              :value="query"
-              :placeholder="t('search.placeholder')"
-              :aria-label="t('text.search')"
-              @input="onInput" />
-            <button
-              v-if="query"
-              type="button"
-              class="gs-field-clear"
-              :aria-label="t('search.clear')"
-              v-bind="{ 'tooltipservice.tooltip': t('search.clear') }"
-              @click="clearQuery">
-              <span aria-hidden="true">&#xE711;</span>
-            </button>
-          </div>
-
-          <!-- 结果列表：按组显示，最多 limitPerKind 条/组 -->
-          <div ref="listRef" class="gs-list" role="list">
-            <template v-for="group in groups" :key="group.kind">
-              <div class="gs-group-title" role="presentation">
-                <span>{{ groupTitle(group.kind) }}</span>
-                <span class="gs-group-count">{{ group.hits.length }}</span>
-              </div>
-              <button
-                v-for="hit in group.hits"
-                :key="`${hit.kind}:${hit.key}`"
-                type="button"
-                class="gs-item"
-                :class="{ 'is-active': hit === activeHit }"
-                role="listitem"
-                @click="activate(hit)"
-                @pointermove="setActive(hit)">
-                <span
-                  class="gs-item-icon"
-                  :class="iconClass(hit)"
-                  :style="iconStyle(hit)"
-                  aria-hidden="true">{{ iconText(hit) }}</span>
-                <span class="gs-item-text">
-                  <span class="gs-item-title">{{ hit.title }}</span>
-                  <span class="gs-item-sub">{{ hit.subtitle }}</span>
-                </span>
-                <span class="gs-item-badge">{{ badgeText(hit) }}</span>
-              </button>
-            </template>
-
-            <!-- 一个都没搜到：给出路（换词 / 去提交页提需求） -->
-            <div v-if="!groups.length" class="gs-empty">
-              <p class="gs-empty-title">{{ t('search.no-results', { query: query.trim() }) }}</p>
-              <p class="gs-empty-desc">{{ t('search.empty-hint') }}</p>
+        ref="panelRef"
+        class="gs-panel"
+        role="dialog"
+        :aria-label="t('text.search')"
+        :style="panelStyle"
+        @pointerdown.stop>
+        <!-- 结果列表：按组显示，最多 limitPerKind 条/组 -->
+        <div ref="listRef" class="gs-list" role="list">
+          <template v-for="group in groups" :key="group.kind">
+            <div class="gs-group-title" role="presentation">
+              <span>{{ groupTitle(group.kind) }}</span>
+              <span class="gs-group-count">{{ group.hits.length }}</span>
             </div>
-          </div>
+            <button
+              v-for="hit in group.hits"
+              :key="`${hit.kind}:${hit.key}`"
+              type="button"
+              class="gs-item"
+              :class="{ 'is-active': hit === activeHit }"
+              role="listitem"
+              @click="activate(hit)"
+              @pointermove="setActive(hit)">
+              <span
+                class="gs-item-icon"
+                :class="iconClass(hit)"
+                :style="iconStyle(hit)"
+                aria-hidden="true">{{ iconText(hit) }}</span>
+              <span class="gs-item-text">
+                <span class="gs-item-title">{{ hit.title }}</span>
+                <span class="gs-item-sub">{{ hit.subtitle }}</span>
+              </span>
+              <span class="gs-item-badge">{{ badgeText(hit) }}</span>
+            </button>
+          </template>
 
-          <!-- 底部：快捷键提示 -->
-          <div class="gs-footer">
-            <span class="gs-footer-keys">
-              <kbd class="gs-kbd">↑</kbd><kbd class="gs-kbd">↓</kbd> {{ t('search.keys-select') }}
-              <kbd class="gs-kbd">Enter</kbd> {{ t('search.keys-open') }}
-              <kbd class="gs-kbd">Esc</kbd> {{ t('search.keys-close') }}
-            </span>
-            <span class="gs-footer-note">{{ t('search.footer-note') }}</span>
+          <!-- 一个都没搜到：给出路（换词 / 去提交页提需求） -->
+          <div v-if="!groups.length" class="gs-empty">
+            <p class="gs-empty-title">{{ t('search.no-results', { query: query.trim() }) }}</p>
+            <p class="gs-empty-desc">{{ t('search.empty-hint') }}</p>
           </div>
+        </div>
+
+        <!-- 底部：快捷键提示 -->
+        <div class="gs-footer">
+          <span class="gs-footer-keys">
+            <kbd class="gs-kbd">↑</kbd><kbd class="gs-kbd">↓</kbd> {{ t('search.keys-select') }}
+            <kbd class="gs-kbd">Enter</kbd> {{ t('search.keys-open') }}
+            <kbd class="gs-kbd">Esc</kbd> {{ t('search.keys-close') }}
+          </span>
+          <span class="gs-footer-note">{{ t('search.footer-note') }}</span>
         </div>
       </div>
     </Transition>
@@ -93,12 +65,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from '../components/i18n/index';
 import { searchGlobal, type GlobalHit, type GlobalHitKind } from './searchIndex';
 
-const props = defineProps<{ open: boolean }>();
+const props = defineProps<{
+  /** 是否显示结果下拉 */
+  open: boolean;
+  /** 关键词（来自标题栏输入框） */
+  query: string;
+  /** 定位锚点：标题栏那个输入框，下拉贴在它下方 */
+  anchor: HTMLElement | null;
+}>();
 const emit = defineEmits<{ 'update:open': [value: boolean] }>();
 
 const { t } = useI18n();
@@ -107,12 +86,13 @@ const router = useRouter();
 /** 每组最多显示多少条（超过就靠继续打字缩小范围） */
 const LIMIT_PER_KIND = 5;
 
-const query = ref('');
-const fieldRef = ref<HTMLInputElement | null>(null);
+const panelRef = ref<HTMLElement | null>(null);
 const listRef = ref<HTMLElement | null>(null);
 const activeHit = ref<GlobalHit | null>(null);
+/** 下拉的内联定位样式（贴在标题栏输入框下方） */
+const panelStyle = ref<Record<string, string>>({});
 
-const groups = computed(() => searchGlobal(query.value, t, LIMIT_PER_KIND));
+const groups = computed(() => searchGlobal(props.query, t, LIMIT_PER_KIND));
 /** 拍平成一条线，方便 ↑↓ 在跨组之间连续移动 */
 const flatHits = computed(() => groups.value.flatMap((group) => group.hits));
 
@@ -142,14 +122,6 @@ const badgeText = (hit: GlobalHit) => {
 };
 
 const close = () => emit('update:open', false);
-const clearQuery = () => {
-  query.value = '';
-  fieldRef.value?.focus({ preventScroll: true });
-};
-
-const onInput = (event: Event) => {
-  query.value = (event.target as HTMLInputElement).value;
-};
 
 const setActive = (hit: GlobalHit | null) => {
   activeHit.value = hit;
@@ -174,7 +146,7 @@ const moveActive = (step: number) => {
 
 const activate = (hit: GlobalHit) => {
   if (hit.url) {
-    // AI 导航是站外站点：新标签页打开，面板关掉即可（当前页面不动）
+    // AI 导航是站外站点：新标签页打开，下拉关掉即可（当前页面不动）
     window.open(hit.url, '_blank', 'noopener,noreferrer');
   } else if (hit.route) {
     void router.push(hit.route);
@@ -184,32 +156,35 @@ const activate = (hit: GlobalHit) => {
   close();
 };
 
-const onKeydown = (event: KeyboardEvent) => {
-  switch (event.key) {
-    case 'ArrowDown':
-      event.preventDefault();
-      moveActive(1);
-      break;
-    case 'ArrowUp':
-      event.preventDefault();
-      moveActive(-1);
-      break;
-    case 'Enter':
-      if (activeHit.value) {
-        event.preventDefault();
-        activate(activeHit.value);
-      }
-      break;
-    case 'Escape':
-      event.preventDefault();
-      close();
-      break;
-    default:
-      break;
-  }
+/** 供标题栏输入框的 Enter 调用：有选中项就打开它，返回是否真的打开了 */
+const activateActive = (): boolean => {
+  if (!activeHit.value) return false;
+  activate(activeHit.value);
+  return true;
 };
 
-/** 打开时清空上次的关键词、自动聚焦输入框，并预选第一条 */
+defineExpose({ moveActive, activateActive });
+
+/* ── 定位：贴在标题栏输入框下方，并保证不超出视口 ─────────────────── */
+const updatePosition = () => {
+  const anchor = props.anchor;
+  if (!anchor) return;
+  const rect = anchor.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const width = Math.min(Math.max(rect.width, 380), 560, vw - 16);
+  let left = rect.left;
+  if (left + width > vw - 8) left = Math.max(8, vw - 8 - width);
+  const top = rect.bottom + 6;
+  const maxHeight = Math.max(200, window.innerHeight - top - 16);
+  panelStyle.value = {
+    left: `${Math.round(left)}px`,
+    top: `${Math.round(top)}px`,
+    width: `${Math.round(width)}px`,
+    maxHeight: `${Math.round(maxHeight)}px`
+  };
+};
+
+/* ── 打开时：定位 + 预选第一条；关闭时：清选中 ─────────────────── */
 watch(
   () => props.open,
   (open) => {
@@ -217,40 +192,67 @@ watch(
       activeHit.value = null;
       return;
     }
-    query.value = '';
     void nextTick(() => {
-      fieldRef.value?.focus({ preventScroll: true });
+      updatePosition();
       activeHit.value = flatHits.value[0] ?? null;
     });
   }
 );
 
 /** 关键词变了：重新预选第一条（避免选中项指向已消失的结果） */
-watch(query, () => {
-  activeHit.value = flatHits.value[0] ?? null;
-});
+watch(
+  () => props.query,
+  () => {
+    if (!props.open) return;
+    activeHit.value = flatHits.value[0] ?? null;
+  }
+);
+
+/** 锚点元素在挂载后才拿到，拿到后立刻定位一次 */
+watch(
+  () => props.anchor,
+  (anchor) => {
+    if (anchor && props.open) updatePosition();
+  }
+);
+
+/* ── 点面板外空白处关闭 ──────────────────────────────────────── */
+const onDocPointerDown = (event: PointerEvent) => {
+  const target = event.target as Node | null;
+  if (!target) return;
+  if (panelRef.value?.contains(target)) return;
+  if (props.anchor?.contains(target)) return;
+  close();
+};
+
+const bindWindowListeners = () => {
+  window.addEventListener('resize', updatePosition);
+  // 滚动（含标题栏自身的滚动容器）时跟着移动
+  window.addEventListener('scroll', updatePosition, true);
+  document.addEventListener('pointerdown', onDocPointerDown);
+};
+const unbindWindowListeners = () => {
+  window.removeEventListener('resize', updatePosition);
+  window.removeEventListener('scroll', updatePosition, true);
+  document.removeEventListener('pointerdown', onDocPointerDown);
+};
+
+watch(
+  () => props.open,
+  (open) => {
+    if (open) bindWindowListeners();
+    else unbindWindowListeners();
+  }
+);
+
+onBeforeUnmount(unbindWindowListeners);
 </script>
 
 <style scoped>
-.gs-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10050;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: max(env(titlebar-area-height, 0px), 48px) 16px 16px;
-  background: rgba(0, 0, 0, 0.3);
-}
-
-:global(html.theme-dark) .gs-overlay {
-  background: rgba(0, 0, 0, 0.5);
-}
-
+/* 定位在标题栏输入框下方；具体 left/top/width/max-height 由 JS 内联给出 */
 .gs-panel {
-  position: relative;
-  width: min(680px, 100%);
-  max-height: min(72vh, 560px);
+  position: fixed;
+  z-index: 10050;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -262,64 +264,6 @@ watch(query, () => {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   color: var(--text-primary);
   font-family: 'Segoe UI', system-ui, sans-serif;
-}
-
-/* ── 输入行 ───────────────────────────────────────────────── */
-.gs-field-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 0 0 auto;
-  height: 52px;
-  padding: 0 12px;
-  border-bottom: 1px solid var(--ctrl-border, rgba(0, 0, 0, 0.06));
-}
-
-.gs-field-icon {
-  flex: 0 0 auto;
-  font-family: 'WinUIOnWebIcons';
-  font-size: 16px;
-  line-height: 1;
-  color: var(--text-secondary);
-}
-
-.gs-field {
-  flex: 1 1 auto;
-  min-width: 0;
-  height: 100%;
-  padding: 0;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-size: 15px;
-}
-
-.gs-field::placeholder {
-  color: var(--text-secondary);
-}
-
-.gs-field-clear {
-  flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 0;
-  border-radius: 4px;
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: 'WinUIOnWebIcons';
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.gs-field-clear:hover {
-  background: var(--subtle-secondary);
-  color: var(--text-primary);
 }
 
 /* ── 结果列表 ─────────────────────────────────────────────── */
@@ -521,14 +465,10 @@ watch(query, () => {
 
 .gs-fade-enter-from .gs-panel,
 .gs-fade-leave-to .gs-panel {
-  transform: translateY(-12px);
+  transform: translateY(-8px);
 }
 
 @media (max-width: 640px) {
-  .gs-overlay {
-    padding: max(env(titlebar-area-height, 0px), 48px) 8px 8px;
-  }
-
   .gs-footer-note {
     display: none;
   }
