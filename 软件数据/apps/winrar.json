@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-01T09:08:55.262Z",
-  "_原始ID冲突": false,
   "id": "winrar",
   "name": "WinRAR",
   "icon": "",
@@ -18,6 +16,5 @@
       "url": "WinRAR 简体中文官方下载页：https://www.winrar.com.cn/download.htm"
     }
   ],
-  "sort": 99,
-  "_联系方式": "QQ 3866006879"
+  "sort": 99
 }
