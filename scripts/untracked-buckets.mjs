@@ -80,6 +80,12 @@ export const BUCKETS = {
   xrkayxingz: { bucket: 'page-only', reason: '下载页是 Nuxt SSR，整页里一个安装包地址都没有（down.oray.com 那条固定名只是 302 回下载页）；也没有可解析的版本接口，**只能跳官网**' },
   yjxzsayxingz: { bucket: 'page-only', reason: '下载页是 Vue SPA，安装包地址由接口下发（yunmdload.hik-cloud.com/…/V\<版本\>/…），要逆向接口才跟得上，**只能跳官网**' },
 
+  winrar: { bucket: 'page-only', reason: '下载页是 winrar.com.cn 官方中文下载页，无 GitHub / winget 版本源，版本号只能人看' },
+  'maxhub-whiteboard': { bucket: 'page-only', reason: '疑似 MAXHUB 会议平板内置应用，无独立可下载 PC 版本号对应站内 6.8.0.7815；下载直链是带签名过期的 seewo CDN 链接，版本号只能人看' },
+  xwgjayxingz: { bucket: 'page-only', reason: '希沃管家下载直链是带签名过期的 seewo CDN 链接，无可用版本接口，版本号只能人看（站内 version 也还空着）' },
+  'hibit-uninstaller': { bucket: 'page-only', reason: '官网 hibitsoft.ir 提供含版本号直链，但无 GitHub / winget 版本源，版本号只能人看' },
+  spacesniffer: { bucket: 'page-only', reason: '官网 uderzo.it 提供含版本号直链，但无 GitHub / winget 版本源，版本号只能人看' },
+
   // ── 网盘 ──
   'directx-repair': { bucket: 'netdisk', reason: '分发在蓝奏云 + 百度网盘；版本号能读，但链接没法自动验证' },
 }
