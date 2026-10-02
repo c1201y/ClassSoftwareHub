@@ -31,6 +31,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('./pages/SettingsPage.vue')
   },
   {
+    path: '/echo-cave',
+    name: 'echo-cave',
+    component: () => import('./pages/EchoCavePage.vue')
+  },
+  {
     path: '/submit',
     name: 'submit',
     component: () => import('./pages/SubmitPage.vue')

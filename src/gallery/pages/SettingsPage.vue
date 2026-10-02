@@ -75,11 +75,6 @@
                   HorizontalAlignment="Left"
                   :Content="t('about.author-home')" />
                 <WinHyperlinkButton
-                  :NavigateUri="t('about.echo-cave-url')"
-                  TargetName="_blank"
-                  HorizontalAlignment="Left"
-                  :Content="t('about.echo-cave')" />
-                <WinHyperlinkButton
                   :NavigateUri="t('welcome.article-url')"
                   TargetName="_blank"
                   HorizontalAlignment="Left"
@@ -137,6 +132,9 @@
                 <span class="visitor-stat-uptime-value">{{ uptimeText }}</span>
               </div>
             </div>
+
+            <!-- 回声洞：关于下方独立卡片，第一行「回声洞」、下一行轮播内容（每 5 秒一条） -->
+            <EchoCaveCard />
           </div>
         </div>
       </div>
@@ -160,6 +158,7 @@ import VisitorCounter from '../VisitorCounter.vue';
 import appManifest from '../../manifest.json';
 import { useI18n } from '../../components/i18n/index';
 import credits from '../../../鸣谢文本';
+import EchoCaveCard from '../EchoCaveCard.vue';
 
 const { t } = useI18n();
 
