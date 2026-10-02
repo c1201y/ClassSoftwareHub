@@ -1,4 +1,6 @@
 {
+  "_提交时间": "2026-09-30T14:52:04.143Z",
+  "_原始ID冲突": false,
   "id": "nanazip",
   "name": "NanaZip",
   "icon": "https://github.com/M2Team/NanaZip/blob/main/Assets/NanaZip.png",
@@ -27,5 +29,6 @@
     }
   ],
   "sort": 99,
-  "store": "https://apps.microsoft.com/detail/9N8G7TSCL18R"
+  "store": "https://apps.microsoft.com/detail/9N8G7TSCL18R",
+  "_联系方式": "2199681442"
 }

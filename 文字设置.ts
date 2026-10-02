@@ -73,6 +73,14 @@ export default {
       // 「关于」里的 UI 内核链接：本站界面用的上游组件库 WinUIonWeb（致敬原作者）
       "about.ui-kernel": "UI 内核（WinUIonWeb）",
       "about.ui-kernel-url": "https://github.com/Furry-Xiyi/WinUIonWeb",
+      // 「回声洞」站内页（设置「关于」里的「回声洞」按钮跳到这里；数据在根目录 回声洞/messages.json）
+      "echo-cave.title": "回声洞",
+      "echo-cave.subtitle": "收集 QQ 群里那些让人笑出声的沙雕发言，每 5 秒冒一条。鼠标悬停可暂停。",
+      "echo-cave.empty": "还没有任何发言，去 GitHub 投稿第一条吧～",
+      "echo-cave.submit": "投稿沙雕发言",
+      "echo-cave.submit-note": "会在 GitHub 上打开 messages.json 的编辑页，改完提交分支即可。",
+      "echo-cave.index": "第 {current} / {total} 条",
+      "echo-cave.speaker": "发言人",
       "text.page-transition": "页面过渡",
       "text.qq-group": "QQ 群组",
       "text.select-the-navigation-bar-position": "选择导航栏位置",
