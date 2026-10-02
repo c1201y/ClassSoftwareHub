@@ -1,0 +1,25 @@
+{
+  "_提交时间": "2026-10-02T01:27:36.594Z",
+  "_原始ID冲突": false,
+  "id": "classsoftwarehub",
+  "name": "ClassSoftwareHub",
+  "icon": "https://avatars.githubusercontent.com/u/264530092?v=4",
+  "category": "other",
+  "tagline": "ClassSoftwareHub 是一个面向电教委员的常用软件下载站，基于 Vue 3 + Vite +…",
+  "description": "ClassSoftwareHub 是一个面向电教委员的常用软件下载站，基于 Vue 3 + Vite + TypeScript 构建，采用 WinUIonWeb 组件库，提供 WinUI 风格的界面。",
+  "version": "v2.3.3-Tangram",
+  "size": "",
+  "system": "1",
+  "website": "http://classsoftwarehub.us.ci/",
+  "github": "https://github.com/c1201y/ClassSoftwareHub",
+  "downloads": [
+    {
+      "platform": "其他 PNG",
+      "note": "v2.3.2.png",
+      "size": "702 KB",
+      "url": "https://github.com/c1201y/ClassSoftwareHub/releases/download/v2.3.3-Tangram/v2.3.2.png"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "1"
+}
