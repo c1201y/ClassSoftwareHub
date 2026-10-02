@@ -5,7 +5,7 @@
   "category": "schedule",
   "tagline": "注重隐私的开源浏览器（提供 MSI 安装包）",
   "description": "Firefox 由 Mozilla 打造，开源免费、注重用户隐私和数据安全，支持 Windows、macOS、Linux 全平台。这里提供 64 位 MSI 安装包，方便给教室电脑静默安装或批量部署。",
-  "version": "156.0.1",
+  "version": "157.0",
   "size": "约 78 MB ~ 89 MB",
   "system": "Windows 7 ~ 11、macOS、Linux",
   "website": "https://www.mozilla.org/zh-CN/firefox/",

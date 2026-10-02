@@ -5,7 +5,7 @@
   "category": "system",
   "tagline": "开源免费的 B 站视频下载工具，多线程加速、支持弹幕与音视频分离",
   "description": "Bili23-Downloader 是一个开源、免费、跨平台的 B 站（哔哩哔哩）视频下载工具。支持多线程加速下载，可以把视频和音频分开保存，也能一并获取弹幕、封面等元数据；文件名与保存目录可以按自己的规则自定义和分类，方便把网课、公开课、教学视频归档到本地离线播放。Windows、macOS、Linux 都有对应版本（Windows 另有一个兼容 Win7 的安装包），界面简洁，贴入链接即可开始下载。",
-  "version": "v2.15.0",
+  "version": "v2.20.0",
   "size": "约 32 MB",
   "system": "Windows 7 ~ 11（x64）、macOS（Intel / Apple 芯片）、Linux（x64 / ARM64）",
   "website": "https://bili23.scott-sloan.cn/",
@@ -14,74 +14,74 @@
     {
       "platform": "Linux ARM64（AppImage）",
       "note": "Bili23-Downloader_2.15.0_linux_aarch64.AppImage",
-      "size": "55.3 MB",
-      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.15.0/Bili23-Downloader_2.15.0_linux_aarch64.AppImage"
+      "size": "56 MB",
+      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.20.0/Bili23-Downloader_2.20.0_linux_aarch64.AppImage"
     },
     {
       "platform": "Linux ARM64（.rpm）",
       "note": "Bili23-Downloader_2.15.0_linux_aarch64.rpm",
-      "size": "59.9 MB",
-      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.15.0/Bili23-Downloader_2.15.0_linux_aarch64.rpm"
+      "size": "60 MB",
+      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.20.0/Bili23-Downloader_2.20.0_linux_aarch64.rpm"
     },
     {
       "platform": "Linux x64（.deb）",
       "note": "Bili23-Downloader_2.15.0_linux_amd64.deb",
-      "size": "47.9 MB",
-      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.15.0/Bili23-Downloader_2.15.0_linux_amd64.deb"
+      "size": "48 MB",
+      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.20.0/Bili23-Downloader_2.20.0_linux_amd64.deb"
     },
     {
       "platform": "Linux x64 便携版",
       "note": "Bili23-Downloader_2.15.0_linux_amd64_portable.tar.gz",
-      "size": "64.0 MB",
-      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.15.0/Bili23-Downloader_2.15.0_linux_amd64_portable.tar.gz"
+      "size": "64 MB",
+      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.20.0/Bili23-Downloader_2.20.0_linux_amd64_portable.tar.gz"
     },
     {
       "platform": "Linux ARM64（.deb）",
       "note": "Bili23-Downloader_2.15.0_linux_arm64.deb",
-      "size": "45.5 MB",
-      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.15.0/Bili23-Downloader_2.15.0_linux_arm64.deb"
+      "size": "46 MB",
+      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.20.0/Bili23-Downloader_2.20.0_linux_arm64.deb"
     },
     {
       "platform": "Linux ARM64 便携版",
       "note": "Bili23-Downloader_2.15.0_linux_arm64_portable.tar.gz",
-      "size": "60.2 MB",
-      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.15.0/Bili23-Downloader_2.15.0_linux_arm64_portable.tar.gz"
+      "size": "61 MB",
+      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.20.0/Bili23-Downloader_2.20.0_linux_arm64_portable.tar.gz"
     },
     {
       "platform": "Linux x64（AppImage）",
       "note": "Bili23-Downloader_2.15.0_linux_x86_64.AppImage",
-      "size": "58.6 MB",
-      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.15.0/Bili23-Downloader_2.15.0_linux_x86_64.AppImage"
+      "size": "59 MB",
+      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.20.0/Bili23-Downloader_2.20.0_linux_x86_64.AppImage"
     },
     {
       "platform": "Linux x64（.rpm）",
       "note": "Bili23-Downloader_2.15.0_linux_x86_64.rpm",
-      "size": "63.7 MB",
-      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.15.0/Bili23-Downloader_2.15.0_linux_x86_64.rpm"
+      "size": "64 MB",
+      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.20.0/Bili23-Downloader_2.20.0_linux_x86_64.rpm"
     },
     {
       "platform": "macOS（Apple 芯片）（磁盘映像）",
       "note": "Bili23-Downloader_2.15.0_macos_aarch64.dmg",
-      "size": "60.1 MB",
-      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.15.0/Bili23-Downloader_2.15.0_macos_aarch64.dmg"
+      "size": "58 MB",
+      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.20.0/Bili23-Downloader_2.20.0_macos_aarch64.dmg"
     },
     {
       "platform": "macOS（Intel）（磁盘映像）",
       "note": "Bili23-Downloader_2.15.0_macos_x86_64.dmg",
-      "size": "59.8 MB",
-      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.15.0/Bili23-Downloader_2.15.0_macos_x86_64.dmg"
+      "size": "58 MB",
+      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.20.0/Bili23-Downloader_2.20.0_macos_x86_64.dmg"
     },
     {
       "platform": "Windows x64 安装版",
       "note": "Bili23-Downloader_2.15.0_windows_x64.exe",
-      "size": "32.3 MB",
-      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.15.0/Bili23-Downloader_2.15.0_windows_x64.exe"
+      "size": "31 MB",
+      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.20.0/Bili23-Downloader_2.20.0_windows_x64.exe"
     },
     {
       "platform": "Windows x64 安装版",
       "note": "Bili23-Downloader_2.15.0_windows_x64_for_win7.exe",
-      "size": "32.6 MB",
-      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.15.0/Bili23-Downloader_2.15.0_windows_x64_for_win7.exe"
+      "size": "32 MB",
+      "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.20.0/Bili23-Downloader_2.20.0_windows_x64_for_win7.exe"
     }
   ],
   "sort": 99
