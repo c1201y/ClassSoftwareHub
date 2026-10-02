@@ -5,6 +5,7 @@
   "category": "other",
   "tagline": "主流远程控制软件，基础功能免费，可远程帮老师处理电脑问题",
   "description": "向日葵是国内主流的远程控制软件之一，与 ToDesk、UU 远程属于同一类。基础功能免费，在教室电脑上装好被控端后，就能从校外远程连上去，帮老师处理软件装不上、系统报错、课件打不开这类问题，不用每次都跑一趟；也支持用手机、平板远程查看和操作。被控端与控制端覆盖 Windows、macOS、Linux、Android、iOS，教室电脑一般装 Windows 被控端即可。",
+  "version": "16.6.0.32198",
   "size": "视版本而定",
   "system": "Windows / macOS / Linux / Android / iOS",
   "website": "https://sunlogin.oray.com/download",
