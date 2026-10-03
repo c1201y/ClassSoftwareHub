@@ -44,14 +44,13 @@ export default {
     "about.repository-url": "https://github.com/Furry-Xiyi/WinUIonWeb/",
     "about.ui-kernel": "UI framework (WinUIonWeb)",
     "about.ui-kernel-url": "https://github.com/Furry-Xiyi/WinUIonWeb/",
-    // "Echo Cave" in-site page (the "Echo Cave" button in Settings → About jumps here; data in 回声洞/messages.json)
+    // "Echo Cave" in-site page (the "Echo Cave" button in Settings → About jumps here; data lives in 回声洞/messages/, one file per message)
     "echo-cave.title": "Echo Cave",
-    "echo-cave.subtitle": "Funny/absurd messages from our QQ groups, one pops up every 5 seconds. Hover to pause.",
+    "echo-cave.subtitle": "Funny/absurd messages from our QQ groups. Click to get another one.",
     "echo-cave.empty": "No messages yet — submit the first one on GitHub!",
     "echo-cave.submit": "Submit a message",
-    "echo-cave.submit-note": "Opens the messages.json editor on GitHub; submit a branch/PR when done.",
-    "echo-cave.index": "Item {current} / {total}",
-    "echo-cave.speaker": "Speaker",
+    "echo-cave.submit-note": "Opens the messages folder on GitHub — add a messageN.json and submit a PR.",
+    "echo-cave.count": "{total} in total",
     "text.page-transition": "Page Transition",
     "text.select-the-navigation-bar-position": "Select the navigation bar position",
     "text.settings": "Settings",
