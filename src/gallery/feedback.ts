@@ -93,7 +93,8 @@ export interface FeedbackDraft {
   appId: string;
   title: string;
   detail: string;
-  /** 联系方式：选填，会公开显示在 Issue 里 */
+  /** 联系方式：选填，明文只留在本机（内存 + 本地草稿）；
+   *  提交时由页面层在内存里加密成 age 密文，离开本机的那份永远是密文 */
   contact: string;
 }
 
@@ -189,7 +190,17 @@ export function buildIssueBody(
     lines.push('| 涉及软件 | 站点本身 / 未指定 |');
   }
   if (draft.contact.trim()) {
-    lines.push(`| 联系方式 | ${draft.contact.trim()} |`);
+    // 传进来的是**本地加密后的 age 密文**（页面层加密，见 FeedbackPage.vue 的 encryptContact），
+    // 绝不是明文。密文是多行 ASCII armor，塞进 Markdown 表格会把表格撑破，
+    // 所以单列一段代码块 —— 顺带也好整段复制去用私钥解密。
+    lines.push(
+      '',
+      '### 联系方式（已在本地加密，仅维护者可用私钥解密）',
+      '',
+      '```',
+      draft.contact.trim(),
+      '```'
+    );
   }
   lines.push('');
   lines.push('<!-- 由站点「反馈中心」生成（#/feedback）。若标题或正文有误，直接改这里也行。 -->');

@@ -153,7 +153,7 @@
               v-model:Text="form.description">
               <template #header>{{ t('submit.description') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
             </WinTextBox>
-            <!-- 联系方式：只进审核工单，不随软件数据发布（见 buildPayload 里的 _联系方式） -->
+            <!-- 联系方式：本地加密成 age 密文后只进审核工单，不随软件数据发布（见 buildPayload 里的 _联系方式） -->
             <WinTextBox
               :Header="t('submit.contact')"
               :PlaceholderText="t('submit.contact-placeholder')"
@@ -361,6 +361,12 @@ const DRAFT_KEY = 'csh-submit-draft';
  * 合并进 main 后同样会触发 .github/workflows/create-review-issue.yml 建审核 Issue。
  */
 const REPO_NEW_FILE_URL = 'https://github.com/c1201y/ClassSoftwareHub/new/main/submissions';
+/**
+ * 联系方式的接收方公钥（age1...）：网页端与桌面端硬编码同一把。
+ * 私钥仅开发者本地持有，绝不出现在任何客户端 / 网页 / 版本库代码里；
+ * 这里只做公钥加密，不做任何解密。
+ */
+const RECIPIENT_PUBLIC_KEY = 'age1l9axcy0sxu6eeanapg0maughsv380fh8nhd4unf9p8d7x20rjqfsgz4dxa';
 
 const { t } = useI18n();
 
@@ -382,7 +388,7 @@ const form = reactive({
   category: '',
   tagline: '',
   description: '',
-  /** 提交者联系方式：必填，只写进草稿 JSON（`_联系方式`）供审核时联系，不发布到站点 */
+  /** 提交者联系方式：必填，本地加密后写进草稿 JSON（`_联系方式`）供审核时联系，不发布到站点 */
   contact: '',
   version: '',
   size: '',
@@ -674,7 +680,26 @@ const ID_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
  * 必填项不全、或校验值填了但格式不对时，payload 为 null，error 里带上要显示的提示
  * （error 为空表示按通用的「请填写带 * 的必填项」提示）。
  */
-function buildPayload(): { payload: Record<string, unknown> | null; error: string } {
+/**
+ * 联系方式：本地用 age 公钥加密，只提交 ASCII armor 密文；留空或加密失败返回空串，由必填校验兜底。
+ * age-encryption 体积较大（含后量子曲线依赖），走动态 import，只在真正提交时按需加载。
+ */
+async function encryptContact(): Promise<string> {
+  const contact = form.contact.trim();
+  if (!contact) return '';
+  try {
+    const age = await import('age-encryption');
+    const encrypter = new age.Encrypter();
+    encrypter.addRecipient(RECIPIENT_PUBLIC_KEY);
+    const ciphertext = await encrypter.encrypt(contact);
+    return age.armor.encode(ciphertext);
+  } catch {
+    return ''; // 加密失败视同未填，走必填校验
+  }
+}
+
+async function buildPayload(): Promise<{ payload: Record<string, unknown> | null; error: string }> {
+  const contactField = await encryptContact();
   const payload: Record<string, unknown> = {
     id: form.id.trim(),
     name: form.name.trim(),
@@ -707,9 +732,9 @@ function buildPayload(): { payload: Record<string, unknown> | null; error: strin
     /**
      * 联系方式：下划线开头的字段是「审核用元数据」，不写进站点的软件数据 ——
      * review-submission.yml 合并时会把所有 `_` 开头的键剥掉，只在审核 Issue 里显示。
-     * 所以这里顺手带上 `_`，既能让管理员看到，又不会污染 软件数据/apps/<id>.json。
+     * 值是本地加密后的 age 密文（ASCII armor），不再是明文；管理员用私钥才能解出联系方式。
      */
-    _联系方式: form.contact.trim()
+    _联系方式: contactField
   };
 
   // 必填校验（原来靠原生 required，但提交按钮不是原生 submit 按钮，校验根本不会触发）
@@ -900,7 +925,9 @@ function applyPayload(data: Record<string, unknown>) {
   form.icon = text('icon');
   form.tagline = text('tagline');
   form.description = text('description');
-  form.contact = text('_联系方式');
+  // 联系方式已加密提交，浏览器端无法解密回填；旧版明文草稿仍按原样恢复
+  const contact = text('_联系方式');
+  form.contact = contact.startsWith('-----BEGIN AGE') ? '' : contact;
   form.version = text('version');
   form.size = text('size');
   form.system = text('system');
@@ -943,7 +970,7 @@ function restoreDraft() {
 async function submit() {
   if (loading.value) return;
 
-  const built = buildPayload();
+  const built = await buildPayload();
   if (!built.payload) {
     ok.value = false;
     messageTitle.value = t('submit.result-error-title');
