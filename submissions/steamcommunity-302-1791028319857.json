@@ -1,0 +1,25 @@
+{
+  "_提交时间": "2026-10-03T11:51:59.857Z",
+  "_原始ID冲突": false,
+  "id": "steamcommunity-302",
+  "name": "Steamcommunity 302",
+  "icon": "https://bee-reg-ab.imagency.cn/mr/6874/26/6ac0ec44ab35b.png",
+  "category": "other",
+  "tagline": "加速访问不稳定资源，原主要反代steam，现已拓展",
+  "description": "用本地反代的方式访问GitHub、Vercel、我的世界等不稳定资源，轻量，支持开机自启、CDN自动优选、DNS重定向等功能，十分强大。具体功能展示详见官网",
+  "version": "",
+  "size": "≈35MB",
+  "system": "Windows 10 / 11 x64",
+  "website": "https://www.dogfight360.com/blog/18682/",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "15.0.7版",
+      "note": "仅提供15.0.7安装包，最新版请前往官网",
+      "size": "34MB",
+      "url": "https://www.dogfight360.com/Usbeam/V15/Steamcommunity_302_15.0.7_Windows_x64.zip"
+    }
+  ],
+  "sort": 15,
+  "_联系方式": "3325579290"
+}
