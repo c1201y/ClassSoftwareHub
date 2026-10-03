@@ -21,44 +21,55 @@
         <p class="ec-text" :class="{ 'is-empty': messages.length === 0 }">{{ displayText }}</p>
       </button>
 
-      <!-- 投稿：右侧按钮 → 小面板（同桌面端的 Flyout 思路） -->
-      <div ref="sideRoot" class="ec-side">
-        <WinButton
-          class="ec-submit"
-          :Content="t('echo-cave.submit-short')"
-          @Click="toggleFlyout" />
-
-        <div v-if="flyoutOpen" class="ec-flyout" role="dialog" :aria-label="t('echo-cave.submit-title')">
-          <div class="ec-flyout-title">{{ t('echo-cave.submit-title') }}</div>
-          <textarea
-            v-model="draftText"
-            class="ec-input"
-            rows="3"
-            maxlength="200"
-            :placeholder="t('echo-cave.submit-placeholder')"
-            @keydown.enter.exact.prevent="submit"></textarea>
-          <p
-            v-if="flyoutStatus"
-            class="ec-flyout-status"
-            :class="{ 'is-error': flyoutIsError }">{{ flyoutStatus }}</p>
-          <div class="ec-flyout-actions">
-            <!-- 投稿服务连不上时的兜底：GitHub 上新建字条文件 -->
-            <WinHyperlinkButton
-              v-if="showFallback"
-              class="ec-fallback"
-              :NavigateUri="submitUrl"
-              TargetName="_blank"
-              Padding="0"
-              Margin="0"
-              :Content="t('echo-cave.submit-fallback')" />
+      <!-- 投稿：右侧按钮 → 主题自带的 WinFlyout
+           —— 它就是桌面端那个 <Flyout Placement="Bottom"> 的等价物：空间不够时自动翻到按钮上方、
+           再按视口夹取，绝不会像原来那个 position:absolute 的面板一样被屏幕下沿切掉
+           （2026-10-03 Nick：点了投稿，面板飞到屏幕下方被挡起来了）。
+           ⛔ 别退回手写绝对定位面板，也别自己写点外关闭 / Esc —— 这些 WinFlyout 全带。 -->
+      <div class="ec-side">
+        <WinFlyout
+          v-model:IsOpen="flyoutOpen"
+          Placement="Bottom"
+          @Closed="onFlyoutClosed">
+          <template #trigger>
             <WinButton
-              class="ec-send"
-              Style="AccentButtonStyle"
-              :Content="submitting ? t('echo-cave.submit-sending') : t('echo-cave.submit-send')"
-              :IsEnabled="!submitting"
-              @Click="submit" />
+              class="ec-submit"
+              :Content="t('echo-cave.submit-short')"
+              @Click="toggleFlyout" />
+          </template>
+
+          <div class="ec-flyout-body" role="dialog" :aria-label="t('echo-cave.submit-title')">
+            <div class="ec-flyout-title">{{ t('echo-cave.submit-title') }}</div>
+            <textarea
+              v-model="draftText"
+              class="ec-input"
+              rows="3"
+              maxlength="200"
+              :placeholder="t('echo-cave.submit-placeholder')"
+              @keydown.enter.exact.prevent="submit"></textarea>
+            <p
+              v-if="flyoutStatus"
+              class="ec-flyout-status"
+              :class="{ 'is-error': flyoutIsError }">{{ flyoutStatus }}</p>
+            <div class="ec-flyout-actions">
+              <!-- 投稿服务连不上时的兜底：GitHub 上新建字条文件 -->
+              <WinHyperlinkButton
+                v-if="showFallback"
+                class="ec-fallback"
+                :NavigateUri="submitUrl"
+                TargetName="_blank"
+                Padding="0"
+                Margin="0"
+                :Content="t('echo-cave.submit-fallback')" />
+              <WinButton
+                class="ec-send"
+                Style="AccentButtonStyle"
+                :Content="submitting ? t('echo-cave.submit-sending') : t('echo-cave.submit-send')"
+                :IsEnabled="!submitting"
+                @Click="submit" />
+            </div>
           </div>
-        </div>
+        </WinFlyout>
       </div>
     </div>
   </WinExpander>
@@ -68,6 +79,7 @@
 import { onBeforeUnmount, ref } from 'vue';
 import WinExpander from '../components/WinExpander.vue';
 import WinButton from '../components/WinButton.vue';
+import WinFlyout from '../components/WinFlyout.vue';
 import WinHyperlinkButton from '../components/WinHyperlinkButton.vue';
 import { useI18n } from '../components/i18n/index';
 
@@ -162,7 +174,7 @@ const ENDPOINT_CACHE_KEY = 'csh-submit-endpoint';
 const submitUrl =
   'https://github.com/c1201y/ClassSoftwareHub/new/main/' + encodeURIComponent('回声洞/messages');
 
-const sideRoot = ref<HTMLElement | null>(null);
+// 面板开关全权交给 WinFlyout（v-model:IsOpen）：置 true 打开、置 false 收起
 const flyoutOpen = ref(false);
 const draftText = ref('');
 const flyoutStatus = ref('');
@@ -220,33 +232,35 @@ async function postEcho(base: string, text: string): Promise<{ message?: string 
   }
 }
 
-const toggleFlyout = () => {
-  if (flyoutOpen.value) {
-    closeFlyout();
-  } else {
-    flyoutOpen.value = true;
-    flyoutStatus.value = '';
-    flyoutIsError.value = false;
-    showFallback.value = false;
-    document.addEventListener('pointerdown', onGlobalPointerDown, true);
-    document.addEventListener('keydown', onGlobalKeyDown, true);
-  }
-};
+// 点面板外面收起（轻确认）与 Esc 关闭都由 WinFlyout 自己负责，这边只管开关与内容复位。
 
 const closeFlyout = () => {
   flyoutOpen.value = false;
-  document.removeEventListener('pointerdown', onGlobalPointerDown, true);
-  document.removeEventListener('keydown', onGlobalKeyDown, true);
 };
 
-/** 点面板外面就收起（同 Flyout 的轻确认行为）；Esc 也可以关 */
-const onGlobalPointerDown = (event: PointerEvent) => {
-  const root = sideRoot.value;
-  if (root && event.target instanceof Node && root.contains(event.target)) return;
-  closeFlyout();
+/** WinFlyout 每次收起都记一笔 —— 给下面那个「刚收起又被 click 弹开」的补丁用 */
+let dismissedAt = 0;
+const onFlyoutClosed = () => {
+  dismissedAt = performance.now();
 };
-const onGlobalKeyDown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') closeFlyout();
+
+/**
+ * 点「投稿」按钮。
+ * ⚠️ 面板开着时，按下鼠标那一下是被 WinFlyout 的轻确认层接走的（它先把面板收起来），
+ * 紧接着浏览器还会把这次 click 补发给按钮 —— 不挡一下就会「刚收起又弹开」，看着像关不掉。
+ * 所以刚被收起的那一下点击直接忽略。
+ */
+const toggleFlyout = () => {
+  if (flyoutOpen.value) {
+    closeFlyout();
+    return;
+  }
+  if (performance.now() - dismissedAt < 300) return;
+
+  flyoutStatus.value = '';
+  flyoutIsError.value = false;
+  showFallback.value = false;
+  flyoutOpen.value = true;
 };
 
 const submit = async () => {
@@ -351,24 +365,17 @@ onBeforeUnmount(() => {
 
 /* ══════════ 投稿按钮 + 小面板 ══════════ */
 .ec-side {
-  position: relative;
   display: flex;
   align-items: flex-start;
   flex-shrink: 0;
 }
 
-.ec-flyout {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  z-index: 30;
-  width: 300px;
+/* 面板内容：外壳（边框 / 圆角 / 阴影 / 定位 / 翻转换边 / 轻确认）全部归 WinFlyout。
+   ⛔ 这里**再也不要**写 position / top / right / background / box-shadow ——
+   原来的手写绝对定位面板就是栽在这上面：贴在按钮下沿往下弹，页面底部那一行直接被屏幕切掉。 */
+.ec-flyout-body {
+  width: 320px;
   box-sizing: border-box;
-  padding: 14px;
-  border: 1px solid var(--CardStrokeColorDefaultBrush, var(--card-stroke, rgba(128, 128, 128, 0.4)));
-  border-radius: 8px;
-  background: var(--CardBackgroundFillColorDefaultBrush, var(--card-bg, #fff));
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
   display: flex;
   flex-direction: column;
   gap: 10px;
