@@ -295,6 +295,13 @@ import type { FeedbackDraft, FeedbackKind } from '../feedback';
 const { t } = useI18n();
 const route = useRoute();
 
+/**
+ * 联系方式的接收方公钥（age1...）：与「提交软件」页、桌面端硬编码同一把。
+ * 私钥仅维护者本地持有，绝不出现在任何客户端 / 网页 / 版本库代码里；
+ * 这里只做公钥加密，不做任何解密。
+ */
+const RECIPIENT_PUBLIC_KEY = 'age1l9axcy0sxu6eeanapg0maughsv380fh8nhd4unf9p8d7x20rjqfsgz4dxa';
+
 /** 大类 -> 图标。键名与 FEEDBACK_KINDS 里各项的 icon 字段一致 */
 const kindIcons: Record<FeedbackKind, string> = {
   report: reportIcon,
@@ -394,8 +401,27 @@ const restoreDraft = () => {
   hasDraft.value = false;
 };
 
+/**
+ * 联系方式：本地用 age 公钥加密成 ASCII armor 密文，只把密文发出去；没填则无需加密。
+ * age-encryption 体积较大（含后量子曲线依赖），走动态 import，只在真正提交时按需加载。
+ * ⛔ 只加密、绝不解密；私钥不在本站。
+ */
+async function encryptContact(): Promise<{ cipher: string; failed: boolean }> {
+  const contact = form.contact.trim();
+  if (!contact) return { cipher: '', failed: false };
+  try {
+    const age = await import('age-encryption');
+    const encrypter = new age.Encrypter();
+    encrypter.addRecipient(RECIPIENT_PUBLIC_KEY);
+    return { cipher: age.armor.encode(await encrypter.encrypt(contact)), failed: false };
+  } catch {
+    // 动态 chunk 加载失败等异常：宁可拦下来让用户重试，也绝不把明文发出去
+    return { cipher: '', failed: true };
+  }
+}
+
 /** 校验并返回正文；不通过时把错误填进 errorText 并返回 null */
-const prepare = () => {
+const prepare = async () => {
   const key = validateFeedback(form);
   if (key) {
     errorText.value = key === 'feedback.error-title-too-long'
@@ -404,7 +430,17 @@ const prepare = () => {
     return null;
   }
   errorText.value = '';
-  const built = buildIssueUrl(form, selectedApp.value);
+
+  // 联系方式在离开本机前加密（在内存里完成，form 本身保留明文供本地草稿）
+  const { cipher, failed } = await encryptContact();
+  if (failed) {
+    errorText.value = t('feedback.error-encrypt');
+    truncated.value = false;
+    return null;
+  }
+  const outgoing: FeedbackDraft = cipher ? { ...form, contact: cipher } : form;
+
+  const built = buildIssueUrl(outgoing, selectedApp.value);
   truncated.value = built.truncated;
   return built;
 };
@@ -414,8 +450,8 @@ const prepare = () => {
  * 打开前先存草稿 —— 用户到了 GitHub 那边可能才发现要登录，
  * 回头再来时内容还在。
  */
-const openIssue = () => {
-  const built = prepare();
+const openIssue = async () => {
+  const built = await prepare();
   if (!built) return;
   saveFeedbackDraft(form);
   popupBlocked.value = false;
@@ -437,7 +473,7 @@ const openIssue = () => {
 
 /** 兜底操作：把正文复制走（没有 GitHub 账号时用） */
 const copyReport = async () => {
-  const built = prepare();
+  const built = await prepare();
   if (!built) return;
   const ok = await copyText(built.body);
   copied.value = ok;

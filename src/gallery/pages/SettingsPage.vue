@@ -132,8 +132,12 @@
                 <span class="visitor-stat-uptime-value">{{ uptimeText }}</span>
               </div>
             </div>
+          </div>
 
-            <!-- 回声洞：关于下方独立卡片，第一行「回声洞」、下一行轮播内容（每 5 秒一条） -->
+          <!-- 回声洞：独立分组（同桌面端 2026-10-03 定稿 —— 不是「关于」里的一张卡），
+               一个可下拉的展开项：正文整块可点换一条，投稿按钮在右侧弹小面板 -->
+          <WinTextBlock class="echo-section-title" :Text="$t('echo-cave.title')" />
+          <div class="echo-controls">
             <EchoCaveCard />
           </div>
         </div>
@@ -280,6 +284,23 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   margin-top: 6px;
+}
+
+/* 回声洞：独立分组标题 + 展开项容器（与「关于」区的排法一致） */
+.echo-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 32px;
+}
+
+.echo-controls {
+  display: flex;
+  flex-direction: column;
+  margin-top: 6px;
+}
+
+.echo-controls :deep(.win-expander) {
+  margin-bottom: 4px;
 }
 
 .about-controls :deep(.win-expander-header-controls .win-btn) {
