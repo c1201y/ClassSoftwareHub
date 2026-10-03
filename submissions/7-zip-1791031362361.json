@@ -1,0 +1,25 @@
+{
+  "_提交时间": "2026-10-03T12:42:42.361Z",
+  "_原始ID冲突": true,
+  "id": "7-zip",
+  "name": "7-zip",
+  "icon": "https://7-zip.org/7ziplogo.png",
+  "category": "system",
+  "tagline": "一款以其极高的压缩率和强大的格式兼容性而著称的压缩软件",
+  "description": "简洁(有点简洁过头)、轻量的压缩软件。\n对于老师来说，最大的特点可能是没有广告吧[手动狗头]\n广泛支持7z, XZ, BZIP2, GZIP, TAR, ZIP, WIM等压缩文件的压缩和解压缩",
+  "version": "",
+  "size": "≈1.6MB",
+  "system": "≥Windows XP(x32)/≥Windows 7(x64)/macOS",
+  "website": "https://7-zip.org/download.html",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "Windows x64",
+      "note": "此处仅提供26.03版本直链，具体请移步官网",
+      "size": "≈1.6MB",
+      "url": "https://github.com/ip7z/7zip/releases/download/26.03/7z2603-x64.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "3325579290"
+}
