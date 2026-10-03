@@ -5,28 +5,26 @@
       <WinTextBlock class="ec-subtitle" :Text="t('echo-cave.subtitle')" />
     </header>
 
-    <section
+    <!--
+      舞台：点一下换一条，打字机逐字打出来（照 ClassIsland 的回声洞）。
+      原来那条 5 秒自动轮播的进度条去掉了 —— 改成手动点，也就没有「第 x / y 条」这回事
+      （洗牌之后顺序是随机的）。
+    -->
+    <button
+      type="button"
       class="ec-stage"
-      @mouseenter="paused = true"
-      @mouseleave="paused = false">
+      :aria-busy="typing"
+      @click="next">
       <template v-if="messages.length > 0">
-        <Transition name="ec-fade" mode="out-in">
-          <blockquote class="ec-message" :key="index" aria-live="polite">
-            <p class="ec-text">{{ current.text }}</p>
-            <footer v-if="hasMeta" class="ec-meta">
-              <span v-if="current.speaker">{{ t('echo-cave.speaker') }}：{{ current.speaker }}</span>
-              <span v-if="current.group">{{ current.group }}</span>
-              <span v-if="current.date">{{ current.date }}</span>
-            </footer>
-          </blockquote>
-        </Transition>
-        <div class="ec-progress" aria-hidden="true">
-          <div class="ec-progress-bar" :style="{ width: progressPercent + '%' }"></div>
+        <blockquote class="ec-message">
+          <p class="ec-text">{{ displayText }}</p>
+        </blockquote>
+        <div class="ec-stage-foot">
+          <span class="ec-count">{{ t('echo-cave.count', { total: messages.length }) }}</span>
         </div>
-        <div class="ec-index">{{ t('echo-cave.index', { current: index + 1, total: messages.length }) }}</div>
       </template>
-      <div v-else class="ec-empty">{{ t('echo-cave.empty') }}</div>
-    </section>
+      <span v-else class="ec-empty">{{ t('echo-cave.empty') }}</span>
+    </button>
 
     <footer class="ec-actions">
       <WinButton class="ec-submit" :Content="t('echo-cave.submit')" @Click="openSubmit" />
@@ -36,74 +34,100 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, ref } from 'vue';
 import WinTextBlock from '../../components/WinTextBlock.vue';
 import WinButton from '../../components/WinButton.vue';
 import { useI18n } from '../../components/i18n/index';
-import echoRaw from '../../../回声洞/messages.json?raw';
 
 const { t } = useI18n();
 
-interface EchoMessage {
-  text: string;
-  speaker?: string;
-  group?: string;
-  date?: string;
-}
+// 一条一个文件：回声洞/messages/message1.json、message2.json……
+// 用 glob 在构建期收整个目录，所以「加一条字条」= 加一个文件，不用改代码。
+const files = import.meta.glob<{ default: { text?: string } }>('../../../回声洞/messages/*.json', {
+  eager: true,
+});
 
-const parsed = JSON.parse(echoRaw) as { messages?: EchoMessage[] };
-const messages = (parsed.messages ?? []) as EchoMessage[];
-
-const DURATION = 5000; // 每 5 秒切一条
-const index = ref(0);
-const elapsed = ref(0); // 0..DURATION 毫秒
-const paused = ref(false);
-
-const current = computed<EchoMessage>(() => messages[index.value] ?? { text: '' });
-const hasMeta = computed(() =>
-  !!(current.value.speaker || current.value.group || current.value.date)
-);
-const progressPercent = computed(() => Math.min(100, (elapsed.value / DURATION) * 100));
-
-const advance = () => {
-  if (messages.length === 0) return;
-  index.value = (index.value + 1) % messages.length;
-  elapsed.value = 0;
+/** message7.json → 7，按文件名里的编号排序 */
+const numberOf = (filePath: string) => {
+  const matched = /message(\d+)\.json$/i.exec(filePath);
+  return matched ? Number(matched[1]) : Number.MAX_SAFE_INTEGER;
 };
 
-// rAF 计时：每 DURATION 切下一条；hover 或切到后台标签页时暂停
-let rafId = 0;
-let lastTs = 0;
-const tick = (ts: number) => {
-  if (lastTs === 0) lastTs = ts;
-  const dt = ts - lastTs;
-  lastTs = ts;
-  if (!paused.value && !document.hidden) {
-    elapsed.value += dt;
-    if (elapsed.value >= DURATION) advance();
+const messages = Object.keys(files)
+  .sort((a, b) => numberOf(a) - numberOf(b))
+  .map((path) => String(files[path]?.default?.text ?? '').trim())
+  .filter((text) => text.length > 0);
+
+// 打字节奏照 ClassIsland 的 TypingControl：清空 → 停 150ms → 每字 40ms；
+// 光标 "_" 不是逐字闪，是每 10 个字翻一次。
+const CLEAR_DELAY = 150;
+const CHAR_DELAY = 40;
+const BLINK_EVERY = 10;
+
+const queue = ref<string[]>([]);
+const displayText = ref('');
+const typing = ref(false);
+
+let generation = 0;
+
+/** Fisher-Yates 洗牌 */
+const shuffle = (list: string[]) => {
+  const out = list.slice();
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
   }
-  rafId = requestAnimationFrame(tick);
+  return out;
 };
 
-const onVisibility = () => {
-  // 回到前台时重置基准，避免一次性补算暂停期间的时间
-  lastTs = 0;
+/** 取下一条；这一轮抽完才重洗 —— 一轮之内不重复 */
+const takeNext = (): string | null => {
+  if (messages.length === 0) return null;
+  if (queue.value.length === 0) queue.value = shuffle(messages);
+  return queue.value.shift() ?? null;
 };
 
-onMounted(() => {
-  rafId = requestAnimationFrame(tick);
-  document.addEventListener('visibilitychange', onVisibility);
-});
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/** 逐字打出来；被打断（离开页面）时不写最终文本 */
+const typeOut = async (text: string) => {
+  const my = ++generation;
+  typing.value = true;
+  try {
+    displayText.value = '';
+    await sleep(CLEAR_DELAY);
+    if (my !== generation) return;
+
+    for (let i = 0; i < text.length; i++) {
+      displayText.value = text.slice(0, i) + (Math.floor(i / BLINK_EVERY) % 2 === 0 ? '_' : '');
+      await sleep(CHAR_DELAY);
+      if (my !== generation) return;
+    }
+    displayText.value = text; // 收尾补全，把可能留着的光标去掉
+  } finally {
+    if (my === generation) typing.value = false;
+  }
+};
+
+const next = async () => {
+  if (typing.value) return; // 打字期间再点无效
+  const text = takeNext();
+  if (!text) return;
+  await typeOut(text);
+};
+
+// 进页面先静静显示一条，不打字（同 ClassIsland 的 _isFirstUpdate）
+const first = takeNext();
+if (first) displayText.value = first;
+
 onBeforeUnmount(() => {
-  cancelAnimationFrame(rafId);
-  document.removeEventListener('visibilitychange', onVisibility);
+  generation++; // 让正在跑的那一遍打字作废
+  typing.value = false;
 });
 
-// 投稿：打开 GitHub 上 messages.json 的编辑页（可开分支提 PR）
+// 投稿：打开 GitHub 上字条目录的「新建文件」页
 const SUBMIT_URL =
-  'https://github.com/c1201y/ClassSoftwareHub/edit/main/' +
-  encodeURIComponent('回声洞') +
-  '/messages.json';
+  'https://github.com/c1201y/ClassSoftwareHub/new/main/' + encodeURIComponent('回声洞/messages');
 const openSubmit = () => window.open(SUBMIT_URL, '_blank', 'noopener,noreferrer');
 </script>
 
@@ -133,16 +157,35 @@ const openSubmit = () => window.open(SUBMIT_URL, '_blank', 'noopener,noreferrer'
   color: var(--text-secondary, #5f5f5f);
 }
 
+/* 舞台：整块可点（原生 button 去外观） */
 .ec-stage {
-  position: relative;
+  display: block;
+  width: 100%;
   min-height: 220px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  padding: 36px 28px 30px;
   border: 1px solid var(--card-stroke, rgba(128, 128, 128, 0.4));
   border-radius: 12px;
   background: var(--card-bg, rgba(255, 255, 255, 0.04));
-  padding: 36px 28px 30px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.ec-stage:hover {
+  border-color: var(--card-stroke-hover, rgba(128, 128, 128, 0.6));
+  background: rgba(128, 128, 128, 0.06);
+}
+
+.ec-stage:active {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.ec-stage:focus-visible {
+  outline: 2px solid var(--accent, #0078d4);
+  outline-offset: 2px;
 }
 
 .ec-message {
@@ -159,43 +202,23 @@ const openSubmit = () => window.open(SUBMIT_URL, '_blank', 'noopener,noreferrer'
   word-break: break-word;
 }
 
-.ec-meta {
+.ec-stage-foot {
   margin-top: 16px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  font-size: 12px;
-  color: var(--text-secondary, #5f5f5f);
-}
-
-.ec-progress {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 3px;
-  overflow: hidden;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-}
-
-.ec-progress-bar {
-  height: 100%;
-  background: var(--accent, #0078d4);
-}
-
-.ec-index {
-  margin-top: 14px;
   text-align: right;
+}
+
+.ec-count {
   font-size: 12px;
   color: var(--text-secondary, #5f5f5f);
   font-variant-numeric: tabular-nums;
 }
 
 .ec-empty {
+  display: block;
   text-align: center;
   color: var(--text-secondary, #5f5f5f);
   font-size: 14px;
+  padding: 40px 0;
 }
 
 .ec-actions {
@@ -210,26 +233,5 @@ const openSubmit = () => window.open(SUBMIT_URL, '_blank', 'noopener,noreferrer'
   font-size: 12px;
   line-height: 18px;
   color: var(--text-secondary, #5f5f5f);
-}
-
-/* 切换动画 */
-.ec-fade-enter-active,
-.ec-fade-leave-active {
-  transition: opacity 0.35s ease, transform 0.35s ease;
-}
-.ec-fade-enter-from {
-  opacity: 0;
-  transform: translateY(8px);
-}
-.ec-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ec-fade-enter-active,
-  .ec-fade-leave-active {
-    transition: none;
-  }
 }
 </style>
