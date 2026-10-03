@@ -34,8 +34,10 @@ const credits: {
   title: "鸣谢",
   intro: "感谢以下老师与同学对本站的贡献：",
   people: [
-    { name: "Tiny-Nick", note: "前期网站制作", url: "https://space.bilibili.com/1274920807" },
-    { name: "椰汁cyan", note: "提供网站搭建", url: "https://github.com/c1201y" },
+    { name: "Tiny-Nick", note: "前期网站制作，现在致力于Windows桌面端开发", url: "https://space.bilibili.com/1274920807" },
+    { name: "椰汁cyan", note: "提供网站搭建和现网站维护更新，同时负责Win7桌面端开发", url: "https://github.com/c1201y" },
+    { name: "跨平台桌面版贡献者/HelloCHLdev", note: "现致力于Linux（跨平台）平台桌面端应用的开发" },
+    { name: "开心的阿罗娜（热心QQ群友）", note: "赞助桌面端开发与网站服务器搭建", url: "https://ifdian.net/a/TinyNickCSHub?tab=home" },
   ],
   empty: "（待补充）",
 };
