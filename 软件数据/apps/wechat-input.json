@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-03T12:31:50.410Z",
-  "_原始ID冲突": false,
   "id": "wechat-input",
   "name": "微信输入法",
   "icon": "https://bee-reg-ab.imagency.cn/mr/6874/26/6ac0f41de66ab.png",
@@ -19,6 +17,5 @@
       "url": "https://download.z.weixin.qq.com/app/win/wetype_installer_official_p_66.exe"
     }
   ],
-  "sort": 99,
-  "_联系方式": "3325579290"
+  "sort": 99
 }
