@@ -1,5 +1,14 @@
 const CATEGORIES = ['system', 'schedule', 'teaching', 'other']
 
+// ── 回声洞 ─────────────────────────────────────────────────────────────
+// 投稿走和「提交软件」同一条审核管道：
+//   前端 POST { text } → 草稿 submissions/echo-<时间戳>.json →
+//   create-review-issue.yml 开审核 Issue → 管理员打 approved →
+//   review-submission.yml 写进 回声洞/messages/messageN.json（一条一个文件，前端 glob 读取）。
+// 也就是说这个接口【只落草稿、不直接上线】；真正的发布在审核通过之后。
+const ECHO_MAX_LEN = 200 // 与投稿框 maxlength 一致，服务端再兜一道
+const ECHO_MARKER = '回声洞' // 草稿里的 _类型 标记，审核管道据此分流
+
 function getOrigin(request, env) {
   const raw = (env.ALLOWED_ORIGIN || '').trim()
   if (!raw) return '*'
@@ -41,6 +50,16 @@ function encodePath(path) {
   return path.split('/').map(encodeURIComponent).join('/')
 }
 
+/** 写仓库用的公共请求头（handleSubmit 与 handleEchoCave 共用） */
+function githubHeaders(env) {
+  return {
+    Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'classsoftwarehub-worker',
+    'X-GitHub-Api-Version': '2022-11-28',
+  }
+}
+
 function validate(d) {
   const errors = []
   const idRegex = /^[a-z0-9-]+$/
@@ -78,12 +97,7 @@ async function handleSubmit(request, env) {
   const timestamp = Date.now()
   const filePath = `submissions/${data.id}-${timestamp}.json`
   const apiBase = `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents`
-  const headers = {
-    Authorization: `Bearer ${env.GITHUB_TOKEN}`,
-    Accept: 'application/vnd.github+json',
-    'User-Agent': 'classsoftwarehub-worker',
-    'X-GitHub-Api-Version': '2022-11-28',
-  }
+  const headers = githubHeaders(env)
 
   const appsPath = `软件数据/apps/${data.id}.json`
   const appsCheckRes = await fetch(
@@ -173,6 +187,61 @@ async function handleSubmit(request, env) {
   }, 200, request, env)
 }
 
+/**
+ * 回声洞投稿：POST { text } → 落到审核草稿 submissions/echo-<时间戳>.json。
+ * 与「提交软件」共用同一条审核管道（create-review-issue.yml 开 Issue，
+ * review-submission.yml 打 approved 才写进 回声洞/messages/）——本接口不直接上线。
+ */
+async function handleEchoCave(request, env) {
+  let data
+  try {
+    data = await request.json()
+  } catch {
+    return json({ error: '请求格式错误' }, 400, request, env)
+  }
+
+  const text = typeof data?.text === 'string' ? data.text.trim() : ''
+  if (!text) return json({ error: '先写一句话再投稿吧。' }, 400, request, env)
+  if (text.length > ECHO_MAX_LEN) {
+    return json({ error: `字条太长啦，最多 ${ECHO_MAX_LEN} 个字。` }, 400, request, env)
+  }
+
+  const apiBase = `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents`
+  const headers = githubHeaders(env)
+
+  // 草稿名带时间戳 + 随机后缀：同一毫秒的两次投稿也不会撞车（审核管道认文件路径判重）
+  const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  const filePath = `submissions/echo-${stamp}.json`
+  const content =
+    JSON.stringify(
+      { _类型: ECHO_MARKER, text, _提交时间: new Date().toISOString() },
+      null,
+      2
+    ) + '\n'
+
+  const createRes = await fetch(`${apiBase}/${encodePath(filePath)}`, {
+    method: 'PUT',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: 'submit: 回声洞字条',
+      content: toBase64(content),
+      branch: env.GITHUB_BRANCH,
+    }),
+  })
+
+  if (!createRes.ok) {
+    console.error('echo draft error:', createRes.status, await createRes.text())
+    return json({ error: '投稿失败，请稍后再试' }, 500, request, env)
+  }
+
+  return json(
+    { success: true, message: '投稿成功！审核通过后会出现在回声洞里。' },
+    200,
+    request,
+    env
+  )
+}
+
 export default {
   async fetch(request, env) {
     if (request.method === 'OPTIONS') {
@@ -182,6 +251,9 @@ export default {
     const url = new URL(request.url)
     if (url.pathname === '/api/submit' && request.method === 'POST') {
       return handleSubmit(request, env)
+    }
+    if (url.pathname === '/api/echocave' && request.method === 'POST') {
+      return handleEchoCave(request, env)
     }
 
     return json({ error: 'Not Found' }, 404, request, env)

@@ -5,6 +5,21 @@
 随后 `.github/workflows/create-review-issue.yml` 生成审核 Issue，管理员打标签走
 `review-submission.yml` 合并进 `软件数据/apps/`。
 
+设置页「回声洞」卡片的「投稿」走**同一个 Worker**、另一条路由：前端 `POST /api/echocave`
+（`{ "text": "…" }`，≤ 200 字）→ Worker 把字条写成草稿
+`submissions/echo-<时间戳>-<随机>.json` = `{ "_类型": "回声洞", "text": "…", "_提交时间": "…" }`，
+同样进审核 Issue；打 `approved` 才由 `review-submission.yml` 收进
+`回声洞/messages/message<N>.json`（N = 现有最大编号 + 1），`rejected` 直接删草稿。
+**这个接口只落草稿、不直接上线**；目标路径全部由审核脚本写死，不受入参影响。
+
+| 路由 | 方法 | 入参 | 落到 |
+| --- | --- | --- | --- |
+| `/api/submit` | POST | 提交页 `buildPayload()` 的软件对象 | `submissions/<id>-<时间戳>.json` → 审核 → `软件数据/apps/` |
+| `/api/echocave` | POST | `{ "text": string }` | `submissions/echo-<时间戳>-<随机>.json` → 审核 → `回声洞/messages/messageN.json` |
+
+两条路由的应答约定一致：成功 `{ success: true, message }`（200），被服务端明确拒绝
+`{ error: string }`（4xx，前端据此判定「这条入口没戏、不必再换域名重试」），临时故障 `5xx`。
+
 > ⚠️ **这份文件是备份，不是部署源。** Worker 实际运行在 Cloudflare 账号里的
 > `classhub`（模块格式，入口 `worker.js`），域名走 `cshapi.132614.xyz`（国内加速入口）
 > 与 `submit.132614.xyz`（CF 直连兜底）。改这里**不会**影响线上，必须重新上传到
@@ -54,3 +69,5 @@ Cloudflare 面板里粘贴只能手改，推荐走 Cloudflare API（只读拉取
    代码文件；用 `strict` 是为了「继承不到密钥就整个失败」，而不是静默把密钥丢了；
 4. 上传后用 `POST /api/submit` 打一个**验证不通过**的请求（如空对象）确认新版本在跑——
    这种请求在 `validate()` 就被挡下，不会写草稿、不会开 Issue。
+   同理可以 `POST /api/echocave` 打 `{ "text": "" }`：应返回 400 `{ "error": "先写一句话再投稿吧。" }`
+   （旧版本这里是 404 `{"error":"Not Found"}`，一眼能看出有没有换成新版）。
