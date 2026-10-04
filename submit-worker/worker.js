@@ -9,6 +9,219 @@ const CATEGORIES = ['system', 'schedule', 'teaching', 'other']
 const ECHO_MAX_LEN = 200 // 与投稿框 maxlength 一致，服务端再兜一道
 const ECHO_MARKER = '回声洞' // 草稿里的 _类型 标记，审核管道据此分流
 
+// ── 反馈中心 ───────────────────────────────────────────────────────────
+// 站点「反馈中心」（#/feedback）以前是让用户点开 GitHub 的 issues/new 自己填，
+// 现在与「提交软件 / 回声洞」统一走这个 Worker：
+//   前端 POST { kind, subKind, appId, title, detail, contact } →
+//   草稿 submissions/feedback-<时间戳>-<随机>.json（_类型: 反馈）→
+//   create-review-issue.yml 开一张带 `用户反馈` 等标签的 Issue，并顺手收起草稿。
+// 与另外两条路由的区别：反馈【没有审核合并】这一步 —— Issue 本身就是它的终点，
+// 所以草稿在 Issue 建出来的那一刻就完成了使命（由工作流删掉）。
+const FEEDBACK_KINDS = ['report', 'suggestion']
+const FEEDBACK_SUBKINDS = ['interaction', 'link', 'other']
+const FEEDBACK_TITLE_MAX = 80
+const FEEDBACK_DETAIL_MAX = 4000
+const FEEDBACK_CONTACT_MAX = 4000
+/** age 公钥加密后的 ASCII armor 开头。用来兜住「明文联系方式被误传上来」这种事故 ——
+ *  联系方式只有维护者该看见，落进公开的 Issue 就再也收不回来了，宁可拒收。 */
+const AGE_ARMOR_PREFIX = '-----BEGIN AGE ENCRYPTED FILE-----'
+
+// ── 阿里云 OSS 直传 ────────────────────────────────────────────────────
+// 投稿页的「上传软件文件 / 上传图标」不再经任何后端中转，改成浏览器直传 OSS：
+//   前端 POST { name, size, contentType } → 这里签一个【有时效的 PUT 地址】 →
+//   浏览器自己 PUT 到 OSS → 把公开直链填回表单。
+//
+// 为什么放在 Worker 里签，而不是把 AK/SK 写进前端：
+//   本站前端是纯静态的公开站点，AK/SK 一旦进前端就等于公开，任何人都能往桶里灌数据刷流量费。
+//   AK/SK 只以 Cloudflare Secret 形式存在（OSS_ACCESS_KEY_ID / OSS_ACCESS_KEY_SECRET），
+//   前端拿到的只是一小时后过期、且只能写这一个对象的地址。
+//
+// 为什么必须用 V4 签名：
+//   阿里云自 2025-09-01 起不再对【新建 Bucket】开放 V1 签名，本站这个桶是新的，
+//   用 V1 会直接 SignatureDoesNotMatch。
+//
+// Content-Type 必须参与签名：预签名地址把请求形状锁死，浏览器 PUT 时一定会带
+// Content-Type，这里签了哪个值前端就必须原样发哪个值（响应里回传给前端用）。
+const OSS_ALGO = 'OSS4-HMAC-SHA256'
+/** 签出来的上传地址有效期（秒）。OSS 只校验「请求到达时刻」，不限制传输时长，1 小时足够。 */
+const OSS_SIGN_TTL = 3600
+/** 服务端兜底的单文件上限：OSS 单次 PUT 硬上限 5 GB。 */
+const OSS_MAX_BYTES = 2 * 1024 * 1024 * 1024
+/** Content-Type 收敛成 `type/subtype`，不接受参数段（`;charset=…`）与任何引号，免得签出歧义 */
+const CONTENT_TYPE_RE = /^[a-z0-9][a-z0-9!#$&^_.+-]{0,63}\/[a-z0-9][a-z0-9!#$&^_.+-]{0,63}$/
+const DEFAULT_CONTENT_TYPE = 'application/octet-stream'
+
+function pad2(n) {
+  return String(n).padStart(2, '0')
+}
+
+/** RFC 3986 UriEncode：只放过 A-Za-z0-9-_.~ ，其余一律大写百分号编码 */
+function uriEncode(value) {
+  return encodeURIComponent(value).replace(
+    /[!'()*]/g,
+    (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase()
+  )
+}
+
+function toHex(buffer) {
+  const bytes = new Uint8Array(buffer)
+  let out = ''
+  for (const b of bytes) out += b.toString(16).padStart(2, '0')
+  return out
+}
+
+async function hmacSha256(keyBytes, data) {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyBytes,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  )
+  const payload = typeof data === 'string' ? new TextEncoder().encode(data) : data
+  return crypto.subtle.sign('HMAC', key, payload)
+}
+
+const textEncoder = new TextEncoder()
+
+async function sha256Hex(text) {
+  return toHex(await crypto.subtle.digest('SHA-256', textEncoder.encode(text)))
+}
+
+/** 文件名清洗：只用于拼对象键，路径分隔符 / 控制字符一律压掉 */
+function ossSafeName(raw) {
+  const base = String(raw || '')
+    .replace(/^.*[\\/]/, '')
+    .replace(/[\u0000-\u001f\u007f\\:*?"<>|]+/g, '_')
+    .replace(/^\.+/, '')
+    .trim()
+  return (base || 'file').slice(0, 100)
+}
+
+/**
+ * 用 V4 签名算法生成对象的上传地址。
+ * 参考《在URL中包含V4签名》，CanonicalRequest 六行：
+ *   PUT \n CanonicalURI \n CanonicalQueryString \n CanonicalHeaders \n AdditionalHeaders \n UNSIGNED-PAYLOAD
+ */
+async function ossPresignPut(env, key, contentType, expiresIn) {
+  const bucket = String(env.OSS_BUCKET).trim()
+  const region = String(env.OSS_REGION || 'cn-shanghai').trim()
+  const endpoint = String(env.OSS_ENDPOINT || `oss-${region}.aliyuncs.com`).trim()
+  const host = `${bucket}.${endpoint}`
+
+  const now = new Date()
+  const dateStr = `${now.getUTCFullYear()}${pad2(now.getUTCMonth() + 1)}${pad2(now.getUTCDate())}`
+  const amzDate = `${dateStr}T${pad2(now.getUTCHours())}${pad2(now.getUTCMinutes())}${pad2(now.getUTCSeconds())}Z`
+
+  const credentialScope = `${dateStr}/${region}/oss/aliyun_v4_request`
+  const canonicalUri = `/${bucket}/${key.split('/').map(uriEncode).join('/')}`
+
+  // 参与签名的额外头：content-type（浏览器必带）+ host（锁死域名，防止签好的地址被换域名复用）
+  const additionalHeaders = 'content-type;host'
+
+  const query = {
+    'x-oss-additional-headers': additionalHeaders,
+    'x-oss-credential': `${env.OSS_ACCESS_KEY_ID}/${credentialScope}`,
+    'x-oss-date': amzDate,
+    'x-oss-expires': String(expiresIn),
+    'x-oss-signature-version': OSS_ALGO,
+  }
+  const canonicalQuery = Object.keys(query)
+    .sort()
+    .map((k) => `${uriEncode(k)}=${uriEncode(query[k])}`)
+    .join('&')
+
+  const canonicalHeaders = `content-type:${contentType}\nhost:${host}\n`
+  const canonicalRequest = [
+    'PUT',
+    canonicalUri,
+    canonicalQuery,
+    canonicalHeaders,
+    additionalHeaders,
+    'UNSIGNED-PAYLOAD',
+  ].join('\n')
+
+  const stringToSign = [
+    OSS_ALGO,
+    amzDate,
+    credentialScope,
+    await sha256Hex(canonicalRequest),
+  ].join('\n')
+
+  const secretBytes = textEncoder.encode(`aliyun_v4${env.OSS_ACCESS_KEY_SECRET}`)
+  const kDate = await hmacSha256(secretBytes, dateStr)
+  const kRegion = await hmacSha256(kDate, region)
+  const kService = await hmacSha256(kRegion, 'oss')
+  const kSigning = await hmacSha256(kService, 'aliyun_v4_request')
+  const signature = toHex(await hmacSha256(kSigning, stringToSign))
+
+  const signedQuery = `${canonicalQuery}&x-oss-signature=${signature}`
+  return {
+    url: `https://${host}/${key.split('/').map(uriEncode).join('/')}?${signedQuery}`,
+    publicUrl: `${String(env.OSS_PUBLIC_BASE || `https://${host}`).replace(/\/+$/, '')}/${key
+      .split('/')
+      .map(uriEncode)
+      .join('/')}`,
+    host,
+  }
+}
+
+/**
+ * POST /api/oss-sign → 返回一个只能写单个对象的预签名 PUT 地址 + 上传后的公开直链。
+ * 入参：{ name, size, contentType }
+ */
+async function handleOssSign(request, env) {
+  let data
+  try {
+    data = await request.json()
+  } catch {
+    return json({ error: '请求格式错误' }, 400, request, env)
+  }
+
+  if (!env.OSS_BUCKET || !env.OSS_ACCESS_KEY_ID || !env.OSS_ACCESS_KEY_SECRET) {
+    return json({ error: '上传服务未配置' }, 503, request, env)
+  }
+
+  const size = Number(data?.size)
+  if (!Number.isFinite(size) || size <= 0) {
+    return json({ error: '缺少文件大小' }, 400, request, env)
+  }
+  if (size > OSS_MAX_BYTES) {
+    return json({ error: '文件太大' }, 413, request, env)
+  }
+
+  // Content-Type 只接受干净的 type/subtype，其余一律按未知类型处理（签名值由本服务定，前端照抄）
+  const rawType = String(data?.contentType || '').trim().toLowerCase().split(';')[0].trim()
+  const contentType = CONTENT_TYPE_RE.test(rawType) ? rawType : DEFAULT_CONTENT_TYPE
+
+  const now = new Date()
+  const stamp = `${now.getUTCFullYear()}${pad2(now.getUTCMonth() + 1)}${pad2(now.getUTCDate())}`
+  const uniq = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+  const prefix = String(env.OSS_PREFIX || 'upload').replace(/^\/+|\/+$/g, '')
+  const key = `${prefix}/${stamp.slice(0, 4)}/${stamp.slice(4, 6)}/${uniq}-${ossSafeName(data?.name)}`
+
+  try {
+    const signed = await ossPresignPut(env, key, contentType, OSS_SIGN_TTL)
+    return json(
+      {
+        success: true,
+        url: signed.url,
+        publicUrl: signed.publicUrl,
+        key,
+        contentType,
+        expiresIn: OSS_SIGN_TTL,
+        maxBytes: OSS_MAX_BYTES,
+      },
+      200,
+      request,
+      env
+    )
+  } catch (err) {
+    console.error('oss sign error:', err && err.message)
+    return json({ error: '签发上传地址失败' }, 500, request, env)
+  }
+}
+
 function getOrigin(request, env) {
   const raw = (env.ALLOWED_ORIGIN || '').trim()
   if (!raw) return '*'
@@ -242,6 +455,98 @@ async function handleEchoCave(request, env) {
   )
 }
 
+/**
+ * 反馈中心：POST { kind, subKind, appId, title, detail, contact }
+ * → 落到草稿 submissions/feedback-<时间戳>-<随机>.json（`_类型: "反馈"`）。
+ * create-review-issue.yml 据此开一张带 `用户反馈` / `报告问题` / `链接失效` … 标签的
+ * Issue 并把草稿收起；反馈没有「合并进仓库数据」这一步，所以这里不为审核结果多做约定。
+ * 字段名与 src/gallery/feedback.ts 的 FeedbackDraft 一一对应（kind / subKind / appId /
+ * title / detail / contact），前端不必为接口另造一份形状。
+ */
+async function handleFeedback(request, env) {
+  let data
+  try {
+    data = await request.json()
+  } catch {
+    return json({ error: '请求格式错误' }, 400, request, env)
+  }
+
+  const str = (value) => (typeof value === 'string' ? value.trim() : '')
+  const kind = str(data?.kind)
+  const subKind = str(data?.subKind)
+  const appId = str(data?.appId)
+  // 标题会同时进 Issue 标题和 Markdown 正文：把其中的换行压成空格，否则标题会被撑成两行
+  const title = str(data?.title).replace(/\s+/g, ' ')
+  const detail = str(data?.detail)
+  const contact = str(data?.contact) // 前端已用 age 公钥加密，这里只当不透明字符串搬运
+
+  if (!FEEDBACK_KINDS.includes(kind)) {
+    return json({ error: '请选择反馈类型' }, 400, request, env)
+  }
+  if (kind === 'report' && !FEEDBACK_SUBKINDS.includes(subKind)) {
+    return json({ error: '请选择问题类型' }, 400, request, env)
+  }
+  if (!title) return json({ error: '请填写标题' }, 400, request, env)
+  if (title.length > FEEDBACK_TITLE_MAX) {
+    return json({ error: `标题太长啦，最多 ${FEEDBACK_TITLE_MAX} 个字。` }, 400, request, env)
+  }
+  if (!detail) return json({ error: '请填写详细描述' }, 400, request, env)
+  if (detail.length > FEEDBACK_DETAIL_MAX) {
+    return json({ error: `描述太长啦，最多 ${FEEDBACK_DETAIL_MAX} 个字。` }, 400, request, env)
+  }
+  // 软件 id 只是用于在 Issue 里写一行「涉及软件」，但仍按站点 id 约定卡死字符集，
+  // 免得它被当成路径或标记塞进仓库
+  if (appId && !/^[a-z0-9-]{1,60}$/.test(appId)) {
+    return json({ error: '涉及的软件 ID 不合法' }, 400, request, env)
+  }
+  if (contact.length > FEEDBACK_CONTACT_MAX) {
+    return json({ error: '联系方式太长啦。' }, 400, request, env)
+  }
+  // ⛔ 只收 age 密文。明文宁可拒收也不落进公开的 Issue —— 密文形状不对同样视为异常。
+  if (contact && !contact.startsWith(AGE_ARMOR_PREFIX)) {
+    return json({ error: '联系方式必须先在本地加密后再提交' }, 400, request, env)
+  }
+
+  const draft = {
+    _类型: '反馈',
+    kind,
+    subKind: kind === 'report' ? subKind : '',
+    appId,
+    title,
+    detail,
+  }
+  if (contact) draft.contact = contact
+  draft._提交时间 = new Date().toISOString()
+
+  const apiBase = `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents`
+  const headers = githubHeaders(env)
+  const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  const filePath = `submissions/feedback-${stamp}.json`
+  const content = JSON.stringify(draft, null, 2) + '\n'
+
+  const createRes = await fetch(`${apiBase}/${encodePath(filePath)}`, {
+    method: 'PUT',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: `submit: 反馈 ${title.slice(0, 40)}`,
+      content: toBase64(content),
+      branch: env.GITHUB_BRANCH,
+    }),
+  })
+
+  if (!createRes.ok) {
+    console.error('feedback draft error:', createRes.status, await createRes.text())
+    return json({ error: '提交失败，请稍后再试' }, 500, request, env)
+  }
+
+  return json(
+    { success: true, message: '反馈已提交！会尽快出现在公开议题列表里。' },
+    200,
+    request,
+    env
+  )
+}
+
 export default {
   async fetch(request, env) {
     if (request.method === 'OPTIONS') {
@@ -254,6 +559,12 @@ export default {
     }
     if (url.pathname === '/api/echocave' && request.method === 'POST') {
       return handleEchoCave(request, env)
+    }
+    if (url.pathname === '/api/feedback' && request.method === 'POST') {
+      return handleFeedback(request, env)
+    }
+    if (url.pathname === '/api/oss-sign' && request.method === 'POST') {
+      return handleOssSign(request, env)
     }
 
     return json({ error: 'Not Found' }, 404, request, env)

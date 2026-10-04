@@ -12,13 +12,38 @@
 `回声洞/messages/message<N>.json`（N = 现有最大编号 + 1），`rejected` 直接删草稿。
 **这个接口只落草稿、不直接上线**；目标路径全部由审核脚本写死，不受入参影响。
 
+页面「反馈中心」（`#/feedback`）的「提交反馈」也是同一个 Worker：前端 `POST /api/feedback`
+（`{ kind, subKind, appId, title, detail, contact }`）→ 草稿
+`submissions/feedback-<时间戳>-<随机>.json` = `{ "_类型": "反馈", kind, subKind, appId, title,
+detail, contact?, _提交时间 }`。反馈**没有审核合并这一步** —— `create-review-issue.yml` 把它
+直接开成一张带 `用户反馈` / `报告问题` 等标签的 Issue，**并顺手把草稿删掉**（Issue 本身就是
+终点产物，草稿没有留存价值）。这条路由以前不存在，页面只能打开 GitHub 的预填新建 Issue 页，
+逼着每个反馈的人都有 GitHub 账号。
+
 | 路由 | 方法 | 入参 | 落到 |
 | --- | --- | --- | --- |
 | `/api/submit` | POST | 提交页 `buildPayload()` 的软件对象 | `submissions/<id>-<时间戳>.json` → 审核 → `软件数据/apps/` |
 | `/api/echocave` | POST | `{ "text": string }` | `submissions/echo-<时间戳>-<随机>.json` → 审核 → `回声洞/messages/messageN.json` |
+| `/api/feedback` | POST | `{ kind, subKind, appId, title, detail, contact }` | `submissions/feedback-<时间戳>-<随机>.json` → 直接开 Issue → 草稿即删 |
 
-两条路由的应答约定一致：成功 `{ success: true, message }`（200），被服务端明确拒绝
+三条路由的应答约定一致：成功 `{ success: true, message }`（200），被服务端明确拒绝
 `{ error: string }`（4xx，前端据此判定「这条入口没戏、不必再换域名重试」），临时故障 `5xx`。
+
+`/api/feedback` 的字段与校验（与 `src/gallery/feedback.ts` 的 `FeedbackDraft` 一一对应）：
+
+| 字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `kind` | ✅ | `report`（报告问题）/ `suggestion`（提出建议） |
+| `subKind` | report 必填 | `interaction` / `link` / `other`；`suggestion` 时服务端强制写成空串 |
+| `appId` | 否 | 涉及的软件 id，只允许 `^[a-z0-9-]{1,60}$` |
+| `title` | ✅ | ≤ 80 字；空白会被压平（它同时进 Issue 标题和正文） |
+| `detail` | ✅ | ≤ 4000 字 |
+| `contact` | 否 | **必须已是 age 密文** |
+
+> ⛔ `contact` 明文会被**拒收**（400 `联系方式必须先在本地加密后再提交`）。这不是洁癖：
+> 它会原文贴进**公开**的 Issue，泄漏了收不回来。服务端只检查年龄 armor 的开头
+> （`-----BEGIN AGE ENCRYPTED FILE-----`），不做任何解密 —— 私钥不在服务端。
+
 
 > ⚠️ **这份文件是备份，不是部署源。** Worker 实际运行在 Cloudflare 账号里的
 > `classhub`（模块格式，入口 `worker.js`），域名走 `cshapi.132614.xyz`（国内加速入口）
@@ -71,3 +96,6 @@ Cloudflare 面板里粘贴只能手改，推荐走 Cloudflare API（只读拉取
    这种请求在 `validate()` 就被挡下，不会写草稿、不会开 Issue。
    同理可以 `POST /api/echocave` 打 `{ "text": "" }`：应返回 400 `{ "error": "先写一句话再投稿吧。" }`
    （旧版本这里是 404 `{"error":"Not Found"}`，一眼能看出有没有换成新版）。
+   同法再打 `POST /api/feedback` 空对象 `{}`：应返回 400 `{ "error": "请选择反馈类型" }`。
+   ⚠️ 探测时**不要**随手塞一个明文的 `contact`：带明文的请求会被 400 拒掉，那是有意为之的
+   防线（见上面那张字段表），不是故障。
