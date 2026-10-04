@@ -1,12 +1,11 @@
 {
   "id": "bongocat",
   "name": "BongoCat",
-  "icon": "https://avatars.githubusercontent.com/u/75017711?v=4",
+  "icon": "https://store-images.s-microsoft.com/image/apps.30957.14597939646592532.54d62e1a-9978-49ee-98c4-772b926c384a.97e06195-28c4-459a-abfe-166debd64a17?h=134",
   "category": "schedule",
   "tagline": "🐱 BongoCat — A cross-platform interactive desktop pet that…",
   "description": "🐱 BongoCat — A cross-platform interactive desktop pet that brings fun to your desktop!",
   "version": "v2.0.1",
-  "size": "",
   "system": "Windows / macOS",
   "website": "https://github.com/ayangweb/Awesome-BongoCat",
   "github": "https://github.com/ayangweb/BongoCat",
