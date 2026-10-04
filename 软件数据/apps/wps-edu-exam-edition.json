@@ -1,0 +1,20 @@
+ "id": "wps-edu-exam-edition",
+  "name": "WPS教育考试专用版",
+  "icon": "https://free.picui.cn/free/14958/2026/09/20/6aafc4a89e453.jpg",
+  "category": "schedule",
+  "tagline": "一、二级WPS科目使用的新版的教育考试专用版WPS Office软件",
+  "description": "WPS不用过多介绍了吧",
+  "version": "",
+  "size": "约 150 MB（解压后）",
+  "system": "未测试",
+  "website": "https://ncre.neea.edu.cn/html1/report/1507/861-1.htm",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "Windous 安装版",
+      "size": "约 150 MB（未解压）",
+      "url": "https://ncre.neea.edu.cn/res/Home/2012/1ab1f38f3a81af338dbb4f6495568f28.rar"
+    }
+  ],
+  "sort": 99
+}
