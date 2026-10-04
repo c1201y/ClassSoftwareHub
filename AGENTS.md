@@ -361,12 +361,19 @@ The 回声洞 card on `#/settings` posts to the **same Worker** (`classhub`, beh
 ## 5.5 Feedback Centre (`#/feedback`)
 
 A nav-pane entry (between **首页** and the category list) opening a page modelled on the Microsoft
-Feedback Hub: pick a kind → fill the form → land on a **pre-filled GitHub issue**. There is **no
-feedback backend** — the site is static, and the only server-side piece (`submit-worker`) serves
-the *submission* flow only, so "POST first, fall back to a link" would always have failed. The
-whole feature is therefore **client-side + GitHub's own issue form**: the page collects the text,
-then opens
-`https://github.com/c1201y/ClassSoftwareHub/issues/new?title=…&body=…&labels=…` in a new tab.
+Feedback Hub: pick a kind → fill the form → **submit**. The submit path is the same one `#/submit`
+and the echo cave use: the page `POST`s to the `classhub` worker, which writes a draft
+`submissions/feedback-<timestamp>-<rand>.json` (`_类型: "反馈"`), and
+`.github/workflows/create-review-issue.yml` turns that draft into a labelled issue **and deletes the
+draft** — a feedback issue *is* the end product, so unlike an app submission or an echo-cave message
+there is nothing to merge and no `approved` step.
+
+Until 2026-10-04 the worker had no feedback route, so "POST first, fall back to a link" would always
+have failed and the page merely **opened a pre-filled GitHub issue form** (`issues/new?title=…`) —
+which forced a GitHub account on every reporter. The GitHub-link helpers
+(`buildIssueUrl` / `buildIssueBody`) are still in `feedback.ts`, but now serve the **fallback path
+only**: the button "改用 GitHub 提交" appears just after a network failure, and "复制反馈内容" is
+always available.
 
 **Two levels of classification** (`src/gallery/feedback.ts`, pure logic, no Vue import):
 
@@ -392,13 +399,23 @@ label.
   **涉及软件** row carrying the app name, its backticked `id` and a link to
   `https://classsoftwarehub.us.ci/#/download/<id>` (always the main domain — see "SEO & the share
   card"). Free text is the last section.
-- **URL length is capped** (`URL_MAX = 7000`): browsers and GitHub both choke on very long `?body=`.
-  On overflow the detail is cut with a **binary search** for the longest prefix that still fits
-  (never a fixed slice), and a note tells the reader to use the page's "复制反馈内容" button for the
-  full text. Copying works even when the tab fails to open.
-- **Draft persistence**: `localStorage['csh-feedback-draft']`, restored on mount. ⚠️ It is
-  deliberately **not** cleared after a successful open — the new tab is cross-origin, so we cannot
-  know whether the user actually submitted; wiping it would destroy text they may still need.
+  ⚠️ **The issue body exists twice.** The primary path is built by `create-review-issue.yml`'s
+  embedded script (that is the one reporters actually see); `feedback.ts#buildIssueBody` produces the
+  same shape and is used only by the two fallbacks. Change one and you must change the other.
+- **URL length is capped** (`URL_MAX = 7000`) — **fallback path only**: the primary path POSTs the
+  text, so no URL is involved. Browsers and GitHub both choke on very long `?body=`. On overflow the
+  detail is cut with a **binary search** for the longest prefix that still fits (never a fixed
+  slice), and a note tells the reader to use the page's "复制反馈内容" button for the full text.
+  Copying works even when the tab fails to open.
+- **Draft persistence**: `localStorage['csh-feedback-draft']`, restored on mount. It **is** cleared
+  automatically on a successful POST — the reply proves the content reached the repo, so keeping the
+  draft would just show the user their own submitted text again. The two fallback paths deliberately
+  do **not** clear it (we cannot see what happens on GitHub's side). The form's title/detail/contact
+  are cleared alongside it; the kind and app selection stay, so filing a second report is quick.
+- **The contact field is encrypted before it leaves the browser** and the worker **rejects a
+  plaintext `contact`** (`400`, checks the `-----BEGIN AGE ENCRYPTED FILE-----` prefix). That guard
+  exists because the value is published verbatim in a public issue — a plaintext leak there cannot
+  be taken back.
 - **Kind icons are 3D PNGs**, not icon-font glyphs: `src/assets/feedback/report.png` (报告问题) and
   `suggest.png` (提出建议), imported in `FeedbackPage.vue` and mapped through `kindIcons`. They are
   deliberately imported (not dropped in `public/`) so `vite-plugin-singlefile` inlines them and the
@@ -430,7 +447,7 @@ label.
   title markedly further right than the cards below it and reads as a misalignment.
 - **Two more choose-state sections sit below the cards** and are easy to miss when editing the
   template, because both are `v-if="!activeKind"` alongside the hero:
-  - **提交之后会怎样** — a three-step list (`在本页填写` → `跳转到 GitHub` → `维护者跟进`). It exists
+  - **提交之后会怎样** — a three-step list (`在本页填写` → `提交反馈` → `维护者跟进`). It exists
     because the flow otherwise asks the user to give and never shows what they get back. The step
     numbers are drawn by a **CSS counter** (`counter-reset` on the list, `counter-increment` in
     `.feedback-flow-index::before`), so adding or removing a step needs no copy change.
@@ -457,6 +474,14 @@ label.
   ⚠️ **Do not go back to `git diff HEAD~1 HEAD`** — checkout lands on the tip fetched at that moment,
   so two closely spaced pushes either duplicate an issue or **create none at all** (the draft then sits
   in `submissions/` indefinitely). That is also why `fetch-depth: 0` is required.
+- `create-review-issue.yml` also has `contents: write` and pushes, because a **feedback** draft
+  (`submissions/feedback-*.json`) is deleted **right after its issue opens**: feedback has no merge
+  step, and leaving the file behind would mix finished products into what is otherwise a review
+  queue. That push is **best-effort** — a failure only raises `::warning::`, never a red run (the
+  issue already exists, and the body-based de-dup means a leftover draft is simply re-collected on
+  the next push). ⚠️ App and echo-cave drafts are **never** touched by it: they must survive until a
+  human reviews them. `review-submission.yml` also carries a guard that stops immediately if a
+  feedback draft ever reaches it.
 - `deploy.yml` builds **once** in the `build` job (`npm run build`, multi-file) and passes the
   artifact to the three upload jobs (previously every upload job rebuilt on its own, consuming extra runner minutes).
   The artifact is the whole `dist/` — `index.html`, the `public/` copies, and an `assets/` folder of

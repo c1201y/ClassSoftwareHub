@@ -14,8 +14,13 @@ on:
 jobs:
   create-issue:
     runs-on: ubuntu-latest
+    # 反馈草稿要在开完 Issue 后删掉：删文件也是一次 push，与「审核合并」那条管道
+    # （review-submission.yml）可能同时发生，两边都靠 rebase 重试兜底。
+    concurrency:
+      group: create-review-issue
+      queue: max
     permissions:
-      contents: read
+      contents: write
       issues: write
     steps:
       # fetch-depth: 0 —— 下面的 git diff 要拿到事件里的两个提交对象，浅克隆可能缺
@@ -53,6 +58,7 @@ jobs:
           echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: 为每个草稿创建 Issue
+        id: create
         # 手动 dispatch 时 before/after 是空的（找不出「本次新增」），但正好要靠下面的
         # 「所有还没有 Issue 的草稿」那一段补票，所以这种时候也要跑。
         if: steps.find.outputs.files != '' || github.event_name == 'workflow_dispatch'
@@ -62,7 +68,15 @@ jobs:
         with:
           script: |
             const fs = require('fs')
+            const path = require('path')
+            const stage = process.cwd()
             const files = process.env.FILES.split('\n').map(s => s.trim()).filter(Boolean)
+
+            // 反馈草稿是「一次性投递载体」：Issue 一建出来它的使命就结束了，
+            // 要由后面的「收起已开 Issue 的反馈草稿」步骤删掉（不删会一直躺在
+            // 「待审核队列」目录里）。这里把它们收集起来传出去。
+            const feedbackDrafts = []
+            const isFeedbackDraft = (p) => /^submissions\/feedback-[^/]+\.json$/.test(p)
 
             // 幂等保护：手动「Re-run」时 before/after 不变，不判重会重复建 issue。
             // ⚠️ 判重必须认【草稿文件路径】，不能认 Issue 标题（2026-09-20 踩过）：
@@ -107,6 +121,10 @@ jobs:
               if (!fs.existsSync(file)) continue
               if (drafted.has(file)) {
                 console.log(`该草稿已有 Issue，跳过：${file}`)
+                // 反馈草稿例外：Issue 已存在 = 它的使命已完成，大概率是上一轮删草稿时
+                // 推送失败（这里补一笔，让下面那步收走）。软件 / 回声洞的草稿要等审核，
+                // 绝不能在这里顺手删掉。
+                if (isFeedbackDraft(file)) feedbackDrafts.push(file)
                 continue
               }
               const data = JSON.parse(fs.readFileSync(file, 'utf8'))
@@ -150,6 +168,93 @@ jobs:
                   body: echoBody,
                   labels: ['待审核']
                 })
+                continue
+              }
+
+              // ── 反馈中心：直接开 Issue，没有「审核合并」这一步 ──
+              // 草稿由 classhub worker 的 /api/feedback 写入，形如
+              // `{ "_类型": "反馈", "kind": "report", "subKind": "link", "appId": "7-zip",
+              //    "title": "…", "detail": "…", "contact": "<age 密文>", "_提交时间": "…" }`。
+              // 这一条以前是让用户点开 GitHub 的 issues/new 自己填，现在改由站点直接投递 ——
+              // 但终点没变：**Issue 本身就是反馈的归宿**，不存在「合并进仓库数据」的动作，
+              // 所以这里开完 Issue 就把草稿收起（见后面「收起已开 Issue 的反馈草稿」）。
+              if (data._类型 === '反馈') {
+                const KIND_LABEL = { report: '报告问题', suggestion: '提出建议' }
+                const SUB_LABEL = { interaction: '逻辑交互', link: '链接失效', other: '其他问题' }
+                const kindLabel = KIND_LABEL[data.kind] || ''
+                const subLabel = data.kind === 'report' ? (SUB_LABEL[data.subKind] || '') : ''
+                const prefix = subLabel ? `${kindLabel} · ${subLabel}` : kindLabel
+                // 标题会连同用户输入一起进 Issue 标题：压平空白 + 兜住空标题
+                const subject = String(data.title ?? '').replace(/\s+/g, ' ').trim() || '（未填写标题）'
+                const fbTitle = prefix ? `[${prefix}] ${subject}` : subject
+                // ⚠️ 标签名必须与仓库 Labels 一字不差；只要有一个不存在，issues.create 会整个
+                //    失败并断言。所以下面建失败时会退一步「不带标签」重试，宁可少标签也不能不建。
+                const labels = ['用户反馈']
+                if (kindLabel) labels.push(kindLabel)
+                if (subLabel) labels.push(subLabel)
+
+                // 「涉及软件」：能读到站内数据就把名字补上，读不到（或 id 形状可疑）就只写 id
+                let appLine = '站点本身 / 未指定'
+                const appId = String(data.appId ?? '').trim()
+                if (appId) {
+                  let appName = ''
+                  try {
+                    if (/^[a-z0-9-]{1,60}$/.test(appId)) {
+                      const appFile = path.join(stage, '软件数据', 'apps', `${appId}.json`)
+                      if (fs.existsSync(appFile)) {
+                        appName = String(JSON.parse(fs.readFileSync(appFile, 'utf8')).name ?? '')
+                      }
+                    }
+                  } catch (e) {
+                    appName = ''
+                  }
+                  appLine = appName
+                    ? `${appName}（\`${appId}\`）· [详情页](https://classsoftwarehub.us.ci/#/download/${appId})`
+                    : `\`${appId}\` · [详情页](https://classsoftwarehub.us.ci/#/download/${appId})`
+                }
+
+                const asQuote = (text) =>
+                  String(text).split('\n').map((line) => (line.trim() ? `> ${line}` : '>')).join('\n')
+                const contact = String(data.contact ?? '').trim()
+                const fbBody = [
+                  asQuote(String(data.detail ?? '').trim() || '（空）'),
+                  '',
+                  '---',
+                  '',
+                  '| 项目 | 内容 |',
+                  '| --- | --- |',
+                  `| 类型 | ${prefix || '（未选择）'} |`,
+                  `| 涉及软件 | ${appLine} |`,
+                  // 联系方式是本地 age 公钥加密后的密文（明文只留在提交者本机）；
+                  // 密文是多行 ASCII armor，塞进表格会把表格撑破，所以单列一段代码块，
+                  // 也方便维护者整段复制去用私钥解密。
+                  ...(contact
+                    ? ['', '### 联系方式（已在本地加密，仅维护者可用私钥解密）', '', '```', contact, '```']
+                    : []),
+                  '',
+                  '---',
+                  '',
+                  `**提交文件**：\`${file}\``,
+                  `**提交时间**：${data._提交时间 ?? ''}`,
+                  '',
+                  '> 本条由站点「反馈中心」（`#/feedback`）直接投递，**无需审核合并** —— '
+                    + 'Issue 本身就是它的归宿，处理完关闭即可。',
+                ].join('\n')
+
+                let made
+                try {
+                  made = await github.rest.issues.create({
+                    ...context.repo,
+                    title: fbTitle,
+                    body: fbBody,
+                    labels
+                  })
+                } catch (e) {
+                  core.warning(`带标签建反馈 Issue 失败（${e.message}），改为不带标签重试`)
+                  made = await github.rest.issues.create({ ...context.repo, title: fbTitle, body: fbBody })
+                }
+                console.log(`已建反馈 Issue #${made.data.number}：${fbTitle}`)
+                feedbackDrafts.push(file)
                 continue
               }
 
@@ -200,3 +305,59 @@ jobs:
                 labels: ['待审核']
               })
             }
+
+            // 把要收起的反馈草稿传给下一步（多行文本；一个都没有就不传，下一步自然跳过）
+            if (feedbackDrafts.length) {
+              console.log(`待收起的反馈草稿：${feedbackDrafts.join(', ')}`)
+              core.setOutput('feedback', feedbackDrafts.join('\n'))
+            }
+
+      - name: 收起已开 Issue 的反馈草稿
+        # 反馈没有「审核合并」这一步：Issue 一建出来，草稿就完成了使命。不收走的话
+        # submissions/（那是「待审核队列」目录）会慢慢堆满永远不会有下文的文件。
+        # ⚠️ 收不动**不算失败**：Issue 已经建好，草稿留着只会被上面的判重跳过，下一次
+        #    推送会自动重试。所以这里只 ::warning:: ，不把运行打红。
+        if: steps.create.outputs.feedback != ''
+        env:
+          DRAFTS: ${{ steps.create.outputs.feedback }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # 仓库路径几乎全是中文：git 默认 core.quotePath=true 会把它们转义成八进制，
+          # 下面按 submissions/feedback-*.json 判形的 case 就全匹配不上（同 review-submission.yml）
+          git config core.quotePath false
+
+          while IFS= read -r f; do
+            # ⚠️ 不要写成 `[ -z "$f" ] && continue`：Actions 的 run 默认是 `bash -e`，
+            #    当 $f 非空时那条 AND-list 返回 1，会把整个脚本直接终止。
+            #    空行交给 case 的空模式处理，不引入任何会返回非零的语句。
+            case "$f" in
+              "") ;;
+              submissions/feedback-*.json) rm -f -- "$f" ;;
+              *) echo "::warning::跳过非反馈草稿（不该出现在这里）：$f" ;;
+            esac
+          done <<< "$DRAFTS"
+
+          git add -A
+          if git diff --cached --quiet; then
+            echo "没有需要收起的草稿"
+            exit 0
+          fi
+          git commit -m "chore(feedback): 收起已开 Issue 的反馈草稿"
+
+          # 与「审核合并」那条管道可能同时 push，撞上就 rebase 重试（同 review-submission.yml）
+          for _ in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo "反馈草稿已收起"
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            git fetch --no-tags origin main || true
+            if git rebase origin/main; then
+              sleep $((RANDOM % 3 + 1))
+              continue
+            fi
+            git rebase --abort 2>/dev/null || true
+            break
+          done
+          echo "::warning::反馈草稿没能收起（推送失败）；Issue 已建，不影响处理。下次推送会自动重试。"

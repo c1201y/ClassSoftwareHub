@@ -125,6 +125,21 @@ jobs:
               return
             }
 
+            // ── 反馈：不归这条管道管 ──
+            // 反馈草稿在 create-review-issue.yml 里「开完 Issue 即收起」，正常根本不会流到
+            // 这里。万一残留（收起那步推送失败）或有人给反馈 Issue 也打了「待审核」，
+            // 这里直接说清楚就收工 —— 反馈没有要合并进仓库的数据文件。
+            if (data._类型 === '反馈') {
+              core.info('反馈草稿：无需合并，本步骤收工')
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: issue.number,
+                body: 'ℹ️ 这是一条**反馈**：Issue 本身就是它的归宿，没有需要合并进仓库的数据文件。\n\n'
+                  + '直接在 Issue 里回复跟进、处理完关闭即可。'
+              })
+              return
+            }
+
             // ── 回声洞字条：同一条审核管道，落地目标是 回声洞/messages/messageN.json ──
             // 草稿来自 classhub worker 的 /api/echocave，形如
             // `{ "_类型": "回声洞", "text": "…", "_提交时间": "…" }`（没有 id / name 等软件字段）。
