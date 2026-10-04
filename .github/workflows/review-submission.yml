@@ -23,8 +23,6 @@ jobs:
     permissions:
       contents: write
       issues: write
-      # 需要 actions:write 才能派发 deploy.yml（见下方「触发构建与部署」）
-      actions: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -345,12 +343,3 @@ jobs:
             fi
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
-
-      - name: 触发构建与部署
-        # ⚠️ 用 GITHUB_TOKEN 推送产生的 push 事件【不会】触发其它工作流（GitHub 防递归机制），
-        #    所以审核合并后 deploy.yml 不会自己跑，必须在这里显式派发一次。
-        #    workflow_dispatch 是这条限制的唯一例外，但仍需 GITHUB_TOKEN 具备 actions:write。
-        if: steps.commit.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run deploy.yml --ref main
