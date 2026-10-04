@@ -1,7 +1,7 @@
 {
   "id": "maxhub-whiteboard",
   "name": "MAXHUB 白板书写",
-  "icon": "https://cstore-pri-pinco-bs.seewo.com/seewo-pinco-private/uwiwlhvkhjkljhhvhypqpjpuhiphihhh.ico?Expires=1790854208&OSSAccessKeyId=LTAI5tDfDk7waUMpMY5x13JB&Signature=4leIk9Xkmdn%2BZJJa6l17r77yVpY%3D&response-content-disposition=attachment%3Bfilename%3D%22WhiteBoard.ico%22%3Bfilename%2A%3Dutf-8%27%27WhiteBoard.ico",
+  "icon": "https://ts4.tc.mm.bing.net/th/id/ODF.ewg9Rbksu5iWIOduz1yp8w?w=32&h=32&qlt=90&pcl=fffffa&r=0&o=6&pid=1.2",
   "category": "schedule",
   "tagline": "MAXHUB白板书写，企业级白板，轻量，好用",
   "description": "MAXHUB白板书写软件主要用于企业会议、课堂教学中的书写批注、多人协作和内容保存分享，支持双指手势、智能图形识别、OCR、插入多媒体等功能，轻量而又强大。",
@@ -9,7 +9,7 @@
   "size": "62.26 MB",
   "system": "Windows 10/11 x64",
   "website": "https://www.maxhub.vip",
-  "github": "",
+  "notice": "更新频繁，直链易失效",
   "downloads": [
     {
       "platform": "Windows x64 安装版",
@@ -17,6 +17,5 @@
       "url": "https://cstore-pri-pinco-bs.seewo.com/seewo-pinco-private/uwiwyzjohjkljhhvhwzzijmmqjphihhh.exe?Expires=1790848413&OSSAccessKeyId=LTAI5tDfDk7waUMpMY5x13JB&Signature=bRUzeD3Y066wah7ElWEUFKSMyHk%3D&response-content-disposition=attachment%3Bfilename%3D%22WhiteboardSetup.exe%22%3Bfilename%2A%3Dutf-8%27%27WhiteboardSetup.exe"
     }
   ],
-  "sort": 99,
-  "notice": "更新频繁，直链易失效"
+  "sort": 99
 }
