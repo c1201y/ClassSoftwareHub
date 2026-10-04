@@ -47,8 +47,8 @@ name: 检查应用更新
 # 点「已改好 → 重新检测」方框则由它**重新派发本工作流**（人不在这里改数据，改完只回来说一声）。
 #
 # ⚠️ 三条沿用本项目既有经验的约定：
-#  1. 用 GITHUB_TOKEN 提交的 push **不会**触发 deploy.yml（GitHub 防递归），
-#     所以写回之后必须显式 `gh workflow run deploy.yml`（workflow_dispatch 是这条限制的唯一例外）。
+#  1. 上线由 Cloudflare Pages 的 Git 集成自动构建：GITHUB_TOKEN 的 push 不触发 Actions（防递归），
+#     但 Webhook 照发，Pages 会自己重新构建 —— 写回之后不需要再派发任何构建工作流。
 #  2. 脚本只逐文件读写 软件数据/apps/*.json 并保持原行尾 —— 本仓没有 .gitattributes，行尾是混合的，
 #     整文件重写会产生假 diff。
 #  3. 体检与 Issue 是**同一次**运行产出的（update-report.md 与 update-pending.md），
@@ -87,8 +87,6 @@ jobs:
     permissions:
       contents: write
       issues: write
-      # 需要 actions:write 才能派发 deploy.yml（见下方「触发构建与部署」）
-      actions: write
     env:
       # 定时任务默认写回；手动触发看勾选。同一个表达式在多个步骤里复用，避免两处判断不一致
       AUTO_APPLY: ${{ github.event_name == 'schedule' || inputs.apply }}
@@ -174,13 +172,6 @@ jobs:
             exit 1
           fi
           echo "changed=true" >> "$GITHUB_OUTPUT"
-
-      - name: 触发构建与部署
-        # ⚠️ GITHUB_TOKEN 推送产生的 push 事件不会触发其它工作流，必须显式派发（同 review-submission.yml）
-        if: steps.apply.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run deploy.yml --ref main
 
       - name: 开 / 更新「待人工确认」Issue
         if: always() && steps.check.outputs.pending != ''
