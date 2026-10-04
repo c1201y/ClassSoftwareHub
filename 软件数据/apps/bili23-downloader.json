@@ -84,5 +84,6 @@
       "url": "https://github.com/ScottSloan/Bili23-Downloader/releases/download/v2.20.0/Bili23-Downloader_2.20.0_windows_x64_for_win7.exe"
     }
   ],
-  "sort": 99
+  "sort": 99,
+  "维护备注": "本工具为开源软件，仅供个人学习、研究使用。切勿用于任何商业用途或公开传播。切勿利用该工具进行批量抓取、传播盗版视频或任何违反B站用户协议的行为。用户需自行承担因不当使用所产生的一切法律风险。"
 }
