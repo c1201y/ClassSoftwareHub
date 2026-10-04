@@ -1,15 +1,15 @@
 {
   "id": "dreamscene2",
   "name": "DreamScene2",
-  "icon": "https://avatars.githubusercontent.com/u/40764272?v=4",
+  "icon": "https://store-images.s-microsoft.com/image/apps.46996.14313494737087364.6a2abb62-603b-4bc7-a961-2db2b4de9ef3.862a6626-2d1f-431f-a0cc-2f842632a618?h=134",
   "category": "other",
   "tagline": "把视频或网页设成 Windows 动态壁纸的小工具",
   "description": "DreamScene2 可以把视频、网页地址或本地网页文件设成 Windows 的动态桌面，让壁纸动起来。支持设置开机后自动播放、指定在哪个显示器上播放、全屏应用运行时自动暂停（免得抢性能），也能用命令行播放指定文件。体积很小，前提是系统已安装 .NET Framework 4.7.2（下载项里附了在线安装程序）。",
   "version": "v1.7",
   "size": "约 255 KB（不含 .NET 运行时）",
   "system": "Windows 10 / 11（需 .NET Framework 4.7.2）",
-  "website": "",
   "github": "https://github.com/he55/DreamScene2",
+  "store": "https://apps.microsoft.com/detail/9PLPG9M93TLC?hl=zh-CN&gl=CN",
   "downloads": [
     {
       "platform": "Windows x64 便携版",
@@ -24,6 +24,5 @@
       "url": "https://download.visualstudio.microsoft.com/download/pr/1f5af042-d0e4-4002-9c59-9ba66bcf15f6/124d2afe5c8f67dfa910da5f9e3db9c1/ndp472-kb4054531-web.exe"
     }
   ],
-  "sort": 99,
-  "store": "https://apps.microsoft.com/detail/9PLPG9M93TLC?hl=zh-CN&gl=CN"
+  "sort": 99
 }
