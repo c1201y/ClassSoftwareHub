@@ -1,7 +1,10 @@
 <!-- 反馈中心页（#/feedback）—— 仿微软「反馈中心」：先选类型卡片，再填表。
-     提交时不发任何网络请求：拼一个 GitHub Issue 预填链接打开（本站没有后端），
-     没有 GitHub 账号的用户可以「复制反馈内容」拿去 QQ 群。
-     逻辑（分类表 / 正文拼装 / URL 截断 / 校验 / 草稿）全在 src/gallery/feedback.ts，
+     提交走站点自己的提交服务（Cloudflare Worker `classhub` 的 /api/feedback），
+     与「提交软件」「回声洞」同一套入口：POST 落一份草稿进仓库的 submissions/，
+     由 .github/workflows/create-review-issue.yml 开出一张带「用户反馈」等标签的 Issue。
+     和那两条不同的是：反馈【没有审核合并】这一步 —— Issue 本身就是它的归宿。
+     提交服务连不上时才退回「打开 GitHub 的预填新建 Issue 页」或「复制反馈内容」。
+     逻辑（分类表 / 正文拼装 / 校验 / 草稿）全在 src/gallery/feedback.ts，
      文案全在根目录 文字设置.ts 的 feedback.* 与 nav.feedback 键。 -->
 <template>
   <WinGrid class="feedback-page-root" RowDefinitions="Auto,*">
@@ -202,7 +205,17 @@
                   v-model:Text="form.contact" />
               </div>
 
-              <!-- 校验失败 -->
+              <!-- 提交成功（内容已进仓库，草稿与表单同时清掉） -->
+              <WinInfoBar
+                v-if="submitted"
+                class="feedback-notice"
+                :IsOpen="true"
+                :IsClosable="false"
+                Severity="Success"
+                :Title="t('feedback.success-title')"
+                :Message="successMessage" />
+
+              <!-- 校验失败 / 提交失败 -->
               <WinInfoBar
                 v-if="errorText"
                 class="feedback-notice"
@@ -212,7 +225,7 @@
                 :Title="t('feedback.error-title')"
                 :Message="errorText" />
 
-              <!-- 内容被截断 -->
+              <!-- 兜底路径才会出现：预填链接太长，正文被截断 -->
               <WinInfoBar
                 v-if="truncated"
                 class="feedback-notice"
@@ -222,7 +235,7 @@
                 :Title="t('feedback.truncated-title')"
                 :Message="t('feedback.truncated-desc')" />
 
-              <!-- 新窗口被拦，已改成复制 -->
+              <!-- 新窗口被拦，已改成复制（仅兜底路径） -->
               <WinInfoBar
                 v-if="popupBlocked"
                 class="feedback-notice"
@@ -235,9 +248,13 @@
               <div class="feedback-actions">
                 <WinButton
                   Style="AccentButtonStyle"
-                  :Content="t('feedback.open-github')"
-                  :IsEnabled="!justOpened"
-                  @Click="openIssue" />
+                  :Content="submitting ? t('feedback.submitting') : t('feedback.submit')"
+                  :IsEnabled="!submitting"
+                  @Click="submitFeedback" />
+                <WinButton
+                  v-if="fallback"
+                  :Content="t('feedback.fallback-github')"
+                  @Click="openGithub" />
                 <WinButton
                   :Content="copied ? t('feedback.copied') : t('feedback.copy')"
                   @Click="copyReport" />
@@ -283,7 +300,9 @@ import {
   REPORT_SUBKINDS,
   REPO_URL,
   TITLE_MAX,
+  buildIssueBody,
   buildIssueUrl,
+  clearFeedbackDraft,
   copyText,
   emptyDraft,
   readFeedbackDraft,
@@ -318,6 +337,13 @@ const FLOW_STEPS = [
 /** 议题列表直链。复用 feedback.ts 的 REPO_URL，避免仓库地址两处维护 */
 const ISSUE_LIST_URL = `${REPO_URL}/issues`;
 
+// 提交入口与「提交软件」（SubmitPage.vue）、「回声洞」（EchoCaveCard.vue）**同一套**：
+// 同样的两个域名顺序、同样的超时、同样把上次成功的那个记在 localStorage（key 也共用）。
+// 三处刻意保持一致 —— 任何一个入口出问题时，用户的体验应该完全一样。
+const SUBMIT_ENDPOINTS = ['https://cshapi.132614.xyz', 'https://submit.132614.xyz'];
+const SUBMIT_TIMEOUT_MS = 10000;
+const ENDPOINT_CACHE_KEY = 'csh-submit-endpoint';
+
 /** 打开公开议题列表（先查重，再决定要不要提交） */
 const openIssueList = () => {
   window.open(ISSUE_LIST_URL, '_blank', 'noopener,noreferrer');
@@ -336,7 +362,13 @@ const errorText = ref('');
 const truncated = ref(false);
 const popupBlocked = ref(false);
 const copied = ref(false);
-const justOpened = ref(false);
+/** 正在向提交服务 POST（按钮同时当进度指示用） */
+const submitting = ref(false);
+/** 提交成功：显示绿色回执条 */
+const submitted = ref(false);
+const successMessage = ref('');
+/** 提交服务连不上才置 true —— 此时才露出「改用 GitHub 提交」这个兜底入口 */
+const fallback = ref(false);
 
 /** 当前大类定义（表单态标题、子类型是否显示都看它） */
 const currentKind = computed(() =>
@@ -374,6 +406,10 @@ watch(activeKind, (kind) => {
     subKindIndex.value = -1;
   }
   errorText.value = '';
+  // 换类型 = 开始写新的一条：把上一条的回执和兜底按钮一起收起，
+  // 免得「提交成功」的绿条挂在一条还没写完的反馈上面
+  submitted.value = false;
+  fallback.value = false;
 });
 
 const chooseKind = (kind: FeedbackKind) => {
@@ -420,8 +456,13 @@ async function encryptContact(): Promise<{ cipher: string; failed: boolean }> {
   }
 }
 
-/** 校验并返回正文；不通过时把错误填进 errorText 并返回 null */
-const prepare = async () => {
+/**
+ * 校验并组装要发出去的内容；不通过时把错误填进 errorText 并返回 null。
+ * 联系方式在这里用 age 公钥加密（在内存里完成，form 本身保留明文供本地草稿）——
+ * 离开本机的那一份**永远是密文**：提交服务也拒收明文（见 worker 的 /api/feedback），
+ * 因为它会被公开贴在 Issue 上。
+ */
+const prepareOutgoing = async () => {
   const key = validateFeedback(form);
   if (key) {
     errorText.value = key === 'feedback.error-title-too-long'
@@ -431,51 +472,167 @@ const prepare = async () => {
   }
   errorText.value = '';
 
-  // 联系方式在离开本机前加密（在内存里完成，form 本身保留明文供本地草稿）
   const { cipher, failed } = await encryptContact();
   if (failed) {
     errorText.value = t('feedback.error-encrypt');
-    truncated.value = false;
     return null;
   }
+  // 兜底路径（复制 / GitHub 预填）要的草稿形态：联系方式已换成密文
   const outgoing: FeedbackDraft = cipher ? { ...form, contact: cipher } : form;
-
-  const built = buildIssueUrl(outgoing, selectedApp.value);
-  truncated.value = built.truncated;
-  return built;
+  return {
+    outgoing,
+    payload: {
+      kind: form.kind,
+      subKind: form.subKind,
+      appId: form.appId,
+      title: form.title.trim(),
+      detail: form.detail.trim(),
+      contact: cipher
+    }
+  };
 };
 
 /**
- * 主操作：拼好链接直接开新标签页。
- * 打开前先存草稿 —— 用户到了 GitHub 那边可能才发现要登录，
- * 回头再来时内容还在。
+ * 按顺序返回要试的入口，上次成功过的排最前。
+ * 与「提交软件」「回声洞」共用同一个 localStorage key：用户在本站任意一处提交成功过，
+ * 另外两处也就不必再先白等一次失败。
  */
-const openIssue = async () => {
-  const built = await prepare();
+function orderedEndpoints(): string[] {
+  let remembered = '';
+  try {
+    remembered = window.localStorage.getItem(ENDPOINT_CACHE_KEY) ?? '';
+  } catch {
+    remembered = '';
+  }
+  if (!remembered || !SUBMIT_ENDPOINTS.includes(remembered)) return SUBMIT_ENDPOINTS;
+  return [remembered, ...SUBMIT_ENDPOINTS.filter((item) => item !== remembered)];
+}
+
+function rememberEndpoint(base: string) {
+  try {
+    window.localStorage.setItem(ENDPOINT_CACHE_KEY, base);
+  } catch {
+    // 隐私模式等场景写不进去，忽略
+  }
+}
+
+/** 服务端明确应答（拿到 JSON 且给了 error）就算定局，不再换入口重试 */
+class DefinitiveError extends Error {}
+
+/**
+ * 向单个入口发一次反馈提交（带超时）。
+ * 只认提交接口的 JSON 应答；连不上 / 超时 / 拿到 HTML 错误页都算该入口不可用，换下一个。
+ */
+async function postFeedback(
+  base: string,
+  payload: Record<string, unknown>
+): Promise<{ message?: string }> {
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), SUBMIT_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${base}/api/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    const data = (await res.json()) as { success?: boolean; message?: string; error?: string };
+    if (data?.success === true) return data;
+    if (typeof data?.error === 'string' && data.error) {
+      throw new DefinitiveError(data.error);
+    }
+    throw new Error('unexpected-reply');
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
+
+/**
+ * 主操作：POST 到提交服务。
+ * 拿到成功应答就代表内容已落进仓库的 `submissions/`，其后由工作流开出 Issue ——
+ * 所以这里可以直接清草稿、清表单（旧版跳 GitHub 时不敢清，是因为跨域读不到结果）。
+ */
+const submitFeedback = async () => {
+  if (submitting.value) return;
+
+  const built = await prepareOutgoing();
   if (!built) return;
+
+  // 先存草稿：提交过程中断网 / 关掉页面，回来还能接着改
+  saveFeedbackDraft(form);
+  submitting.value = true;
+  submitted.value = false;
+  fallback.value = false;
+  truncated.value = false;
+  popupBlocked.value = false;
+  errorText.value = '';
+
+  let reply: { message?: string } | null = null;
+  let failure = '';
+  try {
+    for (const base of orderedEndpoints()) {
+      try {
+        reply = await postFeedback(base, built.payload);
+        rememberEndpoint(base);
+        break;
+      } catch (err) {
+        failure = err instanceof DefinitiveError
+          ? err.message
+          : err instanceof Error && err.name === 'AbortError'
+            ? t('feedback.error-timeout', { seconds: Math.round(SUBMIT_TIMEOUT_MS / 1000) })
+            : t('feedback.error-network');
+        if (err instanceof DefinitiveError) break; // 服务端明确拒绝，换入口也没用
+      }
+    }
+
+    if (reply) {
+      submitted.value = true;
+      successMessage.value = reply.message?.trim() || t('feedback.success-desc');
+      // 内容已经进仓库了：本地草稿与表单一起清掉 ——
+      // 留着只会让下次进来又看到已提交过的旧内容
+      clearFeedbackDraft();
+      hasDraft.value = false;
+      form.title = '';
+      form.detail = '';
+      form.contact = '';
+      return;
+    }
+
+    errorText.value = failure || t('feedback.error-network');
+    fallback.value = true;
+  } finally {
+    submitting.value = false;
+  }
+};
+
+/**
+ * 兜底：提交服务连不上时，退回「打开 GitHub 的预填新建 Issue 页」。
+ * ⚠️ 这条路**绕过** /api/feedback：标题 / 正文 / 标签都填好了，但用户得自己点提交，
+ *    而且需要 GitHub 账号 —— 所以只在主路径确实走不通时才露出按钮。
+ */
+const openGithub = async () => {
+  const built = await prepareOutgoing();
+  if (!built) return;
+  const issue = buildIssueUrl(built.outgoing, selectedApp.value);
+  truncated.value = issue.truncated;
   saveFeedbackDraft(form);
   popupBlocked.value = false;
-  const win = window.open(built.url, '_blank', 'noopener,noreferrer');
+  const win = window.open(issue.url, '_blank', 'noopener,noreferrer');
   if (!win) {
     // 被拦截：退回复制，别让内容白白丢掉
-    void copyText(built.body).then((ok) => {
+    void copyText(issue.body).then((ok) => {
       copied.value = ok;
       popupBlocked.value = true;
     });
-    return;
   }
-  // 防止连点开一堆标签页
-  justOpened.value = true;
-  window.setTimeout(() => {
-    justOpened.value = false;
-  }, 3000);
 };
 
-/** 兜底操作：把正文复制走（没有 GitHub 账号时用） */
+/** 兜底操作：把正文（Issue 形态的 Markdown）复制走，可贴到 QQ 群或别处 */
 const copyReport = async () => {
-  const built = await prepare();
+  const built = await prepareOutgoing();
   if (!built) return;
-  const ok = await copyText(built.body);
+  saveFeedbackDraft(form);
+  const ok = await copyText(buildIssueBody(built.outgoing, selectedApp.value));
   copied.value = ok;
   if (ok) {
     window.setTimeout(() => {
