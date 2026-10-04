@@ -127,10 +127,26 @@
               <template #header>{{ t('submit.name') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
             </WinTextBox>
             <div class="submit-field-row">
-              <WinTextBox
-                :Header="t('submit.icon')"
-                :PlaceholderText="t('submit.icon-placeholder')"
-                v-model:Text="form.icon" />
+              <div class="submit-icon-field">
+                <WinTextBox
+                  :Header="t('submit.icon')"
+                  :PlaceholderText="t('submit.icon-placeholder')"
+                  v-model:Text="form.icon" />
+                <div class="submit-upload-row">
+                  <WinButton
+                    :Content="iconUploading ? uploadingText(iconUploadPct) : t('submit.icon-upload')"
+                    :IsEnabled="openListReady && !iconUploading"
+                    @Click="pickIcon" />
+                  <span v-if="uploadError" class="submit-upload-error">{{ uploadError }}</span>
+                  <span v-else-if="iconUploadWarn" class="submit-upload-warn">{{ iconUploadWarn }}</span>
+                </div>
+                <WinTextBlock
+                  class="submit-upload-note"
+                  FontSize="12"
+                  Foreground="var(--TextFillColorSecondaryBrush, var(--text-secondary))"
+                  TextWrapping="Wrap"
+                  :Text="t('submit.icon-upload-note')" />
+              </div>
               <WinComboBox
                 :Header="t('submit.category')"
                 RequiredMark
@@ -213,6 +229,9 @@
             </div>
           </section>
 
+          <input type="file" ref="iconInput" accept="image/*" @change="onIconPicked" style="display:none" />
+          <input type="file" ref="dlFileInput" @change="onDownloadFilePicked" style="display:none" />
+
           <!-- ── 下载项 ──────────────────────────────────────────── -->
           <WinTextBlock
             class="submit-section-title"
@@ -220,6 +239,7 @@
             FontWeight="600"
             Margin="0,32,0,0"
             :Text="t('submit.section-downloads')" />
+          <div v-if="openListReady" class="submit-upload-hint">{{ t('submit.upload-limit-note', { limit: humanSize(UPLOAD_MAX_BYTES) }) }}</div>
           <div class="submit-download-list">
             <div v-for="(dl, i) in form.downloads" :key="i" class="submit-download-card">
               <div class="submit-download-head">
@@ -251,6 +271,22 @@
                   v-model:Text="dl.url">
                   <template #header>{{ t('submit.download-url') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
                 </WinTextBox>
+                <!-- 下载方式：决定详情页是「直接下载」还是「跳转网盘/商店」 -->
+                <WinComboBox
+                  :Header="t('submit.download-kind')"
+                  :PlaceholderText="t('submit.download-kind-auto')"
+                  :ItemsSource="downloadKindItems"
+                  DisplayMemberPath="label"
+                  v-model:SelectedIndex="dl.kindIndex" />
+                <div class="submit-upload-row" v-if="openListReady">
+                  <WinButton
+                    :Content="dlUploading[i] ? uploadingText(dlUploadPct[i] ?? -1) : t('submit.download-upload')"
+                    :IsEnabled="!dlUploading[i]"
+                    @Click="pickDownloadFile(i)" />
+                  <span v-if="dlUploadError[i]" class="submit-upload-error">{{ dlUploadError[i] }}</span>
+                  <span v-else-if="dlUploadWarn[i]" class="submit-upload-warn">{{ dlUploadWarn[i] }}</span>
+                </div>
+                <div class="submit-upload-hint" v-else>{{ t('submit.upload-notconfigured') }}</div>
                 <!-- 校验值（选填）：只收十六进制，页面按位数认算法，不写算法名 -->
                 <WinTextBox
                   :Header="t('submit.download-hash')"
@@ -337,6 +373,14 @@ import { useI18n } from '../../components/i18n/index';
 import { apps, categories } from '../data';
 import { GithubImportError, importFromGithub, repoToId, toTagline } from '../githubImport';
 import type { GithubImportResult } from '../githubImport';
+import {
+  uploadToOpenList,
+  getOpenListConfig,
+  UPLOAD_MAX_BYTES,
+  UPLOAD_WARN_BYTES,
+  OpenListUploadError
+} from '../openlistUpload';
+import type { UploadProgress } from '../openlistUpload';
 
 /**
  * 提交接口入口，按顺序试，第一个拿到提交接口 JSON 响应的就停手。
@@ -370,6 +414,9 @@ const RECIPIENT_PUBLIC_KEY = 'age1l9axcy0sxu6eeanapg0maughsv380fh8nhd4unf9p8d7x2
 
 const { t } = useI18n();
 
+/** 下载方式索引 → 写入数据的 kind 值；-1 自动 / 0 file / 1 netdisk / 2 store（对应 DOWNLOAD_KINDS） */
+const DOWNLOAD_KINDS = ['', 'file', 'netdisk', 'store'] as const;
+
 interface DownloadDraft {
   platform: string;
   note: string;
@@ -377,9 +424,11 @@ interface DownloadDraft {
   url: string;
   /** 校验值：纯十六进制（算法按位数识别，见 HASH_LENGTHS），选填 */
   hash: string;
+  /** 下载方式索引：-1 自动 / 0 file / 1 netdisk / 2 store（对应 DOWNLOAD_KINDS） */
+  kindIndex: number;
 }
 
-const emptyDownload = (): DownloadDraft => ({ platform: '', note: '', size: '', url: '', hash: '' });
+const emptyDownload = (): DownloadDraft => ({ platform: '', note: '', size: '', url: '', hash: '', kindIndex: -1 });
 
 const form = reactive({
   id: '',
@@ -423,6 +472,151 @@ watch(categoryIndex, (index) => {
   form.category = index >= 0 && index < categories.length ? categories[index].key : '';
 });
 
+// ════════════════════════════════════════════════════════════════════
+// 上传文件到 OpenList 网盘（用户自有，带 Basic Auth 写目录；凭据写死 csh/csh，OpenList 侧限「仅上传」权限；详见 src/gallery/openlistUpload.ts）
+// ════════════════════════════════════════════════════════════════════
+const openListReady = computed(() => getOpenListConfig() !== null);
+
+/** 下载方式下拉项（label 仅用于展示，索引对应 DOWNLOAD_KINDS） */
+const downloadKindItems = [
+  { label: t('submit.download-kind-auto') },
+  { label: t('submit.download-kind-file') },
+  { label: t('submit.download-kind-netdisk') },
+  { label: t('submit.download-kind-store') }
+];
+
+const iconInput = ref<HTMLInputElement | null>(null);
+const dlFileInput = ref<HTMLInputElement | null>(null);
+const activeDlIndex = ref(-1);
+const iconUploading = ref(false);
+const dlUploading = ref<boolean[]>([]);
+const uploadError = ref('');
+const dlUploadError = ref<string[]>([]);
+/** 大文件软提示（不阻止上传，只提醒会慢） */
+const iconUploadWarn = ref('');
+const dlUploadWarn = ref<string[]>([]);
+/** 上传进度百分比（0-100；-1 = 尚未拿到进度，退回普通「上传中…」） */
+const iconUploadPct = ref(-1);
+const dlUploadPct = ref<number[]>([]);
+
+/** 上传进度 → 百分数（0-100）；总量未知时返回 -1，由文案层回退 */
+function toPercent(p: UploadProgress): number {
+  if (!p.total || p.total <= 0) return -1;
+  return Math.min(100, Math.max(0, (p.loaded / p.total) * 100));
+}
+
+/** 上传中按钮文案：有进度就带百分数，没有就退回普通文案 */
+function uploadingText(percent: number): string {
+  return percent >= 0 ? t('submit.uploading-percent', { percent: Math.round(percent) }) : t('submit.uploading');
+}
+
+/** 字节数 → 人类可读（只用于文案，取整到 MB/KB 足够） */
+function humanSize(bytes: number): string {
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+  if (bytes >= 1024 * 1024) return `${Math.round(bytes / (1024 * 1024))} MB`;
+  if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${bytes} B`;
+}
+
+/**
+ * 上传前的本地预检：超过硬上限直接劝退。
+ * 判据是实测的 —— 链路要经 Cloudflare Worker 中转，而 Worker 把整个文件读进
+ * 128 MB 的 isolate 内存（非流式），超限会以 1102/413 失败。与其让用户等几分钟
+ * 再看一串英文报错，不如在选文件时就说明白。
+ */
+function sizeGuard(file: File): string {
+  return file.size > UPLOAD_MAX_BYTES
+    ? t('submit.upload-too-large', { size: humanSize(file.size), limit: humanSize(UPLOAD_MAX_BYTES) })
+    : '';
+}
+
+/** 大文件软提示：不阻止，只提醒会比较慢 */
+function sizeWarn(file: File): string {
+  return file.size > UPLOAD_WARN_BYTES
+    ? t('submit.upload-large-warn', { size: humanSize(file.size) })
+    : '';
+}
+
+/** 上传失败 → 本地化文案；服务端 413 / Worker 1102 一律说成「文件过大」，不甩英文错 */
+function uploadErrorText(error: unknown): string {
+  if (error instanceof OpenListUploadError) {
+    if (error.code === 'server-limit' || error.code === 'too-large') {
+      return t('submit.upload-server-limit', { limit: humanSize(UPLOAD_MAX_BYTES) });
+    }
+    if (error.code === 'network' || error.code === 'aborted') {
+      return t('submit.upload-network-error');
+    }
+  }
+  return t('submit.upload-failed', { message: error instanceof Error ? error.message : String(error) });
+}
+
+function pickIcon() {
+  iconInput.value?.click();
+}
+
+function pickDownloadFile(index: number) {
+  activeDlIndex.value = index;
+  dlFileInput.value?.click();
+}
+
+async function onIconPicked(ev: Event) {
+  const input = ev.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = '';
+  if (!file) return;
+  uploadError.value = '';
+  iconUploadWarn.value = '';
+  const blocked = sizeGuard(file);
+  if (blocked) {
+    uploadError.value = blocked;
+    return;
+  }
+  iconUploadWarn.value = sizeWarn(file);
+  iconUploading.value = true;
+  iconUploadPct.value = -1;
+  try {
+    const { url } = await uploadToOpenList(file, (p) => { iconUploadPct.value = toPercent(p); });
+    form.icon = url;
+    iconUploadWarn.value = '';
+  } catch (error) {
+    uploadError.value = uploadErrorText(error);
+    iconUploadWarn.value = '';
+  } finally {
+    iconUploading.value = false;
+    iconUploadPct.value = -1;
+  }
+}
+
+async function onDownloadFilePicked(ev: Event) {
+  const input = ev.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = '';
+  const index = activeDlIndex.value;
+  if (!file || index < 0) return;
+  dlUploadError.value[index] = '';
+  dlUploadWarn.value[index] = '';
+  const blocked = sizeGuard(file);
+  if (blocked) {
+    dlUploadError.value[index] = blocked;
+    return;
+  }
+  dlUploadWarn.value[index] = sizeWarn(file);
+  dlUploading.value[index] = true;
+  dlUploadPct.value[index] = -1;
+  try {
+    const { url } = await uploadToOpenList(file, (p) => { dlUploadPct.value[index] = toPercent(p); });
+    form.downloads[index].url = url;
+    form.downloads[index].kindIndex = 2; // 上传到网盘 → 按「网盘跳转」渲染
+    dlUploadWarn.value[index] = '';
+  } catch (error) {
+    dlUploadError.value[index] = uploadErrorText(error);
+    dlUploadWarn.value[index] = '';
+  } finally {
+    dlUploading.value[index] = false;
+    dlUploadPct.value[index] = -1;
+  }
+}
+
 const addDownload = () => {
   form.downloads.push(emptyDownload());
 };
@@ -430,6 +624,11 @@ const addDownload = () => {
 const removeDownload = (index: number) => {
   if (form.downloads.length <= 1) return;
   form.downloads.splice(index, 1);
+  // 并行状态数组必须跟着删，否则后面几项的上传中/进度/错误会整体错位
+  dlUploading.value.splice(index, 1);
+  dlUploadPct.value.splice(index, 1);
+  dlUploadError.value.splice(index, 1);
+  dlUploadWarn.value.splice(index, 1);
 };
 
 // ════════════════════════════════════════════════════════════════════
@@ -592,7 +791,7 @@ function applyImport(result: GithubImportResult) {
       const hashByUrl = new Map(
         form.downloads.filter((item) => item.hash.trim()).map((item) => [item.url.trim(), item.hash.trim()])
       );
-      form.downloads = downloads.map((item) => ({ ...item, hash: hashByUrl.get(item.url.trim()) ?? '' }));
+      form.downloads = downloads.map((item) => ({ ...item, hash: hashByUrl.get(item.url.trim()) ?? '', kindIndex: -1 }));
       lastDownloadUrls = form.downloads.map((item) => item.url.trim()).join('\n');
       filled.push(`${t('submit.section-downloads')}（${downloads.length}）`);
     }
@@ -607,7 +806,8 @@ function applyImport(result: GithubImportResult) {
         note: t('submit.import-latest-note'),
         size: t('submit.import-web'),
         url,
-        hash: ''
+        hash: '',
+        kindIndex: -1
       }];
       lastDownloadUrls = url;
       filled.push(t('submit.section-downloads'));
@@ -724,6 +924,9 @@ async function buildPayload(): Promise<{ payload: Record<string, unknown> | null
           size: item.size.trim(),
           url: item.url.trim()
         };
+        // 下载方式：用户显式选了（kindIndex >= 1）才写 kind，否则交给详情页按链接自动推断
+        const kind = DOWNLOAD_KINDS[item.kindIndex];
+        if (kind) entry.kind = kind;
         // 校验值选填：归一化后为空就不写这个键，免得多出一堆 `"hash": ""`
         const hash = normalizeHash(item.hash);
         if (hash) entry.hash = hash;
@@ -944,7 +1147,8 @@ function applyPayload(data: Record<string, unknown>) {
         note: String(item.note ?? ''),
         size: String(item.size ?? ''),
         url: String(item.url ?? ''),
-        hash: String(item.hash ?? '')
+        hash: String(item.hash ?? ''),
+        kindIndex: DOWNLOAD_KINDS.indexOf((String(item.kind ?? '')) as (typeof DOWNLOAD_KINDS)[number])
       }))
     : [emptyDownload()];
 
@@ -1238,6 +1442,42 @@ async function submit() {
 
 .submit-import-notes li {
   margin: 0 0 2px;
+}
+
+/* ── 上传到网盘（图标 / 下载文件）────────────────────────────── */
+.submit-icon-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.submit-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.submit-upload-error {
+  font-size: 12px;
+  color: var(--SystemFillColorCriticalBrush, #c42b1c);
+  word-break: break-word;
+}
+
+.submit-upload-warn {
+  font-size: 12px;
+  color: var(--SystemFillColorCautionBrush, #9d5d00);
+  word-break: break-word;
+}
+
+.submit-upload-note {
+  margin-top: 2px;
+}
+
+.submit-upload-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
 }
 
 @media (max-width: 640px) {
