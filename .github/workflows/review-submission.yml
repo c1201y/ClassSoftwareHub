@@ -28,6 +28,16 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # ⚠️ issues 事件的 github.sha 被钉在「事件发生那一刻」的 main 上：一次性勾选多条
+      #    Issue 打标签时，几个运行会 checkout 到同一个旧提交（实测 2026-10-04 09:47 的
+      #    四个运行全部停在 17952205）。它们各自算出同一个「下一个编号」，先推的赢，
+      #    其余在 push 时撞 add/add 冲突，重试也永远解不开 —— 投稿就这么无声丢掉了。
+      #    这里先对齐到真正的 main 最新；配合上面的 queue:max 串行，编号才互不重复。
+      - name: 同步到最新 main
+        run: |
+          git fetch --no-tags origin main
+          git reset --hard origin/main
+
       - name: 处理审核结果
         uses: actions/github-script@v7
         env:
@@ -66,7 +76,19 @@ jobs:
               return
             }
 
+            // 草稿不在 = 上一次运行已经把它消费掉了（连打两个标签、或同一批次重跑）。
+            // ⚠️ 判据要取 Issue 的**实时**状态：标签事件 payload 里的 state 是事件发生
+            //    那一刻的快照，两个标签几乎同时打上时它仍写着 open，据此回一句
+            //    「提交文件不存在」就是假报错。
             if (!fs.existsSync(submissionPath)) {
+              const fresh = await github.rest.issues.get({
+                ...context.repo,
+                issue_number: issue.number
+              })
+              if (fresh.data.state === 'closed') {
+                core.info(`草稿已被上一次运行消费，Issue #${issue.number} 已关闭，本轮静默收工`)
+                return
+              }
               await github.rest.issues.createComment({
                 ...context.repo,
                 issue_number: issue.number,
@@ -108,12 +130,6 @@ jobs:
             // `{ "_类型": "回声洞", "text": "…", "_提交时间": "…" }`（没有 id / name 等软件字段）。
             // 必须在下面的软件字段校验之前分流，否则会被当成「id 不是非空字符串」拒掉。
             if (data._类型 === '回声洞') {
-              // 幂等：同一个 Issue 被连打两个标签时，第一次已经把草稿删掉、Issue 关掉，
-              // 第二次跑起来直接静默收工（判据与下面软件分支一致）。
-              if (issue.state === 'closed') {
-                core.info(`Issue #${issue.number} 已关闭，回声洞投稿本轮跳过`)
-                return
-              }
               const echoText = String(data.text ?? '').trim()
               if (!echoText) {
                 await github.rest.issues.createComment({
@@ -208,20 +224,14 @@ jobs:
               core.warning(`id \`${data.id}\` 不符合命名约定，但因为目标文件已存在（属覆盖通道），予以放行`)
             }
 
-            // ── 幂等保护：确认这条草稿还没被本轮（或既往）的审核消费掉 ──
-            // ⚠️ 同一个 Issue 被**连续打两个标签**时（例如先 `approved`、又想改成
-            //    `覆盖已存在`），GitHub 会对每个标签各派发一次运行。`concurrency: queue:max`
-            //    只让它们**排队串行**，并不阻止第二个运行 —— 第一次已经 unlink 了草稿、
-            //    关掉了 Issue，第二次跑起来草稿已不在，于是给维护者回一句
-            //    「❌ 提交文件不存在」的假报错，看着像操作失败（实际数据是对的）。
-            //    判据取「草稿是否还在 + 是否已关」两者之一命中就静默收工：
-            //      · 草稿没了 ⇒ 上一次运行已经把它合并 / 删除，本轮无事可做；
-            //      · Issue 已关闭 ⇒ 上一次运行已经把它关掉，本轮不再重复评论。
-            //    这里对 `rejected` 同样适用（删草稿 + 关 Issue）。
-            if (issue.state === 'closed') {
-              core.info(`Issue #${issue.number} 已是关闭状态（多半是上一个标签的运行处理过了），本轮跳过`)
-              return
-            }
+            // ── 幂等 ──
+            // 同一个 Issue 被**连续打两个标签**时（例如先 `approved`、又想改成
+            // `覆盖已存在`），GitHub 会对每个标签各派发一次运行；第二次跑起来草稿已经
+            // 被第一次 unlink 掉了，上面「草稿不存在」那一步会按**实时** Issue 状态静默
+            // 收工，不会再回一句假的「提交文件不存在」。
+            // ⚠️ 这里刻意**不再**用 `issue.state === 'closed'` 提前 return：上一次运行在
+            //    push 阶段失败时（2026-10-04 回声洞批量审核就这么丢了 3 条），Issue 已经
+            //    被关掉、草稿却还在 —— 那种情况必须继续处理，维护者重打一次标签就能补回来。
 
             // 覆盖通道（2026-09-20 新增）：ID 冲突时默认拒绝，但维护者有时确实想用本次提交
             // 替换站内那份（例如提交者后来补了更全的信息）。打「覆盖已存在」才放行。
@@ -321,25 +331,70 @@ jobs:
         env:
           LABEL_NAME: ${{ github.event.label.name }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # ⚠️ 本仓库路径几乎全是中文。git 默认 core.quotePath=true，会把非 ASCII 路径
+          #    转义成八进制序列再输出，下面按 回声洞/messages/message*.json 判形的逻辑
+          #    会全部匹配不上（2026-10-04 本地模拟时踩到）。关掉它，读取侧另用 -z 兜底。
+          git config core.quotePath false
           git add -A
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            git commit -m "review: $LABEL_NAME #$ISSUE_NUMBER"
-            # 兜底：万一仍有并发（队列未生效等），反复 rebase 到最新 main 重试
-            ok=""
-            for i in $(seq 1 8); do
-              if git push; then ok=1; break; fi
-              git rebase --abort 2>/dev/null || true
-              git pull --rebase origin main || true
-              sleep $((RANDOM % 3 + 1))
-            done
-            if [ "$ok" != "1" ]; then
-              echo "::error::推送失败（多次重试后仍冲突），请重新给该 Issue 打一次标签。"
-              exit 1
-            fi
-            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+          git commit -m "review: $LABEL_NAME #$ISSUE_NUMBER"
+
+          # 兜底：万一仍有并发（队列未生效、外部同时推送等），反复 rebase 到最新 main 重试。
+          # ⚠️ 重试前必须先 `git rebase --abort`：上一轮 rebase 撞冲突会停在游离 HEAD 上，
+          #    不清理的话之后每次 `git push` 都只报 "You are not currently on a branch"，
+          #    8 次重试全是空转 —— 2026-10-04 09:47 那三条回声洞就是这么丢的。
+          ok=""
+          for i in $(seq 1 8); do
+            if git push origin HEAD:main; then ok=1; break; fi
+            git rebase --abort 2>/dev/null || true
+            git fetch --no-tags origin main || true
+            if git rebase origin/main; then sleep $((RANDOM % 3 + 1)); continue; fi
+
+            # rebase 冲突。目前唯一预期的是回声洞字条编号撞车：两个运行各自算出同一个
+            # messageN.json（add/add）。两份内容都是有效投稿，谁都不能丢 ——
+            # 远端那份留在原编号，本次这份挪到下一个空号，然后把 rebase 继续下去。
+            bad=""
+            # 用 -z 按 NUL 切分读文件名：中文路径不会因空格/引号被拆错或转义
+            while IFS= read -r -d '' f; do
+              case "$f" in
+                回声洞/messages/message*.json)
+                  # rebase 过程中 index 的 :2: 是 upstream（远端）那份，:3: 是本次提交那份
+                  git show ":3:$f" > "$RUNNER_TEMP/echo-ours.json"
+                  git show ":2:$f" > "$f"
+                  git add -- "$f"
+                  newmax=$( { git ls-tree -r --name-only HEAD -- 回声洞/messages/; ls 回声洞/messages/ 2>/dev/null | sed 's#^#回声洞/messages/#'; } \
+                            | sed -n 's#^回声洞/messages/message\([0-9]\+\)\.json$#\1#p' | sort -n | tail -1 )
+                  newmax=${newmax:-0}
+                  target="回声洞/messages/message$((newmax + 1)).json"
+                  mv "$RUNNER_TEMP/echo-ours.json" "$target"
+                  git add -- "$target"
+                  echo "回声洞编号撞车：$f → $target（远端那份保留）"
+                  ;;
+                *) bad="$f" ;;
+              esac
+            done < <(git diff --name-only -z --diff-filter=U)
+            if [ -n "$bad" ]; then
+              echo "::error::出现无法自动处理的冲突：$bad"
+              git rebase --abort 2>/dev/null || true
+              break
+            fi
+            GIT_EDITOR=true git rebase --continue || true
+          done
+
+          if [ "$ok" != "1" ]; then
+            # 以前这一步只把运行打红，Issue 上却留着「✅ 已收进 …」的评论，维护者会以为
+            # 成功了。这里补一条失败提示，别让投稿悄悄丢掉。
+            gh issue comment "$ISSUE_NUMBER" \
+              --body "⚠️ 这条投稿已通过校验，但**推送提交时失败**（多半是同时有多条一起过审）。它**还没有生效**，请重新给本 Issue 打一次标签重试。" \
+              || true
+            echo "::error::推送失败（多次重试后仍冲突），请重新给该 Issue 打一次标签。"
+            exit 1
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
