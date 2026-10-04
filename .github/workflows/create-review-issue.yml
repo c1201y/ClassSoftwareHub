@@ -110,6 +110,49 @@ jobs:
                 continue
               }
               const data = JSON.parse(fs.readFileSync(file, 'utf8'))
+
+              // ── 回声洞字条：和「提交软件」同一条管道，只是 Issue 形态不同 ──
+              // 草稿由 classhub worker 的 /api/echocave 写入，形如
+              // `{ "_类型": "回声洞", "text": "…", "_提交时间": "…" }`。
+              // 判重仍走下面的**文件路径**（drafted 集合），不认标题 —— 同一句话被投两次
+              // 会得到同一个标题，但草稿路径带时间戳、天然唯一。
+              if (data._类型 === '回声洞') {
+                const echoText = String(data.text ?? '').trim()
+                const echoTitle = `[待审核] 回声洞 · ${echoText.slice(0, 40)}`
+                if (existingTitles.has(echoTitle)) {
+                  console.log(`⚠️ 已有同名 Issue（历史记录或其它草稿），仍为这条草稿新建：${echoTitle}`)
+                }
+                const echoBody = [
+                  `**提交文件**：\`${file}\``,
+                  '**类型**：回声洞字条',
+                  `**提交时间**：${data._提交时间 ?? ''}`,
+                  '',
+                  '**内容**：',
+                  '',
+                  '> ' + (echoText || '（空）').replace(/\n/g, '\n> '),
+                  '',
+                  '<details><summary>查看完整 JSON</summary>',
+                  '',
+                  '```json',
+                  JSON.stringify(data, null, 2),
+                  '```',
+                  '',
+                  '</details>',
+                  '',
+                  '---',
+                  '**审核操作**：',
+                  '- 打上 `approved` 标签 → 收进 `回声洞/messages/messageN.json`，随后自动上线',
+                  '- 打上 `rejected` 标签 → 删除投稿，关闭 Issue',
+                ].join('\n')
+                await github.rest.issues.create({
+                  ...context.repo,
+                  title: echoTitle,
+                  body: echoBody,
+                  labels: ['待审核']
+                })
+                continue
+              }
+
               const title = `[待审核] ${data.name} (${data.id})`
               if (existingTitles.has(title)) {
                 console.log(`⚠️ 已有同名 Issue（历史记录或其它草稿），仍为这条草稿新建：${title}`)

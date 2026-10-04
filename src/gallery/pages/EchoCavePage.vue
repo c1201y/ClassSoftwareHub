@@ -125,9 +125,10 @@ onBeforeUnmount(() => {
   typing.value = false;
 });
 
-// 投稿：打开 GitHub 上字条目录的「新建文件」页
+// 投稿：打开 GitHub 上**投稿目录**的「新建文件」页。
+// 草稿落在 submissions/，与「提交软件」同一条审核管道，审核通过后才收进 回声洞/messages/。
 const SUBMIT_URL =
-  'https://github.com/c1201y/ClassSoftwareHub/new/main/' + encodeURIComponent('回声洞/messages');
+  'https://github.com/c1201y/ClassSoftwareHub/new/main/' + encodeURIComponent('submissions');
 const openSubmit = () => window.open(SUBMIT_URL, '_blank', 'noopener,noreferrer');
 </script>
 

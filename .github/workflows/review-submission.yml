@@ -104,6 +104,78 @@ jobs:
               })
               return
             }
+
+            // ── 回声洞字条：同一条审核管道，落地目标是 回声洞/messages/messageN.json ──
+            // 草稿来自 classhub worker 的 /api/echocave，形如
+            // `{ "_类型": "回声洞", "text": "…", "_提交时间": "…" }`（没有 id / name 等软件字段）。
+            // 必须在下面的软件字段校验之前分流，否则会被当成「id 不是非空字符串」拒掉。
+            if (data._类型 === '回声洞') {
+              // 幂等：同一个 Issue 被连打两个标签时，第一次已经把草稿删掉、Issue 关掉，
+              // 第二次跑起来直接静默收工（判据与下面软件分支一致）。
+              if (issue.state === 'closed') {
+                core.info(`Issue #${issue.number} 已关闭，回声洞投稿本轮跳过`)
+                return
+              }
+              const echoText = String(data.text ?? '').trim()
+              if (!echoText) {
+                await github.rest.issues.createComment({
+                  ...context.repo,
+                  issue_number: issue.number,
+                  body: '❌ 这条回声洞投稿没有正文（`text` 为空）。'
+                })
+                return
+              }
+              if (echoText.length > 200) {
+                await github.rest.issues.createComment({
+                  ...context.repo,
+                  issue_number: issue.number,
+                  body: `❌ 这条回声洞投稿超长（${echoText.length} 字，上限 200 字）。`
+                })
+                return
+              }
+              // 目标目录固定 回声洞/messages：路径由代码给定，不取自草稿内容，天然不可越界
+              const echoDir = path.resolve(stage, '回声洞', 'messages')
+              const approveEcho = label === 'approved' || label === '覆盖已存在' || label === 'overwrite'
+              if (approveEcho) {
+                // 取现有最大编号 + 1。编号一旦用过就不再复用（见 回声洞/README.md），
+                // 这样网页端、桌面端、CSHcontroller 按文件名排序的口径始终一致。
+                let echoMax = 0
+                if (fs.existsSync(echoDir)) {
+                  for (const f of fs.readdirSync(echoDir)) {
+                    const m = /^message(\d+)\.json$/i.exec(f)
+                    if (m) echoMax = Math.max(echoMax, Number(m[1]))
+                  }
+                }
+                const echoName = `message${echoMax + 1}.json`
+                fs.mkdirSync(echoDir, { recursive: true })
+                fs.writeFileSync(path.join(echoDir, echoName), JSON.stringify({ text: echoText }, null, 2) + '\n')
+                fs.unlinkSync(submissionPath)
+                await github.rest.issues.createComment({
+                  ...context.repo,
+                  issue_number: issue.number,
+                  body: `✅ 已收进 \`回声洞/messages/${echoName}\`，稍后自动构建上线。`
+                })
+                await github.rest.issues.update({
+                  ...context.repo,
+                  issue_number: issue.number,
+                  state: 'closed'
+                })
+              } else if (label === 'rejected') {
+                fs.unlinkSync(submissionPath)
+                await github.rest.issues.createComment({
+                  ...context.repo,
+                  issue_number: issue.number,
+                  body: '🗑️ 已删除回声洞投稿，Issue 关闭。'
+                })
+                await github.rest.issues.update({
+                  ...context.repo,
+                  issue_number: issue.number,
+                  state: 'closed'
+                })
+              }
+              return
+            }
+
             if (typeof data.id !== 'string' || !data.id) {
               await github.rest.issues.createComment({
                 ...context.repo,
