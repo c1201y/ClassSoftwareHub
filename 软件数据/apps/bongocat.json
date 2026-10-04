@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-02T06:48:23.760Z",
-  "_原始ID冲突": false,
   "id": "bongocat",
   "name": "BongoCat",
   "icon": "https://avatars.githubusercontent.com/u/75017711?v=4",
@@ -20,6 +18,5 @@
       "url": "https://github.com/ayangweb/BongoCat/releases/download/v2.0.1/BongoCat_2.0.1_x64.exe"
     }
   ],
-  "sort": 99,
-  "_联系方式": "3814699931"
+  "sort": 99
 }
