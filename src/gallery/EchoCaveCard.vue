@@ -56,7 +56,7 @@
               <WinHyperlinkButton
                 v-if="showFallback"
                 class="ec-fallback"
-                :NavigateUri="submitUrl"
+                :NavigateUri="fallbackUrl()"
                 TargetName="_blank"
                 Padding="0"
                 Margin="0"
@@ -170,9 +170,22 @@ const SUBMIT_ENDPOINTS = ['https://cshapi.132614.xyz', 'https://submit.132614.xy
 const SUBMIT_TIMEOUT_MS = 10000;
 const ENDPOINT_CACHE_KEY = 'csh-submit-endpoint';
 
-// 兜底：GitHub 上字条目录的「新建文件」页
-const submitUrl =
-  'https://github.com/c1201y/ClassSoftwareHub/new/main/' + encodeURIComponent('回声洞/messages');
+// 兜底：投稿服务连不上时，改去 GitHub 的 submissions/ 新建一份**审核草稿**，
+// 和「提交软件」落同一个目录、走同一条审核管道。
+// ⛔ 别改回直接写 回声洞/messages——那会绕过审核直接上线。
+// 用 GitHub 新建文件页的 ?filename=&value= 预填，草稿内容（含 `_类型` 标记）自动带上。
+const fallbackUrl = () => {
+  const payload = JSON.stringify(
+    { _类型: '回声洞', text: draftText.value.trim() || '在这里写要投稿的话' },
+    null,
+    2
+  );
+  return (
+    'https://github.com/c1201y/ClassSoftwareHub/new/main/submissions' +
+    '?filename=' + encodeURIComponent(`echo-${Date.now()}.json`) +
+    '&value=' + encodeURIComponent(payload)
+  );
+};
 
 // 面板开关全权交给 WinFlyout（v-model:IsOpen）：置 true 打开、置 false 收起
 const flyoutOpen = ref(false);

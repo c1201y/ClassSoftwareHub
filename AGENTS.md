@@ -334,6 +334,28 @@ changes are replayed by `visitor.ts`.
 5. `deploy.yml` builds the single-file bundle and publishes it to **GitHub Pages + FTP + OpenList
    (WebDAV)** at once.
 
+### Echo Cave messages (`回声洞`) — the same pipeline, a second entry point
+
+The 回声洞 card on `#/settings` posts to the **same Worker** (`classhub`, behind `cshapi.132614.xyz`
+/ `submit.132614.xyz`) but on a different route:
+
+- `POST /api/echocave` with `{ "text": "…" }` (≤ 200 chars) → the Worker writes a **draft**
+  `submissions/echo-<timestamp>-<rand>.json` = `{ "_类型": "回声洞", "text": "…", "_提交时间": "…" }`
+  and answers "pending review". It never writes `回声洞/messages/` directly, and it never assigns a
+  message number — that happens at review time.
+- `create-review-issue.yml` recognises the draft by its `_类型: "回声洞"` marker **before** the app
+  field checks (otherwise it would be rejected as `id 不是非空字符串`) and opens one
+  `[待审核] 回声洞 · <text>` issue — same `待审核` label, same **path-based** idempotency.
+- `review-submission.yml` has the matching early branch, also before the app id validation.
+  `approved` writes `回声洞/messages/message<N>.json` with `N` = current max `message(\d+)` + 1
+  (content is just `{ "text": "…" }`, 2-space indent) and deletes the draft; `rejected` deletes the
+  draft. The target directory is hard-coded — no part of it comes from the draft — so submitter input
+  cannot steer where the file lands.
+- The site reads that folder at **build time** via `import.meta.glob('回声洞/messages/*.json')`
+  (`EchoCaveCard.vue` / `EchoCavePage.vue`), so a message shows up after the next deploy. Files that
+  do not match `message<digits>.json` are still rendered but sort last.
+
+
 ---
 
 ## 5.5 Feedback Centre (`#/feedback`)
