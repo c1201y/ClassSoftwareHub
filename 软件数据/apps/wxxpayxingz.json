@@ -2,7 +2,7 @@
   "id": "wxxpayxingz",
   "name": "微信老版本",
   "icon": "https://pc3.gtimg.com/softmgr/logo/48/27349_48_1623835272.png",
-  "category": "teaching",
+  "category": "schedule",
   "tagline": "微信 3.2.1 老版本，给带不动新版微信的老电脑用",
   "description": "微信 3.2.1，Windows 版微信的老版本安装包。基础聊天、图片与文件收发、群聊等主流功能都在，能正常登录使用；体积比 4.x 版小得多，对 CPU、内存的要求也低，适合教室里那些装不上新版微信、或者装上新版就卡的旧电脑。注意：微信官方已停止为 3.x 版本推送更新，部分新功能不可用；如果机器性能允许，建议优先用站内的微信新版。",
   "version": "3.2.1",
@@ -14,7 +14,6 @@
       "platform": "Windows安装版",
       "note": "腾讯官方 CDN 稳定地址，无需签名、不会过期",
       "size": "130.4MB",
-      "kind": "file",
       "url": "https://dldir1.qq.com/weixin/Windows/WeChat_for_XP_SP3_To_Vista.exe"
     }
   ],
