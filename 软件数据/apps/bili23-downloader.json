@@ -1,7 +1,7 @@
 {
   "id": "bili23-downloader",
   "name": "Bili23-Downloader",
-  "icon": "https://avatars.githubusercontent.com/u/90490067?v=4",
+  "icon": "https://img.pcsoft.com.cn/soft/202609/142445-6abcab2de6aeb.jpg",
   "category": "system",
   "tagline": "开源免费的 B 站视频下载工具，多线程加速、支持弹幕与音视频分离",
   "description": "Bili23-Downloader 是一个开源、免费、跨平台的 B 站（哔哩哔哩）视频下载工具。支持多线程加速下载，可以把视频和音频分开保存，也能一并获取弹幕、封面等元数据；文件名与保存目录可以按自己的规则自定义和分类，方便把网课、公开课、教学视频归档到本地离线播放。Windows、macOS、Linux 都有对应版本（Windows 另有一个兼容 Win7 的安装包），界面简洁，贴入链接即可开始下载。",
