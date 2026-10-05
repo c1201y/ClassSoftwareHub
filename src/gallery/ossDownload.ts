@@ -95,8 +95,6 @@ interface TicketReply {
   /** 服务端选定的取回通道：relay（经 ECS 中继）或 direct（OSS 短时直链） */
   mode?: 'relay' | 'direct';
   url?: string;
-  /** 另一条通道的备用地址，主用那条不通时可以改试它 */
-  fallback?: { mode: 'relay' | 'direct'; url: string };
   key?: string;
   size?: number;
   expiresIn?: number;

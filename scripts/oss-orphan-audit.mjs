@@ -46,6 +46,9 @@ async function api(method, url, body) {
     method,
     headers: { 'Content-Type': 'application/json', 'X-Purge-Token': TOKEN },
     body: body === undefined ? undefined : JSON.stringify(body),
+    // 给每次请求加 60s 超时：Worker 不可达/挂死时快速失败（被下方 try/catch 捕获 → 只告警、退出 0），
+    // 避免整条对账卡在网络调用上、跑满 job 上限被 GitHub 取消（见 2026-10-05 那次失败）。
+    signal: AbortSignal.timeout(60000),
   })
   const text = await res.text()
   let json = null
