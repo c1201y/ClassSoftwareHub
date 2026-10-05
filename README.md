@@ -22,9 +22,8 @@ ClassSoftwareHub 是一个面向电教委员的常用软件下载站，基于 **
 - **AI 导航**：内置常用 AI 网站导航，方便快速访问。
 - **欢迎弹窗**：首次访问显示 WinUI 风格欢迎窗口，提供仓库地址、作者首页、相关文章、QQ 群、投喂作者等链接。
 - **数据容错**：单个软件 JSON 格式错误不会影响全站，页面顶部会显示红色提示条，标明错误文件与原因。
-- **桌面版**：提供 Electron 桌面程序（Windows exe / Linux deb），内容跟随网站自动更新，断网时自动切换到离线副本。
 - **自动更新检查**：内置脚本定期核对软件版本、下载直链与体积，可自动写回或提交 Issue 由人工确认。
-
+- **提交软件**：可以上传您认为好用的软件，让 ClassSoftwareHub 更好用！
 
 <!-- 可放置截图，例如：
 ![首页](docs/screenshots/home.png)
@@ -39,9 +38,7 @@ ClassSoftwareHub 是一个面向电教委员的常用软件下载站，基于 **
 
 - [ClassSoftwareHub](classsoftwarehub.us.ci)
 
-- [备用站点](classsoftwarehub.xfane.com)
-
-- [备用站点](classsoftwarehub.132614.xyz)
+- [备用站点](classsoftwarehub.132614.xyz) 此站服务速度更快喵
 
 ### 本地运行
 
@@ -61,7 +58,7 @@ npm run type-check   # TypeScript 类型检查
 
 · 问题反馈：GitHub Issues或QQ群
 
-· 讨论：GitHub Discussions或QQ群
+· 讨论：QQ群
 
 · QQ 群：[487903798](https://qun.qq.com/universal-share/share?ac=1&authKey=vefxPhZAIezynTibFDvI6%2Fk6IdFyykc%2BWJeWDWkhazM7y8LSXhKcbZwaVYM3anw2&busi_data=eyJncm91cENvZGUiOiI0ODc5MDM3OTgiLCJ0b2tlbiI6IlBkZ1FQaWtaQVAybEVEckl3QzBlay85ZzduU3VlblRwTWc5RlVKNWFCUFExSTdvMmJQQjB6V2VacFR1UEdvaHciLCJ1aW4iOiIzOTA0MjE1ODUzIn0%3D&data=pICf64tVKQTKypKZDhfKmNpcj4j6fS-LGeREZiBQnbWrokAMTdULxqLbm2JHCTIPqwgpG2pSPisQKg0QdbEIJvTU_e6wUDNbHUVTnTswsR8&svctype=5&tempid=h5_group_info)
 
@@ -94,6 +91,9 @@ npm run type-check   # TypeScript 类型检查
 ├── scripts/                 # 自动更新检查等脚本
 └── ...
 ```
+
+> [!NOTE]
+> ### 本仓库分支为所有请求和后端代码
 
 ## 贡献
 
