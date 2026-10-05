@@ -283,7 +283,7 @@ export default {
       "submit.download-kind-store": "应用商店",
       "submit.download-upload": "上传文件",
       "submit.icon-upload": "选择图标文件",
-      "submit.icon-upload-note": "可选：选一张本地图片，上传后自动填入图标链接。",
+      "submit.icon-upload-note": "可选：选一张本地图片，上传后自动填入图标链接， 体积＜1MB",
       "submit.icon-too-large": "图标文件太大（{size}），请换一张 {limit} 以内的图片。",
       "submit.uploading": "上传中…",
       "submit.uploading-percent": "上传中 {percent}%",
