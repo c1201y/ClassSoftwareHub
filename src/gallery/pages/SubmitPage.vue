@@ -382,6 +382,13 @@ import {
   OssUploadError
 } from '../ossUpload';
 import type { UploadProgress } from '../ossUpload';
+import { shrinkIcon, ICON_INPUT_MAX_BYTES } from '../iconResize';
+/**
+ * 压缩后仍超过这个体积就提醒一句。
+ * 128 px 的图正常只有几 KB，够到这个数说明压缩没生效（比如浏览器不肯解码 HEIC），
+ * 提示用户换张图比让他默默传一张大图强。
+ */
+const ICON_WARN_BYTES = 256 * 1024;
 /** 提交失败后本地留存的 key（存 localStorage，刷新或过一段时间重试都不丢填写内容） */
 const DRAFT_KEY = 'csh-submit-draft';
 /**
@@ -552,24 +559,31 @@ function pickDownloadFile(index: number) {
 
 async function onIconPicked(ev: Event) {
   const input = ev.target as HTMLInputElement;
-  const file = input.files?.[0];
+  const picked = input.files?.[0];
   input.value = '';
-  if (!file) return;
+  if (!picked) return;
   uploadError.value = '';
   iconUploadWarn.value = '';
-  const blocked = sizeGuard(file);
-  if (blocked) {
-    uploadError.value = blocked;
+  // 图标不该有几十兆：解码它本身就会卡住页面，而这种图在 44 px 的磁贴里毫无意义
+  if (picked.size > ICON_INPUT_MAX_BYTES) {
+    uploadError.value = t('submit.icon-too-large', {
+      size: humanSize(picked.size),
+      limit: humanSize(ICON_INPUT_MAX_BYTES)
+    });
     return;
   }
-  iconUploadWarn.value = sizeWarn(file);
   iconUploading.value = true;
   iconUploadPct.value = -1;
   try {
+    // 图标在站内只以 44 / 72 px 出现，先在本地缩到 128 px 再传：
+    // 传得快、桶里的小、访客也少等一次（详见 iconResize.ts）
+    const file = await shrinkIcon(picked);
+    if (file.size > ICON_WARN_BYTES) {
+      iconUploadWarn.value = t('submit.upload-large-warn', { size: humanSize(file.size) });
+    }
     // 图标走 icon/ 前缀：小图，读取走公开的 /api/icon，不进下载闸门
     const { url } = await uploadToOss(file, (p) => { iconUploadPct.value = toPercent(p); }, 'icon');
     form.icon = url;
-    iconUploadWarn.value = '';
   } catch (error) {
     uploadError.value = uploadErrorText(error);
     iconUploadWarn.value = '';
