@@ -182,6 +182,103 @@ npm run build   # 正式打包 → dist/
 > ✅ **关于「联系方式」的问题（2026-09-19 已修复）**：它写作草稿中的 `_联系方式`，属于**审核用字段** ——>   
 > 审核通过时 `review-submission.yml` 会剥掉所有 `_` 开头的键，因此它**不会被发布到网站上**。
 
+### 2.7 站内对象怎么取回：两条通道
+
+桶是私有的，任何对象都要「服务端点头」才拿得到。服务端备了两条互不相干的取回路径，
+各自吃一份免费额度，谁先用满就自动换另一条：
+
+| 通道 | 链路 | 流量记在谁头上 |
+| --- | --- | --- |
+| `relay` | 浏览器 → Worker →（原生 TCP）ECS 中继 → OSS 内网端点 | ECS 的公网带宽 |
+| `direct` | 浏览器 →（15 分钟预签名直链）OSS | OSS 出网流量 |
+
+分流规则由 Worker 变量 `DL_MODE` 决定：
+
+- `auto`（默认）：先给 `relay`，并当场探一下中继是否活着；探不通、或 `relay` 本月用量
+  已超过 `DL_RELAY_MONTHLY_GB`，就改给 `direct`。反过来的 `DL_DIRECT_MONTHLY_GB` 同理。
+- `relay` / `direct`：强制只走一条，用于应急或对拍。
+
+两个额度都是「GB」，写 `0` = 不限。发票据时会一并返回另一条通道（`fallback`）。
+`direct` 给的是 15 分钟有效的 OSS 直链，**不绑定设备指纹** —— 地址被转手，15 分钟内能用；
+`relay` 的票据逐项校验签名与指纹，转发出去基本来不及用。
+
+### 2.8 对象登记表（查、删、临时发链接）
+
+`/api/oss-sign` 每签发一条上传地址，就把这条键登记进登记表（对象键、体积、原名、类型、
+来源、上传设备的指纹哈希、时间）。下面几个接口都要带 `X-Purge-Token`：
+
+```bash
+# ⚠️ 用 Cloudflare 直连的入口域。cshapi 那条走 SpeedOnline CDN 回源，
+#    2026-10-05 起持续 502（前端有 fallback，但脚本没有）。
+B=https://submit.132614.xyz
+T=<PURGE_TOKEN>          # 与 GitHub Actions secret 里那份相同
+
+# 列对象。默认看「登记表」：我们签出去过的，带体积 / 名字 / 上传设备；
+# 加 all=1 连墓碑一起看。source=bucket 则直接问桶：权威、含历史对象，但只有键。
+curl -H "X-Purge-Token: $T" "$B/api/files"
+curl -H "X-Purge-Token: $T" "$B/api/files?prefix=icon/&all=1"
+curl -H "X-Purge-Token: $T" "$B/api/files?source=bucket&prefix=upload/"
+
+# 本月两条通道各走了多少、共登记了多少
+curl -H "X-Purge-Token: $T" "$B/api/dl-stats"
+
+# 临时拼一条带时效的直链（默认 900 秒，最长 3600 秒）
+curl -X POST -H "X-Purge-Token: $T" -H 'Content-Type: application/json' \
+  -d '{"key":"upload/2026/10/xxx.exe","ttl":600}' "$B/api/link"
+
+# 删除：单条 / 一批 / 整个目录
+curl -X POST -H "X-Purge-Token: $T" -H 'Content-Type: application/json' \
+  -d '{"keys":["upload/2026/10/a.exe","icon/2026/10/b.png"]}' "$B/api/purge"
+curl -X POST -H "X-Purge-Token: $T" -H 'Content-Type: application/json' \
+  -d '{"prefix":"upload/2026/10/"}' "$B/api/purge"
+
+# 桶还是私有的吗？（整套防盗刷都建立在这个前提上，随手按一下）
+curl -H "X-Purge-Token: $T" "$B/api/oss-check"
+#   → private: true（匿名直读 403）才算正常；返回 200 就是桶被设成公共读了，立刻改回去
+
+# 跑一轮孤儿回收。默认**干跑**（只报告不删），要真删必须显式传 dry:false
+curl -X POST -H "X-Purge-Token: $T" -H 'Content-Type: application/json' \
+  -d '{"dry":true}' "$B/api/gc"
+
+# 运维旋钮总入口：取回通道 / 孤儿阈值 / 失效记录阈值 / 投稿准入，改完当场生效
+curl -H "X-Purge-Token: $T" "$B/api/dl-mode"
+curl -X POST -H "X-Purge-Token: $T" -H 'Content-Type: application/json' \
+  -d '{"mode":"relay"}' "$B/api/dl-mode"
+curl -X POST -H "X-Purge-Token: $T" -H 'Content-Type: application/json' \
+  -d '{"orphanMinutes":30,"requireSource":true,"maxPending":5,"maxPerDay":10}' "$B/api/dl-mode"
+```
+
+`prefix` 形式只允许 `upload/`、`soft/`、`icon/`、`releases/` 之下，**永远不许碰 `gh-mirror/`**。
+它是**先问桶要清单、再逐个删**（不是查登记表），所以对「登记表上线之前」的老对象同样有效；
+一次最多 200 个，超了会明确报错而不是删一半。删掉的对象会在登记表里留一条墓碑
+（`deleted: 1`），默认列表不再显示，加 `all=1` 可回溯。
+
+`dl-stats` 里还有几个值得天天瞄一眼的字段：`pending`（签了名还没被任何提交认领的数量，
+只涨不落说明回收任务没跑成）、`lastGc`（最近一次定时回收的结果 —— 定时任务不打任何外部接口，
+这是从外部确认「cron 真的在跑」的唯一证据）、`submitGate`（投稿准入的三个当前阈值）。
+
+### 2.9 上线前的直链巡检
+
+`node scripts/verify-links.mjs` 会把 `软件数据/apps/*.json` 里所有**外部**直链（不含 `oss://` 与
+`/api/icon`）逐个探一遍：先 HEAD，被拒（400/403/405/501）就回退 `GET` + `Range: bytes=0-0`。
+结论只有三种，**超时 / DNS / TLS 一律算「无结论」而不是死链** —— 一次网络抖动判人死链比漏判更糟。
+
+```bash
+node scripts/verify-links.mjs                        # 扫全部，有死链退 1
+node scripts/verify-links.mjs --soft                 # 只报告，永远退 0
+node scripts/verify-links.mjs 软件数据/apps/7-zip.json
+node scripts/verify-links.mjs --only github.com      # 只探某一类域名
+```
+
+审核工作流在每次**通过**之前也会对这份提交的外链探一遍，结论直接写进 Issue 评论（不阻断审核：
+大量正经站点会拒 HEAD，硬拦会把好投稿挡在门外）。
+
+
+---
+
+> 安全相关的加固（输入清洗、投稿准入三层闸门、Markdown 注入防护、图标魔数校验、直链防盗刷、
+> 凭据不入日志）统一记在 `软件数据/OSS-全链路流程.md` 的第 8 节 —— 动 Worker 或审核工作流之前先读那一节。
+
 ---
 
 ## 三、分类配置
