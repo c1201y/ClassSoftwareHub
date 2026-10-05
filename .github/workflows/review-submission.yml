@@ -42,6 +42,9 @@ jobs:
         uses: actions/github-script@v7
         env:
           LABEL: ${{ github.event.label.name }}
+          # 审核不通过时用它把桶里的对象一并删掉；未配置则跳过清理（只告警，不阻断审核）
+          PURGE_TOKEN: ${{ secrets.PURGE_TOKEN }}
+          PURGE_BASE: https://cshapi.132614.xyz
         with:
           script: |
             const fs = require('fs')
@@ -277,6 +280,65 @@ jobs:
               return ['**覆盖前 → 覆盖后**', '', '| 字段 | 旧 | 新 |', '|---|---|---|', ...rows].join('\n')
             }
 
+            // ── 桶对象清理 ──────────────────────────────────────────────
+            // 投稿里的软件包/图标现已直传阿里云 OSS（私有桶），审核不通过时草稿文件删了，
+            // 桶里那份还在 —— 留着只是白付存储、白占一个能被换票取走的对象。所以拒绝时
+            // 要连桶里的一起删。
+            // 数据里本站对象只有两种写法（与前端 src/gallery/ossDownload.ts 一致）：
+            //   oss://upload/…                       软件包
+            //   https://<域名>/api/icon?k=icon/…     图标
+            // 只认这两种；网盘 / 官网直链不是我们的对象，绝不能去删。
+            const ossKeyOfUrl = (url) => {
+              const raw = String(url ?? '').trim()
+              if (!raw) return ''
+              const m = /^oss:\/\/(.+)$/i.exec(raw)
+              if (m) return decodeURIComponent(m[1].split(/[?#]/)[0].replace(/^\/+/, ''))
+              try {
+                const u = new URL(raw)
+                if (u.pathname === '/api/icon' || u.pathname === '/api/dl') {
+                  return u.searchParams.get('k') || ''
+                }
+              } catch {
+                // 不是合法 URL，按「不是我们的对象」处理
+              }
+              return ''
+            }
+
+            /** 一份提交引用到的所有桶对象键（图标 + 各下载项），去重后返回 */
+            const collectOssKeys = (d) => {
+              const keys = [ossKeyOfUrl(d?.icon)]
+              for (const item of Array.isArray(d?.downloads) ? d.downloads : []) {
+                keys.push(ossKeyOfUrl(item?.url))
+              }
+              return [...new Set(keys.filter(Boolean))]
+            }
+
+            /** 逐个调 Worker 的 /api/purge 删除；失败只告警，绝不拖垮审核本身 */
+            const purgeKeys = async (keys) => {
+              const unique = [...new Set((keys || []).filter(Boolean))]
+              if (!unique.length) return []
+              const token = process.env.PURGE_TOKEN
+              if (!token) {
+                core.warning(`未配置 PURGE_TOKEN，跳过 ${unique.length} 个桶对象的清理`)
+                return []
+              }
+              const done = []
+              for (const key of unique) {
+                try {
+                  const res = await fetch(`${process.env.PURGE_BASE}/api/purge`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Purge-Token': token },
+                    body: JSON.stringify({ key })
+                  })
+                  if (res.ok) done.push(key)
+                  else core.warning(`清理失败（HTTP ${res.status}）：${key}`)
+                } catch (e) {
+                  core.warning(`清理异常：${key}（${e && e.message}）`)
+                }
+              }
+              return done
+            }
+
             if (label === 'approved' || isOverwrite) {
               const exists = fs.existsSync(appsPath)
               if (exists && !isOverwrite) {
@@ -316,6 +378,18 @@ jobs:
                   + JSON.stringify(oldData, null, 2)
                   + '\n```\n\n</details>'
               }
+
+              // 覆盖是整份替换：旧版引用的桶对象若这份新提交不再引用，就成了孤儿，顺手清掉
+              if (oldData) {
+                const keep = new Set(collectOssKeys(clean))
+                const stale = collectOssKeys(oldData).filter((k) => !keep.has(k))
+                const purgedStale = await purgeKeys(stale)
+                if (purgedStale.length) {
+                  tail += `\n\n顺手清理了旧版遗留的 ${purgedStale.length} 个桶对象（本次提交未再引用）：`
+                    + purgedStale.map((k) => `\n- \`${k}\``).join('')
+                }
+              }
+
               await github.rest.issues.createComment({
                 ...context.repo,
                 issue_number: issue.number,
@@ -327,11 +401,17 @@ jobs:
                 state: 'closed'
               })
             } else if (label === 'rejected') {
+              // 审核不通过 → 草稿和桶里那份一起删，不留孤儿对象
+              const purged = await purgeKeys(collectOssKeys(data))
               fs.unlinkSync(submissionPath)
+              const purgeLine = purged.length
+                ? `\n\n同时清理了桶里的 ${purged.length} 个文件：`
+                  + purged.map((k) => `\n- \`${k}\``).join('')
+                : ''
               await github.rest.issues.createComment({
                 ...context.repo,
                 issue_number: issue.number,
-                body: '🗑️ 已删除草稿文件，Issue 关闭。'
+                body: '🗑️ 已删除草稿文件，Issue 关闭。' + purgeLine
               })
               await github.rest.issues.update({
                 ...context.repo,

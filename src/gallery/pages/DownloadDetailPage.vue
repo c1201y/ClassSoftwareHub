@@ -88,6 +88,9 @@
             @click="openStore" />
         </div>
 
+        <!-- 换票失败时的原因说明（额度用完 / 入口不通），紧贴下载列表上方 -->
+        <div v-if="downloadError" class="detail-download-error">{{ downloadError }}</div>
+
         <div v-if="otherDownloads.length" class="detail-download-list">
           <div
             v-for="(download, index) in otherDownloads"
@@ -174,6 +177,7 @@ import { findAppById, categoryName } from '../data';
 import type { DownloadItem } from '../data';
 import { appIconUrlSafe, markIconBroken } from '../appIcons';
 import { kindOf, triggerDownload } from '../downloadLink';
+import { OssDownloadError, ossKeyOf, resolveDownloadUrl } from '../ossDownload';
 import {
   MIRROR_CHANNELS,
   isMirrorableUrl,
@@ -208,18 +212,43 @@ const otherDownloads = computed(() =>
 // 文件直链在本页直接下：隐藏 <a> 一戳就走下载，当前页不动、不闪新标签。
 // 网盘 / 官网下载页只能跳转 —— 那就把按钮文案和说明写清楚，别让用户点完才发现被带走了。
 
-const openDownload = (download: DownloadItem) => {
+// 本站 OSS 对象不是能直接点的地址：先换一张短时票据，再触发下载。
+// 换票期间按钮上显示「正在准备下载…」，失败就在下载区顶部说明原因。
+const downloadPreparing = ref('');
+const downloadError = ref('');
+
+const downloadErrorText = (error: unknown) => {
+  if (error instanceof OssDownloadError && error.code === 'quota') return t('detail.download-quota');
+  return t('detail.download-failed');
+};
+
+const openDownload = async (download: DownloadItem) => {
   const url = download.url;
   if (!url) return;
-  if (kindOf(download) === 'file') {
+  if (kindOf(download) !== 'file') {
+    window.open(url, '_blank', 'noopener,noreferrer');
+    return;
+  }
+  downloadError.value = '';
+  if (!ossKeyOf(url)) {
     triggerDownload(url);
     return;
   }
-  window.open(url, '_blank', 'noopener,noreferrer');
+  downloadPreparing.value = url;
+  try {
+    triggerDownload(await resolveDownloadUrl(url));
+  } catch (error) {
+    downloadError.value = downloadErrorText(error);
+  } finally {
+    downloadPreparing.value = '';
+  }
 };
 
 /** 主按钮文案：能直下的说「下载」，要跳走的说清楚去哪儿 */
 const downloadButtonText = (download: DownloadItem) => {
+  if (downloadPreparing.value && downloadPreparing.value === download.url) {
+    return t('detail.download-preparing');
+  }
   const kind = kindOf(download);
   if (kind === 'netdisk') return t('detail.open-netdisk');
   if (kind === 'page') return t('detail.open-page');

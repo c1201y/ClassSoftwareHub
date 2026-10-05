@@ -135,7 +135,7 @@
                 <div class="submit-upload-row">
                   <WinButton
                     :Content="iconUploading ? uploadingText(iconUploadPct) : t('submit.icon-upload')"
-                    :IsEnabled="openListReady && !iconUploading"
+                    :IsEnabled="ossReady && !iconUploading"
                     @Click="pickIcon" />
                   <span v-if="uploadError" class="submit-upload-error">{{ uploadError }}</span>
                   <span v-else-if="iconUploadWarn" class="submit-upload-warn">{{ iconUploadWarn }}</span>
@@ -239,7 +239,7 @@
             FontWeight="600"
             Margin="0,32,0,0"
             :Text="t('submit.section-downloads')" />
-          <div v-if="openListReady" class="submit-upload-hint">{{ t('submit.upload-limit-note', { limit: humanSize(UPLOAD_MAX_BYTES) }) }}</div>
+          <div v-if="ossReady" class="submit-upload-hint">{{ t('submit.upload-limit-note', { limit: humanSize(UPLOAD_MAX_BYTES) }) }}</div>
           <div class="submit-download-list">
             <div v-for="(dl, i) in form.downloads" :key="i" class="submit-download-card">
               <div class="submit-download-head">
@@ -278,7 +278,7 @@
                   :ItemsSource="downloadKindItems"
                   DisplayMemberPath="label"
                   v-model:SelectedIndex="dl.kindIndex" />
-                <div class="submit-upload-row" v-if="openListReady">
+                <div class="submit-upload-row" v-if="ossReady">
                   <WinButton
                     :Content="dlUploading[i] ? uploadingText(dlUploadPct[i] ?? -1) : t('submit.download-upload')"
                     :IsEnabled="!dlUploading[i]"
@@ -373,30 +373,15 @@ import { useI18n } from '../../components/i18n/index';
 import { apps, categories } from '../data';
 import { GithubImportError, importFromGithub, repoToId, toTagline } from '../githubImport';
 import type { GithubImportResult } from '../githubImport';
+import { SUBMIT_TIMEOUT_MS, orderedEndpoints, rememberEndpoint } from '../submitEndpoints';
 import {
-  uploadToOpenList,
-  getOpenListConfig,
+  uploadToOss,
+  hasOssUpload,
   UPLOAD_MAX_BYTES,
   UPLOAD_WARN_BYTES,
-  OpenListUploadError
-} from '../openlistUpload';
-import type { UploadProgress } from '../openlistUpload';
-
-/**
- * 提交接口入口，按顺序试，第一个拿到提交接口 JSON 响应的就停手。
- * ① CDN 新域：由香港节点回源到 Cloudflare —— 复用的是"能打开本站"那条已被验证可达的链路，
- *    对境外流量限制较严的地区也能提交；
- * ② CF 直连：老入口，留作兜底。
- * 两个都留着最稳：新域还没生效、或某条路临时抽风时，都能自动换下一条。
- */
-const SUBMIT_ENDPOINTS = [
-  'https://cshapi.132614.xyz',
-  'https://submit.132614.xyz'
-];
-/** 单个入口的超时时间：连不上时尽快换下一个入口，不让用户干等（两个入口最坏 20 秒） */
-const SUBMIT_TIMEOUT_MS = 10000;
-/** 记住上次成功的入口，下次优先试它，省掉一次必然失败的等待 */
-const ENDPOINT_CACHE_KEY = 'csh-submit-endpoint';
+  OssUploadError
+} from '../ossUpload';
+import type { UploadProgress } from '../ossUpload';
 /** 提交失败后本地留存的 key（存 localStorage，刷新或过一段时间重试都不丢填写内容） */
 const DRAFT_KEY = 'csh-submit-draft';
 /**
@@ -473,9 +458,9 @@ watch(categoryIndex, (index) => {
 });
 
 // ════════════════════════════════════════════════════════════════════
-// 上传文件到 OpenList 网盘（用户自有，带 Basic Auth 写目录；凭据写死 csh/csh，OpenList 侧限「仅上传」权限；详见 src/gallery/openlistUpload.ts）
+// 上传文件到本站的阿里云 OSS（浏览器直传一条有时效的预签名地址，不经后端中转，前端也不需要任何密钥；详见 src/gallery/ossUpload.ts）
 // ════════════════════════════════════════════════════════════════════
-const openListReady = computed(() => getOpenListConfig() !== null);
+const ossReady = computed(() => hasOssUpload());
 
 /** 下载方式下拉项（label 仅用于展示，索引对应 DOWNLOAD_KINDS） */
 const downloadKindItems = [
@@ -537,14 +522,20 @@ function sizeWarn(file: File): string {
     : '';
 }
 
-/** 上传失败 → 本地化文案；服务端 413 / Worker 1102 一律说成「文件过大」，不甩英文错 */
+/** 上传失败 → 本地化文案；OSS 回的是英文 / XML 原始报错，一律换成人话再给用户看 */
 function uploadErrorText(error: unknown): string {
-  if (error instanceof OpenListUploadError) {
-    if (error.code === 'server-limit' || error.code === 'too-large') {
+  if (error instanceof OssUploadError) {
+    if (error.code === 'too-large') {
       return t('submit.upload-server-limit', { limit: humanSize(UPLOAD_MAX_BYTES) });
     }
-    if (error.code === 'network' || error.code === 'aborted') {
+    if (error.code === 'sign-failed') {
+      return t('submit.upload-sign-failed');
+    }
+    if (error.code === 'network' || error.code === 'aborted' || error.code === 'unreachable') {
       return t('submit.upload-network-error');
+    }
+    if (error.code === 'http') {
+      return t('submit.upload-rejected', { detail: error.message });
     }
   }
   return t('submit.upload-failed', { message: error instanceof Error ? error.message : String(error) });
@@ -575,7 +566,8 @@ async function onIconPicked(ev: Event) {
   iconUploading.value = true;
   iconUploadPct.value = -1;
   try {
-    const { url } = await uploadToOpenList(file, (p) => { iconUploadPct.value = toPercent(p); });
+    // 图标走 icon/ 前缀：小图，读取走公开的 /api/icon，不进下载闸门
+    const { url } = await uploadToOss(file, (p) => { iconUploadPct.value = toPercent(p); }, 'icon');
     form.icon = url;
     iconUploadWarn.value = '';
   } catch (error) {
@@ -604,9 +596,11 @@ async function onDownloadFilePicked(ev: Event) {
   dlUploading.value[index] = true;
   dlUploadPct.value[index] = -1;
   try {
-    const { url } = await uploadToOpenList(file, (p) => { dlUploadPct.value[index] = toPercent(p); });
+    // 软件包走 upload/ 前缀：私有对象，回填的是 `oss://对象键`，
+    // 详情页点下载时由 ossDownload.ts 换一张 15 分钟票据再取流。
+    const { url } = await uploadToOss(file, (p) => { dlUploadPct.value[index] = toPercent(p); }, 'file');
     form.downloads[index].url = url;
-    form.downloads[index].kindIndex = 2; // 上传到网盘 → 按「网盘跳转」渲染
+    form.downloads[index].kindIndex = 1; // 本站直链 → 显式按「文件」渲染（点了本页直接下，不跳走）
     dlUploadWarn.value[index] = '';
   } catch (error) {
     dlUploadError.value[index] = uploadErrorText(error);
@@ -924,7 +918,8 @@ async function buildPayload(): Promise<{ payload: Record<string, unknown> | null
           size: item.size.trim(),
           url: item.url.trim()
         };
-        // 下载方式：用户显式选了（kindIndex >= 1）才写 kind，否则交给详情页按链接自动推断
+        // 下载方式：用户显式选了（kindIndex >= 1，索引 0 是「自动」）才写 kind，
+        // 否则交给详情页按链接自动推断
         const kind = DOWNLOAD_KINDS[item.kindIndex];
         if (kind) entry.kind = kind;
         // 校验值选填：归一化后为空就不写这个键，免得多出一堆 `"hash": ""`
@@ -977,30 +972,6 @@ interface SubmissionReply {
   success?: boolean;
   message?: string;
   error?: string;
-}
-
-/**
- * 按顺序返回要试的入口，上次成功过的排最前。
- * 记在 localStorage（和 githubImport.ts 的 csh-gh-api-base 同一套思路），
- * 这样能连通的用户不必每次都先白等一次失败。
- */
-function orderedEndpoints(): string[] {
-  let remembered = '';
-  try {
-    remembered = window.localStorage.getItem(ENDPOINT_CACHE_KEY) ?? '';
-  } catch {
-    remembered = '';
-  }
-  if (!remembered || !SUBMIT_ENDPOINTS.includes(remembered)) return SUBMIT_ENDPOINTS;
-  return [remembered, ...SUBMIT_ENDPOINTS.filter((item) => item !== remembered)];
-}
-
-function rememberEndpoint(base: string) {
-  try {
-    window.localStorage.setItem(ENDPOINT_CACHE_KEY, base);
-  } catch {
-    // 隐私模式等场景写不进去，忽略
-  }
 }
 
 /**
