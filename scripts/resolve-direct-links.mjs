@@ -46,6 +46,15 @@ const TIMEOUT = 20000
 const API_BASE = (process.env.GITHUB_API_BASE || 'https://api.github.com').replace(/\/+$/, '')
 const TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || ''
 
+/**
+ * 站内对象（用户投稿直传 OSS，数据里写成 `oss://对象键`）。
+ *
+ * 它们**不是上游直链**：地址由我们自己保管，读取要过一次下载闸门（见 src/gallery/ossDownload.ts）。
+ * 解析器若把它当成「该换成上游直链的那条」，就会把作者上传的包替换成官网链接 —— 用户白传。
+ * 所以下面选目标、改写两处都要显式跳过它。
+ */
+const OSS_OBJECT_RE = /^oss:\/\//i
+
 // ── 参数 ────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2)
 const has = (n) => args.some((a) => a === `--${n}` || a.startsWith(`--${n}=`))
@@ -682,9 +691,13 @@ function pickTarget(app, resolver) {
     const byCode = pool.find((i) => cur(i.url).startsWith(SEEWO_DL))
     if (byCode) return byCode
   }
-  const declared = pool.find((i) => cur(i.kind) === 'file')
+  // 站内对象（`oss://…`）不能当解析目标：它本来就是「本站自己托管的那份」，
+  // 改成上游直链等于把作者上传的包丢掉。全站只有 oss 项时就干脆不解析。
+  const upstream = pool.filter((i) => !OSS_OBJECT_RE.test(cur(i.url)))
+  if (!upstream.length) return null
+  const declared = upstream.find((i) => cur(i.kind) === 'file')
   if (declared) return declared
-  return pool.find((i) => !isFileItem(i)) || pool[0]
+  return upstream.find((i) => !isFileItem(i)) || upstream[0]
 }
 
 // ── 主流程 ──────────────────────────────────────────────────────────────
@@ -748,6 +761,8 @@ function applyResolved(app, resolver, result) {
   if (result.rewrites) {
     for (const rw of result.rewrites) {
       for (const item of items) {
+        // 站内对象不参与模板重建（见 OSS_OBJECT_RE 的说明）
+        if (OSS_OBJECT_RE.test(cur(item.url))) continue
         if (!rw.match.test(cur(item.url))) continue
         if (cur(item.url) !== rw.url) {
           item.url = rw.url
