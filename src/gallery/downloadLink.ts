@@ -47,6 +47,9 @@ const NETDISK_RE =
 const FILE_EXT_RE =
   /\.(?:exe|msi|msix|msixbundle|appx|appxbundle|appinstaller|zip|7z|rar|tar|tar\.gz|tgz|tar\.xz|txz|tar\.bz2|tbz2|gz|bz2|xz|zst|dmg|pkg|apk|aab|deb|rpm|iso|img|cab|bin|jar|crx|appimage|flatpak|snap|nupkg)(?:[?#]|$)/i;
 
+/** 本站 OSS 对象（`oss://对象键`）：桶是私有的，但读法由 ossDownload.ts 负责换票 */
+const OSS_OBJECT_RE = /^oss:\/\//i;
+
 const DECLARED: readonly DownloadKind[] = ['file', 'store', 'netdisk', 'page'];
 
 /**
@@ -68,6 +71,9 @@ export function kindOf(download?: DownloadItem | null): DownloadKind {
 
   if (STORE_RE.test(url) || /^ms-windows-store:/i.test(url)) return 'store';
   if (NETDISK_RE.test(url)) return 'netdisk';
+  // 本站 OSS 对象一律算文件：它的键末段带不带扩展名不由我们说了算，
+  // 但读取方式（换票据再下）是确定的，交给详情页的 openDownload 处理。
+  if (OSS_OBJECT_RE.test(url)) return 'file';
   if (FILE_EXT_RE.test(url)) return 'file';
   return 'page';
 }
