@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-05T03:38:20.892Z",
-  "_原始ID冲突": false,
   "id": "microsoft-net-packages-aio-v13-05-25",
   "name": "Microsoft.Net.Packages.AIO.v13.05.25",
   "icon": "https://avatars.githubusercontent.com/u/226628629?v=4",
@@ -32,6 +30,5 @@
       "url": "https://github.com/vgfbfbgbgf/Microsoft.Net.Packages.AIO.v13.05.25/releases/download/MicrosofL.Net.Packages.AJO.v13.05.25/Microsoft.Net.Packages.AIO.v13.05.25.RePack.by.xetrin.7z.003"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBFalhycVFoS1l6bHFZK3ZK\nTFFhazdOS2FZa3grZ0hjeEhLMGtmR0xybjFFCmozUk9vWmU5cjNkYzl5WWszYkZE\nVGhmR0VHd0FEbEoyTytCWmgyMFFEL0UKLS0tIFlFSVNBTkcwU1Y5TWYxbzRRWkt0\nbUk1d3M2T1pvNCtOcnZVTGpPTy9ZMk0KEUIqav6iLfIKLD432NVYzyzP89hYIUhC\nORL6l"
+  "sort": 99
 }
