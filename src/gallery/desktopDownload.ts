@@ -302,7 +302,8 @@ export async function downloadDesktopBuild(channel: DesktopChannel): Promise<Des
   }
 
   // 镜像全挂：退到该版本的 Release 页。新标签页被拦截时就在当前页跳，保证一定能到。
-  const opened = window.open(build.releaseUrl, '_blank');
+  // noopener 顺手带上 —— releaseUrl 虽是内部拼的 GitHub 地址，但别依赖 open() 的返回值做隔离。
+  const opened = window.open(build.releaseUrl, '_blank', 'noopener,noreferrer');
   if (opened) opened.opener = null;
   else window.location.href = build.releaseUrl;
   return 'release';

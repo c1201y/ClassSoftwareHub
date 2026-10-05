@@ -90,6 +90,9 @@
 
         <!-- 换票失败时的原因说明（额度用完 / 入口不通），紧贴下载列表上方 -->
         <div v-if="downloadError" class="detail-download-error">{{ downloadError }}</div>
+        <!-- 直连（OSS 短时地址）每次下载都要重新换一条：这里主动交代一句，
+             免得用户下到一半失败还以为「站点坏了」。 -->
+        <div v-if="downloadNotice" class="detail-download-notice">{{ downloadNotice }}</div>
 
         <div v-if="otherDownloads.length" class="detail-download-list">
           <div
@@ -176,8 +179,8 @@ import { useI18n } from '../../components/i18n/index';
 import { findAppById, categoryName } from '../data';
 import type { DownloadItem } from '../data';
 import { appIconUrlSafe, markIconBroken } from '../appIcons';
-import { kindOf, triggerDownload } from '../downloadLink';
-import { OssDownloadError, ossKeyOf, resolveDownloadUrl } from '../ossDownload';
+import { isSafeNavigateUrl, kindOf, triggerDownload } from '../downloadLink';
+import { OssDownloadError, ossKeyOf, resolveDownloadDetail } from '../ossDownload';
 import {
   MIRROR_CHANNELS,
   isMirrorableUrl,
@@ -216,6 +219,8 @@ const otherDownloads = computed(() =>
 // 换票期间按钮上显示「正在准备下载…」，失败就在下载区顶部说明原因。
 const downloadPreparing = ref('');
 const downloadError = ref('');
+/** 直连通道的额外说明（有效期短，中断了要重新点）—— 与错误提示分开显示 */
+const downloadNotice = ref('');
 
 const downloadErrorText = (error: unknown) => {
   if (error instanceof OssDownloadError && error.code === 'quota') return t('detail.download-quota');
@@ -226,17 +231,23 @@ const openDownload = async (download: DownloadItem) => {
   const url = download.url;
   if (!url) return;
   if (kindOf(download) !== 'file') {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    // 白名单兜底：数据里混进 javascript: 这类串时不开新窗口（kindOf 已把它归为 page）
+    if (isSafeNavigateUrl(url)) window.open(url, '_blank', 'noopener,noreferrer');
     return;
   }
   downloadError.value = '';
+  downloadNotice.value = '';
   if (!ossKeyOf(url)) {
     triggerDownload(url);
     return;
   }
   downloadPreparing.value = url;
   try {
-    triggerDownload(await resolveDownloadUrl(url));
+    const detail = await resolveDownloadDetail(url);
+    triggerDownload(detail.url);
+    // direct 是一条**不带设备凭据**的短时地址，有效期按体积分档；relay 走票据中继，
+    // 只在开始下载时校验一次，中途断了也不会失效。所以只有 direct 需要提醒用户。
+    if (detail.mode === 'direct') downloadNotice.value = t('detail.download-expired');
   } catch (error) {
     downloadError.value = downloadErrorText(error);
   } finally {
@@ -266,7 +277,8 @@ const downloadHint = (download: DownloadItem) => {
 /** 打开应用商店页面（新标签页） */
 const openStore = () => {
   const target = storeLink.value;
-  if (target) {
+  // 商店链接也过一遍白名单（ms-windows-store: 协议在名单里，不受影响）
+  if (target && isSafeNavigateUrl(target)) {
     window.open(target, '_blank', 'noopener,noreferrer');
   }
 };

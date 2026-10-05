@@ -437,6 +437,15 @@ function analyze(app, up) {
   return res
 }
 
+/** decodeURIComponent 的兜底版：链接里混进不合法的 % 序列（手滑写成 %zz）时不炸整轮检查 */
+const safeDecode = (s) => {
+  try {
+    return decodeURIComponent(s)
+  } catch {
+    return s
+  }
+}
+
 /**
  * 为新版本里的下载项找一个对应的新直链（只做「文件名几乎相同」的替换）。
  *
@@ -451,8 +460,8 @@ function matchNewAsset(item, repoSlug, oldTags, newRelease) {
   const url = cur(item.url)
   const m = new RegExp(`github\\.com/${repoSlug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/releases/download/([^/]+)/(.+)$`, 'i').exec(url)
   if (!m) return { status: 'not-ours' }
-  const oldTag = decodeURIComponent(m[1])
-  const oldFile = decodeURIComponent(m[2])
+  const oldTag = safeDecode(m[1])
+  const oldFile = safeDecode(m[2])
   const newTag = cur(newRelease?.tag_name)
 
   const assets = (newRelease?.assets || []).filter((a) => a && a.name)

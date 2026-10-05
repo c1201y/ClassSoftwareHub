@@ -83,6 +83,10 @@ UA = 'ClassSoftwareHub-Deploy/1.0'
 def _ssl_context() -> ssl.SSLContext:
     ctx = ssl.create_default_context()
     if os.environ.get('WEBDAV_NO_VERIFY') == '1':
+        if os.environ.get('CI') == 'true':
+            # CI 里跑的是正式备份链路，关掉校验等于凭据和备份内容对中间人裸奔；
+            # 该开关只允许在本地调试自签网关时用。fail-fast，别让一次配置手滑静默上线。
+            raise SystemExit('拒绝在 CI 中关闭 TLS 校验：WEBDAV_NO_VERIFY=1 仅限本地调试')
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
     return ctx

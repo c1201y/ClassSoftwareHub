@@ -3,7 +3,7 @@
 // 上传文件到本站的阿里云 OSS —— 浏览器直传，不经任何后端中转。
 //
 // 链路：
-//   ① 把 { name, size, contentType, purpose } 发给提交服务的 /api/oss-sign，换回一条
+//   ① 把 { name, size, contentType, purpose, fp } 发给提交服务的 /api/oss-sign，换回一条
 //      「只能写这一个对象、一小时后过期」的预签名 PUT 地址；
 //   ② 浏览器自己 PUT 到 OSS（上传进度就是这一步的进度）；
 //   ③ 回填的是**对象键**而不是公开直链 —— 桶已经是私有的，直链谁打开都是 403。
@@ -28,17 +28,21 @@
 
 import { SUBMIT_TIMEOUT_MS, orderedEndpoints, rememberEndpoint } from './submitEndpoints';
 import { OSS_SCHEME } from './ossDownload';
+import { deviceFingerprint } from './deviceFingerprint';
 
 /**
  * 单文件上限。
  *
  * 这条链路里已经没有「中转节点内存」这种墙了，所以门槛按「本站到底愿意收多大的投稿」来定：
- * 4 GB 覆盖了常见的离线安装包（Office / 大型 IDE / 设计软件 / 游戏安装包）。
- * 想要放宽，改这里和 Worker 的 OSS_MAX_BYTES（后者是服务端兜底，两边可以不一样大，但不能反着来）。
- * ⚠️ 天花板是 OSS 单次 PUT 的 5 GB；再大就必须改成分片上传 —— 现在是「一次 PUT 到底」，
- *    中途断网要从头重传，所以别把闸门贴着 5 GB 设。
+ * **2.5 GB**。比它大的东西（超大型游戏、整套离线镜像）既压存储费又压下行流量，
+ * 而且单次 PUT 中途断网要从头重传 —— 这类交给用户填官网 / GitHub Releases 直链更划算，
+ * 所以闸门定在 2.5 GB，界面同时引导「超限就改用官网直链」。
+ *
+ * 改这里要同时改 Worker 的 OSS_MAX_BYTES（服务端兜底；两边可以不一样大，但不能反着来：
+ * 前端比服务端大 = 用户白传半天才被拒）。
+ * ⚠️ 天花板是 OSS 单次 PUT 的 5 GB；再大就必须改成分片上传。
  */
-export const UPLOAD_MAX_BYTES = 4 * 1024 * 1024 * 1024;
+export const UPLOAD_MAX_BYTES = 2.5 * 1024 * 1024 * 1024;
 
 /** 超过此大小给「文件较大、上传较慢」的提示，但不阻止上传 */
 export const UPLOAD_WARN_BYTES = 1024 * 1024 * 1024;
@@ -85,6 +89,8 @@ interface SignedTarget {
   url: string;
   key: string;
   contentType: string;
+  /** 服务端当前的孤儿回收阈值（分钟）：传完多久之内必须把提交做完。界面据此提示用户 */
+  orphanMinutes?: number;
 }
 
 interface OssSignReply {
@@ -92,6 +98,7 @@ interface OssSignReply {
   url?: string;
   key?: string;
   contentType?: string;
+  orphanMinutes?: number;
   error?: string;
 }
 
@@ -120,7 +127,10 @@ async function requestSignedTarget(
           name: file.name,
           size: file.size,
           contentType: normalizedType(file),
-          purpose
+          purpose,
+          // 服务端据此在登记表里记下「这台设备传的」（只存哈希，不存原始指纹），
+          // 将来要按人追溯或清理时才有依据。
+          fp: deviceFingerprint()
         }),
         signal: controller.signal
       });
@@ -143,7 +153,8 @@ async function requestSignedTarget(
     return {
       url: data.url,
       key: data.key,
-      contentType: data.contentType || normalizedType(file)
+      contentType: data.contentType || normalizedType(file),
+      orphanMinutes: Number(data.orphanMinutes) || undefined
     };
   } finally {
     window.clearTimeout(timer);
@@ -219,18 +230,21 @@ function putToSignedUrl(
 /**
  * 把文件传到 OSS。
  *
- * @returns `{ key, url }`：
+ * @returns `{ key, url, orphanMinutes }`：
  *   - key 是对象键（审核流程与删除接口用它定位文件）；
  *   - url 是要写进数据的「怎么读它」：
  *       软件包 → `oss://对象键`（详情页点下载时换票据，见 ossDownload.ts）
  *       图标   → 提交服务的 /api/icon 公开只读地址（能直接塞进 <img>）
+ *   - orphanMinutes 是服务端此刻的回收阈值：对象传上来之后，**这么久之内必须完成提交**，
+ *     否则会被当成「传了没提交」的垃圾自动清掉（详见 Worker 的 runGc）。
+ *     界面要把这个数如实显示出来 —— 它是可以在线调的，写死 15 分钟迟早会对不上。
  * @throws OssUploadError（见 OssUploadErrorCode）
  */
 export async function uploadToOss(
   file: File,
   onProgress?: (p: UploadProgress) => void,
   purpose: OssUploadPurpose = 'file'
-): Promise<{ key: string; url: string }> {
+): Promise<{ key: string; url: string; orphanMinutes?: number }> {
   // 兜底预检：调用方应先自查并给出本地化提示，这里再拦一道，防止绕过
   if (file.size > UPLOAD_MAX_BYTES) {
     throw new OssUploadError(
@@ -245,7 +259,11 @@ export async function uploadToOss(
   rememberEndpoint(base);
 
   if (purpose === 'icon') {
-    return { key: target.key, url: `${base}/api/icon?k=${encodeURIComponent(target.key)}` };
+    return {
+      key: target.key,
+      url: `${base}/api/icon?k=${encodeURIComponent(target.key)}`,
+      orphanMinutes: target.orphanMinutes
+    };
   }
-  return { key: target.key, url: `${OSS_SCHEME}${target.key}` };
+  return { key: target.key, url: `${OSS_SCHEME}${target.key}`, orphanMinutes: target.orphanMinutes };
 }

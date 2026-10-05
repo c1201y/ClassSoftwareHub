@@ -57,7 +57,17 @@ export function ossKeyOf(url: string): string | null {
 
   if (raw.toLowerCase().startsWith(OSS_SCHEME)) {
     const key = raw.slice(OSS_SCHEME.length).replace(/^\/+/, '').split(/[?#]/)[0];
-    return key ? decodeURIComponent(key) : null;
+    if (!key) return null;
+    // decodeURIComponent 对不合法的 % 序列会直接抛异常（比如维护者手滑写了 %zz），
+    // 抛出去就是详情页白屏 —— 捕获后按「不是本站对象」处理。
+    // 顺带拒绝 .. 段：真正的防线在服务端 objectKeyOk，这里只是早失败。
+    try {
+      const decoded = decodeURIComponent(key);
+      if (!decoded || decoded.split('/').includes('..')) return null;
+      return decoded;
+    } catch {
+      return null;
+    }
   }
 
   try {
@@ -77,19 +87,36 @@ export function ossKeyOf(url: string): string | null {
 }
 
 /** 键 → { 票据地址, 到期时刻 }。同一页面里连点两次不该重复消耗额度 */
-const ticketCache = new Map<string, { url: string; until: number }>();
-const inFlight = new Map<string, Promise<string>>();
+const ticketCache = new Map<string, ResolvedDownload & { until: number }>();
+const inFlight = new Map<string, Promise<ResolvedDownload>>();
 
 interface TicketReply {
   success?: boolean;
+  /** 服务端选定的取回通道：relay（经 ECS 中继）或 direct（OSS 短时直链） */
+  mode?: 'relay' | 'direct';
   url?: string;
+  /** 另一条通道的备用地址，主用那条不通时可以改试它 */
+  fallback?: { mode: 'relay' | 'direct'; url: string };
   key?: string;
+  size?: number;
   expiresIn?: number;
   error?: string;
   limit?: number;
 }
 
-async function requestTicket(base: string, key: string): Promise<{ url: string; expiresIn: number }> {
+/** 换到的下载地址，外加「它是哪条通道、多久过期」——界面要据此提示用户 */
+export interface ResolvedDownload {
+  url: string;
+  /**
+   * relay：经 ECS 中继转发，票据只在开始下载时校验一次，传多久都不会中途失效。
+   * direct：OSS 短时直链，**有效期按体积分层**（≤50MB 5 分钟 … >1GB 30 分钟），
+   *         断了要重下就得重新换一条，所以界面要提示「中断了就回站点重新点击下载」。
+   */
+  mode?: 'relay' | 'direct';
+  expiresIn: number;
+}
+
+async function requestTicket(base: string, key: string): Promise<ResolvedDownload> {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), SUBMIT_TIMEOUT_MS);
   try {
@@ -124,19 +151,24 @@ async function requestTicket(base: string, key: string): Promise<{ url: string; 
       );
     }
     const expiresIn = Number(data.expiresIn) || 900;
-    return { url: data.url, expiresIn };
+    // 这个 url 会被塞进 <a href> / window.open：服务端被攻破或响应被篡改时，
+    // javascript: / data: 一类协议就是存储型 XSS。只认 https。
+    if (!/^https:\/\//i.test(data.url)) {
+      throw new OssDownloadError('invalid', '服务端返回的下载地址不是 https', res.status);
+    }
+    return { url: data.url, expiresIn, mode: data.mode === 'direct' ? 'direct' : 'relay' };
   } finally {
     window.clearTimeout(timer);
   }
 }
 
 /**
- * 取一条可用的下载地址（带内存缓存，15 分钟票据在有效期内复用）。
+ * 取一条可用的下载地址（带内存缓存，在票据有效期内复用）。
  * @throws OssDownloadError
  */
-export async function signedDownloadUrl(key: string): Promise<string> {
+export async function signedDownloadDetail(key: string): Promise<ResolvedDownload> {
   const hit = ticketCache.get(key);
-  if (hit && hit.until > Date.now()) return hit.url;
+  if (hit && hit.until > Date.now()) return hit;
 
   const pending = inFlight.get(key);
   if (pending) return pending;
@@ -145,10 +177,10 @@ export async function signedDownloadUrl(key: string): Promise<string> {
     let lastError: unknown = null;
     for (const base of orderedEndpoints()) {
       try {
-        const { url, expiresIn } = await requestTicket(base, key);
+        const detail = await requestTicket(base, key);
         rememberEndpoint(base);
-        ticketCache.set(key, { url, until: Date.now() + expiresIn * 1000 - TICKET_SAFETY_MS });
-        return url;
+        ticketCache.set(key, { ...detail, until: Date.now() + detail.expiresIn * 1000 - TICKET_SAFETY_MS });
+        return detail;
       } catch (error) {
         // 只有「这个入口本身不通」才值得换下一个；服务端已明确拒绝（额度用完等）就别再试
         if (error instanceof OssDownloadError && error.code === 'unreachable') {
@@ -171,9 +203,18 @@ export async function signedDownloadUrl(key: string): Promise<string> {
   }
 }
 
+/** 同上，只要地址（旧调用点用） */
+export async function signedDownloadUrl(key: string): Promise<string> {
+  return (await signedDownloadDetail(key)).url;
+}
+
 /** 把一条 `oss://…` 下载项换成可以直接点的短时地址；不是本站对象就原样返回 */
-export async function resolveDownloadUrl(url: string): Promise<string> {
+export async function resolveDownloadDetail(url: string): Promise<ResolvedDownload> {
   const key = ossKeyOf(url);
-  if (!key) return url;
-  return signedDownloadUrl(key);
+  if (!key) return { url, expiresIn: 0 };
+  return signedDownloadDetail(key);
+}
+
+export async function resolveDownloadUrl(url: string): Promise<string> {
+  return (await resolveDownloadDetail(url)).url;
 }

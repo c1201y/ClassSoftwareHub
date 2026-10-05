@@ -56,12 +56,20 @@ try:
 except ImportError:  # pragma: no cover
     sys.exit('缺少 Pillow，请先执行：python -m pip install pillow')
 
+# 解压炸弹闸门：默认上限 ~1.8 亿像素足够把 runner 内存吃爆，压到 3200 万
+# （8K×4K 级别）对「64px 图标源图」绰绰有余；超限 PIL 会直接抛错，被上游
+# 的 try/except 接住记为「转换失败」。
+Image.MAX_IMAGE_PIXELS = 32_000_000
+
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APPS_DIR = os.path.join(ROOT, '软件数据', 'apps')
 ICON_DIR = os.path.join(ROOT, 'src', 'assets', 'icons')
+
+# 与 Worker / 工作流同一套 ID 约定：小写字母数字短横线、不以短横线开头
+ID_RE = re.compile(r'^[a-z0-9][a-z0-9-]{0,59}$')
 
 UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
       '(KHTML, like Gecko) Chrome/125.0 Safari/537.36')
@@ -97,7 +105,11 @@ def http_get(url, verify=True):
     req = urllib.request.Request(url, headers={'User-Agent': UA, 'Accept': 'image/*,*/*'})
     t0 = time.perf_counter()
     with urllib.request.urlopen(req, timeout=TIMEOUT, context=ctx) as r:
-        body = r.read()
+        # 图标源图撑死几百 KB：卡 10MB 上限，防止 content-type 撒谎 /
+        # 重定向指到一个巨型文件时把整个响应体读进内存。
+        body = r.read(10 * 1024 * 1024 + 1)
+        if len(body) > 10 * 1024 * 1024:
+            raise ValueError('响应体超过 10MB 上限，不是合理的图标')
         return body, time.perf_counter() - t0, (r.headers.get('Content-Type') or '')
 
 
@@ -124,6 +136,10 @@ def probe(url):
     except Exception as e:
         if not _is_cert_error(e):
             return {'secs': 0.0, 'bytes': 0, 'error': f'{type(e).__name__}: {str(e)[:70]}'}, None
+        if os.environ.get('CI') == 'true':
+            # 本地降级是「开天窗 vs 拿到图」的取舍；CI 里降级等于接受任意中间人
+            # 递来的图并直接写进仓库。CI 一律不降级，证书问题留给人工换源。
+            return {'secs': 0.0, 'bytes': 0, 'error': '证书校验失败（CI 不允许关闭校验降级）'}, None
         try:
             body, secs, ctype = http_get(url, verify=False)
             return {'secs': secs, 'bytes': len(body), 'ctype': ctype, 'noverify': True}, body
@@ -255,7 +271,12 @@ def read_apps():
             continue
         with open(os.path.join(APPS_DIR, name), encoding='utf-8') as fh:
             data = json.load(fh)
-        out.append({'file': name, 'id': data.get('id') or name[:-5],
+        # id 最终会拼进 src/assets/icons/<id>.webp 的写盘路径 —— JSON 里混进
+        # `../../xxx` 这类值就是路径穿越。不合规范的 id 一律退回文件名（来自
+        # listdir，天然安全），别让一个坏 id 把图标写到 icons/ 目录外面去。
+        raw_id = str(data.get('id') or '')
+        aid = raw_id if ID_RE.match(raw_id) else name[:-5]
+        out.append({'file': name, 'id': aid,
                     'name': data.get('name') or '', 'icon': (data.get('icon') or '').strip(),
                     'website': (data.get('website') or '').strip()})
     return out

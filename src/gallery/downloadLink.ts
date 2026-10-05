@@ -50,6 +50,16 @@ const FILE_EXT_RE =
 /** 本站 OSS 对象（`oss://对象键`）：桶是私有的，但读法由 ossDownload.ts 负责换票 */
 const OSS_OBJECT_RE = /^oss:\/\//i;
 
+/**
+ * 允许写进 href / window.open 的协议白名单。
+ *
+ * 下载项 URL 的源头有两处：维护者手写的 JSON、投稿工作流从用户 Issue 里抄来的字段。
+ * 后者是不可信输入 —— `javascript:alert(1)` 这类串一旦进了 apps/<id>.json，
+ * 点一下下载就是存储型 XSS。所以除白名单协议外一律当「不是链接」处理。
+ * （服务端 validate() 已经按同一张白名单拒过一次，这里是前端的第二道闸。）
+ */
+const SAFE_URL_RE = /^(?:https?:\/\/|ms-windows-store:)/i;
+
 const DECLARED: readonly DownloadKind[] = ['file', 'store', 'netdisk', 'page'];
 
 /**
@@ -68,6 +78,10 @@ export function kindOf(download?: DownloadItem | null): DownloadKind {
 
   // 没有 url 的项（维护者删剩的壳）当作网页处理，跳转时也不会出事
   if (!url) return 'page';
+  // 白名单以外的协议（javascript: / data: / vbscript: / file: …）一律不导航。
+  // 返回 'page' 只是为了让界面按「跳转」显示 —— 真正的拦截在 triggerDownload /
+  // 详情页 window.open 那层，它们会认出这不是可导航地址。
+  if (!SAFE_URL_RE.test(url) && !OSS_OBJECT_RE.test(url)) return 'page';
 
   if (STORE_RE.test(url) || /^ms-windows-store:/i.test(url)) return 'store';
   if (NETDISK_RE.test(url)) return 'netdisk';
@@ -83,6 +97,13 @@ export const isDirectDownload = (download?: DownloadItem | null): boolean =>
   kindOf(download) === 'file';
 
 /**
+ * 这条地址能不能安全地发起导航/下载。
+ * 导出给详情页用：window.open 之前先问一次，不安全就别开。
+ */
+export const isSafeNavigateUrl = (url: string): boolean =>
+  SAFE_URL_RE.test((url || '').trim());
+
+/**
  * 触发一次下载。
  *
  * 用隐藏的 <a> 而不是 window.open：**不带 target**，所以是「在当前页发起导航」——
@@ -93,7 +114,13 @@ export const isDirectDownload = (download?: DownloadItem | null): boolean =>
  * 注意不要加 download 属性：跨域时它会被浏览器忽略，加了反而让人误以为文件名可控。
  */
 export function triggerDownload(url: string): void {
-  if (!url) return;
+  // oss:// 不是浏览器认识的协议，直接塞 href 会整页导航失败 ——
+  // 但走到这里的 url 应该已经换过票（resolveDownloadUrl）变成 https 了；
+  // 万一上游漏换，这里拦下比把伪协议塞进导航强。
+  if (!isSafeNavigateUrl(url)) {
+    console.warn('[download] 拒绝非 http(s) 的下载地址:', url.slice(0, 60));
+    return;
+  }
   const anchor = document.createElement('a');
   anchor.href = url;
   anchor.rel = 'noopener';

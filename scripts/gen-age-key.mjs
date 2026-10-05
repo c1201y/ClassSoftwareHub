@@ -13,6 +13,16 @@ import * as age from 'age-encryption';
 import { homedir } from 'node:os';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import process from 'node:process';
+
+// ⚠️ 私钥是**唯一**能解开投稿里加密联系方式的凭据，绝不能出现在任何会被留存的日志里
+//    （CI 日志、终端 scrollback、截图、录屏）。所以在 CI 里直接拒绝运行 ——
+//    这个脚本只该在维护者自己的机器上跑一次。
+if (process.env.CI) {
+  console.error('⛔ 拒绝在 CI 环境运行：本脚本会打印 age 私钥，私钥不该进任何 CI 日志。');
+  console.error('   请在本地机器上执行：node scripts/gen-age-key.mjs');
+  process.exit(1);
+}
 
 const identity = await age.generateX25519Identity();
 const recipient = await age.identityToRecipient(identity);

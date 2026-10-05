@@ -168,6 +168,12 @@ html.theme-dark .detail-category-badge {
   line-height: 1.7;
   margin: 8px 2px 0;
 }
+.detail-download-notice {
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  line-height: 1.7;
+  margin: 8px 2px 0;
+}
 .detail-download-row {
   background: var(--card-bg);
   border: 1px solid var(--card-stroke);
