@@ -240,6 +240,7 @@ export default {
     "submit.download-upload": "Upload file",
     "submit.icon-upload": "Choose icon file",
     "submit.icon-upload-note": "Optional: pick a local image; it is uploaded to this site and the link is filled in automatically.",
+    "submit.icon-too-large": "Icon file too large ({size}); please pick an image under {limit}.",
     "submit.uploading": "Uploading…",
     "submit.uploading-percent": "Uploading {percent}%",
     "submit.upload-limit-note": "Max {limit} per file",
