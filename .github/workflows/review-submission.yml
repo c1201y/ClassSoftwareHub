@@ -18,8 +18,10 @@ jobs:
     # ⚠️ 不能拿 cancel-in-progress:false 代替 —— 那不是排队：并发组默认只保留
     #    1 running + 1 pending，新来的 pending 会把旧的【顶掉】，批量审核会静默丢单。
     concurrency:
-      group: review-submission
-      queue: max
+      # 统一数据写入组（见 create-review-issue.yml 顶上的注释）：审核合并与
+      # 「开 Issue 后收草稿」都会 push main，以前各占一个组、可能同时跑。
+      group: repo-data-write
+      cancel-in-progress: false
     permissions:
       contents: write
       issues: write
@@ -44,11 +46,22 @@ jobs:
           LABEL: ${{ github.event.label.name }}
           # 审核不通过时用它把桶里的对象一并删掉；未配置则跳过清理（只告警，不阻断审核）
           PURGE_TOKEN: ${{ secrets.PURGE_TOKEN }}
-          PURGE_BASE: https://cshapi.132614.xyz
+          # ⚠️ 用 Cloudflare 直连入口，不要用 cshapi（那条走 SpeedOnline CDN 回源，
+          #    2026-10-05 起持续 502）。这条链路挂着「不通过清桶 / 通过后迁移到 releases/ /
+          #    推送后清源」三件事，而且设计上**只告警不阻断** —— 也就是说它挂了不会报错，
+          #    只会静默地一个对象也不清，桶里的孤儿就这么攒着。所以入口必须挑稳的那条。
+          PURGE_BASE: https://submit.132614.xyz
         with:
           script: |
             const fs = require('fs')
             const path = require('path')
+            // 把「推送成功后该删哪些源对象」写在这里，交给后面的独立步骤执行。
+            // 不直接在 github-script 里删：那时候还没推送，删了就是把还在被引用的对象干掉。
+            const MOVE_PLAN = path.join(process.env.RUNNER_TEMP || '/tmp', 'oss-move-plan.json')
+            // 让 GitHub 把这个值在此后所有日志里涂成 ***（github-script 里没有 ::add-mask::，
+            // core.setSecret 等价）。这条链路里 token 只作为请求头发出去、从不打印 ——
+            // 这一层纯粹是防着将来有人加调试输出。
+            if (process.env.PURGE_TOKEN) core.setSecret(process.env.PURGE_TOKEN)
             const label = process.env.LABEL
             const issue = context.payload.issue
             const body = issue.body || ''
@@ -227,7 +240,12 @@ jobs:
             //    若一律拒绝，打「覆盖已存在」就再也修不了它们了。
             //    这条放行不构成风险：写入目标是一个**已经存在**的单段文件名，不可能跑到别处。
             const conforming = ID_RE.test(data.id)
-            const legacyExisting = !conforming && fs.existsSync(appsPath)
+            // ② 的 legacy 放行也要有下限：大小写字母/数字/点/下划线/短横线，且不能以点开头。
+            // 「目标文件恰好存在」只豁免命名**约定**（历史上那 5 个大写 ID），不豁免字符集 ——
+            // 不然空格、控制字符、结尾的点之类的怪名字也能借覆盖通道写进仓库文件名。
+            const LEGACY_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/
+            const legacyExisting =
+              !conforming && LEGACY_ID_RE.test(data.id) && fs.existsSync(appsPath)
             if (!contained || !(conforming || legacyExisting)) {
               await github.rest.issues.createComment({
                 ...context.repo,
@@ -292,7 +310,15 @@ jobs:
               const raw = String(url ?? '').trim()
               if (!raw) return ''
               const m = /^oss:\/\/(.+)$/i.exec(raw)
-              if (m) return decodeURIComponent(m[1].split(/[?#]/)[0].replace(/^\/+/, ''))
+              if (m) {
+                try {
+                  return decodeURIComponent(m[1].split(/[?#]/)[0].replace(/^\/+/, ''))
+                } catch {
+                  // 键里有不合法的 % 序列 —— 按「不是我们的对象」处理，
+                  // 别让解码异常把整场审核炸掉（decodeURIComponent 会直接 throw）
+                  return ''
+                }
+              }
               try {
                 const u = new URL(raw)
                 if (u.pathname === '/api/icon' || u.pathname === '/api/dl') {
@@ -304,17 +330,33 @@ jobs:
               return ''
             }
 
-            /** 一份提交引用到的所有桶对象键（图标 + 各下载项），去重后返回 */
+            /**
+             * 托管目录白名单：提交数据里能引用到的桶对象，只可能在这四个前缀之下。
+             * 投稿数据是不可信输入 —— 上面 ossKeyOfUrl 只负责「认出这是不是我们的写法」，
+             * 这里再卡一道「认出来的键是不是在托管目录里」，否则一份精心构造的提交
+             * 可以让 purge/迁移去碰 gh-mirror/、registry 索引等根本不该投稿碰的东西
+             * （Worker 端还有一层同样的白名单，这里是工作流侧的双保险）。
+             */
+            const MANAGED_KEY_RE = /^(?:upload|icon|releases|soft)\//
+            const managedKeys = (keys) =>
+              [...new Set((keys || []).filter((k) => k && MANAGED_KEY_RE.test(k) && !k.split('/').includes('..')))]
+
+            /** 一份提交引用到的所有桶对象键（图标 + 各下载项），去重 + 白名单过滤后返回 */
             const collectOssKeys = (d) => {
               const keys = [ossKeyOfUrl(d?.icon)]
               for (const item of Array.isArray(d?.downloads) ? d.downloads : []) {
                 keys.push(ossKeyOfUrl(item?.url))
               }
-              return [...new Set(keys.filter(Boolean))]
+              return managedKeys(keys)
             }
 
-            /** 逐个调 Worker 的 /api/purge 删除；失败只告警，绝不拖垮审核本身 */
-            const purgeKeys = async (keys) => {
+            /**
+             * 逐个调 Worker 的 /api/purge 删除；失败只告警，绝不拖垮审核本身。
+             * options.requireRegistry —— 让 Worker 先查登记表，键不在表里就拒删。
+             * 拒绝路径必须带上：投稿数据是不可信输入，万一引用了别人正在用的对象，
+             * 维护者顺手打 rejected 就不该把别人的文件删掉（Worker 端 400，这里降级为告警）。
+             */
+            const purgeKeys = async (keys, options = {}) => {
               const unique = [...new Set((keys || []).filter(Boolean))]
               if (!unique.length) return []
               const token = process.env.PURGE_TOKEN
@@ -328,7 +370,7 @@ jobs:
                   const res = await fetch(`${process.env.PURGE_BASE}/api/purge`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-Purge-Token': token },
-                    body: JSON.stringify({ key })
+                    body: JSON.stringify(options.requireRegistry ? { key, requireRegistry: true } : { key })
                   })
                   if (res.ok) done.push(key)
                   else core.warning(`清理失败（HTTP ${res.status}）：${key}`)
@@ -337,6 +379,122 @@ jobs:
                 }
               }
               return done
+            }
+
+            /**
+             * 探一条外链是否还活着。
+             *   true  = 明确回了 2xx/3xx；
+             *   false = 明确回了 4xx/5xx（死链）；
+             *   null  = 探不出结论（超时 / DNS / TLS 出错）——**不能被当成死链**，
+             *           一次网络抖动就判人死链，比漏判更糟。
+             * 先发 HEAD；有些站点明确不爱 HEAD（405 / 501）或对 HEAD 直接 403，
+             * 这时回退到 GET + Range: bytes=0-0 —— 只要状态码，绝不把整个安装包拉下来。
+             */
+            const probeUrl = async (url) => {
+              const opts = { redirect: 'follow', signal: AbortSignal.timeout(12000) }
+              try {
+                let res = await fetch(url, { ...opts, method: 'HEAD' })
+                if (res.status === 400 || res.status === 403 || res.status === 405 || res.status === 501) {
+                  res = await fetch(url, { ...opts, method: 'GET', headers: { Range: 'bytes=0-0' } })
+                }
+                return res.status >= 200 && res.status < 400
+              } catch {
+                return null
+              }
+            }
+
+            /**
+             * 上线前扫一遍这份提交里的**外部**下载直链，返回明确探到死链的那些。
+             *
+             * 为什么值得做：用户填的官网 / GitHub Release / 网盘直链，可能在排队审核的
+             * 这几天里被作者删掉或改了名。审核通过那一刻没人再点一遍的话，站点上就多了
+             * 一条「点开就 404」的条目。（本站对象不走这里：它们在迁移那一步就知道在不在。）
+             *
+             * ⚠️ **不阻断审核**，只把结论写进 Issue 评论由人判断：大量正经站点会拒 HEAD、
+             *    或者要先鉴权再 302，硬拦会把好投稿挡在门外。
+             */
+            const checkExternalLinks = async (d) => {
+              const urls = []
+              for (const item of Array.isArray(d && d.downloads) ? d.downloads : []) {
+                const u = String((item && item.url) || '')
+                if (!u || ossKeyOfUrl(u)) continue
+                if (!/^https?:\/\//i.test(u)) continue
+                urls.push(u)
+              }
+              const bad = []
+              for (const u of [...new Set(urls)]) {
+                const alive = await probeUrl(u)
+                if (alive === false) bad.push(u)
+                else if (alive === null) core.info(`直链探测无结论（不判定为死链）：${u}`)
+              }
+              return bad
+            }
+
+            /**
+             * 审核通过时把对象从 upload/ 迁到 releases/，返回「旧键 → 新键」的映射。
+             *
+             * ⚠️ 这个函数**只复制，不删除源对象**。删源放在推送成功之后的独立步骤里做 ——
+             *    源对象必须活到「新引用已经推上去」那一刻：万一推送失败（并发冲突等），
+             *    站点上跑的还是旧数据（指着 upload/），这时候把源删了就是整站 404。
+             *    某一条复制失败就**不改它的引用**，保留 upload/ 原样 —— 那条链接照样能用，
+             *    只是没享受到 releases/ 的目录语义，不能算错。
+             */
+            const promoteKeys = async (keys) => {
+              const map = new Map()
+              const unique = [...new Set((keys || []).filter((k) => /^upload\//.test(k)))]
+              if (!unique.length) return map
+              const token = process.env.PURGE_TOKEN
+              if (!token) {
+                core.warning(`未配置 PURGE_TOKEN，跳过 ${unique.length} 个对象的迁移（引用保持 upload/ 不变）`)
+                return map
+              }
+              for (const key of unique) {
+                try {
+                  const res = await fetch(`${process.env.PURGE_BASE}/api/promote`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Purge-Token': token },
+                    body: JSON.stringify({ key })
+                  })
+                  const j = await res.json().catch(() => ({}))
+                  if (res.ok && j.to) map.set(key, j.to)
+                  else core.warning(`迁移失败（HTTP ${res.status}）：${key}${j && j.error ? ' —— ' + j.error : ''}`)
+                } catch (e) {
+                  core.warning(`迁移异常：${key}（${e && e.message}）`)
+                }
+              }
+              return map
+            }
+
+            /**
+             * 把一条引用里的对象键换成新键，**保持原来的写法**。
+             *
+             * ⚠️ 这里刻意用字符串替换，而不是 `new URL(...).searchParams.set(...)` 再序列化：
+             *    URLSearchParams 会把键里的空格编成 '+'，而我们当初是用 encodeURIComponent
+             *    编成 '%20' 的 —— 重新序列化之后键就不是原来那个了，图标会 404。
+             */
+            const rewriteRef = (url, map, moved) => {
+              const raw = String(url ?? '')
+              const key = ossKeyOfUrl(raw)
+              if (!key || !map.has(key)) return raw
+              const to = map.get(key)
+              const from = encodeURIComponent(key)
+              const next = /^oss:\/\//i.test(raw)
+                ? `oss://${to}`
+                : raw.includes(from)
+                  ? raw.replace(from, encodeURIComponent(to))
+                  : raw
+              if (next !== raw && !moved.includes(key)) moved.push(key)
+              return next
+            }
+
+            /** 整份数据里的引用都换一遍（图标 + 各下载项） */
+            const rewriteData = (d, map, moved) => {
+              if (!map.size) return d
+              if (d.icon) d.icon = rewriteRef(d.icon, map, moved)
+              for (const item of Array.isArray(d.downloads) ? d.downloads : []) {
+                if (item && item.url) item.url = rewriteRef(item.url, map, moved)
+              }
+              return d
             }
 
             if (label === 'approved' || isOverwrite) {
@@ -368,10 +526,38 @@ jobs:
               for (const key of Object.keys(clean)) {
                 if (key.startsWith('_')) delete clean[key]
               }
+              // 审核通过 → 对象从 upload/ 迁到 releases/（服务端复制，不吃外网流量），
+              // 并把这份数据里的引用改成新键。真正删源留到推送成功之后。
+              const moved = []
+              try {
+                const map = await promoteKeys(collectOssKeys(clean))
+                rewriteData(clean, map, moved)
+                if (map.size) {
+                  core.info(`已迁移 ${map.size} 个对象到 releases/，其中 ${moved.length} 条引用已改写`)
+                }
+              } catch (e) {
+                // 迁移只是「目录语义 + 不让 upload/ 越堆越多」，失败也必须让审核本身继续跑完
+                core.warning(`对象迁移环节异常：${e && e.message}`)
+              }
+              // 上线前探一次外部直链（清单 #10）。探测放在写文件之前，结论才好一并写进评论。
+              let linkMiss = []
+              try {
+                linkMiss = await checkExternalLinks(clean)
+              } catch (e) {
+                core.warning(`直链存活校验环节异常（不影响审核）：${e && e.message}`)
+              }
+
               fs.writeFileSync(appsPath, JSON.stringify(clean, null, 2))
               fs.unlinkSync(submissionPath)
 
               let tail = ''
+              if (linkMiss.length) {
+                tail += `\n\n⚠️ 上线前探测到 **${linkMiss.length} 条下载直链不通**（没回 2xx/3xx）：`
+                  + linkMiss.map((u) => `\n- \`${u.replace(/`/g, "'")}\``).join('')
+                  + '\n\n> 有些站点会拒绝 HEAD 或需要鉴权后再跳转，也可能是当时网络抖动 —— '
+                  + '请人工点开确认一下。确实是死链的话，把这条 Issue 改打 `rejected` 撤下来，'
+                  + '或让提交者补一条新链接。'
+              }
               if (oldData) {
                 tail = '\n\n' + diffTable(oldData, clean)
                   + '\n\n<details><summary>旧版完整内容（覆盖前存档）</summary>\n\n```json\n'
@@ -379,15 +565,20 @@ jobs:
                   + '\n```\n\n</details>'
               }
 
-              // 覆盖是整份替换：旧版引用的桶对象若这份新提交不再引用，就成了孤儿，顺手清掉
-              if (oldData) {
-                const keep = new Set(collectOssKeys(clean))
-                const stale = collectOssKeys(oldData).filter((k) => !keep.has(k))
-                const purgedStale = await purgeKeys(stale)
-                if (purgedStale.length) {
-                  tail += `\n\n顺手清理了旧版遗留的 ${purgedStale.length} 个桶对象（本次提交未再引用）：`
-                    + purgedStale.map((k) => `\n- \`${k}\``).join('')
-                }
+              // 覆盖是整份替换：旧版引用的桶对象若这份新提交不再引用，就成了孤儿。
+              // 但清理**同样要等推送成功** —— 推送失败时站点上跑的还是旧那份数据，
+              // 那些「不再被引用」的键其实还在被引用着。
+              const stale = oldData
+                ? collectOssKeys(oldData).filter((k) => !new Set(collectOssKeys(clean)).has(k))
+                : []
+              fs.writeFileSync(
+                MOVE_PLAN,
+                JSON.stringify({ src: [...new Set([...moved, ...stale])] }, null, 2)
+              )
+              if (stale.length) {
+                tail += `\n\n本次提交不再引用的 ${stale.length} 个旧对象，会在推送**成功之后**清理`
+                  + `（推送失败就留着，避免把还在被引用的对象删掉）：`
+                  + stale.map((k) => `\n- \`${k}\``).join('')
               }
 
               await github.rest.issues.createComment({
@@ -401,8 +592,10 @@ jobs:
                 state: 'closed'
               })
             } else if (label === 'rejected') {
-              // 审核不通过 → 草稿和桶里那份一起删，不留孤儿对象
-              const purged = await purgeKeys(collectOssKeys(data))
+              // 审核不通过 → 草稿和桶里那份一起删，不留孤儿对象。
+              // requireRegistry：登记表里没有的键一律拒删 —— 拒绝的依据是投稿内容本身，
+              // 不能让「投稿里写了什么」变成「桶里就能删什么」。
+              const purged = await purgeKeys(collectOssKeys(data), { requireRegistry: true })
               fs.unlinkSync(submissionPath)
               const purgeLine = purged.length
                 ? `\n\n同时清理了桶里的 ${purged.length} 个文件：`
@@ -493,3 +686,26 @@ jobs:
             exit 1
           fi
           echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      # 推送成功之后才删源对象 —— 顺序是刻意的。源对象必须活到「新引用已经推上去」那一刻：
+      # 上面那步一旦推送失败（多条同时过审导致的冲突等），站点上跑的还是旧数据（指着
+      # upload/），这时候把源删了就是整站 404。所以清理只在这一步做，且只在 changed=true 时做。
+      - name: 清理迁移后的源对象
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          PURGE_TOKEN: ${{ secrets.PURGE_TOKEN }}
+          PURGE_BASE: https://submit.132614.xyz
+        run: |
+          F="$RUNNER_TEMP/oss-move-plan.json"
+          if [ ! -f "$F" ]; then echo "本轮没有需要清理的桶对象"; exit 0; fi
+          BODY=$(python3 -c "import json;print(json.dumps({'keys':json.load(open('$F')).get('src',[])}))")
+          if [ "$BODY" = '{"keys": []}' ]; then echo "本轮没有需要清理的桶对象"; exit 0; fi
+          echo "清理：$BODY"
+          # 失败只告警，绝不把这次审核判成失败：引用已经换成 releases/ 了，清不掉只是多留
+          # 一个孤儿对象，由 6 小时一次的桶对账任务报出来。
+          # 兜一层：万一以后有人在这段里加了调试输出，token 也不会带进 CI 日志
+          echo "::add-mask::$PURGE_TOKEN"
+          curl -sS -X POST "$PURGE_BASE/api/purge" \
+            -H "Content-Type: application/json" \
+            -H "X-Purge-Token: $PURGE_TOKEN" \
+            -d "$BODY" || echo "::warning::桶对象清理失败，稍后由对账任务报出"

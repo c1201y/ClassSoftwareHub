@@ -140,6 +140,8 @@
                   <span v-if="uploadError" class="submit-upload-error">{{ uploadError }}</span>
                   <span v-else-if="iconUploadWarn" class="submit-upload-warn">{{ iconUploadWarn }}</span>
                 </div>
+                <!-- 上传成功不等于提交成功：这个附件要等 /api/submit 才会被认领，超时会被回收 -->
+                <div v-if="iconUploadTtl" class="submit-upload-hint">{{ iconUploadTtl }}</div>
                 <WinTextBlock
                   class="submit-upload-note"
                   FontSize="12"
@@ -265,9 +267,13 @@
                     :PlaceholderText="t('submit.download-note-placeholder')"
                     v-model:Text="dl.note" />
                 </div>
+                <!-- 本站上传回填的 `oss://` 键是服务端生成的，锁成只读：用户改一个字符
+                     就是一条指向别的对象的直链，既会 404 也给了「伪造引用」的口子。 -->
                 <WinTextBox
                   :Header="t('submit.download-url')"
                   :PlaceholderText="t('submit.download-url-placeholder')"
+                  :IsReadOnly="isManagedUrl(dl.url)"
+                  :Description="isManagedUrl(dl.url) ? t('submit.download-url-locked') : ''"
                   v-model:Text="dl.url">
                   <template #header>{{ t('submit.download-url') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
                 </WinTextBox>
@@ -287,6 +293,7 @@
                   <span v-else-if="dlUploadWarn[i]" class="submit-upload-warn">{{ dlUploadWarn[i] }}</span>
                 </div>
                 <div class="submit-upload-hint" v-else>{{ t('submit.upload-notconfigured') }}</div>
+                <div v-if="dlUploadTtl[i]" class="submit-upload-hint">{{ dlUploadTtl[i] }}</div>
                 <!-- 校验值（选填）：只收十六进制，页面按位数认算法，不写算法名 -->
                 <WinTextBox
                   :Header="t('submit.download-hash')"
@@ -297,7 +304,11 @@
             </div>
             <WinButton
               :Content="'+ ' + t('submit.download-add')"
+              :IsEnabled="form.downloads.length < MAX_DOWNLOADS"
               @Click="addDownload" />
+            <div v-if="form.downloads.length >= MAX_DOWNLOADS" class="submit-upload-hint">
+              {{ t('submit.download-limit') }}
+            </div>
           </div>
 
           <!-- ── 提交 ────────────────────────────────────────────── -->
@@ -490,6 +501,13 @@ const dlUploadWarn = ref<string[]>([]);
 /** 上传进度百分比（0-100；-1 = 尚未拿到进度，退回普通「上传中…」） */
 const iconUploadPct = ref(-1);
 const dlUploadPct = ref<number[]>([]);
+/**
+ * 「上传完了，但还没提交」的倒计时提示。
+ * 阈值不是写死的：服务端在签发上传地址时会回传当前生效的 orphanMinutes，
+ * 运维在线上把这个值调小，界面提示会跟着变，不会前后对不上。
+ */
+const iconUploadTtl = ref('');
+const dlUploadTtl = ref<string[]>([]);
 
 /** 上传进度 → 百分数（0-100）；总量未知时返回 -1，由文案层回退 */
 function toPercent(p: UploadProgress): number {
@@ -512,9 +530,8 @@ function humanSize(bytes: number): string {
 
 /**
  * 上传前的本地预检：超过硬上限直接劝退。
- * 判据是实测的 —— 链路要经 Cloudflare Worker 中转，而 Worker 把整个文件读进
- * 128 MB 的 isolate 内存（非流式），超限会以 1102/413 失败。与其让用户等几分钟
- * 再看一串英文报错，不如在选文件时就说明白。
+ * 现在的链路是浏览器直连 OSS，没有中转内存这道墙了，所以门槛纯粹是「本站愿意收多大」：
+ * 超过 2.5 GB 的一律引导去填官网 / GitHub Releases 直链（存储费与下行费都不划算）。
  */
 function sizeGuard(file: File): string {
   return file.size > UPLOAD_MAX_BYTES
@@ -527,6 +544,28 @@ function sizeWarn(file: File): string {
   return file.size > UPLOAD_WARN_BYTES
     ? t('submit.upload-large-warn', { size: humanSize(file.size) })
     : '';
+}
+
+/** 单个软件最多几个下载项（与 Worker 的 MAX_DOWNLOADS_PER_APP 同口径） */
+const MAX_DOWNLOADS = 5;
+
+/**
+ * 是不是「本站上传回填」的对象键。
+ * 这类键由服务端生成、且与登记表一一对应，界面锁成只读 —— 手改一个字符就是另一条外部
+ * 直链（轻则 404，重则把审核引到一个不受本站控制、也无法回收的对象上）。
+ */
+function isManagedUrl(url: string): boolean {
+  return /^oss:\/\//i.test((url || '').trim());
+}
+
+/**
+ * 「上传后 N 分钟内必须提交」提示。
+ * 阈值由服务端在签发上传地址时下发（可在线调整），拿不到就不显示 —— 不写死一个数字，
+ * 免得运维把阈值调小后界面还在说 15 分钟。
+ */
+function ttlText(minutes?: number): string {
+  const n = Number(minutes);
+  return Number.isFinite(n) && n > 0 ? t('submit.upload-ttl-warn', { minutes: n }) : '';
 }
 
 /** 上传失败 → 本地化文案；OSS 回的是英文 / XML 原始报错，一律换成人话再给用户看 */
@@ -582,8 +621,9 @@ async function onIconPicked(ev: Event) {
       iconUploadWarn.value = t('submit.upload-large-warn', { size: humanSize(file.size) });
     }
     // 图标走 icon/ 前缀：小图，读取走公开的 /api/icon，不进下载闸门
-    const { url } = await uploadToOss(file, (p) => { iconUploadPct.value = toPercent(p); }, 'icon');
+    const { url, orphanMinutes } = await uploadToOss(file, (p) => { iconUploadPct.value = toPercent(p); }, 'icon');
     form.icon = url;
+    iconUploadTtl.value = ttlText(orphanMinutes);
   } catch (error) {
     uploadError.value = uploadErrorText(error);
     iconUploadWarn.value = '';
@@ -612,10 +652,11 @@ async function onDownloadFilePicked(ev: Event) {
   try {
     // 软件包走 upload/ 前缀：私有对象，回填的是 `oss://对象键`，
     // 详情页点下载时由 ossDownload.ts 换一张 15 分钟票据再取流。
-    const { url } = await uploadToOss(file, (p) => { dlUploadPct.value[index] = toPercent(p); }, 'file');
+    const { url, orphanMinutes } = await uploadToOss(file, (p) => { dlUploadPct.value[index] = toPercent(p); }, 'file');
     form.downloads[index].url = url;
     form.downloads[index].kindIndex = 1; // 本站直链 → 显式按「文件」渲染（点了本页直接下，不跳走）
     dlUploadWarn.value[index] = '';
+    dlUploadTtl.value[index] = ttlText(orphanMinutes);
   } catch (error) {
     dlUploadError.value[index] = uploadErrorText(error);
     dlUploadWarn.value[index] = '';
@@ -626,6 +667,8 @@ async function onDownloadFilePicked(ev: Event) {
 }
 
 const addDownload = () => {
+  // 按钮已经会禁用，这里再拦一道：上限是数据约定，不能只靠 UI 兜着
+  if (form.downloads.length >= MAX_DOWNLOADS) return;
   form.downloads.push(emptyDownload());
 };
 
@@ -637,6 +680,7 @@ const removeDownload = (index: number) => {
   dlUploadPct.value.splice(index, 1);
   dlUploadError.value.splice(index, 1);
   dlUploadWarn.value.splice(index, 1);
+  dlUploadTtl.value.splice(index, 1);
 };
 
 // ════════════════════════════════════════════════════════════════════
@@ -889,12 +933,15 @@ const ID_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
  * （error 为空表示按通用的「请填写带 * 的必填项」提示）。
  */
 /**
- * 联系方式：本地用 age 公钥加密，只提交 ASCII armor 密文；留空或加密失败返回空串，由必填校验兜底。
+ * 联系方式：本地用 age 公钥加密，只提交 ASCII armor 密文。
+ * 返回 null 表示「没填」（走通用必填提示）；返回 '' 表示「填了但加密失败」
+ * —— 这两种情况对用户来说不是一回事：前者是没写，后者是写了却交不出去，
+ * 得给出明确文案，不能混进「请填写带 * 的必填项」里让人对着填好的输入框发呆。
  * age-encryption 体积较大（含后量子曲线依赖），走动态 import，只在真正提交时按需加载。
  */
-async function encryptContact(): Promise<string> {
+async function encryptContact(): Promise<string | null> {
   const contact = form.contact.trim();
-  if (!contact) return '';
+  if (!contact) return null;
   try {
     const age = await import('age-encryption');
     const encrypter = new age.Encrypter();
@@ -902,7 +949,7 @@ async function encryptContact(): Promise<string> {
     const ciphertext = await encrypter.encrypt(contact);
     return age.armor.encode(ciphertext);
   } catch {
-    return ''; // 加密失败视同未填，走必填校验
+    return ''; // 加密失败：由 buildPayload 给出专门提示
   }
 }
 
@@ -951,6 +998,10 @@ async function buildPayload(): Promise<{ payload: Record<string, unknown> | null
 
   // 必填校验（原来靠原生 required，但提交按钮不是原生 submit 按钮，校验根本不会触发）
   // 「系统限制」也计入必填：留空详情页只会显示「待补充」；从 GitHub 一键读取时会自动归纳填上
+  // ⚠️ contactField 为 ''（填了但加密失败）时先给专门文案，别掉进通用必填提示里
+  if (contactField === '') {
+    return { payload: null, error: t('submit.error-encrypt') };
+  }
   const missing =
     !payload.id || !payload.name || !payload.category ||
     !payload.tagline || !payload.description || !payload._联系方式 ||

@@ -3,6 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- ── 内容安全策略（CSP）────────────────────────────────────────
+         下载项 / 投稿字段里混进 <script> 注入时，这里是最后一道闸。
+         · script-src 只认本站、百度统计域名 + 三个内联统计片段的精确 hash
+           （改 index.html 里那段统计代码后，hash 必须重算，否则统计静默失效）；
+         · img/media/connect 不限域名：图标代理、镜像直链、统计回传来源太杂；
+         · object-src 'none' + base-uri 'self' + form-action 'self'：封掉
+           <object> 嵌入、<base> 劫持相对链接、表单外发这三条老路。
+         ⚠️ <meta> 里的 CSP 不支持 frame-ancestors / report-uri，真要防
+            点击劫持得靠响应头（Pages/_headers 或反代）。 -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://hm.baidu.com 'sha256-VEEZKWGetRyw+Q2eJFgWXnvqWl3jBCwGLPAuqp0uBwU=' 'sha256-edoKJS/LM9RYA+FFiAH3K83R6V4z+uGiORI8KVLjgqo=' 'sha256-PBixRlOtihrX99C823lQ3r6tVzQ9i8NPBWg+hSFFVjs='; style-src 'self' 'unsafe-inline'; img-src * data: blob:; media-src 'self' *; font-src 'self' data:; connect-src *; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
+    />
     <!-- 页面标题会在运行时由 i18n 的 app.title 覆盖 -->
     <title>电教委员常用软件下载站</title>
 

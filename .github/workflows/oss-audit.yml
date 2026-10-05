@@ -1,0 +1,36 @@
+name: OSS 桶对账
+
+# 每 6 小时把「桶里有什么」和「仓库引用了什么」对一次账。
+# 想改成 12 小时：把下面这行换成 '0 */12 * * *'。
+#
+# 为什么不在 Worker 里做：Worker 看不到仓库（不知道 apps/*.json 引用了哪些键），
+# 而只有「桶 ∩ 仓库」才能分出「断链」和「真孤儿」。Worker 那边的 cron 负责的是另一件事
+# —— 「传了但没提交」的 upload/ 对象，那件事 Actions 的 schedule 追不上（见 runGc 注释）。
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 退出码 1 = 发现断链（会触发 Actions 的失败通知）；基础设施抽风一律退出 0，
+      # 免得中继临时不可用就天天报红。
+      - name: 对账
+        env:
+          PURGE_TOKEN: ${{ secrets.PURGE_TOKEN }}
+          # Cloudflare 直连入口（cshapi 走 SpeedOnline CDN 回源，2026-10-05 起持续 502）
+          PURGE_BASE: https://submit.132614.xyz
+        run: |
+          # 兜一层：万一哪次脚本把 token 打进了日志，GitHub 会自动把它涂成 ***
+          echo "::add-mask::$PURGE_TOKEN"
+          node scripts/oss-orphan-audit.mjs

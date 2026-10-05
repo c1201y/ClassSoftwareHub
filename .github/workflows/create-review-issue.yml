@@ -17,8 +17,12 @@ jobs:
     # 反馈草稿要在开完 Issue 后删掉：删文件也是一次 push，与「审核合并」那条管道
     # （review-submission.yml）可能同时发生，两边都靠 rebase 重试兜底。
     concurrency:
-      group: create-review-issue
-      queue: max
+      # 与 review-submission / check-updates / update-ignore-command 共用一个组：
+      # 这几条管道都会 push 改仓库数据（submissions/、apps/、版本表），
+      # 并行跑会互相抢 main（各自 rebase 重试能兜住，但排队更省心）。
+      # GitHub 的并发组全仓库同名即互斥，跨工作流也生效；默认不取消、只排队。
+      group: repo-data-write
+      cancel-in-progress: false
     permissions:
       contents: write
       issues: write
@@ -78,6 +82,34 @@ jobs:
             const feedbackDrafts = []
             const isFeedbackDraft = (p) => /^submissions\/feedback-[^/]+\.json$/.test(p)
 
+            // ── Markdown 安全渲染 ──────────────────────────────────────────────
+            // 下面每一个字符串都来自**匿名投稿接口**，却要直接拼进 Issue 正文。
+            // GitHub 会过滤 HTML 标签，但 Markdown 元字符照样生效：
+            //   反引号    → 提前结束 `代码段`，后面的字变成正文甚至格式；
+            //   三反引号  → 提前闭合 ```json 围栏，把任意内容提升为正文；
+            //   @名字     → 真的会通知到人（拿来刷骚扰最省事）；
+            //   #数字 / ![]() → 变成交叉引用与外部请求（追踪像素）。
+            // 规矩：**凡是用户给的字符串，进正文前一律过一道**，一个都不许裸奔。
+            const mdSafe = (v, max = 300) =>
+              String(v ?? '')
+                .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '')
+                .replace(/[\u200b-\u200f\u202a-\u202e\u2066-\u2069]/g, '')
+                .replace(/\r\n?/g, '\n')
+                .replace(/\n{3,}/g, '\n\n')
+                .trim()
+                .slice(0, max)
+            // 行内片段：连换行一起压平，反引号与竖线换成单引号（既不破代码段也不破表格）
+            const mdInline = (v, max = 300) =>
+              mdSafe(v, max).replace(/[`|]/g, "'").replace(/\s*\n\s*/g, ' ')
+            // 代码块内容：把围栏本身打断，否则内容里的 ``` 能提前闭合代码块
+            const mdFence = (v, max = 20000) => mdSafe(v, max).replace(/```/g, "'''")
+            // 引用块：逐行加 '> '，并且逐行打断围栏
+            const mdQuote = (v, max = 8000) =>
+              mdFence(v, max)
+                .split('\n')
+                .map((line) => (line.trim() ? `> ${line}` : '>'))
+                .join('\n')
+
             // 幂等保护：手动「Re-run」时 before/after 不变，不判重会重复建 issue。
             // ⚠️ 判重必须认【草稿文件路径】，不能认 Issue 标题（2026-09-20 踩过）：
             //    标题是「软件名 (id)」，同一个软件被重新提交时新标题与旧 Issue 一模一样，
@@ -127,7 +159,19 @@ jobs:
                 if (isFeedbackDraft(file)) feedbackDrafts.push(file)
                 continue
               }
-              const data = JSON.parse(fs.readFileSync(file, 'utf8'))
+              // ⚠️ 单条草稿只允许失败它自己：JSON.parse 对坏文件直接 throw，不拦的话
+              //    一条手滑写坏的草稿会让整轮终止，排在后面的草稿全都建不出 Issue。
+              let data
+              try {
+                data = JSON.parse(fs.readFileSync(file, 'utf8'))
+              } catch (e) {
+                core.warning(`草稿 ${file} 不是合法 JSON，已跳过（${e && e.message}）。请人工检查：修复或删除该文件。`)
+                continue
+              }
+              if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+                core.warning(`草稿 ${file} 顶层不是 JSON 对象，已跳过。请人工检查。`)
+                continue
+              }
 
               // ── 回声洞字条：和「提交软件」同一条管道，只是 Issue 形态不同 ──
               // 草稿由 classhub worker 的 /api/echocave 写入，形如
@@ -136,23 +180,24 @@ jobs:
               // 会得到同一个标题，但草稿路径带时间戳、天然唯一。
               if (data._类型 === '回声洞') {
                 const echoText = String(data.text ?? '').trim()
-                const echoTitle = `[待审核] 回声洞 · ${echoText.slice(0, 40)}`
+                // 标题不进 Markdown 渲染，但仍要压平空白：换行 / 控制字符会把标题撑歪
+                const echoTitle = `[待审核] 回声洞 · ${mdInline(echoText, 40)}`
                 if (existingTitles.has(echoTitle)) {
                   console.log(`⚠️ 已有同名 Issue（历史记录或其它草稿），仍为这条草稿新建：${echoTitle}`)
                 }
                 const echoBody = [
-                  `**提交文件**：\`${file}\``,
+                  `**提交文件**：\`${mdInline(file, 200)}\``,
                   '**类型**：回声洞字条',
-                  `**提交时间**：${data._提交时间 ?? ''}`,
+                  `**提交时间**：${mdInline(data._提交时间, 40)}`,
                   '',
                   '**内容**：',
                   '',
-                  '> ' + (echoText || '（空）').replace(/\n/g, '\n> '),
+                  mdQuote(echoText || '（空）'),
                   '',
                   '<details><summary>查看完整 JSON</summary>',
                   '',
                   '```json',
-                  JSON.stringify(data, null, 2),
+                  mdFence(JSON.stringify(data, null, 2)),
                   '```',
                   '',
                   '</details>',
@@ -162,12 +207,18 @@ jobs:
                   '- 打上 `approved` 标签 → 收进 `回声洞/messages/messageN.json`，随后自动上线',
                   '- 打上 `rejected` 标签 → 删除投稿，关闭 Issue',
                 ].join('\n')
-                await github.rest.issues.create({
-                  ...context.repo,
-                  title: echoTitle,
-                  body: echoBody,
-                  labels: ['待审核']
-                })
+                try {
+                  await github.rest.issues.create({
+                    ...context.repo,
+                    title: echoTitle,
+                    body: echoBody,
+                    labels: ['待审核']
+                  })
+                } catch (e) {
+                  // 建 Issue 失败只算这一条失败：草稿留在原地下轮补票，别拖垮同批其它草稿
+                  core.warning(`回声洞草稿建 Issue 失败（${e.message}），下轮会自动补票：${file}`)
+                  continue
+                }
                 continue
               }
 
@@ -185,7 +236,7 @@ jobs:
                 const subLabel = data.kind === 'report' ? (SUB_LABEL[data.subKind] || '') : ''
                 const prefix = subLabel ? `${kindLabel} · ${subLabel}` : kindLabel
                 // 标题会连同用户输入一起进 Issue 标题：压平空白 + 兜住空标题
-                const subject = String(data.title ?? '').replace(/\s+/g, ' ').trim() || '（未填写标题）'
+                const subject = mdInline(data.title, 80) || '（未填写标题）'
                 const fbTitle = prefix ? `[${prefix}] ${subject}` : subject
                 // ⚠️ 标签名必须与仓库 Labels 一字不差；只要有一个不存在，issues.create 会整个
                 //    失败并断言。所以下面建失败时会退一步「不带标签」重试，宁可少标签也不能不建。
@@ -213,29 +264,27 @@ jobs:
                     : `\`${appId}\` · [详情页](https://classsoftwarehub.us.ci/#/download/${appId})`
                 }
 
-                const asQuote = (text) =>
-                  String(text).split('\n').map((line) => (line.trim() ? `> ${line}` : '>')).join('\n')
                 const contact = String(data.contact ?? '').trim()
                 const fbBody = [
-                  asQuote(String(data.detail ?? '').trim() || '（空）'),
+                  mdQuote(String(data.detail ?? '').trim() || '（空）'),
                   '',
                   '---',
                   '',
                   '| 项目 | 内容 |',
                   '| --- | --- |',
-                  `| 类型 | ${prefix || '（未选择）'} |`,
-                  `| 涉及软件 | ${appLine} |`,
+                  `| 类型 | ${mdInline(prefix, 60) || '（未选择）'} |`,
+                  `| 涉及软件 | ${mdInline(appLine, 200)} |`,
                   // 联系方式是本地 age 公钥加密后的密文（明文只留在提交者本机）；
                   // 密文是多行 ASCII armor，塞进表格会把表格撑破，所以单列一段代码块，
                   // 也方便维护者整段复制去用私钥解密。
                   ...(contact
-                    ? ['', '### 联系方式（已在本地加密，仅维护者可用私钥解密）', '', '```', contact, '```']
+                    ? ['', '### 联系方式（已在本地加密，仅维护者可用私钥解密）', '', '```', mdFence(contact), '```']
                     : []),
                   '',
                   '---',
                   '',
-                  `**提交文件**：\`${file}\``,
-                  `**提交时间**：${data._提交时间 ?? ''}`,
+                  `**提交文件**：\`${mdInline(file, 200)}\``,
+                  `**提交时间**：${mdInline(data._提交时间, 40)}`,
                   '',
                   '> 本条由站点「反馈中心」（`#/feedback`）直接投递，**无需审核合并** —— '
                     + 'Issue 本身就是它的归宿，处理完关闭即可。',
@@ -258,7 +307,8 @@ jobs:
                 continue
               }
 
-              const title = `[待审核] ${data.name} (${data.id})`
+              // 标题里也必须压平：name 是用户自由文本，换行 / 控制字符会把标题撑歪
+              const title = `[待审核] ${mdInline(data.name, 80)} (${String(data.id ?? '').replace(/[^a-z0-9-]/gi, '').slice(0, 60)})`
               if (existingTitles.has(title)) {
                 console.log(`⚠️ 已有同名 Issue（历史记录或其它草稿），仍为这条草稿新建：${title}`)
               }
@@ -272,22 +322,29 @@ jobs:
               //    说明是提交服务写草稿时重建了 JSON，把它不认识的入参键丢掉了。
               //    所以缺字段只提示「请提交者在本 Issue 下回复」，不猜原因。
               const contact = String(data._联系方式 ?? '').trim()
-              const contactLine = contact
-                ? `**联系方式**：${contact}`
-                : '**联系方式**：⚠️ 这条里没有。提交页对「联系方式」是必填，若提交者确认填过，'
-                  + '说明提交接口没有把它写进草稿 —— 请让提交者在本 Issue 下直接回复联系方式。'
+              // 联系方式是本机加密后的 age ASCII armor（多行）。以前直接内联在 `**联系方式**：`
+              // 后面，换行会把后面所有内容挤成正文；现在单列一个代码块，既安全又好复制。
+              const contactLines = contact
+                ? ['', '### 联系方式（已在本地加密，仅维护者可用私钥解密）', '', '```', mdFence(contact), '```']
+                : ['', '**联系方式**：⚠️ 这条里没有。提交页对「联系方式」是必填，若提交者确认填过，'
+                    + '说明提交接口没有把它写进草稿 —— 请让提交者在本 Issue 下直接回复联系方式。']
+              // 投稿指纹：Worker 用它反查「同一台设备还挂着几条待审」（每台最多 3 条）。
+              // 用 HTML 注释，渲染时看不见，也不会被上面的 mdFence 破坏。
+              const sid = String(data._提交指纹 ?? '').replace(/[^a-f0-9]/gi, '').slice(0, 32)
+              const sidLine = sid ? [`<!-- csh-submitter:${sid} -->`, ''] : []
               const body = [
-                `**提交文件**：\`${file}\``,
-                `**软件 ID**：\`${data.id}\``,
-                `**分类**：\`${data.category}\``,
-                `**提交时间**：${data._提交时间}`,
-                contactLine,
+                `**提交文件**：\`${mdInline(file, 200)}\``,
+                `**软件 ID**：\`${mdInline(data.id, 60)}\``,
+                `**分类**：\`${mdInline(data.category, 40)}\``,
+                `**提交时间**：${mdInline(data._提交时间, 40)}`,
+                ...sidLine,
                 conflictHint,
+                ...contactLines,
                 '',
                 '<details><summary>查看完整 JSON</summary>',
                 '',
                 '```json',
-                JSON.stringify(data, null, 2),
+                mdFence(JSON.stringify(data, null, 2)),
                 '```',
                 '',
                 '</details>',
@@ -298,12 +355,18 @@ jobs:
                 '- 打上 `rejected` 标签 → 删除草稿，关闭 Issue',
               ].join('\n')
 
-              await github.rest.issues.create({
-                ...context.repo,
-                title,
-                body,
-                labels: ['待审核']
-              })
+              try {
+                await github.rest.issues.create({
+                  ...context.repo,
+                  title,
+                  body,
+                  labels: ['待审核']
+                })
+              } catch (e) {
+                // 同上：单条失败不拖垮整轮；草稿留在 submissions/ 下轮自动补票
+                core.warning(`投稿草稿建 Issue 失败（${e.message}），下轮会自动补票：${file}`)
+                continue
+              }
             }
 
             // 把要收起的反馈草稿传给下一步（多行文本；一个都没有就不传，下一步自然跳过）

@@ -174,7 +174,10 @@ const hi = computed(() => Math.max(Math.floor(from.value || 0), Math.floor(to.va
 
 /** 加密随机整数 [0, n) —— 用 getRandomValues，比 Math.random 公平 */
 const randInt = (n: number) => {
-  if (n <= 1) return 0;
+  if (!(n >= 1)) return 0;
+  // n 超过 2^32 时 limit = Math.floor(4294967295/n)*n = 0，
+  // while (v >= 0) 永远成立 → 页面直接冻死。退化成 Math.random 兜底。
+  if (n > 4294967295) return Math.floor(Math.random() * n);
   const limit = Math.floor(4294967295 / n) * n;
   const buf = new Uint32Array(1);
   let v = 0;
@@ -184,6 +187,17 @@ const randInt = (n: number) => {
   } while (v >= limit);
   return v % n;
 };
+
+/**
+ * 范围/数量上限。
+ *
+ * NumberBox 没法完全拦住手滑（粘贴一个 1e12 进去、或 localStorage 里存了脏值）：
+ * 不设上限的话，pickOnce/doGroup 会按 range 建**十亿元素级**的数组 —— 不是卡，
+ * 是直接把标签页内存打爆。10 万个号对课堂抽号绰绰有余。
+ */
+const MAX_POOL = 100000;
+const MAX_COUNT = 10000;
+const poolTooBig = () => poolSize.value > MAX_POOL;
 
 const poolSize = computed(() => hi.value - lo.value + 1);
 
@@ -211,10 +225,14 @@ const pickOnce = (k: number): number[] | null => {
 
 const start = () => {
   error.value = '';
-  const k = Math.max(1, Math.floor(count.value || 1));
+  const k = Math.min(MAX_COUNT, Math.max(1, Math.floor(count.value || 1)));
   const size = poolSize.value;
   if (size <= 1) {
     error.value = '请填写有效的号码范围（如 1 ~ 50）';
+    return;
+  }
+  if (poolTooBig()) {
+    error.value = `号码范围太大了（最多 ${MAX_POOL.toLocaleString()} 个），请缩小范围`;
     return;
   }
   if (k > size) {
@@ -281,6 +299,10 @@ const runFairCheck = () => {
     flash('请先填有效的号码范围', 2600);
     return;
   }
+  if (poolTooBig()) {
+    flash(`号码范围太大了（最多 ${MAX_POOL.toLocaleString()} 个）`, 2600);
+    return;
+  }
   const buckets = Math.min(10, size);
   const total = 20000;
   const counts = new Array<number>(buckets).fill(0);
@@ -329,6 +351,10 @@ const doGroup = () => {
   const v = Math.max(1, Math.floor(groupValue.value || 1));
   if (size <= 1) {
     flash('请填写有效的号码范围', 2600);
+    return;
+  }
+  if (poolTooBig()) {
+    flash(`号码范围太大了（最多 ${MAX_POOL.toLocaleString()} 个）`, 2600);
     return;
   }
   const nums: number[] = [];

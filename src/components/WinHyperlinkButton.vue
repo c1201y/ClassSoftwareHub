@@ -1,11 +1,11 @@
 <template>
   <a
-    v-if="NavigateUri"
+    v-if="safeUri"
     v-bind="buttonAttrs"
     class="win-hyperlink-button"
     :class="[{ disabled: isDisabled }, attrs.class]"
     :style="buttonStyle"
-    :href="NavigateUri"
+    :href="safeUri"
     :target="TargetName || '_self'"
     :rel="TargetName === '_blank' ? 'noopener noreferrer' : undefined"
     :aria-disabled="isDisabled"
@@ -58,6 +58,19 @@ const buttonAttrs = computed(() => {
 });
 
 const isDisabled = computed(() => props.IsEnabled === false);
+
+/**
+ * NavigateUri 的协议白名单。
+ *
+ * 这个组件的调用方有的会把**用户投稿里抄来的字符串**直接传进来（比如详情页
+ * 的官网/商店链接）。`javascript:` 一类的 href 点一下就是 XSS —— 所以白名单
+ * 以外的「链接」一律不渲染成 <a>，降级成下面那个惰性 <button>（点了没反应）。
+ */
+const SAFE_URI_RE = /^(?:https?:\/\/|ms-windows-store:)/i;
+const safeUri = computed(() => {
+  const uri = (props.NavigateUri || '').trim();
+  return SAFE_URI_RE.test(uri) ? uri : '';
+});
 
 const cssLength = (value) => {
   if (value === '' || value === undefined || value === null) return '';

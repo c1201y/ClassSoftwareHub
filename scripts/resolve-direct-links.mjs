@@ -155,8 +155,27 @@ function errText(error) {
 
 // ── 网络 ────────────────────────────────────────────────────────────────
 
+/**
+ * http(s) 协议守卫 —— 所有出站请求的统一入口。
+ * 数据文件里的 URL 属于半可信输入（维护者手抄的官网地址），万一混进
+ * file: / ftp: / data: 这类协议，Node 的 fetch 虽然多半会拒，但别赌它。
+ */
+function assertHttpUrl(url) {
+  let u
+  try {
+    u = new URL(url)
+  } catch {
+    throw new Error(`不是合法 URL：${String(url).slice(0, 80)}`)
+  }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') {
+    throw new Error(`拒绝非 http(s) 地址：${u.protocol}//${u.hostname}`)
+  }
+  return u
+}
+
 /** 带超时的 fetch；body 用完即断，不会把 GB 级安装包真下下来 */
 async function fetchWithTimeout(url, options = {}, timeout = TIMEOUT) {
+  assertHttpUrl(url)
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeout)
   try {
@@ -164,6 +183,33 @@ async function fetchWithTimeout(url, options = {}, timeout = TIMEOUT) {
   } finally {
     clearTimeout(timer)
   }
+}
+
+/**
+ * 有上限地读文本响应。
+ * res.text() 会把整个响应体吃进内存 —— 内容型响应（html/json）一般不大，
+ * 但 content-type 是对方说了算的：一个标成 text/html 的巨型响应能把
+ * runner 的内存打爆。边读边数，超限即断流报错。
+ */
+async function readTextCapped(res, max = 3 * 1024 * 1024) {
+  const reader = res.body.getReader()
+  const chunks = []
+  let total = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    total += value.length
+    if (total > max) {
+      try {
+        await reader.cancel()
+      } catch {
+        /* 断流失败无所谓 */
+      }
+      throw new Error(`响应体超过 ${max} 字节上限，拒绝读入`)
+    }
+    chunks.push(value)
+  }
+  return Buffer.concat(chunks).toString('utf8')
 }
 
 /**
@@ -224,14 +270,14 @@ async function ghRaw(apiUrl, fallbackUrl) {
   if (TOKEN) headers.Authorization = `Bearer ${TOKEN}`
   try {
     const res = await fetchWithTimeout(apiUrl, { headers })
-    if (res.ok) return await res.text()
+    if (res.ok) return await readTextCapped(res)
   } catch {
     /* 落到备用地址 */
   }
   if (!fallbackUrl) throw new Error('取文件失败')
   const res = await fetchWithTimeout(fallbackUrl, { headers: { 'User-Agent': UA } })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return await res.text()
+  return await readTextCapped(res)
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -537,7 +583,7 @@ async function probeEntry(entryUrl, needBody = false) {
         disposition: res.headers.get('content-disposition') || '',
         body: '',
       }
-      if (/text|html|json|xml|javascript/i.test(type)) info.body = await res.text()
+      if (/text|html|json|xml|javascript/i.test(type)) info.body = await readTextCapped(res)
       else {
         try {
           await res.body?.cancel()
