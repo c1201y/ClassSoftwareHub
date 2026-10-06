@@ -1,0 +1,21 @@
+{
+  "id": "wisediskceaner-woij",
+  "name": "Wise Disk Cleaner",
+  "icon": "https://cshapi.132614.xyz/api/icon?k=icon%2F2026%2F10%2Fmuwehxy7-jy6szh-1.ico",
+  "category": "system",
+  "tagline": "一个轻量的磁盘清理工具",
+  "description": "一个可以整理磁盘及清理的轻量化工具",
+  "version": "11.4.0",
+  "size": "11.8MB",
+  "system": "All",
+  "website": "https://wisediskcleaner.com.cn/wise-disk-cleaner.html",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "x86",
+      "size": "11.8MB",
+      "url": "oss://releases/2026/10/muwf0mjy-bun7ef-WDCFree_11.4.0.860.exe"
+    }
+  ],
+  "sort": 1
+}
