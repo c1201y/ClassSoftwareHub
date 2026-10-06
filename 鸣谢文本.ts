@@ -36,7 +36,7 @@ const credits: {
   people: [
     { name: "Tiny-Nick", note: "前期网站制作，现在致力于Windows桌面端开发", url: "https://space.bilibili.com/1274920807" },
     { name: "椰汁cyan", note: "提供网站搭建和现网站维护更新，同时负责Win7桌面端开发", url: "https://github.com/c1201y" },
-    { name: "跨平台桌面版贡献者/HelloCHLdev", note: "现致力于Linux（跨平台）平台桌面端应用的开发" },
+    { name: "HelloCHLdev", note: "现致力于Linux（跨平台）平台桌面端应用的开发", url: "https://github.com/HelloCHLdev" },
     { name: "开心的阿罗娜（热心QQ群友）", note: "赞助桌面端开发与网站服务器搭建", url: "https://ifdian.net/a/TinyNickCSHub?tab=home" },
     { name: "凭舟吟", note: "提供GitHub加速+落盘缓存以提升下载体验" },
   ],
