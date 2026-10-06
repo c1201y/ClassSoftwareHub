@@ -171,11 +171,12 @@ export default {
       "detail.store-only": "该软件通过 Microsoft Store 分发，点上方按钮打开商店页面即可获取",
       "detail.store-nostore": "本机没有「应用商店」（LTSC / 精简版 / 被卸载过）时，上面的商店按钮会打不开或反过来让你去商店里装商店。这时按 Win+R 输入 wsreset -i 回车，联网状态下 Windows 会自动把商店装回来（1–3 分钟，期间没有进度条）；若仍无效，用管理员身份打开 PowerShell 执行 winget install 9WZDNCRFJBMP。",
       "detail.mirror-button": "加速下载",
+      "detail.mirror-hint": "不能下载？点我换个镜像",
       "detail.hash-copy": "复制",
       "detail.hash-copied": "已复制",
       "detail.hash-checksum": "校验值",
-      "detail.mirror-desc": "下面的镜像站会把上面的链接原样转发一份，国内下载通常快很多。这条不通就换一条，或者直接用上面的「下载」走 GitHub 官方。",
-      "detail.mirror-note": "镜像由第三方公益提供：本站只做跳转，不中转、不修改文件，也不保证它们一直可用。装之前建议核对官方公布的哈希值。",
+      "detail.mirror-desc": "这条路不一定每次都通（节点限速、被运营商拦、临时挂掉都有可能）。换下面任意一条再试，都是把同一个文件原样转发一份，国内下载通常快很多；也可以直接回上面点「下载」走 GitHub 官方。",
+      "detail.mirror-note": "「本站加速节点」由本站自建维护，只做转发、不改动文件；其余为第三方公益镜像，随时可能失效或限速。装之前建议核对官方公布的哈希值。",
       // 下载项的落地方式：能直下的按钮写「下载」（点了本页直接开始下，不跳走）；
       // 只能跳转的按来源写「前往官网 / 前往网盘」，下面再补一句说明
       "detail.open-page": "前往官网",

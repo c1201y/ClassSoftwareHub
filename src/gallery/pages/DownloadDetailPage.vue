@@ -124,30 +124,44 @@
                   :Content="downloadButtonText(download)"
                   Style="AccentButtonStyle"
                   @click="openDownload(download)" />
-                <!-- GitHub 的链接才多给一条国内加速路（通道清单见 githubMirror.ts） -->
+                <!-- GitHub 的链接才多给一条国内加速路（通道清单见 githubMirror.ts）。
+                     点了**直接在本页开始下载**：隐藏 <a> 触发，不跳转、不闪新标签，
+                     所以地址栏里不会出现镜像的 IP/域名。 -->
                 <WinButton
                   v-if="isMirrorableUrl(download.url)"
                   class="detail-mirror-button"
                   Style="AccentButtonStyle"
-                  @click="toggleMirror(download.url)">
+                  @click="accelerateDownload(download)">
                   <span class="detail-mirror-button-icon" aria-hidden="true">&#xE945;</span>
                   <span>{{ t('detail.mirror-button') }}</span>
                 </WinButton>
               </div>
             </div>
 
-            <!-- 加速通道：展开后列出所有镜像，点哪条走哪条 -->
+            <!-- 加速后的兜底小字：这条路要是不通（拦截 / 限速 / 节点挂了），
+                 用户自己就能换一条 —— 不必回来找维护者。点一下展开镜像列表。 -->
+            <p v-if="mirrorHintUrl === download.url" class="detail-mirror-hint">
+              <button
+                type="button"
+                class="detail-mirror-hint-link"
+                :aria-expanded="mirrorOpenUrl === download.url"
+                @click="toggleMirror(download.url)">
+                {{ t('detail.mirror-hint') }}
+              </button>
+            </p>
+
+            <!-- 换个镜像：列出除刚才那条以外的通道（自建节点排第一时 = 原来那四个公益镜像），
+                 点哪条走哪条，同样不跳转 -->
             <div v-if="mirrorOpenUrl === download.url" class="detail-mirror-panel">
               <p class="detail-mirror-desc">{{ t('detail.mirror-desc') }}</p>
               <div class="detail-mirror-channels">
                 <a
-                  v-for="channel in orderedChannels"
+                  v-for="channel in alternativeChannels"
                   :key="channel.id"
                   class="detail-mirror-channel"
                   :href="mirrorHref(download, channel)"
-                  target="_blank"
                   rel="noopener noreferrer"
-                  @click="onMirrorClick(channel)">
+                  @click.prevent="onMirrorClick(download, channel)">
                   <span class="detail-mirror-channel-name">{{ channel.name }}</span>
                 </a>
               </div>
@@ -182,9 +196,9 @@ import { appIconUrlSafe, markIconBroken } from '../appIcons';
 import { isSafeNavigateUrl, kindOf, triggerDownload } from '../downloadLink';
 import { OssDownloadError, ossKeyOf, resolveDownloadDetail } from '../ossDownload';
 import {
-  MIRROR_CHANNELS,
   isMirrorableUrl,
   mirrorUrl,
+  orderedChannels,
   preferredChannelId,
   rememberChannel
 } from '../githubMirror';
@@ -319,40 +333,80 @@ const copyHash = async (hash: string) => {
 };
 
 // ── GitHub 下载加速（通道清单与判断逻辑见 src/gallery/githubMirror.ts）──────
-// 主按钮始终是 GitHub 官方直链；这里只是额外给一条国内镜像的路，
-// 展开哪一行用 url 记（同一个软件不会有两行同一个链接）。
+// 主按钮始终是 GitHub 官方直链；「加速下载」点了**直接在本页开始下载**，
+// 不跳转、不闪新标签 —— 用隐藏 <a> 触发，地址栏里不会出现镜像的 IP。
+// 下不动时，上面会留一行小字「不能下载？点我换个镜像」，展开其余通道再试。
+//
+// 两条状态各用一条 url 记（同一个软件不会有两行同一个链接）：
+//   mirrorHintUrl —— 点过加速、该显示那行小字的那条
+//   mirrorOpenUrl —— 小字点开后、展开着换镜像面板的那条
 
-/** 当前展开了加速通道的那条下载链接；空串表示都没展开 */
+/** 点过加速下载的那条链接；空串表示还没点过 */
+const mirrorHintUrl = ref('');
+/** 当前展开着「换个镜像」面板的那条链接；空串表示都没展开 */
 const mirrorOpenUrl = ref('');
 
 // 点进另一个软件时组件会被复用（ref 不会自己清），把展开的面板和复制状态收起来
 watch(
   () => route.params.id,
   () => {
+    mirrorHintUrl.value = '';
     mirrorOpenUrl.value = '';
     copiedHash.value = '';
   }
 );
+
+/** 上次用过的通道排到最前 —— 常用的话能少点一下 */
+const preferredId = ref(preferredChannelId());
+
+/**
+ * 可用通道，按「上次用过的排第一」排序。
+ * ⚠️ 不可用的通道（http 前缀 + 页面是 https）已经在 usableChannels() 里滤掉了，
+ *    这里不用再判一次 —— 判断只留在 githubMirror.ts 一处。
+ */
+const channels = computed(() => orderedChannels(preferredId.value));
+
+/** 点「加速下载」默认走的那条：可用通道里的第一条（现在是自建节点） */
+const accelerateChannel = computed(() => channels.value[0] || null);
+
+/**
+ * 「换个镜像」里列出的候选 = 除了刚才用过的那条以外的全部通道。
+ * 用户点开这一栏，就是想换掉刚失败的那条，所以不再把原样列回去 ——
+ * 自建节点排第一时，这里正好是原来那四个公益镜像。
+ */
+const alternativeChannels = computed(() =>
+  channels.value.filter((channel) => channel.id !== preferredId.value)
+);
+
+/** 拼出该下载项在某个通道下的链接（url 是可选字段，这里顺手兜住空值） */
+const mirrorHref = (download: DownloadItem, channel: MirrorChannel) =>
+  download.url ? mirrorUrl(download.url, channel) : '';
+
+/**
+ * 加速下载：默认走可用通道里的第一条，**直接在本页触发下载**（不导航、不留 DOM）。
+ * 顺手把那行「不能下载？」的小字挂出来 —— 能不能下只有用户自己知道，
+ * 与其让他回来报告，不如当场给一条换路。
+ */
+const accelerateDownload = (download: DownloadItem) => {
+  if (!download.url) return;
+  const channel = accelerateChannel.value;
+  if (!channel) return;
+  triggerDownload(mirrorUrl(download.url, channel));
+  preferredId.value = channel.id;
+  rememberChannel(channel.id);
+  mirrorHintUrl.value = download.url;
+  mirrorOpenUrl.value = '';
+};
 
 const toggleMirror = (url?: string) => {
   if (!url) return;
   mirrorOpenUrl.value = mirrorOpenUrl.value === url ? '' : url;
 };
 
-/** 上次用过的通道排到最前 —— 常用的话能少点一下 */
-const preferredId = ref(preferredChannelId());
-const orderedChannels = computed(() => {
-  const first = MIRROR_CHANNELS.find((channel) => channel.id === preferredId.value);
-  if (!first) return MIRROR_CHANNELS;
-  return [first, ...MIRROR_CHANNELS.filter((channel) => channel !== first)];
-});
-
-/** 拼出该下载项在某个通道下的链接（url 是可选字段，这里顺手兜住空值） */
-const mirrorHref = (download: DownloadItem, channel: MirrorChannel) =>
-  download.url ? mirrorUrl(download.url, channel) : '';
-
-/** 记下这次选的通道（下次它就在最前面），并收起面板 —— 点完有反馈，不会看着像没反应 */
-const onMirrorClick = (channel: MirrorChannel) => {
+/** 换一条镜像：同样在本页触发下载，不跳转；点完收起面板算个反馈 */
+const onMirrorClick = (download: DownloadItem, channel: MirrorChannel) => {
+  const href = mirrorHref(download, channel);
+  if (href) triggerDownload(href);
   preferredId.value = channel.id;
   rememberChannel(channel.id);
   mirrorOpenUrl.value = '';
