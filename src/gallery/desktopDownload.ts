@@ -257,7 +257,10 @@ function probeMirror(url: string): Promise<boolean> {
  * 探测也一定失败，排进来只会白等一个超时）。
  */
 function candidateChannels(): MirrorChannel[] {
-  return orderedChannels();
+  const all = orderedChannels();
+  const self = all.find((channel) => channel.self);
+  // 自建节点永远排最前 —— 即使用户上次选过别的并存在了 localStorage，默认仍走自建节点
+  return self ? [self, ...all.filter((channel) => channel !== self)] : all;
 }
 
 /**
