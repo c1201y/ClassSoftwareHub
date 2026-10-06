@@ -1,0 +1,25 @@
+{
+  "_提交时间": "2026-10-06T07:50:23.426Z",
+  "_原始ID冲突": false,
+  "id": "cpython",
+  "name": "cpython",
+  "icon": "https://avatars.githubusercontent.com/u/1525981?v=4",
+  "category": "system",
+  "tagline": "Python",
+  "description": "伟大的Python，无需多言",
+  "version": "",
+  "size": "",
+  "system": "不限平台",
+  "website": "https://www.python.org",
+  "github": "https://github.com/python/cpython",
+  "downloads": [
+    {
+      "platform": "GitHub 最新版",
+      "note": "打开 Release 页面下载最新安装包",
+      "size": "网页",
+      "url": "https://github.com/python/cpython/releases/latest"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBaRlRZdlg3NWZBZzdSVTIx\na0Nzd2VSZEFJRGtTV09La3QvUEo2MlA2a1JrCkE0QmlDT3ZFYVR0YS8yM3FTdyth\nZ1R6YlVhUEJYbEdRTkRqZmJrSTBYencKLS0tIEVzZ3l4L0xObFVNVjVldEZnSnY4\nVlZUeEQ0QVBhSzV6bFA2R3M4Z3NSQmcKxUYMEdzlJ3iEm//LDfh9tR8CGlYfW/PY\ntufHyx+7O1efZRwLF1vFCjG3\n-----END AGE ENCRYPTED FILE-----"
+}
