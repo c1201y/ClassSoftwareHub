@@ -9,7 +9,6 @@
   "size": "11.8MB",
   "system": "All",
   "website": "https://wisediskcleaner.com.cn/wise-disk-cleaner.html",
-  "github": "",
   "downloads": [
     {
       "platform": "x86",
@@ -17,5 +16,5 @@
       "url": "oss://releases/2026/10/muwf0mjy-bun7ef-WDCFree_11.4.0.860.exe"
     }
   ],
-  "sort": 1
+  "sort": 99
 }
