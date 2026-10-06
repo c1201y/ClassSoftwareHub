@@ -288,6 +288,31 @@ html.theme-dark .detail-category-badge {
   font-weight: 400;
   line-height: 1;
 }
+/* 加速后那行兜底小字：「不能下载？点我换个镜像」。
+   故意做得很轻（次要色 + 下划线），不跟主按钮抢注意力 —— 它只在真下不动时才有用。 */
+.detail-mirror-hint {
+  margin: 8px 0 0;
+}
+.detail-mirror-hint-link {
+  background: none;
+  border: 0;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.6;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.detail-mirror-hint-link:hover {
+  color: var(--accent-base);
+}
+.detail-mirror-hint-link:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid var(--accent-base);
+  outline-offset: 2px;
+}
 /* ── GitHub 加速通道面板 ─────────────────────────────────────────── */
 .detail-mirror-panel {
   background: color-mix(in srgb, var(--accent-base) 5%, var(--card-bg));

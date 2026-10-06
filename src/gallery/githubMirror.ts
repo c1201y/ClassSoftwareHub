@@ -2,16 +2,26 @@
 // githubMirror.ts —— GitHub 下载链接的「国内加速」通道
 //
 // 为什么需要它：站点里 148 条下载链接有 62 条指向 github.com，而国内直连
-// GitHub 下 Releases 常常只有几十 KB/s 甚至直接断流。这里提供几条第三方
-// 公益镜像，把原始链接**原样转发**一份，国内下载通常快很多。
+// GitHub 下 Releases 常常只有几十 KB/s 甚至断流。这里提供几条加速通道，
+// 把原始链接**原样转发**一份，国内下载通常快很多。
 //
 // 原理很简单 —— 把完整原始链接接在镜像域名后面：
 //   https://github.com/a/b/releases/download/v1/x.exe
 //   → https://ghfast.top/https://github.com/a/b/releases/download/v1/x.exe
 //
-// ⚠️ 这些是第三方公益镜像，**不是本站服务**：本站只做链接拼接，不中转、
-//    不缓存、不改动任何文件；镜像域名随时可能失效或限速，所以详情页的
-//    主按钮永远是 GitHub 官方直链，加速只是额外一条路。
+// 通道分两类：
+//   · 自建节点（self）—— 本站维护的那台中转服务器，排在最前、优先用；
+//   · 第三方公益镜像 —— 自建节点不通时的备用路，随时可能失效或限速。
+//
+// ⚠️ **混合内容这条红线（改之前务必先读）**：
+//    浏览器禁止「HTTPS 页面下载 HTTP 文件」——Chrome 88+ 与 Firefox 都会把
+//    这种下载判为 mixed content download **直接拦掉**（控制台报 Mixed Content，
+//    下载面板里什么都不出现，用户只会以为按钮坏了）。本站是 HTTPS，所以任何
+//    `http://` 的镜像通道在站上都是**点不动的**。
+//    本文件因此有 isChannelUsable() 守卫：https 页面下自动跳过 http 通道。
+//    目前所有通道都是 https，守卫不会拦任何一条 —— 但**别删**：以后临时加一个
+//    还没配证书的节点，全靠它兜住，否则表现是「点下去毫无反应」这种最难排查的故障。
+//    判断只留在这里一处，页面与桌面版都调它，不要各写一份。
 //
 // 本文件不产出界面文字 —— 文案都在 文字设置.ts 的 detail.mirror-* 里。
 // ════════════════════════════════════════════════════════════════════
@@ -24,6 +34,14 @@ export interface MirrorChannel {
   name: string;
   /** 前缀，后面直接拼原始链接（注意要以 / 结尾） */
   prefix: string;
+  /** 本站自建节点（不是第三方公益）—— 文案会区别对待 */
+  self?: boolean;
+  /**
+   * 这条通道目前只有 http（还没配 TLS）。
+   * HTTPS 页面上浏览器会按混合内容把它的下载拦掉，所以 isChannelUsable() 会在
+   * https 页面下跳过它。**配上证书后：prefix 换成 https:// 、删掉这一行即可。**
+   */
+  insecure?: boolean;
 }
 
 /**
@@ -45,25 +63,62 @@ export interface MirrorChannel {
  *   通过 ghfast.top / gh-proxy.com / ghproxy.net / gh.ddlc.top / gh.xxooo.cf
  *   删除 gh-proxy.net —— 域名已被抢注：HEAD 返回 302 跳 survey-smiles.com
  *        （广告站），GET 返回一个 JS 跳转页，连裸域名都跳。
+ *
+ * 2026-10-06 实测自建节点（日本东京，nginx 反代 + Let's Encrypt **IP 证书**）：
+ *   https://209.33.174.187/  —— TLS 已就绪，浏览器认可（verify=0）；
+ *   HEAD 200 + octet-stream、Range 206、Content-Disposition: attachment；
+ *   与 ghfast.top 交叉比对 sha256 完全一致（逐字节未改动）。
+ *   ⚠️ 它是 **IP 证书**，有效期只有 160 小时（≈6.5 天），靠 acme.sh 自动续期；
+ *   续期失败就会整页证书报错，比没有镜像更糟 —— 运维要盯 `acme.sh --list`。
  */
 export const MIRROR_CHANNELS: MirrorChannel[] = [
+  {
+    id: 'self',
+    name: '本站加速节点',
+    prefix: 'https://209.33.174.187/',
+    self: true
+  },
   { id: 'ghfast', name: 'ghfast.top', prefix: 'https://ghfast.top/' },
   { id: 'ghproxy', name: 'gh-proxy.com', prefix: 'https://gh-proxy.com/' },
   { id: 'ghproxy-net', name: 'ghproxy.net', prefix: 'https://ghproxy.net/' },
   { id: 'ddlc', name: 'gh.ddlc.top', prefix: 'https://gh.ddlc.top/' }
 ];
 
-/** 用户上次用的通道存在这里；没存过 / 存的值已经不认识了，就退回清单第一个 */
+/** 自建节点的固定 id（页面要单独标它、桌面版取版本号也认它） */
+export const SELF_CHANNEL_ID = 'self';
+
+/** 用户上次用的通道存在这里；没存过 / 存的值已经不认识了，就退回默认那条 */
 const CHANNEL_KEY = 'csh-gh-mirror-channel';
 
+/** 页面本身是不是跑在 HTTPS 上（没有 location 的环境按不安全处理） */
+const PAGE_IS_SECURE = typeof location !== 'undefined' && location.protocol === 'https:';
+
+/**
+ * 这条通道在当前页面下能不能用。
+ *
+ * 唯一的否决理由就是混合内容：https 页面上不能下载 http 文件。
+ * 别把这条判断删掉 —— 删了的表现是「按钮点下去毫无反应」，
+ * 而且只有打开开发者工具才看得到原因，最难排查。
+ */
+export function isChannelUsable(channel: MirrorChannel): boolean {
+  return !(PAGE_IS_SECURE && channel.prefix.startsWith('http:'));
+}
+
+/** 当前页面下可用的通道（自建节点没配 TLS 时会自动隐身，只剩公益镜像） */
+export function usableChannels(): MirrorChannel[] {
+  return MIRROR_CHANNELS.filter(isChannelUsable);
+}
+
+/** 可用的通道里，用户上次选的那条；没选过 / 选的那条不可用，就给清单里第一条 */
 export function preferredChannelId(): string {
+  const usable = usableChannels();
   try {
     const saved = localStorage.getItem(CHANNEL_KEY);
-    if (saved && MIRROR_CHANNELS.some((channel) => channel.id === saved)) return saved;
+    if (saved && usable.some((channel) => channel.id === saved)) return saved;
   } catch {
     /* 无痕模式等读不到 localStorage，忽略即可 */
   }
-  return MIRROR_CHANNELS[0].id;
+  return (usable[0] || MIRROR_CHANNELS[0]).id;
 }
 
 export function rememberChannel(id: string): void {
@@ -72,6 +127,25 @@ export function rememberChannel(id: string): void {
   } catch {
     /* 忽略 */
   }
+}
+
+/**
+ * 上次用过的通道排到最前，其余按清单顺序 —— 常用的话能少点一下。
+ *
+ * `preferred` 可以显式传（页面里存成 ref，这样换过通道后能跟着重排）；
+ * 不传就现读一次 localStorage（桌面版那种一次性的调用点）。
+ */
+export function orderedChannels(preferred = preferredChannelId()): MirrorChannel[] {
+  const usable = usableChannels();
+  if (!usable.length) return MIRROR_CHANNELS;
+  const first = usable.find((channel) => channel.id === preferred);
+  if (!first) return usable;
+  return [first, ...usable.filter((channel) => channel !== first)];
+}
+
+/** 点「加速下载」时默认走哪条 —— 可用通道里的第一条（TLS 就绪后就是自建节点） */
+export function defaultChannel(preferred?: string): MirrorChannel | null {
+  return orderedChannels(preferred)[0] || null;
 }
 
 /**

@@ -7,7 +7,7 @@
 //
 //   1. 版本号动态取 —— 桌面版仓库一发新版，按钮自动跟上，不用改代码。
 //      接口入口：本站 Worker 反代（国内可达）→ gh-proxy.com 兜底。
-//   2. 下载走镜像 —— 复用 githubMirror.ts 里那几条公益加速通道。
+//   2. 下载走镜像 —— 复用 githubMirror.ts 里那几条加速通道（自建节点优先，公益镜像兜底）。
 //   3. 镜像一条都不通时，自动落到**该版本**的 Release 页，用户仍能自己下。
 //
 // 三个实现上的坑（都实测过，别再改回去）：
@@ -22,7 +22,7 @@
 // 本文件不产出界面文字 —— 按钮上的字在 HomePage.vue 的 desktopPromo 里。
 // ════════════════════════════════════════════════════════════════════
 
-import { MIRROR_CHANNELS, mirrorUrl, preferredChannelId } from './githubMirror';
+import { mirrorUrl, orderedChannels } from './githubMirror';
 import type { MirrorChannel } from './githubMirror';
 
 /** 桌面版仓库（exe 由它发布，跟本站是两个仓库） */
@@ -249,12 +249,15 @@ function probeMirror(url: string): Promise<boolean> {
   });
 }
 
-/** 候选通道：用户上次选的排最前，其余按清单顺序 */
+/**
+ * 候选通道：用户上次选的排最前，其余按清单顺序。
+ *
+ * 走 orderedChannels() 而不是自己排 —— 它会先把**当前页面下不可用的通道**滤掉
+ * （典型是还只有 http 的自建节点：https 页面上浏览器按混合内容拦下载，
+ * 探测也一定失败，排进来只会白等一个超时）。
+ */
 function candidateChannels(): MirrorChannel[] {
-  const preferred = preferredChannelId();
-  const first = MIRROR_CHANNELS.find((channel) => channel.id === preferred);
-  if (!first) return MIRROR_CHANNELS;
-  return [first, ...MIRROR_CHANNELS.filter((channel) => channel !== first)];
+  return orderedChannels();
 }
 
 /**
