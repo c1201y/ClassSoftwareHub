@@ -1,0 +1,24 @@
+{
+  "_提交时间": "2026-10-06T08:31:55.726Z",
+  "_原始ID冲突": false,
+  "id": "wisediskceaner-woij",
+  "name": "Wise Disk Cleaner",
+  "icon": "https://cshapi.132614.xyz/api/icon?k=icon%2F2026%2F10%2Fmuwehxy7-jy6szh-1.ico",
+  "category": "system",
+  "tagline": "一个轻量的磁盘清理工具",
+  "description": "一个可以整理磁盘及清理的轻量化工具",
+  "version": "11.4.0",
+  "size": "11.8MB",
+  "system": "All",
+  "website": "https://wisediskcleaner.com.cn/wise-disk-cleaner.html",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "x86",
+      "size": "11.8MB",
+      "url": "oss://upload/2026/10/muwf0mjy-bun7ef-WDCFree_11.4.0.860.exe"
+    }
+  ],
+  "sort": 1,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBPU25FRDZhcWlSVFdkdkN4\ndlA4Q0FWbXJZWTR6bTZPSjFocEs4d0ZKNWxrClRRMkltbjFPVmp1ZjBOdWhUQTVK\nUTNrbUpMSm9xSVZPYlB4OGVzY1J2bWMKLS0tIEpXWnV3Wk0rMFRJVDlNQjhLQUpP\nWVV3Q2VERzVkUldmUlprSFcyR3lYaGcKV34JxlcVw4A6LsnMeIX0c41CN2iSRzfT\nh30WRkFr+1xNwsB2GNpkOe+l\n-----END AGE ENCRYPTED FILE-----"
+}
