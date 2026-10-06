@@ -143,9 +143,10 @@ export function orderedChannels(preferred = preferredChannelId()): MirrorChannel
   return [first, ...usable.filter((channel) => channel !== first)];
 }
 
-/** 点「加速下载」时默认走哪条 —— 可用通道里的第一条（TLS 就绪后就是自建节点） */
-export function defaultChannel(preferred?: string): MirrorChannel | null {
-  return orderedChannels(preferred)[0] || null;
+/** 默认加速通道 = 自建节点（用户明确要求默认走自建，不被 localStorage 旧选择覆盖） */
+export function defaultChannel(): MirrorChannel | null {
+  const usable = usableChannels();
+  return usable.find((channel) => channel.self) || usable[0] || null;
 }
 
 /**

@@ -200,7 +200,8 @@ import {
   mirrorUrl,
   orderedChannels,
   preferredChannelId,
-  rememberChannel
+  rememberChannel,
+  usableChannels
 } from '../githubMirror';
 import type { MirrorChannel } from '../githubMirror';
 import '../styles/download-detail-page.css';
@@ -366,16 +367,22 @@ const preferredId = ref(preferredChannelId());
  */
 const channels = computed(() => orderedChannels(preferredId.value));
 
-/** 点「加速下载」默认走的那条：可用通道里的第一条（现在是自建节点） */
-const accelerateChannel = computed(() => channels.value[0] || null);
+/**
+ * 点「加速下载」默认走的那条 = 自建节点，**不受 localStorage 里旧选择影响**。
+ * 用户之前可能点过 ghproxy 并存进 localStorage；若让那条继续当默认，就违背「默认用自建节点」的要求。
+ * 这里硬取自建节点（https 页面下一定可用），记住的选择只用来给「换个镜像」面板排序。
+ */
+const accelerateChannel = computed<MirrorChannel | null>(() => {
+  const usable = usableChannels();
+  return usable.find((channel) => channel.self) || usable[0] || null;
+});
 
 /**
- * 「换个镜像」里列出的候选 = 除了刚才用过的那条以外的全部通道。
- * 用户点开这一栏，就是想换掉刚失败的那条，所以不再把原样列回去 ——
- * 自建节点排第一时，这里正好是原来那四个公益镜像。
+ * 「换个镜像」里列出的候选 = 除刚刚作为默认用过的那条（自建节点）以外的全部通道。
+ * 用户点开这一栏是想换掉刚失败的那条，所以不再把原样列回去 —— 这里正好是原来那四个公益镜像。
  */
 const alternativeChannels = computed(() =>
-  channels.value.filter((channel) => channel.id !== preferredId.value)
+  channels.value.filter((channel) => channel.id !== accelerateChannel.value?.id)
 );
 
 /** 拼出该下载项在某个通道下的链接（url 是可选字段，这里顺手兜住空值） */
