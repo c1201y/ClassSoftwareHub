@@ -1,0 +1,25 @@
+{
+  "_提交时间": "2026-10-06T07:59:02.942Z",
+  "_原始ID冲突": false,
+  "id": "qq-music",
+  "name": "QQ音乐",
+  "icon": "https://bee-reg-ab.imagency.cn/mr/6874/26/6ac4a93c2efeb.png",
+  "category": "other",
+  "tagline": "QQ音乐",
+  "description": "QQ音乐是腾讯音乐娱乐集团旗下的音乐流媒体平台",
+  "version": "",
+  "size": "≈110MB",
+  "system": "Windows",
+  "website": "https://y.qq.com/download/download.html",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "Windows",
+      "note": "此处仅提供Windows平台如需其他平台还请移步官网",
+      "size": "≈110MB",
+      "url": "https://y.qq.com/download/download.html"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBPckQ0cTI3TUtvVzQ2L0Rh\nTVlJK1cwTXBGTFVkaXpucjQ5ZDdEMDFRTVRZCkg5cFNLeHJ1NGJBUUhpT1BMTk43\nU3JMY20zVklLQnAxcFJ4STJ1K2tiZUkKLS0tIGZPRGEwS1VCMXV5TGtZb3hqRXJY\nSkVPQzM5NFUrMjFpNnJPUzdhNldHUkkKXOTGSt3rQD26nTSXJ/n1BWCq4Xmx/9kh\nHRaNzyFLbNC/H5JwwWJltdr3\n-----END AGE ENCRYPTED FILE-----"
+}
