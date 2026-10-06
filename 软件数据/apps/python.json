@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-06T13:37:44.364Z",
-  "_原始ID冲突": false,
   "id": "python",
   "name": "Python",
   "icon": "https://avatars.githubusercontent.com/u/1525981?v=4",
@@ -19,6 +17,5 @@
       "url": "https://www.python.org/downloads/"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBOQ3JxWng5Rk1iL0VMTG8z\nM21wcFVtR1liWmdNcE84M3pzRHVIcjRVL1VBCmd2ZndHa2lhM2tLWnJGcDNRQXFV\nNDVWa2NqeE1CNmhnbWw2VEZlaFE0M1kKLS0tIFhNck9wbmt4YkoxV3hlQ1dNS2lW\nR0psbzdUVFZsRjV5K3g5ai9HN3cyN0kKbrsGDuSgxQenQZDYGy8hTAyCNv+ES2YQ\nKfF/X6V9uzu/GJBuY8L+9ju1\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
