@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-06T07:50:23.426Z",
-  "_原始ID冲突": false,
   "id": "cpython",
   "name": "cpython",
   "icon": "https://avatars.githubusercontent.com/u/1525981?v=4",
@@ -20,6 +18,5 @@
       "url": "https://github.com/python/cpython/releases/latest"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBaRlRZdlg3NWZBZzdSVTIx\na0Nzd2VSZEFJRGtTV09La3QvUEo2MlA2a1JrCkE0QmlDT3ZFYVR0YS8yM3FTdyth\nZ1R6YlVhUEJYbEdRTkRqZmJrSTBYencKLS0tIEVzZ3l4L0xObFVNVjVldEZnSnY4\nVlZUeEQ0QVBhSzV6bFA2R3M4Z3NSQmcKxUYMEdzlJ3iEm//LDfh9tR8CGlYfW/PY\ntufHyx+7O1efZRwLF1vFCjG3\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
