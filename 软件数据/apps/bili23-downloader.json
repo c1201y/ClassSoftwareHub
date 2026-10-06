@@ -10,6 +10,7 @@
   "system": "Windows 7 ~ 11（x64）、macOS（Intel / Apple 芯片）、Linux（x64 / ARM64）",
   "website": "https://bili23.scott-sloan.cn/",
   "github": "https://github.com/ScottSloan/Bili23-Downloader",
+  "notice": "本工具为合法开源软件，仅供个人学习、研究使用。切勿用于任何商业用途或公开传播。切勿利用该工具进行批量抓取、传播盗版视频或任何违反B站用户协议的行为。用户需自行承担因不当使用所产生的一切法律风险。",
   "downloads": [
     {
       "platform": "Linux ARM64（AppImage）",
