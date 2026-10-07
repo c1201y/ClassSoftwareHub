@@ -1,0 +1,25 @@
+{
+  "_提交时间": "2026-10-07T15:22:15.087Z",
+  "_原始ID冲突": false,
+  "id": "ceshi",
+  "name": "反馈访问不了-舟吟",
+  "icon": "",
+  "category": "other",
+  "tagline": "反馈貌似炸了，我目前又没有QQ等设备，只能用这个联系了。你看完直接拒收或者删除即可",
+  "description": "1.鸣谢表没更新\n2.目前三个协议内容不大完善，等我有时间或者下个周末再辅助完成\n3.github加速链接慢的原因找出来了，是因为晚上时晚高峰全国总流量大，导致访问日本服务器出现15%左右的丢包；这个通过技术解决不了，不过1~2MB/S对于小包貌似也够用；大部分时间除了带有晚自习的学校没人会在晚高峰下载软件\n4.近期我个人可能很难上线，有BUG的话发我QQ里我后续有时间直接看\n5.我的具体名称请解密下文的联系方式\n--该条反馈阅后可删除",
+  "version": "",
+  "size": "",
+  "system": "测试",
+  "website": "",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "测试",
+      "note": "测试",
+      "size": "测试",
+      "url": "https://测试.com/.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBaRHlDT3NXdWF0R2NabWtu\nQStBQnh3cDdMSnZwVWZYQUZDL3NkMkNXSlIwCjFLZS9IWE1aa2tpNVpmT3JvNWlB\nOG9KcGQvN0dIMm1SQXlld0RjdzJpT0UKLS0tIDl3Sm5wM2hRTHg3V1FlS3VzQXBH\nQXJ0blV1NmdCR0g2dG0yMXFjMmc0dDgK9sHn5G4GrksmJ9sJgRkAg/Oy7XRIBH7d\nCBMOWTvWsIjoCWRSnaxM/OTTzoME1tirCJ78aFk+yPDtR4EepIBwfwAyFJn/qANk\nuZzFBM/dyqcc2QKw+8rTxVshmQJhpDm7msUvzzCL4/Yc1HHxRmeNJGXiCZxR+1JQ\nM7Yb3911pRmjemrMZR3T8Ituw5hJOEm5CNZ+29kWqxURIlI9\n-----END AGE ENCRYPTED FILE-----"
+}
