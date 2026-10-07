@@ -1,0 +1,37 @@
+{
+  "_提交时间": "2026-10-07T04:29:37.028Z",
+  "_原始ID冲突": false,
+  "id": "umi-ocr",
+  "name": "Umi-OCR",
+  "icon": "https://avatars.githubusercontent.com/u/56373419?v=4",
+  "category": "other",
+  "tagline": "OCR software, free and offline.…",
+  "description": "OCR software, free and offline. 开源、免费的离线OCR软件。支持截屏/批量导入图片，PDF文档识别，排除水印/页眉页脚，扫描/生成二维码。内置多国语言库。",
+  "version": "v2.1.5",
+  "size": "",
+  "system": "Windows / Linux",
+  "website": "",
+  "github": "https://github.com/hiroi-sora/Umi-OCR",
+  "downloads": [
+    {
+      "platform": "Linux XZ",
+      "note": "Umi-OCR_Linux_Paddle_2.1.5.tar.xz",
+      "size": "265 MB",
+      "url": "https://github.com/hiroi-sora/Umi-OCR/releases/download/v2.1.5/Umi-OCR_Linux_Paddle_2.1.5.tar.xz"
+    },
+    {
+      "platform": "Windows 安装版",
+      "note": "Umi-OCR_Paddle_v2.1.5.7z.exe",
+      "size": "128 MB",
+      "url": "https://github.com/hiroi-sora/Umi-OCR/releases/download/v2.1.5/Umi-OCR_Paddle_v2.1.5.7z.exe"
+    },
+    {
+      "platform": "Windows 安装版",
+      "note": "Umi-OCR_Rapid_v2.1.5.7z.exe",
+      "size": "98.6 MB",
+      "url": "https://github.com/hiroi-sora/Umi-OCR/releases/download/v2.1.5/Umi-OCR_Rapid_v2.1.5.7z.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBZQkI3eExtUFFEbE5LNzVt\nSEhYTUVENnRmN1NjbGc0U0hyWi9KYUZCMkgwCkZJZWhhMEdFcXIrYlJ3SWQzMDlx\nYThQWkYxVmdoeFhnUmZOa1UwVTJhcTQKLS0tIDA0RFh3QWRmbmo2MkhZdFFJK3Bv\nRXlYRDZsUTFKVjVqTTgxM25ESkNUZnMKo1Bqr35a7HWJ7dSGwD3muIJcIs71UmpI\nBekXElOEs73/IihfK4hcwZl4\n-----END AGE ENCRYPTED FILE-----"
+}
