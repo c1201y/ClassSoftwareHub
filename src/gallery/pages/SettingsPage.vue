@@ -96,6 +96,17 @@
                   TargetName="_blank"
                   HorizontalAlignment="Left"
                   :Content="t('about.ui-kernel')" />
+                <!-- 法律三件套（#/agreement）：按钮文字与页面内容都来自根目录「法律文本.ts」。
+                     ⚠️ 不用 WinHyperlinkButton 做站内跳转 —— 它的 SAFE_URI_RE 白名单只认
+                     http(s)/ms-windows-store:，hash 路由会被降级成点了没反应的死按钮 -->
+                <div class="legal-links">
+                  <WinButton
+                    v-for="doc in legalDocLinks"
+                    :key="doc.key"
+                    HorizontalAlignment="Left"
+                    :Content="doc.label"
+                    @Click="openLegal(doc.key)" />
+                </div>
               </div>
             </WinExpander>
 
@@ -162,9 +173,12 @@ import VisitorCounter from '../VisitorCounter.vue';
 import appManifest from '../../manifest.json';
 import { useI18n } from '../../components/i18n/index';
 import credits from '../../../鸣谢文本';
+// 法律三件套：内容与标题都在根目录「法律文本.ts」，改文案去那个文件
+import legalDocs from '../../../法律文本';
+import { useRouter } from 'vue-router';
 import EchoCaveCard from '../EchoCaveCard.vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 // App.vue 始终 provide 以下设置项（ref），这里按约定直接注入
 const themeSetting = inject('themeSetting') as Ref<string>;
@@ -199,6 +213,18 @@ const versionText = t(appManifest.version ?? 'app.version');
 const openRepository = () => {
   const url = t('about.repository-url');
   if (url) window.open(url, '_blank', 'noopener,noreferrer');
+};
+
+// ── 法律三件套（#/agreement）：带 ?doc= 让条款页直接定位到对应文档 ──
+const router = useRouter();
+const legalDocLinks = computed(() =>
+  legalDocs.map((doc) => ({
+    key: doc.key,
+    label: locale === 'zh-CN' ? doc.zh.title : doc.en.title
+  }))
+);
+const openLegal = (key: string) => {
+  router.push({ path: '/agreement', query: { doc: key } });
 };
 
 // ── 网站稳定运行时长 ────────────────────────────────────────────────
@@ -305,6 +331,14 @@ onBeforeUnmount(() => {
 
 .about-controls :deep(.win-expander-header-controls .win-btn) {
   white-space: nowrap;
+}
+
+/* 法律三件套链接行：三个按钮横排，窄屏自动换行 */
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .about-content {
