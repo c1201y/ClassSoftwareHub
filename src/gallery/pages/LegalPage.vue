@@ -1,35 +1,43 @@
 <template>
-  <div class="legal-root">
-    <header class="legal-header">
-      <WinTextBlock class="legal-title" :Text="langDoc.title" />
-      <WinTextBlock class="legal-subtitle" :Text="versionLine" />
-    </header>
+  <!-- 外壳 .page-view 是 overflow:hidden，页面必须自带 WinScrollViewer 才能滚动（同详情页） -->
+  <WinScrollViewer
+    class="gallery-page-scroll"
+    VerticalScrollBarVisibility="Auto"
+    VerticalScrollMode="Auto">
+    <div class="gallery-page-content">
+      <div class="legal-root">
+        <header class="legal-header">
+          <WinTextBlock class="legal-title" :Text="langDoc.title" />
+          <WinTextBlock class="legal-subtitle" :Text="versionLine" />
+        </header>
 
-    <!-- 三份文档的切换标签（同首页筛选条的 WinSelectorBar） -->
-    <WinSelectorBar
-      class="legal-tabs"
-      HorizontalAlignment="Left"
-      :Items="tabItems"
-      :SelectedItem="selectedTab"
-      @SelectionChanged="onTabChanged" />
+        <!-- 三份文档的切换标签（同首页筛选条的 WinSelectorBar） -->
+        <WinSelectorBar
+          class="legal-tabs"
+          HorizontalAlignment="Left"
+          :Items="tabItems"
+          :SelectedItem="selectedTab"
+          @SelectionChanged="onTabChanged" />
 
-    <article class="legal-body">
-      <p v-if="langDoc.intro" class="legal-intro">{{ langDoc.intro }}</p>
+        <article class="legal-body">
+          <p v-if="langDoc.intro" class="legal-intro">{{ langDoc.intro }}</p>
 
-      <section
-        v-for="section in langDoc.sections"
-        :key="section.heading"
-        class="legal-section">
-        <h2 class="legal-heading">{{ section.heading }}</h2>
-        <ul class="legal-items">
-          <!-- 用户协议 2.2 的（1）（2）子项也是独立一行，统一按条款行渲染 -->
-          <li v-for="(item, i) in section.items" :key="i" class="legal-item">
-            {{ item }}
-          </li>
-        </ul>
-      </section>
-    </article>
-  </div>
+          <section
+            v-for="section in langDoc.sections"
+            :key="section.heading"
+            class="legal-section">
+            <h2 class="legal-heading">{{ section.heading }}</h2>
+            <ul class="legal-items">
+              <!-- 用户协议 2.2 的（1）（2）子项也是独立一行，统一按条款行渲染 -->
+              <li v-for="(item, i) in section.items" :key="i" class="legal-item">
+                {{ item }}
+              </li>
+            </ul>
+          </section>
+        </article>
+      </div>
+    </div>
+  </WinScrollViewer>
 </template>
 
 <script setup lang="ts">
@@ -37,6 +45,7 @@ import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import WinTextBlock from '../../components/WinTextBlock.vue';
 import WinSelectorBar from '../../components/WinSelectorBar.vue';
+import WinScrollViewer from '../../components/WinScrollViewer.vue';
 import { useI18n } from '../../components/i18n/index';
 // 三份法律文档的中英全文在根目录「法律文本.ts」，改内容去那里（同 鸣谢文本.ts 的做法）
 import legalDocs from '../../../法律文本';

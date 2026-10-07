@@ -86,6 +86,7 @@ export default {
     "welcome.explore": "Start Exploring ~",
     "welcome.article": "Related Articles",
     "welcome.article-url": "https://www.bilibili.com/opus/1245751454573002769",
+    "welcome.legal-note": "By continuing to use this site you agree to our",
     "search.titlebar": "Search apps, tools, AI sites…",
     "search.placeholder": "Search apps, built-in tools, AI sites — or just describe what you need",
     "search.source-name": "App name",
