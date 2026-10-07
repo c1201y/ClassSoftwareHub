@@ -31,6 +31,13 @@ const routes: RouteRecordRaw[] = [
     component: () => import('./pages/SettingsPage.vue')
   },
   {
+    // 条款页（用户协议 / 隐私政策 / 免责声明）：内容在根目录「法律文本.ts」，
+    // 设置页「关于」区的链接带 ?doc= 跳过来直接定位到对应文档
+    path: '/agreement',
+    name: 'agreement',
+    component: () => import('./pages/LegalPage.vue')
+  },
+  {
     path: '/echo-cave',
     name: 'echo-cave',
     component: () => import('./pages/EchoCavePage.vue')
