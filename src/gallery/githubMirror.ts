@@ -26,6 +26,8 @@
 // 本文件不产出界面文字 —— 文案都在 文字设置.ts 的 detail.mirror-* 里。
 // ════════════════════════════════════════════════════════════════════
 
+import { orderedEndpoints } from './submitEndpoints';
+
 /** 一条加速通道 */
 export interface MirrorChannel {
   /** 稳定标识（用于记住用户上次的选择，**定了就别改**） */
@@ -67,9 +69,12 @@ export interface MirrorChannel {
  * 2026-10-06 实测自建节点（日本东京，nginx 反代 + Let's Encrypt 证书）：
  *   2026-10-07 起换成固定域名 https://download.classsoftwarehub.cn/（不再用裸 IP，
  *   省去 IP 证书 160 小时续期的运维负担）。
- *   ⚠️ 节点端有**防盗链**：① Referer 白名单（站内各域名已放行）；
- *   ② 需要签名链接（不带签名返回 403「需使用签名链接」）——签名方案待定，
- *   未接上前这条通道会 403，用户可走「换个镜像」用公益镜像兜底。
+ *   ⚠️ 节点端有**双雷防盗链**，不能用「前缀直拼」这条路（拼了也会 403）：
+ *   ① Referer 白名单（站内各域名已放行，浏览器点下载自动带）；
+ *   ② 下载必须带限时签名（HMAC-SHA256，默认 15 分钟过期）。签发接口 /sign
+ *   要 X-Api-Key 鉴权，密钥不能进公开前端 —— 由本站 Worker 代签：
+ *   前端 GET {入口}/api/mirror-sign?url=<直链> → Worker 拿密钥调节点 /sign
+ *   → 返回 /d?u=..&e=..&s=.. 临时链接。见下方 fetchSelfSignedUrl()。
  *   老地址 https://209.33.174.187/ 与本域名是同一台服务器，行为一致。
  */
 export const MIRROR_CHANNELS: MirrorChannel[] = [
@@ -182,4 +187,41 @@ export function isMirrorableUrl(url?: string): boolean {
 /** 原始链接 → 该通道的加速链接 */
 export function mirrorUrl(url: string, channel: MirrorChannel): string {
   return channel.prefix + url;
+}
+
+/** 签名链接获取单入口超时（毫秒）：和投稿服务同一条路，连不上就赶紧换下一个入口 */
+const SIGN_TIMEOUT_MS = 8000;
+
+/**
+ * 向本站 Worker 要自建节点的限时签名下载链接。
+ *
+ * 自建节点开了「无签名一律 403」的防盗链，签发接口又要 X-Api-Key 鉴权 ——
+ * 密钥不能进公开前端，所以由 Worker 代签（服务端到服务端），前端只拿到
+ * 一个 15 分钟后过期、只能下这一个文件的临时链接。接口入口复用投稿服务
+ * 那两个域名（orderedEndpoints 会记住上次成功的那个）。
+ *
+ * @returns 签名后的完整下载地址；两个入口都拿不到（未配置 / 节点挂 / 超时）时
+ *          返回 null，调用方应退到公益镜像，**不要**把原始直链往 self 前缀上拼。
+ */
+export async function fetchSelfSignedUrl(target: string): Promise<string | null> {
+  for (const base of orderedEndpoints()) {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), SIGN_TIMEOUT_MS);
+    try {
+      // 不带自定义头，保持「简单请求」，不触发 CORS 预检
+      const response = await fetch(
+        `${base}/api/mirror-sign?url=${encodeURIComponent(target)}`,
+        { cache: 'no-store', signal: controller.signal }
+      );
+      if (!response.ok) continue;
+      const data: unknown = await response.json();
+      const url = (data as { url?: unknown })?.url;
+      if (typeof url === 'string' && url) return url;
+    } catch {
+      /* 这个入口不通，试下一个 */
+    } finally {
+      window.clearTimeout(timer);
+    }
+  }
+  return null;
 }

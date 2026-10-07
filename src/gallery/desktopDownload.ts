@@ -22,7 +22,7 @@
 // 本文件不产出界面文字 —— 按钮上的字在 HomePage.vue 的 desktopPromo 里。
 // ════════════════════════════════════════════════════════════════════
 
-import { mirrorUrl, orderedChannels } from './githubMirror';
+import { fetchSelfSignedUrl, mirrorUrl, orderedChannels } from './githubMirror';
 import type { MirrorChannel } from './githubMirror';
 
 /** 桌面版仓库（exe 由它发布，跟本站是两个仓库） */
@@ -265,11 +265,19 @@ function candidateChannels(): MirrorChannel[] {
 
 /**
  * 并发探所有候选通道，按「偏好顺序」取第一条能用的。
- * 并发是为了压缩等待（最坏 PROBE_TIMEOUT），按偏好取是为了尊重用户上次的选择 ——
- * 不能用 Promise.any 的「最快者胜」，那会让偏好失效。
+ *
+ * ⚠️ 自建节点**不走 HEAD 探测**：它开了「无签名一律 403」的防盗链，而 no-cors
+ * 探测读不到状态码 —— 403 也会被误判成「通」，选它必然下不动。正确姿势是
+ * 直接向 Worker 要限时签名链接，签下来就是可直接下载的地址；要不到就当它不通，
+ * 让公益镜像接手。
  */
 async function pickWorkingMirror(target: string): Promise<string | null> {
-  const channels = candidateChannels();
+  const self = candidateChannels().find((channel) => channel.self);
+  if (self) {
+    const signed = await fetchSelfSignedUrl(target);
+    if (signed) return signed;
+  }
+  const channels = candidateChannels().filter((channel) => !channel.self);
   const probed = await Promise.all(
     channels.map(async (channel) => ({
       channel,
