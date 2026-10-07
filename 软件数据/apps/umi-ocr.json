@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-07T04:29:37.028Z",
-  "_原始ID冲突": false,
   "id": "umi-ocr",
   "name": "Umi-OCR",
   "icon": "https://avatars.githubusercontent.com/u/56373419?v=4",
@@ -32,6 +30,5 @@
       "url": "https://github.com/hiroi-sora/Umi-OCR/releases/download/v2.1.5/Umi-OCR_Rapid_v2.1.5.7z.exe"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBZQkI3eExtUFFEbE5LNzVt\nSEhYTUVENnRmN1NjbGc0U0hyWi9KYUZCMkgwCkZJZWhhMEdFcXIrYlJ3SWQzMDlx\nYThQWkYxVmdoeFhnUmZOa1UwVTJhcTQKLS0tIDA0RFh3QWRmbmo2MkhZdFFJK3Bv\nRXlYRDZsUTFKVjVqTTgxM25ESkNUZnMKo1Bqr35a7HWJ7dSGwD3muIJcIs71UmpI\nBekXElOEs73/IihfK4hcwZl4\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
