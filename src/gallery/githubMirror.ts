@@ -64,18 +64,19 @@ export interface MirrorChannel {
  *   删除 gh-proxy.net —— 域名已被抢注：HEAD 返回 302 跳 survey-smiles.com
  *        （广告站），GET 返回一个 JS 跳转页，连裸域名都跳。
  *
- * 2026-10-06 实测自建节点（日本东京，nginx 反代 + Let's Encrypt **IP 证书**）：
- *   https://209.33.174.187/  —— TLS 已就绪，浏览器认可（verify=0）；
- *   HEAD 200 + octet-stream、Range 206、Content-Disposition: attachment；
- *   与 ghfast.top 交叉比对 sha256 完全一致（逐字节未改动）。
- *   ⚠️ 它是 **IP 证书**，有效期只有 160 小时（≈6.5 天），靠 acme.sh 自动续期；
- *   续期失败就会整页证书报错，比没有镜像更糟 —— 运维要盯 `acme.sh --list`。
+ * 2026-10-06 实测自建节点（日本东京，nginx 反代 + Let's Encrypt 证书）：
+ *   2026-10-07 起换成固定域名 https://download.classsoftwarehub.cn/（不再用裸 IP，
+ *   省去 IP 证书 160 小时续期的运维负担）。
+ *   ⚠️ 节点端有**防盗链**：① Referer 白名单（站内各域名已放行）；
+ *   ② 需要签名链接（不带签名返回 403「需使用签名链接」）——签名方案待定，
+ *   未接上前这条通道会 403，用户可走「换个镜像」用公益镜像兜底。
+ *   老地址 https://209.33.174.187/ 与本域名是同一台服务器，行为一致。
  */
 export const MIRROR_CHANNELS: MirrorChannel[] = [
   {
     id: 'self',
     name: '本站加速节点',
-    prefix: 'https://209.33.174.187/',
+    prefix: 'https://download.classsoftwarehub.cn/',
     self: true
   },
   { id: 'ghfast', name: 'ghfast.top', prefix: 'https://ghfast.top/' },
