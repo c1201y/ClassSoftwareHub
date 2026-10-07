@@ -1,5 +1,39 @@
 # 更新日志 (Changelog)
 
+## v2.3.5 - Tangram（20261007PR01）发布！
+
+本次更新将 GitHub 加速下载升级为自建节点并接入限时签名直链，新增法律条款页，投稿改为 OSS 直传并加固下载链路，反馈中心改为经 Worker 提交，并逐条处置安全审计报告的问题。同时新增 7 款电教委员常用软件。
+
+### 更新日志
+
+- 【变更】 **GitHub 加速下载升级为自建节点并接入限时签名直链**：加速下载默认强制走本站自建节点 `download.classsoftwarehub.cn`（不再被旧的 localStorage 选择覆盖）；接入 gh-stream 限时签名，点击加速后生成带时效的直链，下载更稳定、更省中转流量。（by[@椰汁](https://github.com/c1201y/)）
+- 【优化】 加速下载改为**本页触发并可一键切换镜像**，不再跳转外部页；修复此前默认误走公益 ghproxy 镜像的问题。（by[@椰汁](https://github.com/c1201y/)）
+- 【修复】 **修复控制台报错**：修正 manifest 的 CSP 限制（补充 `manifest-src`）；将 Chrome 图标本地化，去除对外部域名的请求，避免被浏览器追踪防护拦截。（by[@椰汁](https://github.com/c1201y/)）
+- 【新增】 **法律条款页**（`#/agreement`）：用户协议、隐私政策、免责声明三份文档独立成页，设置页「关于」与首页欢迎弹窗均提供入口；条款页内容支持滚动浏览。（by[@椰汁](https://github.com/c1201y/)）
+- 【变更】 **投稿改走 OSS 直传**：软件投稿的图标等内容改为浏览器直传对象存储，不再经 Worker 中转，突破旧链路 100 MB 内存上限；上传前本地压缩图标，配合服务端边缘缓存。（by[@椰汁](https://github.com/c1201y/)）
+- 【新增】 **站内下载票据闸门**：下载需经服务端签发的限时票据校验，提升下载链路安全性。（by[@椰汁](https://github.com/c1201y/)）
+- 【变更】 **反馈中心改走 Worker 提交**：反馈经 Worker 落草稿 → 自动开 Issue → 回收草稿，无需跳转 GitHub；无 GitHub 账号也可复制反馈内容自行提交。（by[@椰汁](https://github.com/c1201y/)）
+- 【修复】 **回声洞批量过审丢稿**：一次性勾选多条字条过审时，先同步最新 main 再分配编号，避免编号撞车导致投稿丢失；补齐此前遗漏的回声洞字条。（by[@椰汁](https://github.com/c1201y/)）
+- 【修复】 **安全审计逐条处置**：对照安全审计报告逐项修复，并新增 `oss-audit.yml` 加固 OSS 投稿链路。（by[@椰汁](https://github.com/c1201y/)）
+- 【变更】 **CI 改用 Cloudflare Pages 自动构建**：移除旧 `deploy.yml` 的派发步骤，推送到 main 即自动重建。（by[@椰汁](https://github.com/c1201y/)）
+- 【新增】 新增 7 款电教委员常用软件：**微信输入法、QQ 音乐、Python、Wise Disk Cleaner、WPS 教育考试专用版、Microsoft .NET 运行库合集、BongoCat**。（by[@椰汁](https://github.com/c1201y/)）
+- 【变更】 更新 9 款软件至上游最新版（WinRAR、希沃白板、运行库、bilibili 下载器、BongoCat、SpaceSniffer、NanaZip 等），移除长期失效的 **Luanti（原 Minetest）**。（by[@椰汁](https://github.com/c1201y/)）
+- 【新增】 鸣谢新增「凭舟吟」（提供 GitHub 加速节点与落盘缓存支持）。（by[@椰汁](https://github.com/c1201y/)）
+
+### 其他内容
+
+- 网站链接1：[电教委员常用软件下载站](https://classsoftwarehub.us.ci/#/home)
+- 网站链接2：[备用站](https://classsoftwarehub.132614.xyz/#/home)
+  > 【提示】福建闽北，闽西地区的用户可能会遇上打不开的问题。
+- 夸克网盘：[夸克网盘分享](https://pan.quark.cn/s/7cbf21203ad9)
+- 投喂作者：[爱发电 · 连接创作者与粉丝的会员制平台](https://ifdian.net/a/TinyNickCSHub)
+- Github 主页：[c1201y/ClassSoftwareHub](https://github.com/c1201y/ClassSoftwareHub)
+- Github 更新文章：[Releases · c1201y/ClassSoftwareHub](https://github.com/c1201y/ClassSoftwareHub/releases)
+- 智教论坛：[Programmer\_Nick - 智教联盟论坛](https://forum.smart-teach.cn/u/Programmer_Nick)
+- 此项目由人类构建。
+
+---
+
 ## v2.3.4 - Tangram（20260927PR01）发布！
 
 本次更新把「软件信息自动更新」从一条腿扩成两条：除 GitHub Releases 外，新增对**没有 GitHub 仓库**的软件按厂商官方源自动跟踪直链与版本号（微信、QQ、WPS、腾讯会议、Chrome、火绒、VLC、希沃系列等 21 款）。同时改版体检议题，并修正一批已失效的下载直链。
