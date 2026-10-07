@@ -131,6 +131,7 @@
                   v-if="isMirrorableUrl(download.url)"
                   class="detail-mirror-button"
                   Style="AccentButtonStyle"
+                  :disabled="accelerateBusy"
                   @click="accelerateDownload(download)">
                   <span class="detail-mirror-button-icon" aria-hidden="true">&#xE945;</span>
                   <span>{{ t('detail.mirror-button') }}</span>
@@ -196,6 +197,7 @@ import { appIconUrlSafe, markIconBroken } from '../appIcons';
 import { isSafeNavigateUrl, kindOf, triggerDownload } from '../downloadLink';
 import { OssDownloadError, ossKeyOf, resolveDownloadDetail } from '../ossDownload';
 import {
+  fetchSelfSignedUrl,
   isMirrorableUrl,
   mirrorUrl,
   orderedChannels,
@@ -394,15 +396,45 @@ const mirrorHref = (download: DownloadItem, channel: MirrorChannel) =>
  * 顺手把那行「不能下载？」的小字挂出来 —— 能不能下只有用户自己知道，
  * 与其让他回来报告，不如当场给一条换路。
  */
-const accelerateDownload = (download: DownloadItem) => {
-  if (!download.url) return;
+const accelerateBusy = ref(false);
+
+/**
+ * 加速下载：默认走自建节点，**直接在本页触发下载**（不导航、不留 DOM）。
+ *
+ * 自建节点开了「无签名一律 403」的防盗链，所以不能像公益镜像那样前缀直拼 ——
+ * 要先向本站 Worker 要一条 15 分钟有效的限时签名链接；要不到（节点没配好 / 接口
+ * 全挂）就退到第一条公益镜像，保证用户总能下到东西。
+ * 顺手把那行「不能下载？」的小字挂出来 —— 能不能下只有用户自己知道，
+ * 与其让他回来报告，不如当场给一条换路。
+ */
+const accelerateDownload = async (download: DownloadItem) => {
+  if (!download.url || accelerateBusy.value) return;
   const channel = accelerateChannel.value;
   if (!channel) return;
-  triggerDownload(mirrorUrl(download.url, channel));
-  preferredId.value = channel.id;
-  rememberChannel(channel.id);
-  mirrorHintUrl.value = download.url;
-  mirrorOpenUrl.value = '';
+  accelerateBusy.value = true;
+  try {
+    let href = '';
+    if (channel.self) {
+      const signed = await fetchSelfSignedUrl(download.url);
+      if (signed) {
+        href = signed;
+      } else {
+        // 签名拿不到：退到第一条公益镜像（自建节点不在「换个镜像」清单里，这里手动取）
+        const fallback = usableChannels().find((item) => !item.self);
+        if (fallback) href = mirrorUrl(download.url, fallback);
+      }
+    } else {
+      href = mirrorUrl(download.url, channel);
+    }
+    if (!href) return;
+    triggerDownload(href);
+    preferredId.value = channel.id;
+    rememberChannel(channel.id);
+    mirrorHintUrl.value = download.url;
+    mirrorOpenUrl.value = '';
+  } finally {
+    accelerateBusy.value = false;
+  }
 };
 
 const toggleMirror = (url?: string) => {
