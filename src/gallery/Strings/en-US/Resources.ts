@@ -125,7 +125,7 @@ export default {
     "detail.not-found": "Software not found.",
     "app.shortTitle": "Software Download Station",
     "app.author": "惜忆想睡觉",
-    "app.version": "v2.3.4 - Tangram (20260927PR01)",
+    "app.version": "v2.3.5 - Tangram (20261007PR01)",
     "detail.downloads": "Downloads",
     "detail.pending": "TBD",
     "detail.github": "GitHub",
