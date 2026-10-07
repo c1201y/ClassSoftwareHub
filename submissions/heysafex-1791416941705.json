@@ -1,0 +1,32 @@
+{
+  "_提交时间": "2026-10-07T23:49:01.705Z",
+  "_原始ID冲突": false,
+  "id": "heysafex",
+  "name": "Heysafe",
+  "icon": "https://cshapi.132614.xyz/api/icon?k=icon%2F2026%2F10%2Fmuyqxmr0-sipry6-Screenshot_20261008_073441.webp",
+  "category": "other",
+  "tagline": "面向 Windows 的端点防护。实时拦截病毒、木马与勒索软件，清晰呈现处置过程，必要时一键隔离。",
+  "description": "HeySafe-X干净防护少打扰，面向 Windows 的端点防护。实时拦截病毒、木马与勒索软件，清晰呈现处置过程，必要时一键隔离。",
+  "version": "0.3.1",
+  "size": "12.42，这是离线完整安装包，在线只有7",
+  "system": "Win10/win11 64位",
+  "website": "https://heysafex.com",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "Windows10/11",
+      "note": "离线完整安装包（无法连网时请使用）",
+      "size": "12.42",
+      "url": "oss://upload/2026/10/muyrb3bl-5h7v9x-HeySafe-X-setup-0.3.1.exe"
+    },
+    {
+      "platform": "Windows10/11",
+      "note": "在线安装器（会联网获取完整组件)",
+      "size": "7.25",
+      "url": "oss://upload/2026/10/muyrd4nq-0pyxfl-HeySafe-X-online.exe"
+    }
+  ],
+  "sort": 20,
+  "notice": "基本上一天一更,我这有从测试版到现在的所有版本",
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSByN3NaRzBybGVzQytqVGpI\nMFR4WEdhenFwL3NFb0tZYzgwUElDZWUrVndjClZSTjVIdUNQTnkzb1Q3V2J4T1ZT\nMVdJV2oweWFKbjdTZmxpYmtRdit0N0kKLS0tIHlpa1dwM3N0QWxpeExmY0d4dTVr\ndldZQ1FuOXl5Q251UmZ1b1lGSjhxb1UKQv+3W/0m8Gp0HQHVd2uIg6dTCIMdiRWr\nqyHSSZoyneLm+0w/YLktpXJ6VR5V+ZEeGLyXoANq+ZU7Aas0wliM63EGEbFhuw25\n5zsMiGMdvt+dVBOK6ZFM0PUsyQ==\n-----END AGE ENCRYPTED FILE-----"
+}
