@@ -39,6 +39,7 @@ const credits: {
     { name: "跨平台桌面版贡献者/HelloCHLdev", note: "现致力于Linux（跨平台）平台桌面端应用的开发" },
     { name: "开心的阿罗娜（热心QQ群友）", note: "赞助桌面端开发与网站服务器搭建", url: "https://ifdian.net/a/TinyNickCSHub?tab=home" },
     { name: "凭舟吟", note: "提供GitHub加速+落盘缓存以提升下载体验" },
+    { name: "Xr080606", note: "赞助桌面端开发与网站服务器搭建" },
   ],
   empty: "（待补充）",
 };
