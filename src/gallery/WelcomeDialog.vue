@@ -48,6 +48,20 @@
           :Content="t('about.reward')"
           FontSize="14" />
       </div>
+
+      <!-- 法律三件套入口：站内 hash 路由不能用 WinHyperlinkButton（SAFE_URI_RE 白名单只认
+           http(s)，见设置页同名注释），用普通按钮 + router.push；点完先关弹窗再跳转 -->
+      <div class="welcome-dialog-legal">
+        <span class="welcome-legal-text">{{ t('welcome.legal-note') }}</span>
+        <button
+          v-for="doc in legalDocs"
+          :key="doc.key"
+          type="button"
+          class="welcome-legal-link"
+          @click="openLegal(doc.key)">
+          {{ locale === 'zh-CN' ? `《${doc.zh.title}》` : doc.en.title }}
+        </button>
+      </div>
     </div>
   </WinContentDialog>
 </template>
@@ -59,11 +73,16 @@ import WinImage from '../components/WinImage.vue';
 import WinHyperlinkButton from '../components/WinHyperlinkButton.vue';
 import { useI18n } from '../components/i18n/index';
 import sticker from '../assets/welcome-sticker.gif';
+// 法律三件套：内容与标题都在根目录「法律文本.ts」，改文案去那个文件
+import legalDocs from '../../法律文本';
+
+import { useRouter } from 'vue-router';
 
 const props = defineProps<{ open: boolean }>();
 const emit = defineEmits(['update:open']);
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const router = useRouter();
 
 /** 弹窗被其它途径关闭（Esc/点遮罩等）→ 同步状态给父组件 */
 const onOpenChange = (value: boolean) => {
@@ -73,6 +92,12 @@ const onOpenChange = (value: boolean) => {
 /** 点“开始探索下载~”：弹窗背后的首页已就绪，直接关闭即可 */
 const onPrimaryClick = () => {
   emit('update:open', false);
+};
+
+/** 从欢迎弹窗跳条款页：先关弹窗再跳，不然条款页会被弹窗盖住 */
+const openLegal = (key: string) => {
+  emit('update:open', false);
+  router.push({ path: '/agreement', query: { doc: key } });
 };
 </script>
 
@@ -105,5 +130,34 @@ const onPrimaryClick = () => {
 
 .welcome-dialog-link-sep {
   color: var(--TextFillColorSecondaryBrush, #8a8a8a);
+}
+
+/* 法律三件套入口：一行小字 + 三个内联链接按钮 */
+.welcome-dialog-legal {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px 4px;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.welcome-legal-text {
+  color: var(--TextFillColorSecondaryBrush, #8a8a8a);
+}
+
+.welcome-legal-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--AccentFillColorDefaultBrush, #005fb8);
+  cursor: pointer;
+}
+
+.welcome-legal-link:hover {
+  text-decoration: underline;
 }
 </style>

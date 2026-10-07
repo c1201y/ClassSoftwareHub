@@ -121,6 +121,7 @@ export default {
       "welcome.explore": "开始探索下载~",
       "welcome.article": "相关文章",
       "welcome.article-url": "https://github.com/c1201y/ClassSoftwareHub/releases",
+      "welcome.legal-note": "继续使用即表示同意",
       "search.titlebar": "搜索软件、工具、AI 站点…",
       "search.placeholder": "搜索软件、内置工具、AI 站点，也可以只描述用途",
       "search.source-name": "应用名称",
