@@ -5,7 +5,7 @@
   "category": "teaching",
   "tagline": "公平随机点名 / 抽签 / 分组，让抽取告别争议",
   "description": "SecRandom 是一款基于「动态权重」的公平随机抽取工具，专门面向课堂点名、抽签、分组等场景，由 SECTL 开发并开源（GPL-3.0）。它支持按名单范围、小组、性别、人数进行点名，提供「奖池」和「名单」两种抽签模式，还有悬浮窗「闪抽」让抽取几乎不打断课堂节奏；摄像头就绪的教室还可以开启可选的人脸抽取。名单与分组支持完整导入导出，每次抽取都有历史记录可复盘，结果可语音播报，并支持通过 IPC / URL 被脚本或外部工具调用。安全与数据方面提供密码、TOTP、USB 等多重验证，以及备份与恢复。v3.0.0 起新增插件系统与插件市场、Omni TTS 语音（可接 OpenAI、小米 MiMo 等，支持音色克隆）以及倒计时 / 秒表 / 时钟计时器。",
-  "version": "3.0.0-alpha.2",
+  "version": "3.1.5",
   "size": "90 MB ~ 253 MB（视平台）",
   "system": "Windows 10/11（x86 / x64 / ARM64）、Linux、macOS、Android、iOS",
   "website": "https://secrandom.sectl.top/",

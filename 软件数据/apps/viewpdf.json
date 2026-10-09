@@ -5,7 +5,7 @@
   "category": "schedule",
   "tagline": "轻量的演示批注工具：图片、PDF、Word 都能讲能画",
   "description": "ViewPDF 是一个用来「边演示边批注」的小工具，讲课、开会上都用得上。它能直接打开图片和 PDF，也能借助 Office / WPS / LibreOffice 把 Word 文档转成 PDF 来讲；批注有移动、书写、橡皮擦三种模式，支持压感笔锋与曲线平滑，颜色和粗细都能自己调，写错了可以逐步撤销、重做（最多 50 步）。界面自带简体中文等九种语言，画布、画笔、文件关联、缓存、日志等设置可以导出成 JSON 备份，还支持把文件类型关联到它，双击文档直接打开。安装包只有几 MB，启动快、占用小，适合装在教室一体机上随时讲题。",
-  "version": "v0.3.0",
+  "version": "v0.4.0",
   "size": "约 6 MB",
   "system": "Windows 10 及以上（需 WebView2）、Linux x86_64",
   "website": "",
@@ -14,26 +14,26 @@
     {
       "platform": "Linux x64（AppImage）",
       "note": "viewpdf_0.2.5_amd64-linux.AppImage",
-      "size": "89 MB",
-      "url": "https://github.com/SECTL/ViewPDF/releases/download/v0.3.0/viewpdf_0.3.0_amd64-linux.AppImage"
+      "size": "90 MB",
+      "url": "https://github.com/SECTL/ViewPDF/releases/download/v0.4.0/viewpdf_0.4.0_amd64-linux.AppImage"
     },
     {
       "platform": "Linux x64（.deb）",
       "note": "viewpdf_0.2.5_amd64-linux.deb",
       "size": "7.1 MB",
-      "url": "https://github.com/SECTL/ViewPDF/releases/download/v0.3.0/viewpdf_0.3.0_amd64-linux.deb"
+      "url": "https://github.com/SECTL/ViewPDF/releases/download/v0.4.0/viewpdf_0.4.0_amd64-linux.deb"
     },
     {
       "platform": "Windows x64 安装版",
       "note": "viewpdf_0.2.5_x64-setup.exe",
-      "size": "5.3 MB",
-      "url": "https://github.com/SECTL/ViewPDF/releases/download/v0.3.0/viewpdf_0.3.0_x64-setup.exe"
+      "size": "5.4 MB",
+      "url": "https://github.com/SECTL/ViewPDF/releases/download/v0.4.0/viewpdf_0.4.0_x64-setup.exe"
     },
     {
       "platform": "Windows x64（MSI 安装版）",
       "note": "viewpdf_0.2.5_x64_en-US.msi",
-      "size": "6.3 MB",
-      "url": "https://github.com/SECTL/ViewPDF/releases/download/v0.3.0/viewpdf_0.3.0_x64_en-US.msi"
+      "size": "6.4 MB",
+      "url": "https://github.com/SECTL/ViewPDF/releases/download/v0.4.0/viewpdf_0.4.0_x64_en-US.msi"
     }
   ],
   "sort": 99

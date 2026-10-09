@@ -5,7 +5,7 @@
   "category": "schedule",
   "tagline": "🐱 BongoCat — A cross-platform interactive desktop pet that…",
   "description": "🐱 BongoCat — A cross-platform interactive desktop pet that brings fun to your desktop!",
-  "version": "v2.0.1",
+  "version": "v2.2.0",
   "system": "Windows / macOS",
   "website": "https://github.com/ayangweb/Awesome-BongoCat",
   "github": "https://github.com/ayangweb/BongoCat",
@@ -13,8 +13,8 @@
     {
       "platform": "Windows x64 安装版",
       "note": "BongoCat_2.0.1_x64.exe",
-      "size": "9.7 MB",
-      "url": "https://github.com/ayangweb/BongoCat/releases/download/v2.0.1/BongoCat_2.0.1_x64.exe"
+      "size": "9.8 MB",
+      "url": "https://github.com/ayangweb/BongoCat/releases/download/v2.2.0/BongoCat_2.2.0_x64.exe"
     }
   ],
   "sort": 99
