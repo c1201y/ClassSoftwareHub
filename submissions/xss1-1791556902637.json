@@ -1,0 +1,17 @@
+{
+  "_提交时间": "2026-10-09T14:41:42.637Z",
+  "_原始ID冲突": false,
+  "id": "xss1",
+  "name": "<script>alert(1)</script>",
+  "icon": "",
+  "category": "other",
+  "tagline": "<img src=x onerror=alert(1)>",
+  "description": "<svg onload=alert(1)>",
+  "version": "",
+  "size": "",
+  "system": "",
+  "website": "",
+  "github": "",
+  "downloads": [],
+  "sort": 99
+}
