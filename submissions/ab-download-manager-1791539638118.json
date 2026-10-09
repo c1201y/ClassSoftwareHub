@@ -1,0 +1,43 @@
+{
+  "_提交时间": "2026-10-09T09:53:58.118Z",
+  "_原始ID冲突": false,
+  "id": "ab-download-manager",
+  "name": "ab-download-manager",
+  "icon": "https://avatars.githubusercontent.com/u/38394888?v=4",
+  "category": "other",
+  "tagline": "A Download Manager that speeds up your downloads",
+  "description": "A Download Manager that speeds up your downloads",
+  "version": "v1.10.4",
+  "size": "",
+  "system": "Windows / macOS / Linux / Android",
+  "website": "https://abdownloadmanager.com",
+  "github": "https://github.com/amir1376/ab-download-manager",
+  "downloads": [
+    {
+      "platform": "Windows ARM64 安装版",
+      "note": "ABDownloadManager_1.10.4_windows_arm64.exe",
+      "size": "71.3 MB",
+      "url": "https://github.com/amir1376/ab-download-manager/releases/download/v1.10.4/ABDownloadManager_1.10.4_windows_arm64.exe"
+    },
+    {
+      "platform": "Windows ARM64 压缩包",
+      "note": "ABDownloadManager_1.10.4_windows_arm64.zip",
+      "size": "85.6 MB",
+      "url": "https://github.com/amir1376/ab-download-manager/releases/download/v1.10.4/ABDownloadManager_1.10.4_windows_arm64.zip"
+    },
+    {
+      "platform": "Windows x64 安装版",
+      "note": "ABDownloadManager_1.10.4_windows_x64.exe",
+      "size": "73.8 MB",
+      "url": "https://github.com/amir1376/ab-download-manager/releases/download/v1.10.4/ABDownloadManager_1.10.4_windows_x64.exe"
+    },
+    {
+      "platform": "Windows x64 压缩包",
+      "note": "ABDownloadManager_1.10.4_windows_x64.zip",
+      "size": "88.4 MB",
+      "url": "https://github.com/amir1376/ab-download-manager/releases/download/v1.10.4/ABDownloadManager_1.10.4_windows_x64.zip"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBqOGhMZ1VwckhzUit6VUZH\nQzRlZEwvdHJhcFpJZ0ZvR2llL29janlJcUF3ClR2MzRnc2xvTzBuemtKVlR2TzFw\nY2VnVytIdmlBcDlTV2ZXY2lKNjQzakUKLS0tIFEyWThnOEhtMTF0UlZDcDd3a1lY\neUlEMVJJVGZjdCtGdWJ5NDMwNFUyU0UKiXpcmwAgog2F+IFPy1Y5ClIIoptlOdlJ\nFNxKRFWR3m7i3p9zqysbr66v\n-----END AGE ENCRYPTED FILE-----"
+}
