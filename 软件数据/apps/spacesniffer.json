@@ -14,7 +14,8 @@
       "platform": "Windows x64 便携版（压缩包）",
       "note": "spacesniffer_2_2_0_27_x64.zip",
       "size": "2.9 MB",
-      "url": "https://www.uderzo.it/main_products/space_sniffer/files/spacesniffer_2_2_0_27_x64.zip"
+      "url": "https://www.uderzo.it/main_products/space_sniffer/files/spacesniffer_2_2_0_27_x64.zip",
+      "kind": "file"
     }
   ],
   "sort": 99,
