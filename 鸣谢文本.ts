@@ -38,7 +38,7 @@ const credits: {
     { name: "椰汁cyan", note: "提供网站搭建和现网站维护更新，同时负责Win7桌面端开发", url: "https://github.com/c1201y" },
     { name: "HelloCHLdev", note: "现致力于Linux（跨平台）平台桌面端应用的开发", url: "https://github.com/HelloCHLdev" },
     { name: "开心的阿罗娜（热心QQ群友）", note: "赞助桌面端开发与网站服务器搭建", url: "https://ifdian.net/a/TinyNickCSHub?tab=home" },
-    { name: "凭舟吟", note: "提供GitHub加速+落盘缓存以提升下载体验" },
+    { name: "凭舟吟", note: " 提供GitHub加速节点，OSS 存储桶，服务器和 cn 域名等服务" },
     { name: "Xr080606", note: "赞助桌面端开发与网站服务器搭建" },
   ],
   empty: "（待补充）",
