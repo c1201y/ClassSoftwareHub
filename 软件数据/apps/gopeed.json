@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-09T09:52:13.718Z",
-  "_原始ID冲突": false,
   "id": "gopeed",
   "name": "gopeed",
   "icon": "https://avatars.githubusercontent.com/u/125134399?v=4",
@@ -30,6 +28,5 @@
       "url": "https://gopeed.com/api/download?tpl=Gopeed-v1.9.3-windows-arm64-portable.zip"
     }
   ],
-  "sort": 5,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBDbWVyMjAreEtMRmVCRlZ6\nWFRsUVZMVDQ5NEM1SmRabGNnaCthamNUbVc0CjVZcWdNQWRrT2MwUlIwbFdRaGVW\nUi9DUmNnVWRVRXVZMUx1a1ZOSVRYUUkKLS0tIGUyTndyeW9Fb1FFRmpWTEFWTTAy\nOTZlOGgwMExzdUUxMkFsamZIYWNyQkkKtIeprQr7byP3IDL+O4Tif8cyF/crgj76\niVVmOYMYwdDw6qTS7CUe5jL4\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 5
 }
