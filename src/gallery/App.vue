@@ -615,11 +615,6 @@ watch(materialSetting, (value) => postUwpSetting('material', value));
   }
 
   /* ── 标题栏搜索框（可直接输入，结果就地弹出下拉；窄标题栏收成放大镜）────── */
-  /* 展开态需 absolute 覆盖标题区，标题栏根提供定位上下文 */
-  .gallery-titlebar.win-titlebar {
-    position: relative;
-  }
-
   .gallery-titlebar-search {
     box-sizing: border-box;
     display: flex;
