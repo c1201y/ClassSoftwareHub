@@ -1,0 +1,26 @@
+{
+  "_提交时间": "2026-10-10T12:59:37.285Z",
+  "_原始ID冲突": false,
+  "id": "fastgithub",
+  "name": "FastGitHub",
+  "icon": "https://cshapi.132614.xyz/api/icon?k=icon%2F2026%2F10%2Fmv2eig9w-jkhmys-8.ico",
+  "category": "other",
+  "tagline": "GitHub加速神器",
+  "description": "GitHub加速神器，解决GitHub打不开、用户头像无法加载、Releases无法上传下载、git-clone、git-pull、git-push失败等问题",
+  "version": "v2.1.5",
+  "size": "",
+  "system": "Windows / macOS / Linux",
+  "website": "",
+  "github": "https://github.com/WangGithubUser/FastGitHub",
+  "downloads": [
+    {
+      "platform": "Windows x64 压缩包",
+      "note": "fastgithub_win-x64.zip",
+      "size": "16.5 MB",
+      "hash": "290a42e5ea8be8c8cc1851abff503f19f5568920256621278634bffbe2bd876b5da3a40648fbc56e5c9f23abe4b43face333c0125d08bda052b62d15a7890d47",
+      "url": "oss://upload/2026/10/mv2ehxzf-u5aulp-FastGithub.UI.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBadkFXOU45NDRqb1dkQUw0\nQy9tUmEwNnZxVVVHQUFMd0xFTjlHSTVYNFdZCkYybXJnWXRmSkp1M3IwYjdzamlJ\ncVE1dUFpN3c0QnpXR2ZBSzgyZzRWSlUKLS0tIDNGN1RVb2l3Z0NoeG5yVDd2QUl5\nbFNyUzZndTNSWFdoNDdmTzQ1aGdMNFkKyko8Kl1pGeXV4amrFSuav4E88godjcV/\nlatFOEYVss3wANCnV85s6P+Y+0w83L6FzIF7eoV+pJCh\n-----END AGE ENCRYPTED FILE-----"
+}
