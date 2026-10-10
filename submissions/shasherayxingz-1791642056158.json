@@ -1,0 +1,40 @@
+{
+  "_提交时间": "2026-10-10T14:20:56.158Z",
+  "_原始ID冲突": false,
+  "id": "shasherayxingz",
+  "name": "SHasher",
+  "icon": "",
+  "category": "system",
+  "tagline": "哈希值校验工具",
+  "description": "网站的哈希值不知道怎么比较？试试这个小工具",
+  "version": "3.0",
+  "size": "200kb",
+  "system": "Windows",
+  "website": "",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "Windows x64版本",
+      "note": "便携版",
+      "size": "220kb",
+      "hash": "0221a52932a2021c48dfa54865f24ffe28b5470da49378a2af8c0a5eebc21dcc",
+      "url": "oss://upload/2026/10/mv2hai5o-mkr9l4-SHasher_v3.0_x64.exe"
+    },
+    {
+      "platform": "Windows x86版本",
+      "note": "便携版",
+      "size": "200kb",
+      "hash": "cd08f288c76b1b38355d1bde9adc24a66b23ea6d089ccf3bcb33d2a5fdab8991",
+      "url": "oss://upload/2026/10/mv2hb8i3-iwj5qm-SHasher_v3.0_x86.exe"
+    },
+    {
+      "platform": "文件哈希值",
+      "note": "文本文档（MD5， SHA1， SHA256）",
+      "size": "1kb",
+      "hash": "fa2c69f8547f0acb8f7c2a8deef52013ca82adc335ccd95f61202880920b2f2b",
+      "url": "oss://upload/2026/10/mv2hdd0g-v5evpz-哈希值.txt"
+    }
+  ],
+  "sort": 2,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSArOFNVNTBUc0VXdU5uWnZs\nNVJiRHlkcFBHNERrN3RPWFdjcmdmdGNvbmpJCi9rM05CQ0MwMlMwQ1JxYlNXVGFw\nNERkeTBMdGZvY0VSTThTZzJyeUp1VkkKLS0tIDY3UWxpSWpVMXIxWE1sV3FRbWE0\nZlp4WFdWZ2pOaE1kMDlvS2JOMFZkZFUKYlr204ZmnmUm/sppAB7GipYt6754Q510\nUXnUCgfod6Z1FdtT7IlDqBU2U+tY\n-----END AGE ENCRYPTED FILE-----"
+}
