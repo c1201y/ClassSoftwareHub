@@ -43,7 +43,7 @@
             </button>
           </template>
 
-          <!-- 一个都没搜到：给出路（换词 / 去提交页提需求） -->
+          <!-- 无结果时提供指引（更换关键词 / 前往提交页提出需求） -->
           <div v-if="!groups.length" class="gs-empty">
             <p class="gs-empty-title">{{ t('search.no-results', { query: query.trim() }) }}</p>
             <p class="gs-empty-desc">{{ t('search.empty-hint') }}</p>
@@ -83,7 +83,7 @@ const emit = defineEmits<{ 'update:open': [value: boolean] }>();
 const { t } = useI18n();
 const router = useRouter();
 
-/** 每组最多显示多少条（超过就靠继续打字缩小范围） */
+/** 每组最多显示条数（超出时依靠继续输入缩小范围） */
 const LIMIT_PER_KIND = 5;
 
 const panelRef = ref<HTMLElement | null>(null);
@@ -93,7 +93,7 @@ const activeHit = ref<GlobalHit | null>(null);
 const panelStyle = ref<Record<string, string>>({});
 
 const groups = computed(() => searchGlobal(props.query, t, LIMIT_PER_KIND));
-/** 拍平成一条线，方便 ↑↓ 在跨组之间连续移动 */
+/** 拍平为一维列表，便于 ↑↓ 跨组连续移动 */
 const flatHits = computed(() => groups.value.flatMap((group) => group.hits));
 
 const groupTitles: Record<GlobalHitKind, string> = {
@@ -146,7 +146,7 @@ const moveActive = (step: number) => {
 
 const activate = (hit: GlobalHit) => {
   if (hit.url) {
-    // AI 导航是站外站点：新标签页打开，下拉关掉即可（当前页面不动）
+    // AI 导航为站外站点：新标签页打开，关闭下拉（当前页面不跳转）
     window.open(hit.url, '_blank', 'noopener,noreferrer');
   } else if (hit.route) {
     void router.push(hit.route);
@@ -171,8 +171,8 @@ const updatePosition = () => {
   if (!anchor) return;
   const rect = anchor.getBoundingClientRect();
   const vw = window.innerWidth;
-  // 锚点已是搜索框容器（含图标/输入框/清空按钮外包块），直接让面板宽度 = 容器宽度，
-  // 左右边缘与搜索框对齐；不再用固定 380 把面板拉宽导致偏右。
+  // 锚点为搜索框容器（含图标/输入框/清空按钮的外包块），面板宽度取容器宽度，
+  // 左右边缘与搜索框对齐；不使用固定宽度，避免面板偏右。
   const width = Math.min(rect.width, vw - 16);
   let left = rect.left;
   if (left + width > vw - 8) left = Math.max(8, vw - 8 - width);
@@ -229,7 +229,7 @@ const onDocPointerDown = (event: PointerEvent) => {
 
 const bindWindowListeners = () => {
   window.addEventListener('resize', updatePosition);
-  // 滚动（含标题栏自身的滚动容器）时跟着移动
+  // 滚动（含标题栏自身的滚动容器）时跟随更新位置
   window.addEventListener('scroll', updatePosition, true);
   document.addEventListener('pointerdown', onDocPointerDown);
 };
@@ -377,8 +377,8 @@ onBeforeUnmount(unbindWindowListeners);
 
 .gs-item-badge {
   flex: 0 0 auto;
-  /* 注意：这里不能写百分比 —— grid 的 auto 轨道在算固有尺寸时会把百分比上限当 0，
-     结果小字被压成两三个像素。用固定上限，超长再用省略号。 */
+  /* 此处不可使用百分比 —— grid 的 auto 轨道计算固有尺寸时会把百分比上限视为 0，
+     导致小字被压缩至数像素。使用固定上限，超长时以省略号截断。 */
   max-width: 180px;
   font-size: 11px;
   line-height: 16px;

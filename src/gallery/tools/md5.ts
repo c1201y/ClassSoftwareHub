@@ -1,4 +1,4 @@
-// 纯 JS 的 MD5（Web Crypto 不提供 MD5，所以自己实现一份；仅用于本地计算）
+// 纯 JS 实现的 MD5（Web Crypto 不提供 MD5，因此自行实现；仅用于本地计算）
 
 const S = [
   7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
@@ -12,7 +12,7 @@ for (let i = 0; i < 64; i++) K[i] = Math.floor(Math.abs(Math.sin(i + 1)) * 42949
 
 export function md5(input: Uint8Array): string {
   const len = input.length;
-  const paddedLen = ((len + 8) >> 6 << 6) + 64; // 补 1 位 + 8 字节长度，凑齐 64 的倍数
+  const paddedLen = ((len + 8) >> 6 << 6) + 64; // 补充 1 位标记 + 8 字节长度信息，对齐到 64 字节的倍数
   const buf = new Uint8Array(paddedLen);
   buf.set(input);
   buf[len] = 0x80;

@@ -46,9 +46,9 @@
           </div>
         </section>
 
-        <!-- 桌面应用版推广卡：整页宽、矮高度，在「内置工具 / AI 导航」上方。
-             两个按钮直接下 exe（走 GitHub 镜像加速，镜像全挂自动跳该版本 Release 页），
-             版本号由 desktopDownload.ts 动态取；文案写在下面 desktopPromo。 -->
+        <!-- 桌面应用版推广卡：整页宽、矮高度，位于「内置工具 / AI 导航」上方。
+             两个按钮直接下载 exe（走 GitHub 镜像加速，镜像全部失效时自动跳转该版本 Release 页），
+             版本号由 desktopDownload.ts 动态获取；文案见下方 desktopPromo。 -->
         <div class="home-desktop-promo">
           <span class="home-desktop-promo-icon" aria-hidden="true">&#xE977;</span>
           <span class="home-desktop-promo-text">
@@ -148,7 +148,7 @@
               @click="openDetail(app)">
               <span class="control-item-surface">
                 <span class="download-app-icon">
-                  <!-- 图标：本地那份优先（见 src/gallery/appIcons.ts）；外链挂掉就退回首字色块，不开天窗 -->
+                  <!-- 图标：本地文件优先（见 src/gallery/appIcons.ts）；外链失效时回退首字色块 -->
                   <img
                     v-if="appIconUrlSafe(app)"
                     :src="appIconUrlSafe(app)"
@@ -188,7 +188,7 @@ import { useI18n } from '../../components/i18n/index';
 import { apps, categories, categoryName } from '../data';
 import type { SoftwareApp } from '../data';
 import { appIconUrlSafe, markIconBroken } from '../appIcons';
-// 桌面应用版的 exe 直下（取最新版本 + 镜像加速 + Release 页兜底）
+// 桌面应用版的 exe 直接下载（取最新版本 + 镜像加速 + Release 页兜底）
 import {
   DESKTOP_RELEASES_URL,
   downloadDesktopBuild,
@@ -233,7 +233,7 @@ const onFilterChanged = (sender: { Items?: { Tag?: string }[]; SelectedItem?: { 
 
 /**
  * 「教学辅助」分类顶部的推荐卡（Awesome IWB）：
- * 只在选中该分类时出现；文案里 title/desc 都被清空时自动隐藏（等于关掉这张卡）。
+ * 只在选中该分类时出现；文案中 title/desc 全部清空时自动隐藏（等效于移除该卡片）。
  */
 const teachingCategoryKey = 'teaching';
 const showIwbCard = computed(
@@ -249,10 +249,10 @@ const openDetail = (app: SoftwareApp) => {
 };
 
 /**
- * 首页「体验桌面应用版」推广卡（整页宽、矮高度，在 内置工具/AI 导航 卡片上方）：
- * 右边两个按钮直接下 exe —— 安装包版本由 desktopDownload.ts 动态取（桌面版发新版不用改这里），
- * 下载走 GitHub 镜像加速，镜像全挂会自动跳去该版本的 Release 页。
- * 文案直接写在这里（和 toolsCard 一样不进 文字设置.ts）；title 或 desc 留空即隐藏整张卡。
+ * 首页「体验桌面应用版」推广卡（整页宽、矮高度，位于内置工具 / AI 导航卡片上方）：
+ * 右侧两个按钮直接下载 exe —— 安装包版本由 desktopDownload.ts 动态获取（桌面版发新版无需修改此处），
+ * 下载走 GitHub 镜像加速，镜像全部失效时自动跳转该版本的 Release 页。
+ * 文案直接写在此处（与 toolsCard 一样不进 文字设置.ts）；title 或 desc 留空即隐藏整张卡。
  */
 const desktopPromo = {
   releasePage: DESKTOP_RELEASES_URL,
@@ -275,7 +275,7 @@ const desktopPromo = {
       })
 };
 
-/** 正在下的通道（null = 空闲）：用来禁用按钮，并把按钮文字换成「连接中…」 */
+/** 正在下载的通道（null = 空闲）：用于禁用按钮，并将按钮文字切换为「连接中…」 */
 const desktopDownloading = ref<DesktopChannel | null>(null);
 
 const downloadDesktop = async (channel: DesktopChannel) => {
@@ -284,15 +284,15 @@ const downloadDesktop = async (channel: DesktopChannel) => {
   try {
     await downloadDesktopBuild(channel);
   } catch {
-    // 兜底中的兜底：连下载流程本身都抛了，至少把用户送到 Release 页
+    // 下载流程本身抛出异常时的兜底：至少将用户引导至 Release 页
     window.open(desktopPromo.releasePage, '_blank');
   } finally {
     desktopDownloading.value = null;
   }
 };
 
-// 预热：进首页就先把版本查好，点按钮时不必等接口。
-// 接口不通也没关系 —— 模块内部会退回写死的版本，按钮照样能用。
+// 预热：进入首页即查询版本，点击按钮时无需等待接口。
+// 接口不可用时无影响 —— 模块内部会回退到内置版本号，按钮仍可用。
 onMounted(() => {
   void resolveDesktopBuilds();
 });

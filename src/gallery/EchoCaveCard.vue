@@ -1,8 +1,8 @@
 <template>
   <!--
-    回声洞（照桌面端 2026-10-03 定稿的形态，同 ClassIsland）：
-    一个可以下拉的展开项 —— 收起时只有表头一行；展开后正文整块可点、点一下换一条，
-    「投稿」按钮在右边，点了弹一个小面板（输入一句话 + 提交），不开新页面。
+    回声洞（同 ClassIsland 的形态）：
+    可下拉的展开项 —— 收起时仅表头一行；展开后正文整块可点、点击换一条，
+    「投稿」按钮在右侧，点击弹出小面板（输入一句话 + 提交），不打开新页面。
   -->
   <WinExpander
     class="echo-expander"
@@ -10,9 +10,9 @@
     :Description="t('echo-cave.description')"
     HeaderIcon="&#xE8BD;">
     <div class="ec-body">
-      <!-- 正文：整块可点（原生 button 去外观，只留悬停底色 + 手型光标，没有框）
-           ⛔ 这一片**只许出现字条本身** —— 条数 / 取数状态 / 报错 / 投稿回执都不在这儿
-           （2026-10-03 Nick：「这一片永远不要显示文字，要最纯粹的回声洞」）。回执在投稿面板里。 -->
+      <!-- 正文：整块可点（原生 button 去外观，仅保留悬停底色 + 手型光标，无边框）。
+           此区域只显示字条本身 —— 条数 / 取数状态 / 报错 / 投稿回执一律不在此显示，
+           回执统一放在投稿面板中（保持回声洞展示纯粹）。 -->
       <button
         type="button"
         class="ec-stage"
@@ -21,11 +21,9 @@
         <p class="ec-text" :class="{ 'is-empty': messages.length === 0 }">{{ displayText }}</p>
       </button>
 
-      <!-- 投稿：右侧按钮 → 主题自带的 WinFlyout
-           —— 它就是桌面端那个 <Flyout Placement="Bottom"> 的等价物：空间不够时自动翻到按钮上方、
-           再按视口夹取，绝不会像原来那个 position:absolute 的面板一样被屏幕下沿切掉
-           （2026-10-03 Nick：点了投稿，面板飞到屏幕下方被挡起来了）。
-           ⛔ 别退回手写绝对定位面板，也别自己写点外关闭 / Esc —— 这些 WinFlyout 全带。 -->
+      <!-- 投稿：右侧按钮 → 主题自带的 WinFlyout，等价于桌面端的 <Flyout Placement="Bottom">：
+           空间不足时自动翻转到按钮上方并按视口夹取，不会被屏幕下沿裁切。
+           禁止改回手写绝对定位面板，也不需自行实现点外关闭 / Esc —— WinFlyout 均已内置。 -->
       <div class="ec-side">
         <WinFlyout
           v-model:IsOpen="flyoutOpen"
@@ -108,13 +106,13 @@ const CLEAR_DELAY = 150;
 const CHAR_DELAY = 40;
 const BLINK_EVERY = 10;
 
-const queue = ref<string[]>([]); // 本轮洗好的队列：抽一条少一条
+const queue = ref<string[]>([]); // 本轮洗好的队列：取出一条即少一条
 const typing = ref(false);
 
-// 展开时的默认文字（Nick 指定原文，别改）：第一次点击之前一直显示这句
+// 展开时的默认文字（指定的固定文案，请勿修改）：首次点击前一直显示
 const displayText = ref(t('echo-cave.placeholder'));
 
-// 打字“代数”：每次开打 +1，上一遍发现代数变了就自己停
+// 打字代数：每次开始 +1，旧过程发现代数变化即自行终止
 let generation = 0;
 
 /** Fisher-Yates 洗牌 */
@@ -150,7 +148,7 @@ const typeOut = async (text: string) => {
       await sleep(CHAR_DELAY);
       if (my !== generation) return;
     }
-    displayText.value = text; // 收尾补全，把可能留着的光标去掉
+    displayText.value = text; // 收尾补全，移除残留的光标
   } finally {
     if (my === generation) typing.value = false;
   }
@@ -170,10 +168,10 @@ const SUBMIT_ENDPOINTS = ['https://cshapi.132614.xyz', 'https://submit.132614.xy
 const SUBMIT_TIMEOUT_MS = 10000;
 const ENDPOINT_CACHE_KEY = 'csh-submit-endpoint';
 
-// 兜底：投稿服务连不上时，改去 GitHub 的 submissions/ 新建一份**审核草稿**，
-// 和「提交软件」落同一个目录、走同一条审核管道。
-// ⛔ 别改回直接写 回声洞/messages——那会绕过审核直接上线。
-// 用 GitHub 新建文件页的 ?filename=&value= 预填，草稿内容（含 `_类型` 标记）自动带上。
+// 兜底：投稿服务不可用时，改为在 GitHub 的 submissions/ 新建一份审核草稿，
+// 与「提交软件」落在同一目录、走同一条审核管道。
+// 不可直接写入 回声洞/messages —— 那会绕过审核直接上线。
+// 通过 GitHub 新建文件页的 ?filename=&value= 预填，草稿内容（含 `_类型` 标记）自动携带。
 const fallbackUrl = () => {
   const payload = JSON.stringify(
     { _类型: '回声洞', text: draftText.value.trim() || '在这里写要投稿的话' },
@@ -210,7 +208,7 @@ function rememberEndpoint(base: string) {
   try {
     window.localStorage.setItem(ENDPOINT_CACHE_KEY, base);
   } catch {
-    // 隐私模式等场景写不进去，忽略
+    // 隐私模式等场景写入失败时忽略
   }
 }
 
@@ -245,23 +243,23 @@ async function postEcho(base: string, text: string): Promise<{ message?: string 
   }
 }
 
-// 点面板外面收起（轻确认）与 Esc 关闭都由 WinFlyout 自己负责，这边只管开关与内容复位。
+// 点面板外收起（轻确认）与 Esc 关闭均由 WinFlyout 处理，此处只负责开关与内容复位。
 
 const closeFlyout = () => {
   flyoutOpen.value = false;
 };
 
-/** WinFlyout 每次收起都记一笔 —— 给下面那个「刚收起又被 click 弹开」的补丁用 */
+/** 记录 WinFlyout 每次收起的时间 —— 供下方「刚收起又被 click 弹开」的补丁使用 */
 let dismissedAt = 0;
 const onFlyoutClosed = () => {
   dismissedAt = performance.now();
 };
 
 /**
- * 点「投稿」按钮。
- * ⚠️ 面板开着时，按下鼠标那一下是被 WinFlyout 的轻确认层接走的（它先把面板收起来），
- * 紧接着浏览器还会把这次 click 补发给按钮 —— 不挡一下就会「刚收起又弹开」，看着像关不掉。
- * 所以刚被收起的那一下点击直接忽略。
+ * 点击「投稿」按钮。
+ * 面板开启时，按下鼠标的事件会被 WinFlyout 的轻确认层拦截（先收起面板），
+ * 随后浏览器仍会把 click 补发给按钮，若不拦截会出现「刚收起又弹开」的表现。
+ * 因此刚被收起的那次点击直接忽略。
  */
 const toggleFlyout = () => {
   if (flyoutOpen.value) {
@@ -293,7 +291,7 @@ const submit = async () => {
     for (const base of orderedEndpoints()) {
       try {
         const reply = await postEcho(base, text);
-        // 成功：清空输入，回执**就地留在面板里**（卡面不写任何状态字），看一眼够了再自己收起
+        // 成功：清空输入，回执就地留在面板内（卡面不显示任何状态文字），到达时限后自动收起
         draftText.value = '';
         flyoutStatus.value = reply.message?.trim() || t('echo-cave.submit-ok');
         flyoutIsError.value = false;
@@ -302,7 +300,7 @@ const submit = async () => {
         return;
       } catch (err) {
         lastError = err;
-        if (err instanceof DefinitiveError) break; // 服务端明确拒绝，换入口也没用
+        if (err instanceof DefinitiveError) break; // 服务端明确拒绝，更换入口无意义
       }
     }
     flyoutIsError.value = true;
@@ -315,7 +313,7 @@ const submit = async () => {
 };
 
 onBeforeUnmount(() => {
-  generation++; // 让正在跑的那一遍打字作废
+  generation++; // 使正在执行的打字过程失效
   typing.value = false;
   closeFlyout();
 });
@@ -329,7 +327,7 @@ onBeforeUnmount(() => {
   gap: 12px;
 }
 
-/* 正文：整块可点（原生 button 去外观），hover 只给底色，不画框 */
+/* 正文：整块可点（原生 button 去外观），hover 仅显示底色，无边框 */
 .ec-stage {
   flex: 1;
   min-width: 0;
@@ -371,7 +369,7 @@ onBeforeUnmount(() => {
   word-break: break-word;
 }
 
-/* 空洞时正文用次级色，别让人以为那是真发言 */
+/* 空洞时正文使用次级色，与真实发言区分 */
 .ec-text.is-empty {
   color: var(--TextFillColorSecondaryBrush, var(--text-secondary, #5f5f5f));
 }
@@ -383,9 +381,9 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
 }
 
-/* 面板内容：外壳（边框 / 圆角 / 阴影 / 定位 / 翻转换边 / 轻确认）全部归 WinFlyout。
-   ⛔ 这里**再也不要**写 position / top / right / background / box-shadow ——
-   原来的手写绝对定位面板就是栽在这上面：贴在按钮下沿往下弹，页面底部那一行直接被屏幕切掉。 */
+/* 面板内容：外壳（边框 / 圆角 / 阴影 / 定位 / 翻转换边 / 轻确认）全部由 WinFlyout 负责。
+   禁止在此编写 position / top / right / background / box-shadow ——
+   手写绝对定位会贴按钮下沿向下弹出，页面底部一行会被屏幕裁切。 */
 .ec-flyout-body {
   width: 320px;
   box-sizing: border-box;

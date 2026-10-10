@@ -6,9 +6,8 @@
     </header>
 
     <!--
-      舞台：点一下换一条，打字机逐字打出来（照 ClassIsland 的回声洞）。
-      原来那条 5 秒自动轮播的进度条去掉了 —— 改成手动点，也就没有「第 x / y 条」这回事
-      （洗牌之后顺序是随机的）。
+      舞台：点击换一条，打字机逐字输出（照 ClassIsland 的回声洞）。
+      无自动轮播；洗牌后顺序随机，故不展示「第 x / y 条」进度。
     -->
     <button
       type="button"
@@ -103,7 +102,7 @@ const typeOut = async (text: string) => {
       await sleep(CHAR_DELAY);
       if (my !== generation) return;
     }
-    displayText.value = text; // 收尾补全，把可能留着的光标去掉
+    displayText.value = text; // 收尾补全，移除残留的光标
   } finally {
     if (my === generation) typing.value = false;
   }
@@ -116,16 +115,16 @@ const next = async () => {
   await typeOut(text);
 };
 
-// 进页面先静静显示一条，不打字（同 ClassIsland 的 _isFirstUpdate）
+// 进入页面先直接显示一条，不做打字动画（同 ClassIsland 的 _isFirstUpdate）
 const first = takeNext();
 if (first) displayText.value = first;
 
 onBeforeUnmount(() => {
-  generation++; // 让正在跑的那一遍打字作废
+  generation++; // 使正在执行的打字过程失效
   typing.value = false;
 });
 
-// 投稿：打开 GitHub 上**投稿目录**的「新建文件」页。
+// 投稿：打开 GitHub 上投稿目录的「新建文件」页。
 // 草稿落在 submissions/，与「提交软件」同一条审核管道，审核通过后才收进 回声洞/messages/。
 const SUBMIT_URL =
   'https://github.com/c1201y/ClassSoftwareHub/new/main/' + encodeURIComponent('submissions');

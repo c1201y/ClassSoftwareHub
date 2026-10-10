@@ -1,19 +1,19 @@
 import { onBeforeUnmount, ref } from 'vue';
 
 /**
- * 复制到剪贴板 + 底部轻提示。各工具通用。
+ * 复制到剪贴板 + 底部轻提示，各工具通用。
  * 用法：const { toast, copy, flash } = useCopy();
- *      模板里放 <div v-if="toast" class="tool-toast">{{ toast }}</div>
+ *      模板中放置 <div v-if="toast" class="tool-toast">{{ toast }}</div>
  *
- * ⚠️ 要显示提示一律调 `flash()`（或 `copy()`），**不要直接写 `toast.value = '…'`** ——
- *    只有 flash 负责装那个 1.5 s 的清除定时器，直写的结果是提示永久挂在页面上
- *    （Base64 解码失败那条就撞过：用户以为程序卡死了，其实只是提示没消失）。
+ * 显示提示必须调用 flash()（或 copy()），不要直接写 toast.value = '…'：
+ * 清除定时器由 flash 负责维护，直接赋值会导致提示永久停留在页面上
+ * （此前 Base64 解码失败的提示曾因直接赋值而无法消失，易被误认为程序卡死）。
  */
 export function useCopy() {
   const toast = ref('');
   let timer: number | null = null;
 
-  /** 显示一条轻提示，`ms` 毫秒后自动消失（错误类可以传长一点） */
+  /** 显示一条轻提示，ms 毫秒后自动消失（错误类提示可延长展示时间） */
   const flash = (text: string, ms = 1500) => {
     toast.value = text;
     if (timer) window.clearTimeout(timer);

@@ -1,40 +1,40 @@
 // ════════════════════════════════════════════════════════════════════
 // GitHub 一键读取（供「提交软件」页使用）
 //
-// 输入一个 GitHub 仓库地址 → 调用 GitHub 公开接口 → 变成提交表单要的字段：
+// 输入一个 GitHub 仓库地址 → 调用 GitHub 公开接口 → 转换为提交表单所需字段：
 //   GET /repos/{owner}/{repo}                    仓库信息（简介 / 官网 / 许可证…）
 //   GET /repos/{owner}/{repo}/releases?per_page=10  版本信息 + 各安装包直链
 //
-// 两个注意点：
-//   1. 国内直连 api.github.com 经常不通，所以配了镜像（见 API_BASES），
-//      直连失败会自动换镜像重试；镜像只在「网络层失败」和「非 404」时才接着试。
+// 实现要点：
+//   1. 国内直连 api.github.com 常不可达，因此配置了镜像（见 API_BASES），
+//      直连失败会自动换镜像重试；镜像仅在「网络层失败」和「非 404」时继续尝试。
 //   2. 未登录调用 GitHub 接口有速率限制（每 IP 每小时 60 次，同一出口网络
-//      所有人共享）。命中后会把剩下的镜像也试一遍（各镜像出口 IP 不同，
-//      额度互不相干）；代码里内置了 GitHub 令牌（GITHUB_TOKEN 常量）则额度
-//      提升到 5000 次/小时。令牌只发给 api.github.com 本尊，绝不经过第三方镜像。
+//      所有用户共享）。命中后会把剩余镜像依次尝试（各镜像出口 IP 不同，
+//      额度互不相干）；代码内置 GitHub 令牌（GITHUB_TOKEN 常量）时额度
+//      提升至 5000 次/小时。令牌只发送至 api.github.com 官方域名，绝不经过第三方镜像。
 //
-// 本文件只负责「取数据 + 猜平台」，不产出 UI 文案；界面上的文字一律在
-// 文字设置.ts 里（submit.import-* 开头的那些 key）。
+// 本文件只负责「取数据 + 推断平台」，不产出 UI 文案；界面文字统一在
+// 文字设置.ts 中维护（submit.import-* 开头的 key）。
 // ════════════════════════════════════════════════════════════════════
 
 /** GitHub 接口入口：按顺序尝试，第一个成功的胜出。
- *  token: true 表示该入口可以安全携带用户的 PAT（只有 GitHub 本尊，镜像一律不发） */
+ *  carriesToken: true 表示该入口可以安全携带令牌（仅 GitHub 官方域名，镜像一律不发送） */
 const API_BASES = [
-  // 自家统计 Worker 的反代（service.132614.xyz 国内可达、Cloudflare 服务器端代调、
-  // 服务端内置令牌），永远排最前；挂了才落到直连和公共镜像
+  // 本站统计 Worker 的反向代理（service.132614.xyz 国内可达、Cloudflare 服务端代调、
+  // 服务端内置令牌），固定排在最前；不可用时才落到直连和公共镜像
   { label: '本站代理', prefix: 'https://service.132614.xyz/api/gh', carriesToken: false },
   { label: 'api.github.com', prefix: 'https://api.github.com', carriesToken: true },
   { label: 'gh-proxy.com 镜像', prefix: 'https://gh-proxy.com/https://api.github.com', carriesToken: false },
   { label: 'ghfast.top 镜像', prefix: 'https://ghfast.top/https://api.github.com', carriesToken: false }
 ];
 
-/** 记住上次能通的入口：国内直连 api.github.com 常常不通，不记住的话每次都要白等一次超时 */
+/** 记录上次成功的入口：国内直连 api.github.com 常不可达，不记录则每次请求都需等待一次超时 */
 const BASE_CACHE_KEY = 'csh-gh-api-base';
 
 const GITHUB_TOKEN = ['ghp_', 'ndynAJTPS87Av2fLjspwoaY0mK81RO35n7oQ'].join('');
 
 function orderedBases(): typeof API_BASES {
-  // 自家代理永远排最前：国内可达、稳定，且不消耗访客的 IP 限额
+  // 本站代理固定排最前：国内可达、稳定，且不消耗访客的 IP 限额
   const [proxy, ...rest] = API_BASES;
   let preferred = '';
   try {
@@ -63,7 +63,7 @@ function forgetBase(): void {
   }
 }
 
-/** 单次请求超时（毫秒）：既照顾慢网络，也别让用户等太久 */
+/** 单次请求超时（毫秒）：兼顾慢速网络与用户等待时长 */
 const REQUEST_TIMEOUT = 12000;
 
 export type GithubImportErrorKind = 'invalid' | 'not-found' | 'rate-limit' | 'network' | 'http';
@@ -81,7 +81,7 @@ export class GithubImportError extends Error {
   }
 }
 
-// ── 接口原始结构（只声明用得到的字段，全部可选，防接口变动炸掉）────────
+// ── 接口原始结构（只声明用得到的字段，全部可选，避免接口变动导致解析失败）────────
 interface RawRepo {
   name?: string;
   full_name?: string;
@@ -145,21 +145,21 @@ export interface GithubDownloadItem {
   url: string;
 }
 
-/** 读取结果：给页面拿去填表单 */
+/** 读取结果，用于填充提交表单 */
 export interface GithubImportResult {
   repo: GithubRepoInfo;
   release: GithubReleaseInfo | null;
   downloads: GithubDownloadItem[];
   /** 由安装包文件名归纳出的「支持系统」，填到表单的 system 字段 */
   system: string;
-  /** 真实来源接口（直连 or 镜像），出问题时方便排查 */
+  /** 实际命中的接口入口（直连或镜像），用于问题排查 */
   via: string;
   facts: {
     /** 用上了预发布版本（Beta / Alpha） */
     usedPrerelease: boolean;
-    /** 一个 Release 都没读到（仓库全靠源码分发） */
+    /** 未读取到任何 Release（仓库仅以源码分发） */
     noRelease: boolean;
-    /** Release 读不到（多半是接口被限流 / 网络不通），只有仓库信息 */
+    /** Release 获取失败（通常为接口限流或网络不通），仅有仓库信息 */
     releaseFailed: boolean;
     /** Release 里一个可用安装包都没有 */
     noAsset: boolean;
@@ -200,7 +200,7 @@ export function parseRepoInput(raw: string): { owner: string; repo: string } | n
 }
 
 // ════════════════════════════════════════════════════════════════════
-// 2. 小工具：体积 / 文件名 → 平台 / 软件 id
+// 2. 工具函数：体积 / 文件名 → 平台 / 软件 id
 // ════════════════════════════════════════════════════════════════════
 
 export function formatSize(bytes: number): string {
@@ -225,7 +225,7 @@ export function repoToId(repoName: string): string {
     .slice(0, 48);
 }
 
-/** 简介压成一句话（首页卡片上显示的那行） */
+/** 将简介压缩为单行文案（用于首页卡片显示） */
 export function toTagline(description: string, max = 60): string {
   const text = (description || '').replace(/\s+/g, ' ').trim();
   if (!text) return '';
@@ -244,7 +244,7 @@ function detectOs(fileName: string): string {
   return '';
 }
 
-/** 从文件名猜「平台 / 架构」，例如 PowerToysSetup-0.101-x64.exe → Windows x64 安装版 */
+/** 从文件名推断「平台 / 架构」，例如 PowerToysSetup-0.101-x64.exe → Windows x64 安装版 */
 export function guessPlatform(fileName: string): string {
   const n = (fileName || '').toLowerCase();
   const os = detectOs(n);
@@ -275,7 +275,7 @@ export function guessPlatform(fileName: string): string {
   const parenKind = ['.deb', '.rpm', 'AppImage', 'Snap', 'APK', 'IPA', '磁盘映像', '安装包', 'MSI 安装版'].includes(kind);
 
   if (os === 'macOS') {
-    // 通用包（universal）不用再标架构，写成「macOS」就够了
+    // 通用包（universal）无需标注架构，直接显示「macOS」
     const macArch = arch === '通用' ? '' : arch;
     let label = macArch ? `macOS（${macArch}）` : 'macOS';
     if (kind && kind !== '压缩包') label += parenKind ? `（${kind}）` : ` ${kind}`;
@@ -312,7 +312,7 @@ async function fetchJson<T>(path: string): Promise<{ data: T; via: string }> {
     const controller = new AbortController();
     const timer = globalThis.setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
     try {
-      // 令牌只发 GitHub 本尊：镜像服务器是不可信的第三方，不能让它看到凭据
+      // 令牌只发送至 GitHub 官方域名：镜像服务器是不可信的第三方，不得泄露凭据
       const headers: Record<string, string> = { Accept: 'application/vnd.github+json' };
       if (token && base.carriesToken) headers.Authorization = `Bearer ${token}`;
 
@@ -322,18 +322,18 @@ async function fetchJson<T>(path: string): Promise<{ data: T; via: string }> {
         cache: 'no-store'
       });
 
-      // 404 = 仓库不存在（换镜像也一样），直接反馈，别再浪费时间
+      // 404 表示仓库不存在（镜像上同样不存在），直接返回该错误
       if (res.status === 404) {
         throw new GithubImportError('not-found', `HTTP 404 (${base.label})`, 404);
       }
-      // 403 / 429 且配额清零 = 这个入口的调用次数用完了。
-      // 各镜像出口 IP 不同、额度互不相干，记下来换下一个入口继续试。
+      // 403 / 429 且配额清零表示该入口的调用配额已耗尽。
+      // 各镜像出口 IP 不同、额度互不相干，记录后换下一个入口继续尝试。
       if ((res.status === 403 || res.status === 429) && res.headers.get('x-ratelimit-remaining') === '0') {
         rateLimited = true;
         lastError = new GithubImportError('rate-limit', `HTTP ${res.status} (${base.label})`, res.status);
         continue;
       }
-      // 401 = 令牌无效/过期：当普通失败处理，换个入口再试（没准镜像不需要令牌）
+      // 401 表示令牌无效或过期：按普通失败处理，换下一个入口重试
       if (!res.ok) {
         throw new GithubImportError('http', `HTTP ${res.status} (${base.label})`, res.status);
       }
@@ -346,7 +346,7 @@ async function fetchJson<T>(path: string): Promise<{ data: T; via: string }> {
         error instanceof GithubImportError
           ? error
           : new GithubImportError('network', error instanceof Error ? error.message : String(error));
-      // 仓库不存在换镜像也没用，直接抛
+      // not-found 换入口也无法解决，直接抛出
       if (wrapped.kind === 'not-found') throw wrapped;
       lastError = wrapped;
     } finally {
@@ -354,7 +354,7 @@ async function fetchJson<T>(path: string): Promise<{ data: T; via: string }> {
     }
   }
 
-  // 所有入口都没通：把记住的入口清掉，下次从默认顺序重新试
+  // 所有入口均不可用：清除记录的入口，下次从默认顺序重新尝试
   forgetBase();
   if (rateLimited) {
     throw new GithubImportError('rate-limit', lastError?.message ?? 'rate limited', 403);
@@ -372,7 +372,7 @@ export interface GithubAsset {
   url: string;
 }
 
-/** 明显不是「给人下载安装包」的文件：调试符号、校验值、策略模板、源码包…… */
+/** 明显不是面向用户下载安装包的文件：调试符号、校验值、策略模板、源码包等 */
 const JUNK_PATTERNS = [
   /\.(blockmap|sha1|sha256|sha512|md5|sig|asc|pem|pdb|txt|json|yml|yaml|md)$/i,
   /(^|[-_.])(symbols?|debug|pdb)([-_.]|$)/i,
@@ -392,7 +392,7 @@ function isJunkAsset(name: string): boolean {
 export interface GithubImportOptions {
   /** 勾上则优先取最新的预发布版本（Beta / Alpha），否则优先取最新正式版 */
   includePrerelease?: boolean;
-  /** 下载项最多填几条，防止一次塞出几十个输入框 */
+  /** 下载项数量上限，避免表单项过多 */
   maxDownloads?: number;
 }
 
@@ -424,7 +424,7 @@ export async function importFromGithub(
     ownerAvatar: raw.owner?.avatar_url || `https://github.com/${owner}.png`
   };
 
-  // ── 版本信息（拿不到不算失败，退化成「只填仓库信息」）────────────
+  // ── 版本信息（获取失败不视为整体失败，退化为仅填充仓库信息）────────────
   let releases: RawRelease[] = [];
   let releaseFailed = false;
   let via = repoRes.via;
@@ -444,7 +444,7 @@ export async function importFromGithub(
 
   const noRelease = !chosen;
   const usedPrerelease = chosen?.prerelease === true;
-  // 没勾预发布时：如果最新那条其实是更新的预发布版，记下来给界面提示
+  // 未勾选预发布时：若最新条目为更新的预发布版，记录其标签供界面提示
   const newerPrereleaseTag =
     !usedPrerelease && newest && newest !== chosen && newest.prerelease === true
       ? (newest.tag_name || '').trim()
@@ -470,7 +470,7 @@ export async function importFromGithub(
     }));
 
   const kept = rawAssets.filter((asset) => !isJunkAsset(asset.name));
-  const finalAssets = kept.length > 0 ? kept : rawAssets; // 全被判成垃圾文件时，宁可全留着
+  const finalAssets = kept.length > 0 ? kept : rawAssets; // 全部被判定为非安装包时，保留全部文件而非返回空列表
   const limited = finalAssets.slice(0, maxDownloads);
 
   const downloads: GithubDownloadItem[] = limited.map((asset) => ({

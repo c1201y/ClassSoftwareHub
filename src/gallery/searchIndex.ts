@@ -10,7 +10,7 @@
 // 规则：不知道软件叫什么、只记得“它是干嘛的”也能搜到 ——
 //       名称命中的结果排在同组的简介命中之前；组内不超过 limit 条。
 // 文案：结果里的分组名、来源称呼、提示语都在根目录 文字设置.ts 的 search.* 键，
-//       本文件只管匹配逻辑，日常维护【不要】改这里。
+//       本文件仅负责匹配逻辑；日常文案维护在 文字设置.ts，无需修改本文件。
 // ════════════════════════════════════════════════════════════════════
 import { apps, categoryName } from './data';
 import { TOOLS } from './tools';
@@ -109,7 +109,7 @@ const SEARCH_PAGES: SearchPageDef[] = [
 
 const normalize = (value: string) => value.trim().toLowerCase();
 
-/** 一句话简介太长时截断（卡片只显示一行，避免白白拼一个长字符串） */
+/** 一句话简介太长时截断（卡片只显示一行，避免拼接冗长字符串） */
 const clip = (value: string, max = 90) => {
   const text = value.replace(/\s+/g, ' ').trim();
   return text.length > max ? `${text.slice(0, max)}…` : text;

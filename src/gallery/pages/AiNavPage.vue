@@ -1,7 +1,7 @@
 <template>
-  <!-- AI 导航：一行一个网站，整行都是链接，点了在新标签页打开。
-       文字和站点清单都在根目录「AI导航文本.ts」（方便以后自己加/改），这里只负责显示。
-       注意：页面不放任何图片文件，站点图标是内联的 base64（aiSiteIcons.ts），不给服务器加流量。 -->
+  <!-- AI 导航：一行一个网站，整行为链接，点击在新标签页打开。
+       文字与站点清单均在根目录「AI导航文本.ts」中维护，本页只负责显示。
+       页面不引用任何图片文件，站点图标为内联 base64（aiSiteIcons.ts），不产生额外服务器流量。 -->
   <WinGrid
     class="ai-page-root"
     RowDefinitions="Auto,*">
@@ -64,7 +64,7 @@ import WinGrid from '../../components/WinGrid.vue';
 import WinScrollViewer from '../../components/WinScrollViewer.vue';
 import WinTextBlock from '../../components/WinTextBlock.vue';
 import { AI_SITE_ICONS } from '../aiSiteIcons';
-// 站点清单 + 页面文字：根目录「AI导航文本.ts」（加/删站点改那个文件就行）
+// 站点清单 + 页面文字：根目录「AI导航文本.ts」（新增/删除站点在该文件中维护）
 import aiNav from '../../../AI导航文本';
 import type { AiNavSite } from '../../../AI导航文本';
 
@@ -119,7 +119,7 @@ const rowStyle = (site: AiNavSite) => (site.color ? { '--badge': site.color } : 
   max-width: 1064px;
 }
 
-/* ── 一行一个网站：整行铺满宽度，点了直接跳 ───────────────────── */
+/* ── 一行一个网站：整行铺满宽度，点击直接跳转 ───────────────────── */
 .ai-row {
   box-sizing: border-box;
   display: grid;
@@ -155,7 +155,7 @@ const rowStyle = (site: AiNavSite) => (site.color ? { '--badge': site.color } : 
   outline-offset: 2px;
 }
 
-/* 图标底：柔和的站点色方块，里面放 26px 的 logo */
+/* 图标底：站点色柔和方块，内含 26px 的 logo */
 .ai-row-icon {
   width: 40px;
   height: 40px;

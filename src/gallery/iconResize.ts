@@ -3,18 +3,18 @@
 // 为什么非缩不可
 // --------------
 // 图标在站内只以 44 / 72 px 的磁贴出现（appIcons.ts 里定的是 64 px 见方的 WebP），
-// 但用户随手选的多半是相机原图或几百 KB 的 PNG。这份原图会被原样存进 OSS，再被
-// /api/icon 原样转发给每一个访客 —— 一张 2 MB 的图换不来任何清晰度，只会让卡片
-// 白等，还让 ECS 中继白出一次流量。所以进桶之前先压到 128 px。
+// 但用户选择的多为相机原图或数百 KB 的 PNG。原图会被原样存进 OSS，再被
+// /api/icon 原样转发给每一个访客 —— 2 MB 的原图换不来任何清晰度，只会增加卡片
+// 等待时间，并额外消耗 ECS 中继流量。因此进桶前先压缩到 128 px。
 //
 // 为什么是 128 而不是 64
-//   多留一倍余量：维护者后续可能用 scripts/icon-sync.py 再本地化一次（它的规矩是
+//   预留一倍余量：维护者后续可能用 scripts/icon-sync.py 再本地化一次（其要求为
 //   64 px 正方形、≤4096 字节，必要时还要从「标 + 文字」的横排 logo 里裁出标），
 //   源图太小会让那一步没有余量。
 //
-// 降级策略：压缩只是优化，绝不能变成上传的门槛。
-//   浏览器不给 canvas、图解码不出来、编出来比原图还大 —— 任何一步出问题都原样
-//   返回用户选的那个文件，让流程照常走下去。
+// 降级策略：压缩只是优化，绝不能成为上传的门槛。
+//   浏览器不支持 canvas、图解码失败、编码结果比原图更大 —— 任何一步出错都原样
+//   返回用户选择的文件，让流程照常继续。
 
 /** 缩放后的最长边（像素） */
 export const ICON_MAX_EDGE = 128;
@@ -26,9 +26,9 @@ const SKIP_BELOW_BYTES = 48 * 1024;
 const QUALITY = 0.85;
 
 /**
- * 原图超过这个大小就干脆别碰 canvas 了：
- * 解码一张几十兆的照片足以让页面卡住几秒，而图标根本用不上那个分辨率。
- * 调用方据此给出「换一张小点的图」的提示。
+ * 原图超过该大小即不进入 canvas 处理：
+ * 解码数十兆的照片足以使页面卡顿数秒，而图标无需该分辨率。
+ * 调用方据此提示「换一张小点的图」。
  */
 export const ICON_INPUT_MAX_BYTES = 8 * 1024 * 1024;
 
@@ -39,7 +39,7 @@ function renameExt(name: string, ext: string): string {
 }
 
 /**
- * 把图片解码成能喂给 drawImage 的东西。
+ * 将图片解码为 drawImage 可用的对象。
  * 优先 createImageBitmap（快、不占 DOM）；不支持或解码失败时退回 <img> + objectURL。
  */
 async function decode(source: File): Promise<ImageBitmap | HTMLImageElement | null> {
@@ -47,7 +47,7 @@ async function decode(source: File): Promise<ImageBitmap | HTMLImageElement | nu
     try {
       return await createImageBitmap(source);
     } catch {
-      // 某些浏览器对 SVG / HEIC 不给位图，落到下面那条路
+      // 部分浏览器对 SVG / HEIC 无法生成位图，回退至下方的 <img> 路径
     }
   }
 
@@ -61,7 +61,7 @@ async function decode(source: File): Promise<ImageBitmap | HTMLImageElement | nu
     });
     return image;
   } finally {
-    // 图已经解码进内存，这里可以放手；放到下一个回合是为了别在 onload 之前就断掉
+    // 图片已解码进内存，可释放 URL；延后至下一个事件循环是为了避免在 onload 之前失效
     setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
   }
 }
@@ -80,9 +80,9 @@ function encode(canvas: HTMLCanvasElement): Promise<Blob | null> {
  */
 export async function shrinkIcon(source: File): Promise<File> {
   try {
-    // 非图片不碰（accept 已经是 image/*，这里只是不信前端）
+    // 非图片直接返回（accept 已限定 image/*，此处为防御性校验）
     if (!/^image\//i.test(source.type)) return source;
-    // 本来就够小，省掉一次解码 + 编码
+    // 原图已足够小，跳过一次解码与编码
     if (source.size <= SKIP_BELOW_BYTES) return source;
 
     const bitmap = await decode(source);
@@ -90,7 +90,7 @@ export async function shrinkIcon(source: File): Promise<File> {
 
     const sourceWidth = bitmap.width || 0;
     const sourceHeight = bitmap.height || 0;
-    // SVG 没有内在尺寸时这里会是 0，缩放比例算不出来，直接放弃
+    // SVG 无内在尺寸时此处为 0，无法计算缩放比例，直接放弃
     if (sourceWidth <= 0 || sourceHeight <= 0) {
       if (typeof ImageBitmap !== 'undefined' && bitmap instanceof ImageBitmap) bitmap.close();
       return source;
@@ -109,13 +109,13 @@ export async function shrinkIcon(source: File): Promise<File> {
       return source;
     }
 
-    // 图标常带透明通道：先清空再画，免得透明区被涂成黑/白
+    // 图标常带透明通道：先清空再绘制，避免透明区被填充为黑/白
     context.clearRect(0, 0, width, height);
     context.drawImage(bitmap as CanvasImageSource, 0, 0, width, height);
     if (typeof ImageBitmap !== 'undefined' && bitmap instanceof ImageBitmap) bitmap.close();
 
     const blob = await encode(canvas);
-    // 编不出来，或压完反而更大（小尺寸高细节图会这样），那就别折腾
+    // 无法编码，或压缩后反而更大（小尺寸高细节图会出现此情况），此时返回原文件
     if (!blob || blob.size >= source.size) return source;
 
     const ext = blob.type === 'image/webp' ? 'webp' : 'png';

@@ -49,26 +49,26 @@ const input = ref('# 你好，Markdown\n\n这是一个**实时预览**的编辑�
 /**
  * 渲染 + 消毒。
  *
- * ⚠️ `marked` **不做** HTML 消毒：它会把 Markdown 里原样的 HTML 直接放进输出，
- *    所以 `<img src=x onerror="alert(1)">` 会真的被执行。这里的输入目前只来自用户自己
- *    （属「自 XSS」，危害有限），但这个工具是公开的，一旦以后支持「从网址载入 md」
- *    「粘贴同学发来的文档」，就会变成可被利用的 XSS —— 所以渲染管线里就先把这扇门关上。
+ * marked 不做 HTML 消毒：Markdown 中原样的 HTML 会直接进入输出，
+ * 例如 <img src=x onerror="alert(1)"> 会被真实执行。当前输入只来自用户本人
+ * （属于自 XSS，危害有限），但本工具是公开的，一旦后续支持从网址载入 Markdown
+ * 或粘贴他人文档，就会变成可被利用的 XSS，因此在渲染管线中先行拦截。
  *
- *    用 DOMPurify 而不是自己写白名单：手搓的标签/属性白名单是 XSS 的经典翻车点
- *    （`<svg>` 里的 `<script>`、`javascript:` 变形、属性里的换行……），
- *    这类过滤该交给专门维护的库。
+ * 使用 DOMPurify 而非自行编写白名单：手写的标签/属性白名单是 XSS 的常见薄弱点
+ * （<svg> 内嵌 <script>、javascript: 变形、属性中的换行等），
+ * 此类过滤应交给持续维护的专门库处理。
  */
 const html = computed(() => {
   try {
     const raw = marked.parse(input.value, { async: false }) as string;
     return DOMPurify.sanitize(raw, {
-      // 只留「Markdown 会长出来」的标签，多一个都不给：没有 script / iframe / form / style
+      // 仅保留 Markdown 可生成的标签，不含 script / iframe / form / style
       ALLOWED_TAGS: [
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'blockquote', 'pre', 'code',
         'ul', 'ol', 'li', 'strong', 'em', 'del', 's', 'a', 'img', 'table', 'thead', 'tbody',
         'tr', 'th', 'td', 'span', 'div', 'sup', 'sub', 'input'
       ],
-      // `input` 是任务列表的复选框，只保留 type/checked/disabled，其余属性一律不留
+      // input 为任务列表复选框所用标签，其余属性一律不保留
       ALLOWED_ATTR: ['href', 'title', 'alt', 'src', 'class', 'type', 'checked', 'disabled', 'align'],
       ALLOW_DATA_ATTR: false,
     });

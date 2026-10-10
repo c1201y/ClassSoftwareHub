@@ -23,9 +23,8 @@ const appVersionKey = manifestTemplate.version ?? 'app.version'
 document.documentElement.lang = i18n.locale
 document.title = i18n.t(appTitleKey)
 
-// The manifest is served from a blob URL, so root-relative values would be
-// resolved against the blob and rejected by browsers. Resolve every URL
-// against the page URL before serializing the manifest.
+// manifest 经 blob URL 提供，根相对路径会相对于 blob 解析而被浏览器拒绝。
+// 序列化前需将所有 URL 相对页面地址解析。
 const resolveManifestUrl = (value: string) => new URL(value, window.location.href).href
 const manifestIconUrls: Record<string, string> = {
   '@app-icon': appIconUrl,

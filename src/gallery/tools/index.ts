@@ -1,10 +1,10 @@
 import type { Component } from 'vue';
 
 // ════════════════════════════════════════════════════════════════════
-// 内置工具注册表 —— 加新工具只改这一处！
-//   1) 建一个工具页面（用 <ToolShell> 包起来）
-//   2) 在下面 TOOLS 里加一条
-// 导航卡片和路由会自动从这里生成。
+// 内置工具注册表，新增工具只需修改此文件：
+//   1) 新建工具页面（使用 <ToolShell> 包裹）
+//   2) 在下方 TOOLS 中添加一条记录
+// 导航卡片与路由均由此自动生成。
 // ════════════════════════════════════════════════════════════════════
 
 export interface ToolDef {
@@ -113,7 +113,7 @@ export const TOOLS: ToolDef[] = [
   }
 ];
 
-/** 按 group 归好类，保持 TOOLS 里的先后顺序 */
+/** 按 group 分组，保持 TOOLS 中的原有顺序 */
 export function toolGroups() {
   const groups: { name: string; items: ToolDef[] }[] = [];
   for (const tool of TOOLS) {

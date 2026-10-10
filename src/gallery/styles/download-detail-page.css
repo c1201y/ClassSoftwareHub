@@ -48,11 +48,14 @@
   margin: 0;
   font-size: 28px;
   font-weight: 600;
+  /* 软件名可能是无空格的长 token（点分版本号），必须允许任意断行，否则会把整页撑宽 */
+  overflow-wrap: anywhere;
 }
 .detail-tagline {
   color: var(--text-secondary);
   margin: 4px 0 8px;
   font-size: 14px;
+  overflow-wrap: anywhere;
 }
 .detail-category-badge {
   color: var(--accent-base);
@@ -81,6 +84,7 @@ html.theme-dark .detail-category-badge {
   padding: 16px 18px;
   font-size: 14px;
   line-height: 1.75;
+  overflow-wrap: anywhere;
 }
 .detail-info-list {
   background: var(--card-bg);
@@ -140,11 +144,13 @@ html.theme-dark .detail-category-badge {
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 .detail-store-desc {
   color: var(--text-secondary);
   margin-top: 2px;
   font-size: 12.5px;
+  overflow-wrap: anywhere;
 }
 .detail-store-button {
   flex: none;
@@ -191,6 +197,7 @@ html.theme-dark .detail-category-badge {
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 .detail-download-note {
   color: var(--text-secondary);
@@ -377,6 +384,9 @@ html.theme-dark .detail-category-badge {
 @media (width<=640px) {
   .gallery-page-content.download-detail-page {
     padding: 16px;
+  }
+  .detail-title {
+    font-size: 22px;
   }
   .detail-download-row {
     flex-wrap: wrap;

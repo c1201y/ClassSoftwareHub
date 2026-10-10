@@ -82,7 +82,7 @@ export function trackVisit(key: string, page: string): void {
       visitorState.offline = false;
       ok = true;
     } catch (e) {
-      // 把完整错误打到控制台，方便排查（地址 / 错误类型）
+      // 将完整错误输出到控制台，便于排查（含请求地址与错误类型）
       console.warn('[VisitorCounter] 统计接口请求失败：', e, '\n请求地址：', url);
       visitorState.offline = true;
     }

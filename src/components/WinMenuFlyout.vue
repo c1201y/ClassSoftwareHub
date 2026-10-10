@@ -328,16 +328,17 @@ const MenuFlyoutItems = defineComponent({
           class: 'win-menu-flyout-leading-slot win-menu-flyout-icon-slot',
           'aria-hidden': true
         }, icon
-          // 补丁（图片图标）：ClassSoftwareHub 的导航子项图标可能是图片 URL，
-          // URL 交给图标字体渲染会变成一串“乱码”；与 WinNavigationView 的
-          // isIconImage 判定保持一致，图片型图标渲染为 <img>。
-          ? h('img', {
-              class: 'win-menu-flyout-icon-img',
-              src: icon,
-              alt: '',
-              draggable: false
-            })
-          : h('span', { class: 'icon win-menu-flyout-icon' }, icon)));
+          // 图片型图标（http(s)://、data:image/、站点相对路径）渲染为 <img>；
+          // 其余按图标字体字形渲染。判定规则与 WinNavigationView.isIconImage 一致。
+          ? isIconImage(icon)
+            ? h('img', {
+                class: 'win-menu-flyout-icon-img',
+                src: icon,
+                alt: '',
+                draggable: false
+              })
+            : h('span', { class: 'icon win-menu-flyout-icon' }, icon)
+          : null));
       }
       return slots;
     };
@@ -741,6 +742,7 @@ const getCommandIcon = (source) => {
   return source?.Glyph || commandGlyphs[source?.Symbol] || '';
 };
 const getItemIcon = (item) => item?.Icon || getCommandIcon(item?.Command?.IconSource);
+const isIconImage = (icon) => /^(?:https?:)?\/\/|^data:image\/|^\.{0,2}\//i.test(String(icon ?? ''));
 const getKeyboardAcceleratorText = (item) => {
   if (item?.KeyboardAcceleratorTextOverride) return item.KeyboardAcceleratorTextOverride;
   const accelerator = item?.KeyboardAccelerators?.[0] || item?.Command?.KeyboardAccelerators?.[0];
@@ -1130,7 +1132,8 @@ const isItemChecked = (item) => Boolean(item?.IsChecked);
 .win-menu-flyout-icon,
 .win-menu-flyout-check,
 .win-menu-flyout-chevron {
-  font-family: 'Segoe Fluent Icons', 'Segoe MDL2 Assets', sans-serif;
+  /* Segoe 图标字体仅 Windows 10+ 提供，Win7 与移动端回退到随站打包的 WinUIOnWebIcons（码位相同） */
+  font-family: 'Segoe Fluent Icons', 'Segoe MDL2 Assets', 'WinUIOnWebIcons', sans-serif;
 }
 
 .win-menu-flyout-icon {

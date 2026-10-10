@@ -185,9 +185,9 @@ const scale = ref(1);
 const showSeconds = ref(true);
 const showDate = ref(true);
 const hour12 = ref(false);
-/** 背景底色：跟随主题 / 强制白 / 强制黑（亮色模式下也想用黑底时的开关） */
+/** 背景底色：跟随主题 / 强制白 / 强制黑，供亮色模式下使用黑底的场景切换 */
 const tone = ref<'theme' | 'light' | 'dark'>('theme');
-/** 文字颜色：自动跟随底色 / 强制白 / 强制黑（背景图太亮、暗色模式下白字看不清时的开关） */
+/** 文字颜色：自动跟随底色 / 强制白 / 强制黑，用于背景图过亮或暗色模式下白字对比度不足的场景 */
 const ink = ref<'auto' | 'white' | 'black'>('auto');
 
 /* ── 下拉选项（WinComboBox 的 ItemsSource） ──────────────── */
@@ -274,7 +274,7 @@ onMounted(() => {
   tick = window.setInterval(() => { now.value = new Date(); }, 250);
 });
 
-/* ── 样式：默认就是纯黑白 ─────────────────────────────────── */
+/* ── 样式：默认纯黑白 ─────────────────────────────────────── */
 const a = computed(() => veilStrength.value / 100);
 
 const stageStyle = computed<Record<string, string>>(() => {
@@ -290,7 +290,7 @@ const stageStyle = computed<Record<string, string>>(() => {
     style['--clock-bg'] = '#000000';
     style['--clock-fg'] = '#ffffff';
   }
-  // 文字颜色强制：优先级最高（--clock-ink），盖过底色/主题/背景图
+  // 文字颜色强制：优先级最高（--clock-ink），覆盖底色、主题与背景图
   if (ink.value === 'white') style['--clock-ink'] = '#ffffff';
   else if (ink.value === 'black') style['--clock-ink'] = '#111111';
   if (bgUrl.value) style.backgroundImage = `url("${bgUrl.value}")`;
@@ -320,10 +320,10 @@ const veilStyle = computed<Record<string, string>>(() => {
 });
 
 /**
- * 底色 / 文字色：
- *   跟随主题 → 亮色 = 白底黑字，暗色 = 黑底白字（由 CSS 决定）
- *   强制白/黑 → 由 --clock-bg / --clock-fg 变量覆盖，亮色模式下也能用黑底
- *   有背景图 → 白蒙版给深色字，其余给白字
+ * 底色 / 文字色的叠加规则：
+ *   跟随主题 → 亮色为白底黑字，暗色为黑底白字（由 CSS 决定）
+ *   强制白/黑 → 通过 --clock-bg / --clock-fg 变量覆盖，亮色模式下也可使用黑底
+ *   有背景图 → 白蒙版配深色字，其余配白字
  */
 const stageClass = computed(() => ({
   'is-photo': !!bgUrl.value,
@@ -354,10 +354,10 @@ const onFile = (e: Event) => {
   if (file) applyImageFile(file);
 };
 
-/** WinButton 触发隐藏的原生 file input */
+/** 通过 WinButton 触发隐藏的原生 file input（WinButton 无法直接打开文件对话框） */
 const pickFile = () => fileInput.value?.click();
 
-/* 直接把图片拖进预览框也能设为背景（学校浏览器上传按钮不好使时的兜底） */
+/* 支持直接将图片拖入预览框设为背景，作为浏览器文件上传按钮不可用时的替代入口 */
 const dragOver = ref(false);
 let dragDepth = 0;
 const onDragEnter = () => {
@@ -409,7 +409,7 @@ const enterScreen = async () => {
   void requestWakeLock();
 };
 
-/** 打开 time.is 对时（只跳外链，不接任何 API） */
+/** 打开 time.is 校时，仅跳转外部链接，不调用任何 API */
 const openTimeSync = () => {
   window.open('https://time.is/', '_blank', 'noopener,noreferrer');
 };
@@ -421,7 +421,7 @@ const exitFull = () => {
   void releaseWakeLock();
 };
 
-/** 鼠标双击 / 手指双击（触屏没有 dblclick，所以用两次 pointerup 的间隔判断） */
+/** 双击退出全屏：触屏无 dblclick 事件，通过两次 pointerup 的时间间隔判断 */
 let lastTap = 0;
 const onOverlayTap = () => {
   const t = Date.now();
@@ -444,7 +444,7 @@ const onKey = (e: KeyboardEvent) => {
   if (e.key === 'Escape' && mode.value === 'web') exitFull();
 };
 
-/* ── 屏幕常亮（投影 / 平板挂着当钟用时不至于黑屏） ─────────── */
+/* ── 屏幕常亮（投影或平板挂钟场景下避免黑屏） ─────────────── */
 type WakeLockLike = { release: () => Promise<void> };
 let wakeLock: WakeLockLike | null = null;
 
@@ -455,7 +455,7 @@ const requestWakeLock = async () => {
     if (wakeLock) return;
     wakeLock = await nav.wakeLock.request('screen');
   } catch {
-    /* 不支持或被拒绝就算了 */
+    /* 浏览器不支持或权限被拒绝时静默忽略 */
   }
 };
 
@@ -491,12 +491,12 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* ── 舞台（默认纯黑，简约；有图片才画图） ─────────────────── */
+/* ── 舞台（默认纯黑白，设置背景图后显示图片） ─────────────── */
 .clock-stage {
   position: relative;
   overflow: hidden;
-  /* 纯黑白，默认跟随网站主题：亮色 = 白底黑字，暗色 = 黑底白字；
-     可用「背景底色」强制成黑/白（--clock-bg 覆盖） */
+  /* 默认跟随网站主题：亮色为白底黑字，暗色为黑底白字；
+     可通过「背景底色」以 --clock-bg 强制覆盖 */
   background-color: var(--clock-bg, #ffffff);
   background-size: cover;
   background-position: center;
@@ -537,7 +537,7 @@ html.theme-dark .clock-face {
   color: var(--clock-ink, var(--clock-fg, #ffffff));
 }
 
-/* 有背景图时不再看主题：白蒙版上给深色字，其余一律白字；--clock-ink 可强制覆盖 */
+/* 有背景图时不再依赖主题：白蒙版配深色字，其余配白字；--clock-ink 可强制覆盖 */
 .clock-stage.is-photo .clock-face {
   color: var(--clock-ink, #ffffff);
 }
@@ -629,7 +629,7 @@ html.theme-dark .clock-hint {
   color: rgba(255, 255, 255, 0.92);
 }
 
-/* 强制黑白底色时，提示条配色也跟着走 */
+/* 强制底色时，提示条配色随之切换 */
 .clock-stage.tone-light .clock-hint {
   background: rgba(0, 0, 0, 0.06);
   color: rgba(0, 0, 0, 0.7);
@@ -646,7 +646,7 @@ html.theme-dark .clock-hint {
   outline-offset: -6px;
 }
 
-/* 提示条（WinInfoBar）与上下元素留点间距 */
+/* 提示条（WinInfoBar）与上下元素之间保留间距 */
 .clock-tip-bar {
   display: block;
   margin: 0 0 12px;
@@ -678,7 +678,7 @@ html.theme-dark .clock-hint {
   margin-top: 16px;
 }
 
-/* WinSlider 根节点 inheritAttrs:false、不接收外部 class，用 :deep 把宽度拉满 */
+/* WinSlider 根节点设置了 inheritAttrs:false，不接收外部 class，因此用 :deep 撑满宽度 */
 .clock-field :deep(.win-slider-root) {
   display: flex;
   width: 100%;

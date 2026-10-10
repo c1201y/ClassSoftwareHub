@@ -65,7 +65,6 @@
               :Content="t('submit.import-prerelease')"
               v-model:IsChecked="includePrerelease" />
 
-            <!-- 读取结果 -->
             <WinInfoBar
               v-if="importError"
               class="submit-import-result"
@@ -267,8 +266,8 @@
                     :PlaceholderText="t('submit.download-note-placeholder')"
                     v-model:Text="dl.note" />
                 </div>
-                <!-- 本站上传回填的 `oss://` 键是服务端生成的，锁成只读：用户改一个字符
-                     就是一条指向别的对象的直链，既会 404 也给了「伪造引用」的口子。 -->
+                <!-- 本站上传回填的 `oss://` 键由服务端生成，界面锁定为只读：改动一个字符
+                     即指向其他对象的直链，既会 404，也留下伪造引用的途径。 -->
                 <WinTextBox
                   :Header="t('submit.download-url')"
                   :PlaceholderText="t('submit.download-url-placeholder')"
@@ -325,7 +324,6 @@
               @Click="restoreDraft" />
           </div>
 
-          <!-- 提交结果（成功 / 失败） -->
           <WinInfoBar
             v-if="message"
             class="submit-result"
@@ -335,7 +333,7 @@
             :Title="messageTitle"
             :Message="message" />
 
-          <!-- 连不上提交服务时的兜底：重试 / 下载提交文件 / 复制 JSON / 带去 GitHub -->
+          <!-- 提交服务不可用时的兜底操作区：重试 / 下载提交文件 / 复制 JSON / 带去 GitHub -->
           <div v-if="fallback" class="submit-fallback">
             <WinInfoBar
               :IsOpen="true"
@@ -395,9 +393,9 @@ import {
 import type { UploadProgress } from '../ossUpload';
 import { shrinkIcon, ICON_INPUT_MAX_BYTES } from '../iconResize';
 /**
- * 压缩后仍超过这个体积就提醒一句。
- * 128 px 的图正常只有几 KB，够到这个数说明压缩没生效（比如浏览器不肯解码 HEIC），
- * 提示用户换张图比让他默默传一张大图强。
+ * 压缩后仍超过该体积时提醒。
+ * 128 px 的图标通常只有几 KB，达到该阈值说明压缩未生效（如浏览器无法解码 HEIC），
+ * 提示用户更换图片优于默认传一张大图。
  */
 const ICON_WARN_BYTES = 256 * 1024;
 /** 提交失败后本地留存的 key（存 localStorage，刷新或过一段时间重试都不丢填写内容） */
@@ -529,9 +527,9 @@ function humanSize(bytes: number): string {
 }
 
 /**
- * 上传前的本地预检：超过硬上限直接劝退。
- * 现在的链路是浏览器直连 OSS，没有中转内存这道墙了，所以门槛纯粹是「本站愿意收多大」：
- * 超过 2.5 GB 的一律引导去填官网 / GitHub Releases 直链（存储费与下行费都不划算）。
+ * 上传前的本地预检：超过硬上限时拒绝。
+ * 当前链路为浏览器直连 OSS，无中转限制，上限仅代表本站可接收的最大体积：
+ * 超过 2.5 GB 的一律引导改填官网 / GitHub Releases 直链（存储与下行成本均过高）。
  */
 function sizeGuard(file: File): string {
   return file.size > UPLOAD_MAX_BYTES
@@ -568,7 +566,7 @@ function ttlText(minutes?: number): string {
   return Number.isFinite(n) && n > 0 ? t('submit.upload-ttl-warn', { minutes: n }) : '';
 }
 
-/** 上传失败 → 本地化文案；OSS 回的是英文 / XML 原始报错，一律换成人话再给用户看 */
+/** 上传失败 → 本地化文案；OSS 返回英文 / XML 原始报错，统一转换为可读文案后展示 */
 function uploadErrorText(error: unknown): string {
   if (error instanceof OssUploadError) {
     if (error.code === 'too-large') {
@@ -603,7 +601,7 @@ async function onIconPicked(ev: Event) {
   if (!picked) return;
   uploadError.value = '';
   iconUploadWarn.value = '';
-  // 图标不该有几十兆：解码它本身就会卡住页面，而这种图在 44 px 的磁贴里毫无意义
+  // 图标体积不应达数十 MB：解码本身会阻塞页面，且该体量的图片在 44 px 磁贴中毫无意义
   if (picked.size > ICON_INPUT_MAX_BYTES) {
     uploadError.value = t('submit.icon-too-large', {
       size: humanSize(picked.size),
@@ -614,13 +612,13 @@ async function onIconPicked(ev: Event) {
   iconUploading.value = true;
   iconUploadPct.value = -1;
   try {
-    // 图标在站内只以 44 / 72 px 出现，先在本地缩到 128 px 再传：
-    // 传得快、桶里的小、访客也少等一次（详见 iconResize.ts）
+    // 图标在站内仅以 44 / 72 px 显示，先在本地缩至 128 px 再上传：
+    // 上传更快、存储更省、访客等待更短（详见 iconResize.ts）
     const file = await shrinkIcon(picked);
     if (file.size > ICON_WARN_BYTES) {
       iconUploadWarn.value = t('submit.upload-large-warn', { size: humanSize(file.size) });
     }
-    // 图标走 icon/ 前缀：小图，读取走公开的 /api/icon，不进下载闸门
+    // 图标使用 icon/ 前缀：小图，读取走公开的 /api/icon，不经过下载闸门
     const { url, orphanMinutes } = await uploadToOss(file, (p) => { iconUploadPct.value = toPercent(p); }, 'icon');
     form.icon = url;
     iconUploadTtl.value = ttlText(orphanMinutes);
@@ -654,7 +652,7 @@ async function onDownloadFilePicked(ev: Event) {
     // 详情页点下载时由 ossDownload.ts 换一张 15 分钟票据再取流。
     const { url, orphanMinutes } = await uploadToOss(file, (p) => { dlUploadPct.value[index] = toPercent(p); }, 'file');
     form.downloads[index].url = url;
-    form.downloads[index].kindIndex = 1; // 本站直链 → 显式按「文件」渲染（点了本页直接下，不跳走）
+    form.downloads[index].kindIndex = 1; // 本站直链 → 显式按「文件」处理（点击后在当前页直接下载，不跳转）
     dlUploadWarn.value[index] = '';
     dlUploadTtl.value[index] = ttlText(orphanMinutes);
   } catch (error) {
@@ -667,7 +665,7 @@ async function onDownloadFilePicked(ev: Event) {
 }
 
 const addDownload = () => {
-  // 按钮已经会禁用，这里再拦一道：上限是数据约定，不能只靠 UI 兜着
+  // 按钮 UI 已禁用超限操作，此处再次校验：上限属于数据约定，不应仅依赖 UI 拦截
   if (form.downloads.length >= MAX_DOWNLOADS) return;
   form.downloads.push(emptyDownload());
 };
@@ -675,7 +673,7 @@ const addDownload = () => {
 const removeDownload = (index: number) => {
   if (form.downloads.length <= 1) return;
   form.downloads.splice(index, 1);
-  // 并行状态数组必须跟着删，否则后面几项的上传中/进度/错误会整体错位
+  // 并行状态数组必须同步删除，否则后续各项的上传中/进度/错误状态会整体错位
   dlUploading.value.splice(index, 1);
   dlUploadPct.value.splice(index, 1);
   dlUploadError.value.splice(index, 1);
@@ -687,7 +685,7 @@ const removeDownload = (index: number) => {
 // 从 GitHub 一键读取
 // 取数据的逻辑都在 ../githubImport.ts，这里只做两件事：
 //   1. 把读到的内容填进表单（默认只填空字段，勾了「覆盖」才动已填内容）
-//   2. 把「填了什么 / 跳过了什么 / 要留意的坑」列给用户看
+//   2. 把「填了什么 / 跳过了什么 / 需注意的问题」列给用户看
 // ════════════════════════════════════════════════════════════════════
 const repoInput = ref('');
 const reading = ref(false);
@@ -715,7 +713,7 @@ const resetImportReport = () => {
   importWarnings.value = [];
 };
 
-/** 错误类型 → 文案 key（其余错误统一走「网络错误」那句） */
+/** 错误类型 → 文案 key（其余错误统一使用「网络错误」文案） */
 const IMPORT_ERROR_KEY: Record<string, string> = {
   invalid: 'submit.import-error-invalid',
   'not-found': 'submit.import-error-notfound',
@@ -762,8 +760,8 @@ function applyImport(result: GithubImportResult) {
   /**
    * 统一填充规则：
    *   · 空字段 → 直接填
-   *   · 有内容，但内容是上一次「一键读取」填进去的（用户没动过）→ 也可以覆盖，
-   *     否则换个仓库再读一次会什么都不更新，很反直觉
+   *   · 有内容，但内容是上一次「一键读取」填进去的（用户未改动）→ 也可以覆盖，
+   *     否则更换仓库再次读取时不会更新任何字段，不符合直觉
    *   · 有内容，且是用户手写的 → 只有勾了「覆盖」才动
    */
   const put = (label: string, current: string, value: string, assign: (text: string) => void) => {
@@ -785,11 +783,11 @@ function applyImport(result: GithubImportResult) {
     filled.push(label);
   };
 
-  /** 上一次「一键读取」写进下载项的链接，用来判断现在的下载项是不是用户自己敲的 */
+  /** 上一次「一键读取」写进下载项的链接，用于判断当前下载项是否由用户手动填写 */
   const currentUrls = form.downloads.map((item) => item.url.trim()).filter(Boolean).join('\n');
   const downloadsEditedByUser = currentUrls !== '' && currentUrls !== lastDownloadUrls;
 
-  // ── 软件 ID：由仓库名生成；和站内已有软件撞车就自动加序号 ──────
+  // ── 软件 ID：由仓库名生成；与站内已有软件冲突时自动追加序号 ──────
   const takenIds = new Set(apps.map((app) => app.id));
   let suggestedId = repoToId(repo.repo);
   if (suggestedId && takenIds.has(suggestedId)) {
@@ -812,16 +810,16 @@ function applyImport(result: GithubImportResult) {
   put(t('submit.system'), form.system, system, (text) => { form.system = text; });
   put(t('submit.website'), form.website, repo.homepage, (text) => { form.website = text; });
   put(t('submit.github'), form.github, repo.htmlUrl, (text) => { form.github = text; });
-  // 仓库主页正好是微软商店链接时，顺手把「商店下载」也填上
+  // 仓库主页为微软商店链接时，同时填写「商店下载」字段
   if (repo.homepage.includes('apps.microsoft.com')) {
     put(t('submit.store'), form.store, repo.homepage, (text) => { form.store = text; });
   }
-  // 用的是预发布版：写一条 notice，详情页会在下载区上方提示
+  // 使用预发布版本时写入 notice，详情页会在下载区上方提示
   if (facts.usedPrerelease && release) {
     put(t('submit.notice'), form.notice, t('submit.import-notice-prerelease', { tag: release.tagName }), (text) => { form.notice = text; });
   }
 
-  // ── 图标：GitHub 接口拿不到软件图标，先用仓库所有者的头像顶上 ──
+  // ── 图标：GitHub 接口不提供软件图标，先以仓库所有者头像代替 ──
   const iconLabel = t('submit.icon');
   if (repo.ownerAvatar && form.icon.trim() !== repo.ownerAvatar &&
       (!form.icon.trim() || lastFilled[iconLabel] === form.icon.trim() || overwrite.value)) {
@@ -839,7 +837,7 @@ function applyImport(result: GithubImportResult) {
       kept.push(t('submit.section-downloads'));
       warnings.push(t('submit.import-warn-downloads-kept'));
     } else {
-      // 重新「一键读取」时表单里的校验值别丢：同一个链接的校验值原样带过去（手填的哈希通常还是对的）
+      // 重新「一键读取」时保留表单中已填的校验值：同一链接的校验值原样带入（手动填写的哈希通常仍然有效）
       const hashByUrl = new Map(
         form.downloads.filter((item) => item.hash.trim()).map((item) => [item.url.trim(), item.hash.trim()])
       );
@@ -894,8 +892,8 @@ function applyImport(result: GithubImportResult) {
 }
 
 /**
- * 校验值输入框里的写法五花八门：可能带「MD5:」「sha256 =」前缀、带 0x、按字节用冒号或空格分隔。
- * 站点只认纯十六进制（算法按位数识别），所以这里先统一剥干净。
+ * 校验值输入的写法多样：可能带「MD5:」「sha256 =」前缀、0x 前缀、按字节以冒号或空格分隔。
+ * 站点只接受纯十六进制（算法按位数识别），此处统一清洗。
  */
 function normalizeHash(raw: string): string {
   return raw
@@ -918,12 +916,12 @@ function isHashLike(value: string): boolean {
 
 /**
  * 软件 ID 允许的字符集。
- * ⚠️ 必须与这三处保持一致，改一处就得改三处：
+ * 必须与以下三处保持一致，修改时需同步：
  *   · scripts/update-ignore.mjs 的 id 校验
- *   · .github/workflows/review-submission.yml 里的 ID_RE（它拿 id 拼写入路径）
- *   · .github/workflows/update-ignore-command.yml 从 Issue 正文里解析 id 的正则
- * 这不是「好看」的问题：`data.id` 会被拼成 `软件数据/apps/<id>.json` 再写文件，
- * `../../package` 这种能跑到仓库外去（2026-09-25 审计发现的路径穿越）。
+ *   · .github/workflows/review-submission.yml 里的 ID_RE（以 id 拼写入路径）
+ *   · .github/workflows/update-ignore-command.yml 从 Issue 正文解析 id 的正则
+ * 这不是格式美观问题：`data.id` 会被拼成 `软件数据/apps/<id>.json` 再写文件，
+ * `../../package` 这类值可逃逸至仓库外（2026-09-25 审计发现的路径穿越）。
  */
 const ID_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
 
@@ -934,10 +932,10 @@ const ID_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
  */
 /**
  * 联系方式：本地用 age 公钥加密，只提交 ASCII armor 密文。
- * 返回 null 表示「没填」（走通用必填提示）；返回 '' 表示「填了但加密失败」
- * —— 这两种情况对用户来说不是一回事：前者是没写，后者是写了却交不出去，
- * 得给出明确文案，不能混进「请填写带 * 的必填项」里让人对着填好的输入框发呆。
- * age-encryption 体积较大（含后量子曲线依赖），走动态 import，只在真正提交时按需加载。
+ * 返回 null 表示「未填写」（走通用必填提示）；返回 '' 表示「已填写但加密失败」
+ * —— 两者含义不同：前者未写，后者写了却无法提交，
+ * 需给出专门文案，不能并入「请填写带 * 的必填项」的通用提示。
+ * age-encryption 体积较大（含后量子曲线依赖），走动态 import，仅在真正提交时按需加载。
  */
 async function encryptContact(): Promise<string | null> {
   const contact = form.contact.trim();
@@ -983,7 +981,7 @@ async function buildPayload(): Promise<{ payload: Record<string, unknown> | null
         // 否则交给详情页按链接自动推断
         const kind = DOWNLOAD_KINDS[item.kindIndex];
         if (kind) entry.kind = kind;
-        // 校验值选填：归一化后为空就不写这个键，免得多出一堆 `"hash": ""`
+        // 校验值选填：归一化后为空则不写入该键，避免生成多余的 `"hash": ""`
         const hash = normalizeHash(item.hash);
         if (hash) entry.hash = hash;
         return entry;
@@ -996,9 +994,9 @@ async function buildPayload(): Promise<{ payload: Record<string, unknown> | null
     _联系方式: contactField
   };
 
-  // 必填校验（原来靠原生 required，但提交按钮不是原生 submit 按钮，校验根本不会触发）
-  // 「系统限制」也计入必填：留空详情页只会显示「待补充」；从 GitHub 一键读取时会自动归纳填上
-  // ⚠️ contactField 为 ''（填了但加密失败）时先给专门文案，别掉进通用必填提示里
+  // 必填校验不使用原生 required：提交按钮并非原生 submit 按钮，原生校验不会触发
+  // 「系统限制」也计入必填：留空时详情页只会显示「待补充」；从 GitHub 一键读取时会自动归纳填上
+  // contactField 为 ''（已填写但加密失败）时优先使用专门文案，不落入通用必填提示
   if (contactField === '') {
     return { payload: null, error: t('submit.error-encrypt') };
   }
@@ -1009,15 +1007,15 @@ async function buildPayload(): Promise<{ payload: Record<string, unknown> | null
     (payload.downloads as unknown[]).length === 0;
   if (missing) return { payload: null, error: '' };
 
-  // 软件 ID 字符集：提交页的说明文字（submit.id-desc）早就写了规则，但一直没真的校验；
-  // 而这个值会被 CI 拼成写入路径，所以在这里就要拦下来（理由见 ID_PATTERN 的注释）。
+  // 软件 ID 字符集：说明文字（submit.id-desc）已声明规则，但该值会被 CI 拼成写入路径，
+  // 必须在此处校验（理由见 ID_PATTERN 的注释）。
   if (!ID_PATTERN.test(String(payload.id))) {
     return { payload: null, error: t('submit.error-id') };
   }
 
-  // 排序值：填了就必须是数字。
-  // ⚠️ 不能只靠下面的 `=== undefined` 清理 —— Number('abc') 得到 NaN，NaN !== undefined
-  //    所以那个键会被留下，JSON.stringify 再把它写成 `"sort": null`，污染数据。
+  // 排序值：填写时必须为数字。
+  // 不能只靠下方的 `=== undefined` 清理 —— Number('abc') 得到 NaN，NaN !== undefined，
+  // 该键会被保留，JSON.stringify 随即写成 `"sort": null`，污染数据。
   if (payload.sort !== undefined && !Number.isFinite(payload.sort as number)) {
     return { payload: null, error: t('submit.error-sort') };
   }
@@ -1055,7 +1053,7 @@ async function postSubmission(base: string, payload: Record<string, unknown>): P
       signal: controller.signal
     });
     const data = (await res.json()) as SubmissionReply;
-    // 提交接口成功时回 success、校验失败时回 error，两者都没有说明不是提交接口的响应
+    // 提交接口成功时返回 success、校验失败时返回 error，两者均缺失表示响应并非来自提交接口
     if (data?.success !== true && typeof data?.error !== 'string') {
       throw new Error(t('submit.error-unexpected'));
     }
@@ -1087,7 +1085,7 @@ function clearDraft() {
   try {
     window.localStorage.removeItem(DRAFT_KEY);
   } catch {
-    // 忽略
+    // 清理失败可安全忽略：草稿残留不影响提交流程
   }
   hasDraft.value = false;
 }
@@ -1306,7 +1304,7 @@ async function submit() {
    写在这里的 font-size / margin 都会被覆盖，所以这里只放不冲突的排版属性 */
 
 /* 分区卡片：把「基本信息 / 补充信息」各自圈成一张卡（与下载项卡片同风格），
-   否则一堆输入框连成一片，分不清哪几个属于哪个分区 */
+   否则各分区输入框连成一片，难以区分归属 */
 .submit-section {
   margin-top: 24px;
   padding: 18px 20px 22px;
@@ -1480,7 +1478,7 @@ async function submit() {
   margin: 0 0 2px;
 }
 
-/* ── 上传到网盘（图标 / 下载文件）────────────────────────────── */
+/* ── 上传到本站 OSS（图标 / 下载文件）──────────────────────── */
 .submit-icon-field {
   display: flex;
   flex-direction: column;

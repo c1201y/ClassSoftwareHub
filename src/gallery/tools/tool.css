@@ -55,8 +55,8 @@
   border-color: var(--accent-base, #0067C0);
 }
 
-/* 下拉选项：必须给「不透明」的颜色。浏览器内置弹层的底色是平台默认（白色），
-   而 --card-bg 在暗色下只有 5% 白 → 会变成白底 + 白字 = 整个下拉框全白看不见。 */
+/* 下拉选项必须使用不透明颜色：浏览器内置弹层的底色是平台默认（白色），
+   而 --card-bg 在暗色下仅有 5% 白，会导致白底白字、下拉框整体不可见。 */
 .tool-select option,
 .tool-select optgroup {
   background-color: #ffffff;
@@ -176,7 +176,7 @@ html.theme-dark .tool-select optgroup {
   left: 50%;
   bottom: 32px;
   transform: translateX(-50%);
-  /* 要盖过全屏时钟层（2147483000），否则全屏时看不到提示 */
+  /* 需高于全屏时钟层（2147483000），否则全屏时提示不可见 */
   z-index: 2147483600;
   padding: 8px 16px;
   border-radius: 20px;

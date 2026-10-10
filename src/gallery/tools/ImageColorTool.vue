@@ -95,7 +95,7 @@ import { extractPalette } from '../imageColors';
 import type { Hsl, PaletteResult } from '../imageColors';
 import WinButton from '../../components/WinButton.vue';
 
-/** 缩放到的最长边（像素）：太大没必要，还会拖慢取色 */
+/** 图片缩放目标最长边（像素）：尺寸过大会显著拖慢取色 */
 const MAX_SIDE = 120;
 
 const { toast, copy: copyRaw } = useCopy();
