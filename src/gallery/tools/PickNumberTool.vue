@@ -25,12 +25,12 @@
             @Click="start" />
         </div>
 
-        <!-- 当前设置的白话总结：防止范围填错自己不知道 -->
+        <!-- 显示当前设置的摘要，便于发现范围填写错误 -->
         <div class="tool-hint pick-summary">
           本次设置：在 <b>{{ lo }}</b> ~ <b>{{ hi }}</b> 里抽 <b>{{ pickCount }}</b> 个号<span v-if="noRepeat">，抽过的不再出现</span>
         </div>
 
-        <!-- 不重复模式：还剩多少号可抽（避免抽到快没号时结果看起来"很集中"） -->
+        <!-- 不重复模式下显示剩余可抽号数，避免号码所剩无几时结果看似分布集中 -->
         <div v-if="noRepeat" class="tool-hint pick-remain">
           范围内还剩 <b>{{ remain }}</b> 个号没抽过<template v-if="usedInRange">（已抽 {{ usedInRange }} 个）</template>
           <template v-if="remain === 0"> —— 想再来一轮请点下面的「重置记录」</template>
@@ -52,7 +52,7 @@
           </div>
         </div>
 
-        <!-- 公平性自检：当场抽 2 万次，看分布平不平（给"这抽号是不是有问题"一个答案） -->
+        <!-- 公平性自检：本机实抽两万次并统计分布，用于验证随机性是否均匀 -->
         <div class="pick-checkbar">
           <WinButton Content="公平性自检" @Click="runFairCheck" />
           <span class="tool-hint">在本机实抽 2 万次，看分布平不平</span>
@@ -172,11 +172,10 @@ let timer: number | null = null;
 const lo = computed(() => Math.min(Math.floor(from.value || 0), Math.floor(to.value || 0)));
 const hi = computed(() => Math.max(Math.floor(from.value || 0), Math.floor(to.value || 0)));
 
-/** 加密随机整数 [0, n) —— 用 getRandomValues，比 Math.random 公平 */
+/** 生成加密随机整数 [0, n)，使用 getRandomValues 保证分布均匀 */
 const randInt = (n: number) => {
   if (!(n >= 1)) return 0;
-  // n 超过 2^32 时 limit = Math.floor(4294967295/n)*n = 0，
-  // while (v >= 0) 永远成立 → 页面直接冻死。退化成 Math.random 兜底。
+  // n 超过 2^32 时 limit 为 0，while 循环条件恒成立会卡死页面，此时退化为 Math.random 兜底。
   if (n > 4294967295) return Math.floor(Math.random() * n);
   const limit = Math.floor(4294967295 / n) * n;
   const buf = new Uint32Array(1);
@@ -189,11 +188,11 @@ const randInt = (n: number) => {
 };
 
 /**
- * 范围/数量上限。
+ * 范围 / 数量上限。
  *
- * NumberBox 没法完全拦住手滑（粘贴一个 1e12 进去、或 localStorage 里存了脏值）：
- * 不设上限的话，pickOnce/doGroup 会按 range 建**十亿元素级**的数组 —— 不是卡，
- * 是直接把标签页内存打爆。10 万个号对课堂抽号绰绰有余。
+ * NumberBox 无法拦截全部非法输入（粘贴超大数值或 localStorage 中的脏值）：
+ * 不设上限时 pickOnce/doGroup 会按 range 构建十亿元素级数组，直接耗尽标签页内存。
+ * 10 万个号码对课堂抽号场景已足够。
  */
 const MAX_POOL = 100000;
 const MAX_COUNT = 10000;
@@ -271,7 +270,7 @@ const resetUsed = () => {
   flash('已重置抽号记录');
 };
 
-/** 本次会抽几个（界面上显示的，跟 start 里保持一致） */
+/** 本次抽取个数（与 start 中的逻辑保持一致，供界面显示） */
 const pickCount = computed(() => Math.max(1, Math.floor(count.value || 1)));
 
 /** 当前范围内已经抽过的个数 */
@@ -281,14 +280,14 @@ const usedInRange = computed(() => {
   return new Set(used.value.filter((n) => n >= loV && n <= hiV)).size;
 });
 
-/** 不重复模式下还剩几个号可抽 */
+/** 不重复模式下剩余可抽取的号码数 */
 const remain = computed(() => Math.max(0, poolSize.value - usedInRange.value));
 
-/* ── 公平性自检：实抽 2 万次，看分布平不平 ────────────────────── */
+/* ── 公平性自检：实抽两万次并统计分布 ────────────────────────── */
 interface FairBar {
   label: string;
   count: number;
-  /** 柱子高度百分比（相对最高的那根） */
+  /** 柱高百分比（以最高柱为基准） */
   pct: number;
 }
 const fairCheck = ref<{ bars: FairBar[]; note: string } | null>(null);
@@ -320,7 +319,7 @@ const runFairCheck = () => {
     const end = lo.value + Math.round(((i + 1) * size) / buckets) - 1;
     return { label: start === end ? String(start) : `${start}-${end}`, count: c, pct: Math.round((c / max) * 100) };
   });
-  // 卡方 < 27.9 = 自由度 9、p=0.001 的临界值，低于它说明均匀得很正常
+  // 卡方值小于 27.9（自由度 9、p=0.001 的临界值）时视为分布均匀
   const normal = chi < 27.9;
   fairCheck.value = {
     bars,

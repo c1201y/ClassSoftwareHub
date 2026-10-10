@@ -1,34 +1,33 @@
 // ════════════════════════════════════════════════════════════════════
-// desktopDownload.ts —— 首页「桌面应用版」的安装包直下
+// desktopDownload.ts —— 首页「桌面应用版」的安装包直接下载
 //
-// 原来首页那张卡只是跳到 GitHub 的 Release 页，用户还得自己找文件、点下载，
-// 而国内直连 github.com 下 Release 常常只有几十 KB/s 甚至断流。这里改成
-// 「点一下就下 exe」，并且：
+// 国内直连 github.com 下载 Release 常常只有几十 KB/s 甚至断流，本文件提供
+// 「点击即下载安装包」的能力：
 //
-//   1. 版本号动态取 —— 桌面版仓库一发新版，按钮自动跟上，不用改代码。
+//   1. 版本号动态获取 —— 桌面版仓库发布新版后按钮自动更新，无需改代码。
 //      接口入口：本站 Worker 反代（国内可达）→ gh-proxy.com 兜底。
-//   2. 下载走镜像 —— 复用 githubMirror.ts 里那几条加速通道（自建节点优先，公益镜像兜底）。
-//   3. 镜像一条都不通时，自动落到**该版本**的 Release 页，用户仍能自己下。
+//   2. 下载走镜像 —— 复用 githubMirror.ts 的加速通道（自建节点优先，公益镜像兜底）。
+//   3. 镜像全部不可用时，自动跳转到该版本的 Release 页，用户仍可自行下载。
 //
-// 三个实现上的坑（都实测过，别再改回去）：
-//   · 镜像对**文件**路径不返回 CORS 头，所以探测只能用 no-cors + HEAD：
-//     读不到状态码，但「域名失效 / 连不上 / 超时」都会让 fetch reject —— 够用了。
-//     ⚠️ 千万别改成 GET 探测，那会把 60MB 的包真下下来。
-//   · ghfast.top 能代理文件、但**不能**代理 api.github.com（返回 403），
-//     所以接口入口里没有它（它在镜像清单里，负责下载，不负责取版本）。
-//   · Worker 的 /api/gh 反代只放行固定路径：`/releases` 可以，`/releases/latest`
-//     会被拦成 {"error":"forbidden"}。所以这里取列表再自己筛最新，不用 latest。
+// 实现约束（均经实测验证，不可回退）：
+//   · 镜像对文件路径不返回 CORS 头，可用性探测只能用 no-cors + HEAD：
+//     读不到状态码，但「域名失效 / 连不上 / 超时」都会使 fetch reject，足以判定。
+//     不可改为 GET 探测，否则会把整个安装包真实下载下来。
+//   · ghfast.top 能代理文件，但不能代理 api.github.com（返回 403），
+//     因此接口入口中不包含它（它仅出现在镜像清单中，负责下载，不负责取版本）。
+//   · Worker 的 /api/gh 反代只放行固定路径：`/releases` 可用，`/releases/latest`
+//     会被拦截返回 {"error":"forbidden"}。因此此处取列表后自行筛选最新版本。
 //
-// 本文件不产出界面文字 —— 按钮上的字在 HomePage.vue 的 desktopPromo 里。
+// 本文件不产出界面文字 —— 按钮文案在 HomePage.vue 的 desktopPromo 中。
 // ════════════════════════════════════════════════════════════════════
 
 import { fetchSelfSignedUrl, mirrorUrl, orderedChannels } from './githubMirror';
 import type { MirrorChannel } from './githubMirror';
 
-/** 桌面版仓库（exe 由它发布，跟本站是两个仓库） */
+/** 桌面版仓库（安装包由该仓库发布，与本站主仓库相互独立） */
 const REPO = 'c1201y/ClassSoftwareHub-Desktop';
 
-/** 桌面版仓库的 Releases 页 —— 卡片上「全部版本」链接 + 镜像全挂时的兜底去处 */
+/** 桌面版仓库的 Releases 页 —— 卡片「全部版本」链接及镜像全部不可用时的兜底跳转目标 */
 export const DESKTOP_RELEASES_URL = `https://github.com/${REPO}/releases`;
 
 /**
@@ -36,7 +35,7 @@ export const DESKTOP_RELEASES_URL = `https://github.com/${REPO}/releases`;
  * 两个入口都带 CORS 头，浏览器能直接读 JSON。
  */
 const API_BASES = [
-  // 本站统计 Worker 的反代：国内可达、Cloudflare 服务端代调，永远排最前
+  // 本站统计 Worker 的反代：国内可达、Cloudflare 服务端代调，固定排最前
   `https://service.132614.xyz/api/gh/repos/${REPO}/releases`,
   `https://gh-proxy.com/https://api.github.com/repos/${REPO}/releases`
 ];
@@ -44,13 +43,13 @@ const API_BASES = [
 /** 单次接口请求超时（毫秒） */
 const REQUEST_TIMEOUT = 12000;
 
-/** 镜像可用性探测超时（毫秒）：国内镜像握手通常 <1s，给 3s 足够 */
+/** 镜像可用性探测超时（毫秒）：国内镜像握手通常在 1 秒内完成，3 秒已足够 */
 const PROBE_TIMEOUT = 3000;
 
-/** 取版本最多让用户等多久；超了就先拿兜底版本，别让点一下卡十几秒 */
+/** 版本解析的最大等待时间；超时后直接采用兜底版本返回，避免用户长时间等待 */
 const RESOLVE_GRACE = 2500;
 
-/** 发版不频繁，版本信息缓存半小时就够，别每次开首页都打接口 */
+/** 桌面版发版频率低，版本信息缓存 30 分钟，减少首页接口请求 */
 const CACHE_KEY = 'csh-desktop-builds';
 const CACHE_TTL = 30 * 60 * 1000;
 
@@ -75,7 +74,7 @@ export interface DesktopBuilds {
   insider: DesktopBuild;
 }
 
-/** 拼一个 DesktopBuild（tag 与文件名都由仓库约定决定） */
+/** 构造 DesktopBuild（tag 与文件名均由仓库约定决定） */
 function buildOf(channel: DesktopChannel, tag: string, name: string): DesktopBuild {
   return {
     channel,
@@ -87,9 +86,9 @@ function buildOf(channel: DesktopChannel, tag: string, name: string): DesktopBui
 }
 
 /**
- * 兜底版本 —— 接口全不通时用（写死当前已发布的版本）。
- * ⚠️ 正常情况下版本是动态取的，**不需要**跟着桌面版发版来改这里；
- *    它只是保险丝。真到了长期不更新的地步，接口挂掉时用户会下到旧包。
+ * 兜底版本 —— 接口全部不可用时使用（静态写入当前已发布的版本）。
+ * 正常情况下版本为动态获取，无需随桌面版发版更新此处；
+ * 仅当接口长期不可用时，用户才会下载到旧版本安装包。
  */
 const FALLBACK: DesktopBuilds = {
   stable: buildOf('stable', 'dv1.0.0', 'ClassSoftwareHub-Setup-dv1.0.0-stable.exe'),
@@ -130,7 +129,7 @@ function pickBuild(releases: RawRelease[], channel: DesktopChannel): DesktopBuil
   return null;
 }
 
-/** 逐个试接口入口，拿回 Release 列表 */
+/** 依次尝试各接口入口，获取 Release 列表 */
 async function fetchReleases(): Promise<RawRelease[]> {
   let lastError: unknown = null;
   for (const base of API_BASES) {
@@ -180,7 +179,7 @@ function writeCache(builds: DesktopBuilds): void {
 let memoryBuilds: DesktopBuilds | null = null;
 let inFlight: Promise<DesktopBuilds> | null = null;
 
-/** 真正去拉一次版本；无论成功失败都一定会 resolve（失败则用兜底版本） */
+/** 执行一次版本获取；无论成败均以 resolve 结束（失败时返回兜底版本） */
 async function loadBuilds(): Promise<DesktopBuilds> {
   const builds: DesktopBuilds = { stable: FALLBACK.stable, insider: FALLBACK.insider };
   try {
@@ -189,17 +188,17 @@ async function loadBuilds(): Promise<DesktopBuilds> {
     builds.insider = pickBuild(releases, 'insider') ?? builds.insider;
     writeCache(builds);
   } catch {
-    /* 接口全不通：本次会话就用兜底版本，刷新页面会再试一次 */
+    /* 接口全部不可用：本次会话使用兜底版本，刷新页面后会重试 */
   }
   memoryBuilds = builds;
   return builds;
 }
 
 /**
- * 拿两个通道的可下载版本。
+ * 获取两个通道的可下载版本。
  *
- * - 命中内存 / 本地缓存 → 立刻返回（首页 onMounted 会预热一次，点按钮时基本就是这条路）
- * - 都没有 → 去接口取，但最多等 RESOLVE_GRACE 就先用兜底版本，不让用户干等
+ * - 命中内存 / 本地缓存 → 立即返回（首页 onMounted 会预热一次，点击按钮时通常命中此路径）
+ * - 均未命中 → 向接口获取，最多等待 RESOLVE_GRACE 后改用兜底版本返回
  */
 export async function resolveDesktopBuilds(): Promise<DesktopBuilds> {
   if (memoryBuilds) return memoryBuilds;
@@ -218,11 +217,11 @@ export async function resolveDesktopBuilds(): Promise<DesktopBuilds> {
 /* ── 镜像探测 + 触发下载 ─────────────────────────────────────────── */
 
 /**
- * 探一条镜像通不通。
+ * 探测单个镜像是否可用。
  *
- * 只能用 no-cors：镜像对文件路径不带 CORS 头，正常模式的 fetch 会直接 reject。
- * no-cors 下响应是不透明的（读不到状态码），但网络层失败（域名挂 / 连不上 /
- * 超时）仍会 reject —— 这正是我们要的信号。用 HEAD 所以不会真下文件。
+ * 只能使用 no-cors：镜像对文件路径不返回 CORS 头，正常模式的 fetch 会直接 reject。
+ * no-cors 下响应是不透明的（读不到状态码），但网络层失败（域名失效 / 连不上 /
+ * 超时）仍会 reject，以此作为不可用信号。使用 HEAD 方法，不会真实下载文件。
  */
 function probeMirror(url: string): Promise<boolean> {
   return new Promise((resolve) => {
@@ -250,26 +249,26 @@ function probeMirror(url: string): Promise<boolean> {
 }
 
 /**
- * 候选通道：用户上次选的排最前，其余按清单顺序。
+ * 候选通道：用户上次选择的排最前，其余按清单顺序。
  *
- * 走 orderedChannels() 而不是自己排 —— 它会先把**当前页面下不可用的通道**滤掉
- * （典型是还只有 http 的自建节点：https 页面上浏览器按混合内容拦下载，
- * 探测也一定失败，排进来只会白等一个超时）。
+ * 使用 orderedChannels() 而非自行排序 —— 它会先过滤掉当前页面下不可用的通道
+ * （典型是仅有 http 的自建节点：https 页面上浏览器按混合内容规则拦截下载，
+ * 探测必然失败，纳入候选只会多等待一次超时）。
  */
 function candidateChannels(): MirrorChannel[] {
   const all = orderedChannels();
   const self = all.find((channel) => channel.self);
-  // 自建节点永远排最前 —— 即使用户上次选过别的并存在了 localStorage，默认仍走自建节点
+  // 自建节点固定排最前 —— 即使用户上次选择了其他通道并存储在 localStorage，默认仍走自建节点
   return self ? [self, ...all.filter((channel) => channel !== self)] : all;
 }
 
 /**
- * 并发探所有候选通道，按「偏好顺序」取第一条能用的。
+ * 并发探测所有候选通道，按「偏好顺序」取第一条可用的。
  *
- * ⚠️ 自建节点**不走 HEAD 探测**：它开了「无签名一律 403」的防盗链，而 no-cors
- * 探测读不到状态码 —— 403 也会被误判成「通」，选它必然下不动。正确姿势是
- * 直接向 Worker 要限时签名链接，签下来就是可直接下载的地址；要不到就当它不通，
- * 让公益镜像接手。
+ * 自建节点不走 HEAD 探测：其防盗链策略为「无签名一律 403」，而 no-cors
+ * 探测读不到状态码，403 也会被误判为可用，选中后必然无法下载。正确做法是
+ * 直接向 Worker 请求限时签名链接，签名结果即为可直接下载的地址；获取失败
+ * 则视为不可用，由公益镜像兜底。
  */
 async function pickWorkingMirror(target: string): Promise<string | null> {
   const self = candidateChannels().find((channel) => channel.self);
@@ -315,8 +314,8 @@ export async function downloadDesktopBuild(channel: DesktopChannel): Promise<Des
     return 'mirror';
   }
 
-  // 镜像全挂：退到该版本的 Release 页。新标签页被拦截时就在当前页跳，保证一定能到。
-  // noopener 顺手带上 —— releaseUrl 虽是内部拼的 GitHub 地址，但别依赖 open() 的返回值做隔离。
+  // 镜像全部不可用：退到该版本的 Release 页。新标签页被拦截时改为当前页跳转，确保到达。
+  // 同时携带 noopener —— releaseUrl 虽为内部拼接的 GitHub 地址，但不依赖 open() 的返回值做隔离。
   const opened = window.open(build.releaseUrl, '_blank', 'noopener,noreferrer');
   if (opened) opened.opener = null;
   else window.location.href = build.releaseUrl;

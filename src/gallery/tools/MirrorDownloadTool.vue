@@ -1,6 +1,6 @@
 <template>
   <ToolShell :title="mirror.title" :subtitle="mirror.subtitle">
-    <!-- 免责声明：本站只做跳转，不存镜像、不代下 -->
+    <!-- 免责声明：本站仅提供跳转，不存储镜像、不代为下载 -->
     <WinInfoBar
       class="mirror-disclaimer"
       :IsOpen="true"
@@ -8,7 +8,7 @@
       Severity="Warning"
       :Message="mirror.disclaimer" />
 
-    <!-- 一行一个网站：整行铺满宽度，点了在新标签页打开（和「AI 导航」同款样子） -->
+    <!-- 站点列表：每行一个、整行铺满宽度，点击在新标签页打开，样式与「AI 导航」一致 -->
     <a
       v-for="site in mirror.sites"
       :key="site.url"
@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import ToolShell from './ToolShell.vue';
 import WinInfoBar from '../../components/WinInfoBar.vue';
-// 站点清单 + 页面文字：同目录「系统镜像网站.ts」（加 / 删站点改那个文件就行）
+// 站点清单与页面文字位于同目录「系统镜像网站.ts」，增删站点需修改该文件
 import mirror from './系统镜像网站';
 import type { MirrorSite } from './系统镜像网站';
 
@@ -53,10 +53,10 @@ const hostOf = (url: string) => {
   }
 };
 
-/** 没有图标时的兜底：取名字首字 */
+/** 无图标时的兜底显示：取站点名称首字 */
 const badgeOf = (name: string) => name.trim().slice(0, 1).toUpperCase();
 
-/** 首字方块的染色：站点没写 color 就不设这个变量，让 CSS 里的兜底颜色生效 */
+/** 首字方块染色：站点未配置 color 时不设置该变量，使 CSS 中的兜底颜色生效 */
 const rowStyle = (site: MirrorSite) => (site.color ? { '--badge': site.color } : {});
 </script>
 

@@ -1,9 +1,9 @@
-<!-- 反馈中心页（#/feedback）—— 仿微软「反馈中心」：先选类型卡片，再填表。
-     提交走站点自己的提交服务（Cloudflare Worker `classhub` 的 /api/feedback），
-     与「提交软件」「回声洞」同一套入口：POST 落一份草稿进仓库的 submissions/，
+<!-- 反馈中心页（#/feedback）—— 仿微软「反馈中心」：先选择类型卡片，再填写表单。
+     提交走站点自身的提交服务（Cloudflare Worker `classhub` 的 /api/feedback），
+     与「提交软件」「回声洞」共用同一入口：POST 在仓库 submissions/ 落一份草稿，
      由 .github/workflows/create-review-issue.yml 开出一张带「用户反馈」等标签的 Issue。
-     和那两条不同的是：反馈【没有审核合并】这一步 —— Issue 本身就是它的归宿。
-     提交服务连不上时才退回「打开 GitHub 的预填新建 Issue 页」或「复制反馈内容」。
+     与前两者不同的是：反馈没有审核合并环节 —— Issue 本身即为其归宿。
+     提交服务不可用时才退回「打开 GitHub 的预填新建 Issue 页」或「复制反馈内容」。
      逻辑（分类表 / 正文拼装 / 校验 / 草稿）全在 src/gallery/feedback.ts，
      文案全在根目录 文字设置.ts 的 feedback.* 与 nav.feedback 键。 -->
 <template>
@@ -25,11 +25,9 @@
       <div class="gallery-item-page feedback-page-body">
         <div class="gallery-page-content">
           <!-- ══ 主视觉区（仅选择态）═══════════════════════════════
-               仿微软反馈中心：一块横幅把「这是什么、能做什么」先讲清楚，
-               再往下才是类型卡片。进了表单后让位给具体类型标题，不再显示。
-               刻意不放装饰插画：纯文字的主视觉更克制，也避免和卡片图标打架。
-               右侧原有「公开可查 / 无账号也能反馈 / 维护者跟进」三个胶囊标签，
-               已移除；「公开」「免登录」这两个前提改由副标题承担。 -->
+               仿微软反馈中心：先以横幅说明页面用途，其后才是类型卡片；
+               进入表单后由具体类型标题取代，不再显示。
+               不使用装饰插画：纯文字主视觉更克制，也避免与卡片图标冲突。 -->
           <section v-if="!activeKind" class="feedback-hero">
             <div class="feedback-hero-inner">
               <div class="feedback-hero-main">
@@ -71,9 +69,8 @@
           </div>
 
           <!-- ══ 提交后流程（仅选择态）═════════════════════════════
-               点开链接就跳走了，用户全程在「付出」，从没见过「回报」。
-               这里把三步讲清楚，解决「我提了有人看吗」的犹豫。
-               编号用 CSS 计数器画，不写死数字 —— 将来加删步骤不用改文案。 -->
+               向用户说明提交后的三步去向，回应「提交后是否有人处理」的疑虑。
+               编号由 CSS 计数器生成，不写死数字 —— 后续增删步骤无需修改文案。 -->
           <section v-if="!activeKind" class="feedback-flow">
             <WinTextBlock
               class="feedback-flow-title"
@@ -93,8 +90,8 @@
           </section>
 
           <!-- ══ 已有反馈入口（仅选择态）═══════════════════════════
-               议题列表本来就是公开的，不给入口等于让用户盲填。
-               做成一行低调的链接，不抢类型卡片的注意力。 -->
+               议题列表公开可查，不提供入口会令用户在无法查重的情况下填写；
+               做成低调的一行链接，避免抢占类型卡片的注意力。 -->
           <section v-if="!activeKind" class="feedback-existing">
             <span class="feedback-existing-text">
               <span class="feedback-existing-title">{{ t('feedback.existing-title') }}</span>
@@ -134,7 +131,7 @@
               </span>
             </div>
 
-            <!-- 隐私提醒放在最前面，不能只写小字 -->
+            <!-- 隐私提醒置于表单最前，不以小字弱化 -->
             <WinInfoBar
               class="feedback-notice"
               :IsOpen="true"
@@ -215,7 +212,6 @@
                 :Title="t('feedback.success-title')"
                 :Message="successMessage" />
 
-              <!-- 校验失败 / 提交失败 -->
               <WinInfoBar
                 v-if="errorText"
                 class="feedback-notice"
@@ -387,7 +383,7 @@ const selectedApp = computed(() => apps.find((a) => a.id === form.appId) ?? null
 const hasDraft = ref(false);
 
 // 各控件的变化同步回 draft。
-// ⚠️ `form.kind` 必须由 activeKind 的 watch 来写，不能只在 chooseKind 里写一次：
+// `form.kind` 必须由 activeKind 的 watch 来写，不能只在 chooseKind 里写一次：
 //    applyDraft（恢复草稿）也会改 activeKind，只写一处会漏掉那条路径。
 watch(subKindIndex, (i) => {
   form.subKind = i >= 0 ? REPORT_SUBKINDS[i].key : '';
@@ -438,9 +434,9 @@ const restoreDraft = () => {
 };
 
 /**
- * 联系方式：本地用 age 公钥加密成 ASCII armor 密文，只把密文发出去；没填则无需加密。
- * age-encryption 体积较大（含后量子曲线依赖），走动态 import，只在真正提交时按需加载。
- * ⛔ 只加密、绝不解密；私钥不在本站。
+ * 联系方式：本地用 age 公钥加密成 ASCII armor 密文，只把密文发出去；未填写则无需加密。
+ * age-encryption 体积较大（含后量子曲线依赖），走动态 import，仅在真正提交时按需加载。
+ * 只加密、绝不解密；私钥不在本站。
  */
 async function encryptContact(): Promise<{ cipher: string; failed: boolean }> {
   const contact = form.contact.trim();
@@ -549,8 +545,8 @@ async function postFeedback(
 
 /**
  * 主操作：POST 到提交服务。
- * 拿到成功应答就代表内容已落进仓库的 `submissions/`，其后由工作流开出 Issue ——
- * 所以这里可以直接清草稿、清表单（旧版跳 GitHub 时不敢清，是因为跨域读不到结果）。
+ * 拿到成功应答即代表内容已落进仓库的 `submissions/`，其后由工作流开出 Issue ——
+ * 因此可直接清草稿、清表单。
  */
 const submitFeedback = async () => {
   if (submitting.value) return;
@@ -606,9 +602,9 @@ const submitFeedback = async () => {
 };
 
 /**
- * 兜底：提交服务连不上时，退回「打开 GitHub 的预填新建 Issue 页」。
- * ⚠️ 这条路**绕过** /api/feedback：标题 / 正文 / 标签都填好了，但用户得自己点提交，
- *    而且需要 GitHub 账号 —— 所以只在主路径确实走不通时才露出按钮。
+ * 兜底：提交服务不可用时，退回「打开 GitHub 的预填新建 Issue 页」。
+ * 该路径绕过 /api/feedback：标题 / 正文 / 标签均已填好，但用户需自行点击提交，
+ * 且需要 GitHub 账号 —— 因此仅在主路径确实不可用时才露出按钮。
  */
 const openGithub = async () => {
   const built = await prepareOutgoing();
@@ -619,7 +615,7 @@ const openGithub = async () => {
   popupBlocked.value = false;
   const win = window.open(issue.url, '_blank', 'noopener,noreferrer');
   if (!win) {
-    // 被拦截：退回复制，别让内容白白丢掉
+    // 新窗口被拦截：退回复制路径，避免内容丢失
     void copyText(issue.body).then((ok) => {
       copied.value = ok;
       popupBlocked.value = true;
@@ -627,7 +623,7 @@ const openGithub = async () => {
   }
 };
 
-/** 兜底操作：把正文（Issue 形态的 Markdown）复制走，可贴到 QQ 群或别处 */
+/** 兜底操作：复制正文（Issue 形态的 Markdown），可粘贴至 QQ 群等渠道 */
 const copyReport = async () => {
   const built = await prepareOutgoing();
   if (!built) return;
@@ -643,8 +639,8 @@ const copyReport = async () => {
 
 onMounted(() => {
   hasDraft.value = readFeedbackDraft() !== null;
-  // ?app=<id> 预选软件：本次没在详情页放入口，但口子留着，
-  // 将来要加只需在详情页放个 <router-link :to="{name:'feedback', query:{app: app.id}}">
+  // 支持 ?app=<id> 预选软件：详情页当前未放置入口，参数先行预留，
+  // 后续添加时只需在详情页放置 <router-link :to="{name:'feedback', query:{app: app.id}}">
   const preset = String(route.query.app ?? '');
   if (preset) {
     const i = apps.findIndex((a) => a.id === preset);
@@ -684,9 +680,9 @@ onMounted(() => {
   position: relative;
   overflow: hidden;
   margin-top: 4px;
-  /* 左右内边距比常见的 36px 收小：本条横幅只有文字一栏、没有插画也没有右侧标签列，
-     再留 36px 会让大标题明显比下方卡片右缩进，看着「没对齐」。
-     收窄到 28px 后标题与卡片基本在同一条视觉起线上。 */
+  /* 左右内边距较常见的 36px 收窄：本横幅仅有文字一栏、无插画与右侧标签列，
+     保留 36px 会使大标题较下方卡片明显右缩进，视觉上不对齐。
+     收窄至 28px 后标题与卡片基本处于同一视觉起线。 */
   padding: 36px 28px 40px;
   border: 1px solid var(--card-stroke, var(--ctrl-border, rgba(0, 0, 0, 0.12)));
   border-radius: 8px;
@@ -700,7 +696,7 @@ onMounted(() => {
     );
 }
 
-/* 横幅内只剩文字一栏（右侧标签列已移除），故不再需要 grid 分栏 */
+/* 横幅内仅文字一栏，不再需要 grid 分栏 */
 .feedback-hero-inner {
   position: relative;
   z-index: 1;
@@ -759,9 +755,9 @@ onMounted(() => {
   outline-offset: 2px;
 }
 
-/* 图标外框：3D 图标自带体积感和透明底，再套一层色块会显脏，这里只做定位容器。
-   尺寸给到 64px —— 这套图是「文档 + 彩色圆标」的复合造型，缩到 48px 时
-   圆标只剩十几像素糊成一点，必须留够高度才看得出是什么。 */
+/* 图标外框：3D 图标自带体积感与透明底，再叠加色块反而显得杂乱，此处仅作定位容器。
+   尺寸取 64px —— 该图集为「文档 + 彩色圆标」的复合造型，缩至 48px 时
+   圆标过小难以辨认，需保留足够高度。 */
 .feedback-kind-icon-wrap {
   display: grid;
   place-items: center;
@@ -773,7 +769,7 @@ onMounted(() => {
   width: 64px;
   height: 64px;
   object-fit: contain;
-  /* 图片在深色主题下会和背景糊在一起，垫一层浅投影拉开 */
+  /* 深色主题下图片易与背景融合，叠加浅投影以拉开层次 */
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.16));
   user-select: none;
 }
@@ -1024,8 +1020,7 @@ onMounted(() => {
   line-height: 18px;
 }
 
-/* 窄屏：三步流程与入口行改成竖向排列
-   （横幅右侧标签列已移除，这里不再需要处理分栏折叠） */
+/* 窄屏：三步流程与入口行改为竖向排列 */
 @media (max-width: 820px) {
   .feedback-flow-list {
     grid-template-columns: minmax(0, 1fr);
@@ -1042,7 +1037,7 @@ onMounted(() => {
   }
 
   .feedback-hero-title {
-    /* 窄屏 40px 会撑爆标题，收一档 */
+    /* 窄屏下 40px 过大，标题字号缩小一档 */
     font-size: 30px !important;
     line-height: 38px !important;
   }

@@ -168,7 +168,7 @@ onMounted(() => { void computeHashes(''); });
   color: var(--text-secondary);
 }
 
-/* SHA-512 有 128 个字符 → 单独一行、等宽、点一下整段选中 */
+/* SHA-512 哈希值长达 128 个字符，单独成行、等宽显示，user-select:all 便于整段选中 */
 .enc-hash-value {
   padding: 6px 10px;
   border-radius: 4px;

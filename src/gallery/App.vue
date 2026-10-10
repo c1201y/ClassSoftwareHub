@@ -15,7 +15,7 @@
   <WinTitleBar
     ref="titleBarRef"
     class="gallery-titlebar"
-    :class="{ 'is-uwp-webview': isHostedInUwpWebView }"
+    :class="{ 'is-uwp-webview': isHostedInUwpWebView, 'is-search-open': searchOpen }"
     :Title="t('app.title')"
     PreferredHeightOption="Tall"
     :IsBackButtonVisible="canGoBack"
@@ -131,17 +131,15 @@ const { t } = useI18n();
 const showDataIssueBanner = ref(true);
 
 // ── 设置项（读写 localStorage，供 SettingsPage 修改）──────────────────
-// ⚠️ 这里必须整段包 try/catch：浏览器禁用存储时（关了 Cookie / 无痕 / 某些 WebView）
-//    `localStorage.setItem` 会抛 QuotaExceededError，而 persistSetting 带 { immediate: true }
-//    是**在 setup 阶段同步执行**的 —— 抛出来就会中断整个应用壳的初始化。
-//    项目里其它 5 个模块（feedback / githubImport / githubMirror / SubmitPage / PickNumberTool）
-//    都老老实实包了，这里是唯一漏掉的地方（2026-09-25 审计发现），现在补齐。
+// 读写必须整段包 try/catch：浏览器禁用存储时（关闭 Cookie、无痕模式、部分 WebView），
+// localStorage.setItem 会抛 QuotaExceededError；persistSetting 带 { immediate: true }
+// 在 setup 阶段同步执行，异常会中断整个应用壳的初始化。
 const readStoredSetting = (key: string, fallback: string, allowedValues: string[]) => {
   try {
     const value = localStorage.getItem(key);
     return allowedValues.includes(value as string) ? (value as string) : fallback;
   } catch {
-    // 读不到就用默认值，不影响使用（只是这次不记住用户的选择）
+    // 存储不可用时返回默认值，仅当次不保留用户选择
     return fallback;
   }
 };
@@ -150,7 +148,7 @@ const persistSetting = (key: string, source: Ref<string>) => {
     try {
       localStorage.setItem(key, value);
     } catch {
-      // 隐私模式 / 配额满 / 存储被禁：写不进去就算了，主题当次仍然生效
+      // 隐私模式、配额已满或存储被禁时写入失败：忽略错误，设置当次仍生效
     }
   }, { immediate: true });
 };
@@ -204,7 +202,7 @@ const onSearchKeydown = (event: KeyboardEvent) => {
       searchRef.value?.moveActive(-1);
       break;
     case 'Enter':
-      // 有选中项就打开它，并吃掉回车；没有结果时不拦截
+      // 有选中项时打开并拦截回车；无结果时不拦截
       if (searchRef.value?.activateActive()) event.preventDefault();
       break;
     case 'Escape':
@@ -235,16 +233,16 @@ const onWindowKeydown = (event: KeyboardEvent) => {
     searchOpen.value = false;
   }
 };
-// 导航窗格固定左侧停靠（已按需求砍掉“导航窗格位置”设置项；Auto = 宽屏展开在左，窄屏收成左侧汉堡）
+// 导航窗格固定左侧停靠（“导航窗格位置”设置项已按需求移除；Auto = 宽屏展开在左，窄屏收为汉堡按钮）
 const isPaneOpen = ref(true);
 const themeSetting = ref(readStoredSetting('winui-theme-setting', 'system', ['system', 'light', 'dark']));
 const materialSetting = ref(readStoredSetting('winui-material-setting', 'mica', ['mica', 'acrylic']));
 
 // ── 节日皮肤（补丁模块，见 ./holidayTheme.ts）────────────────────────
 // 规则：暗色模式 → 中秋主题（青 + 中秋海报）；亮色模式 → 国庆主题（红 + 国庆海报）。
-// 开关默认值 = 是否在档期内（档期内默认开，档期外默认关）；用户手动改过就一直听他的。
-// 关掉 = 背景海报 + 节日配色一起撤，回默认蓝。
-// 读的时候同样要兜底：存储被禁时这里也处在 setup 阶段，抛出来一样会白屏
+// 开关默认值取决于是否在档期内（档期内默认开启，档期外默认关闭）；用户手动修改后以用户设置为准。
+// 关闭后同时移除背景海报与节日配色，恢复默认主题色。
+// 读取同样需要 try/catch 兜底：存储被禁时此处也在 setup 阶段执行，异常同样会白屏
 const storedHolidaySkin = (() => {
   try {
     return localStorage.getItem('winui-holiday-skin');
@@ -266,26 +264,26 @@ const activeHoliday = ref<HolidayTheme | null>(null);
 const refreshActiveHoliday = () => {
   activeHoliday.value = syncHolidayTheme(holidaySkinEnabled.value, isDarkMode.value);
 };
-// 深浅色切换 → 换对应节日皮肤；用户拨动开关 → 刷新并记住他的选择
-// （注意：不能把持久化写在“深浅色变化”那次 watch 里，否则用户只是切了一下主题
-//   就会被记成“手动关/开”，把档期的默认值覆盖掉）
+// 深浅色切换时换对应节日皮肤；用户切换开关时刷新并持久化其选择。
+// 持久化不能写在深浅色变化的 watch 里，否则仅切换主题也会被记成手动开关，
+// 覆盖档期的默认值。
 watch(isDarkMode, refreshActiveHoliday);
 watch(holidaySkinEnabled, (enabled) => {
   refreshActiveHoliday();
   try {
     localStorage.setItem('winui-holiday-skin', enabled ? 'on' : 'off');
   } catch {
-    // 同上：记不住就当次生效，不影响节日皮肤的显示
+    // 同上：写入失败时仅当次生效，不影响节日皮肤的显示
   }
 });
 refreshActiveHoliday();
 provide('holidaySkinEnabled', holidaySkinEnabled);
 provide('activeHoliday', activeHoliday);
 // ── 界面动画 ─────────────────────────────────────────────────────
-// 按需求：动画常驻开启，不提供开关。组件 CSS 里也不再写 prefers-reduced-motion
-// 降级分支，即使系统设置了“减少动态效果”，本站动画仍照常播放。
+// 按需求约定：动画常驻开启，不提供开关。组件 CSS 不编写 prefers-reduced-motion
+// 降级分支，即使系统开启“减少动态效果”，本站动画仍照常播放。
 
-// 页面过渡固定使用默认动画（已按需求砍掉“页面过渡”设置项）
+// 页面过渡固定使用默认动画（“页面过渡”设置项已按需求移除）
 const navigationTransitionInfo = DefaultNavigationTransitionInfo;
 const pageTransitionEnter = ref(getNavigationTransitionInfoClassName(navigationTransitionInfo, NavigationTrigger_NavigatingTo));
 const pageTransitionLeave = ref(getNavigationTransitionInfoClassName(navigationTransitionInfo, NavigationTrigger_NavigatingAway));
@@ -367,16 +365,16 @@ interface NavItem {
 const pageTags = new Set(['home', 'settings', 'submit', 'tools', 'ai', 'feedback']);
 
 // ── 底部导航：AI 导航 + 内置工具 + 提交软件 + 反馈中心 ──────────────
-// 反馈中心曾是上部菜单项，现移到 Footer：它和「提交软件」一样属于「用户对本站做事」的动作，
-// 不是浏览内容的入口 —— 和分类菜单混在一起会让人以为是第 N 个软件分类。
+// 反馈中心与「提交软件」同属用户操作类入口，不是浏览内容的入口；
+// 与分类菜单混排会被误认为又一个软件分类，因此归入 Footer。
 const footerMenuItems = computed<NavItem[]>(() => [
   // 图标 E99A(Robot)：AI 导航
   { Tag: 'ai', Icon: '\uE99A', Content: 'AI 导航' },
-  // 图标用 EC7A(DeveloperTools)：E90F(Repair) 会和左侧「系统工具」分类撞图标
+  // 图标用 EC7A(DeveloperTools)：E90F(Repair) 与左侧「系统工具」分类图标重复
   { Tag: 'tools', Icon: '\uEC7A', Content: '内置工具' },
   { Tag: 'submit', Icon: '\uE11C', Content: t('nav.submit') },
-  // 图标 E7BA(警告三角)：反馈中心。⚠️ SEGOEICONS.TTF 是重映射过的子集，
-  // 码点顺序与标准 Segoe MDL2 不同 —— E7BA 实测就是警告三角（见 src/gallery/feedback.ts）
+  // 图标 E7BA(警告三角)：反馈中心。SEGOEICONS.TTF 是重映射过的子集，
+  // 码点与标准 Segoe MDL2 不同，E7BA 实测对应警告三角（见 src/gallery/feedback.ts）
   { Tag: 'feedback', Icon: '\uE7BA', Content: t('nav.feedback') }
 ]);
 
@@ -389,9 +387,9 @@ const navMenuItems = computed<NavItem[]>(() => [
     SelectsOnInvoked: false,
     MenuItems: apps
       .filter((app) => app.category === category.key)
-      // 图标走 appIconUrl（本地 64px 优先，没有才回退数据里的外链）——
-      // 与首页卡片 / 详情页保持一致。以前这里直接用 app.icon，于是本地那 13 张
-      // 「国内不稳的图」的兜底在导航栏不生效，同一个软件两处图标来源还能不一样。
+      // 图标走 appIconUrl（本地 64px 优先，无本地文件时回退数据里的外链），
+      // 与首页卡片、详情页保持一致；直接使用 app.icon 会使本地兜底在导航栏不生效，
+      // 导致同一软件在不同位置的图标来源不一致。
       .map((app) => ({ Tag: `app:${app.id}`, Content: app.name, Icon: appIconUrl(app) }))
   }))
 ]);
@@ -638,7 +636,12 @@ watch(materialSetting, (value) => postUwpSetting('material', value));
     font-size: 13px;
     cursor: text;
     transition: background var(--fast-duration, 150ms) linear,
-      border-color var(--fast-duration, 150ms) linear;
+      border-color var(--fast-duration, 150ms) linear,
+      width var(--normal-duration, 200ms) var(--fast-out-slow-in, cubic-bezier(0, 0, 0, 1)),
+      height var(--normal-duration, 200ms) var(--fast-out-slow-in, cubic-bezier(0, 0, 0, 1)),
+      max-width var(--normal-duration, 200ms) var(--fast-out-slow-in, cubic-bezier(0, 0, 0, 1)),
+      margin var(--normal-duration, 200ms) var(--fast-out-slow-in, cubic-bezier(0, 0, 0, 1)),
+      padding var(--normal-duration, 200ms) var(--fast-out-slow-in, cubic-bezier(0, 0, 0, 1));
   }
 
   .gallery-titlebar-search:hover {
@@ -659,7 +662,7 @@ watch(materialSetting, (value) => postUwpSetting('material', value));
     color: var(--text-secondary);
   }
 
-  /* 真输入框：铺满中间，去掉浏览器默认外观 */
+  /* 输入框：铺满剩余空间，去除浏览器默认外观 */
   .gallery-titlebar-search-input {
     flex: 1 1 auto;
     min-width: 0;
@@ -702,7 +705,7 @@ watch(materialSetting, (value) => postUwpSetting('material', value));
     color: var(--text-primary);
   }
 
-  /* 快捷键提示小块 */
+  /* 快捷键提示标签 */
   .gallery-titlebar-search-kbd {
     flex: 0 0 auto;
     padding: 1px 5px;
@@ -730,7 +733,7 @@ watch(materialSetting, (value) => postUwpSetting('material', value));
     background: var(--TitleBarBackButtonBackground, transparent);
   }
 
-  /* 收成图标时：输入框透明铺满整块，点哪都能聚焦到它 */
+  /* 收成图标时：输入框透明铺满整块，点击任意位置均可聚焦 */
   .gallery-titlebar.is-narrow .gallery-titlebar-search-input,
   .gallery-titlebar.is-compact .gallery-titlebar-search-input {
     position: absolute;
@@ -739,6 +742,7 @@ watch(materialSetting, (value) => postUwpSetting('material', value));
     height: 100%;
     opacity: 0;
     cursor: pointer;
+    transition: opacity var(--faster-duration, 83ms) linear;
   }
 
   .gallery-titlebar.is-narrow .gallery-titlebar-search-kbd,
@@ -754,9 +758,10 @@ watch(materialSetting, (value) => postUwpSetting('material', value));
   }
 
   /* 聚焦 / 打开后，图标态展开回正常搜索框 */
+  /* flex-basis 保持与图标态相同的 40px，只过渡 flex-grow（0→1），宽度即可平滑展开 */
   .gallery-titlebar.is-narrow .gallery-titlebar-search.is-open,
   .gallery-titlebar.is-compact .gallery-titlebar-search.is-open {
-    flex: 1 1 auto !important;
+    flex: 1 1 40px !important;
     width: auto;
     max-width: 350px;
     height: 30px;
@@ -772,6 +777,13 @@ watch(materialSetting, (value) => postUwpSetting('material', value));
     position: static;
     opacity: 1;
     cursor: text;
+    transition: opacity var(--fast-duration, 150ms) linear 100ms;
+  }
+
+  /* 展开时隐藏标题文字：窄标题栏下标题会挤占搜索框宽度，导致输入区只剩一小条 */
+  .gallery-titlebar.is-search-open.is-narrow .win-titlebar-title,
+  .gallery-titlebar.is-search-open.is-compact .win-titlebar-title {
+    display: none;
   }
 
   /* 窄标题栏时内容列左对齐，让搜索按钮紧跟标题 */

@@ -5,13 +5,13 @@
 //
 //   ① 前端把 { key, 设备指纹 } 发给 /api/dl-ticket；
 //   ② 服务端查这台设备今天还剩多少额度（默认 80 次/天），发一张 15 分钟票据；
-//   ③ 前端用票据请求 /api/dl，服务端在服务端带中继令牌取流后原样转发。
+//   ③ 前端用票据请求 /api/dl，服务端携带中继令牌取流后原样转发。
 //
-// 为什么地址不直接写死进数据里：那等于给每个软件配一条**永久有效**的直链，
-// 被人挂到别处就是持续的流量账单。票据 15 分钟就过期，转发出去基本来不及用。
+// 地址不直接写死进数据的原因：那等同于为每个软件配置一条永久有效的直链，
+// 被外部引用会造成持续的流量消耗。票据 15 分钟即过期，转发后基本无法利用。
 //
-// 数据里怎么表示一个本站对象：用 `oss://对象键` 这种伪协议。详情页点下载时
-// 由这里认出来并换票；其余（网盘/官网）照旧走跳转。
+// 数据中使用 `oss://对象键` 伪协议表示本站对象。详情页触发下载时
+// 由本模块识别并换票；其余（网盘/官网）照常走跳转。
 // ════════════════════════════════════════════════════════════════════
 
 import { SUBMIT_TIMEOUT_MS, orderedEndpoints, rememberEndpoint } from './submitEndpoints';
@@ -23,7 +23,7 @@ export const OSS_SCHEME = 'oss://';
 /** 本站 OSS 桶的域名（历史数据里存成公开直链的，也认） */
 const OSS_HOST_RE = /(^|\.)oss-[a-z0-9-]+\.aliyuncs\.com$/i;
 
-/** 票据用掉前多久就提前换新的，别卡在过期边界上 */
+/** 票据到期前的提前刷新间隔，避免在过期边界上失效 */
 const TICKET_SAFETY_MS = 60 * 1000;
 
 export type OssDownloadErrorCode =
@@ -58,9 +58,9 @@ export function ossKeyOf(url: string): string | null {
   if (raw.toLowerCase().startsWith(OSS_SCHEME)) {
     const key = raw.slice(OSS_SCHEME.length).replace(/^\/+/, '').split(/[?#]/)[0];
     if (!key) return null;
-    // decodeURIComponent 对不合法的 % 序列会直接抛异常（比如维护者手滑写了 %zz），
-    // 抛出去就是详情页白屏 —— 捕获后按「不是本站对象」处理。
-    // 顺带拒绝 .. 段：真正的防线在服务端 objectKeyOk，这里只是早失败。
+    // decodeURIComponent 对不合法的 % 序列会直接抛异常（如数据中误写了 %zz），
+    // 异常上抛会导致详情页白屏 —— 捕获后按「不是本站对象」处理。
+    // 同时拒绝 .. 段：真正的防线在服务端 objectKeyOk，此处仅为提前失败。
     try {
       const decoded = decodeURIComponent(key);
       if (!decoded || decoded.split('/').includes('..')) return null;
@@ -86,7 +86,7 @@ export function ossKeyOf(url: string): string | null {
   return null;
 }
 
-/** 键 → { 票据地址, 到期时刻 }。同一页面里连点两次不该重复消耗额度 */
+/** 对象键 → { 票据地址, 到期时刻 }。同一页面内重复请求时复用票据，避免重复消耗下载额度 */
 const ticketCache = new Map<string, ResolvedDownload & { until: number }>();
 const inFlight = new Map<string, Promise<ResolvedDownload>>();
 
@@ -102,7 +102,7 @@ interface TicketReply {
   limit?: number;
 }
 
-/** 换到的下载地址，外加「它是哪条通道、多久过期」——界面要据此提示用户 */
+/** 换取到的下载地址，附带通道类型与过期时长 —— 界面据此提示用户 */
 export interface ResolvedDownload {
   url: string;
   /**
@@ -180,7 +180,7 @@ export async function signedDownloadDetail(key: string): Promise<ResolvedDownloa
         ticketCache.set(key, { ...detail, until: Date.now() + detail.expiresIn * 1000 - TICKET_SAFETY_MS });
         return detail;
       } catch (error) {
-        // 只有「这个入口本身不通」才值得换下一个；服务端已明确拒绝（额度用完等）就别再试
+        // 仅当「该入口本身不可用」时才换下一个；服务端已明确拒绝（额度用完等）时不应重试
         if (error instanceof OssDownloadError && error.code === 'unreachable') {
           lastError = error;
           continue;
@@ -201,12 +201,12 @@ export async function signedDownloadDetail(key: string): Promise<ResolvedDownloa
   }
 }
 
-/** 同上，只要地址（旧调用点用） */
+/** 仅返回下载地址（供旧调用点使用） */
 export async function signedDownloadUrl(key: string): Promise<string> {
   return (await signedDownloadDetail(key)).url;
 }
 
-/** 把一条 `oss://…` 下载项换成可以直接点的短时地址；不是本站对象就原样返回 */
+/** 将 `oss://…` 下载项换取为可直接使用的短时地址；非本站对象时原样返回 */
 export async function resolveDownloadDetail(url: string): Promise<ResolvedDownload> {
   const key = ossKeyOf(url);
   if (!key) return { url, expiresIn: 0 };

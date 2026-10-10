@@ -47,14 +47,14 @@ import WinTextBlock from '../../components/WinTextBlock.vue';
 import WinSelectorBar from '../../components/WinSelectorBar.vue';
 import WinScrollViewer from '../../components/WinScrollViewer.vue';
 import { useI18n } from '../../components/i18n/index';
-// 三份法律文档的中英全文在根目录「法律文本.ts」，改内容去那里（同 鸣谢文本.ts 的做法）
+// 三份法律文档的中英全文在根目录「法律文本.ts」中维护（同 鸣谢文本.ts 的做法）
 import legalDocs from '../../../法律文本';
 
 const route = useRoute();
 const { locale } = useI18n();
 
-// 默认展示《用户协议》（三份里的总纲）；支持 #/agreement?doc=privacy 直达某份
-// （设置页「关于」区的三个链接就是这么跳过来的）
+// 默认展示《用户协议》（三份中的总纲）；支持 #/agreement?doc=privacy 直达某份
+// （设置页「关于」区的三个链接即跳转至此）
 const docIndexByInitialKey = (() => {
   const wanted = String(route.query.doc ?? '');
   const idx = legalDocs.findIndex((doc) => doc.key === wanted);
@@ -160,7 +160,7 @@ const onTabChanged = (sender: { Items?: { Tag?: string }[]; SelectedItem?: { Tag
   font-size: 14px;
   line-height: 1.8;
   color: var(--text-primary, #1f1f1f);
-  /* 用户协议 2.2 的（1）（2）子项缩进一点，层级更清楚 */
+  /* 用户协议 2.2 的（1）（2）子项缩进，体现层级 */
   text-indent: 0;
 }
 

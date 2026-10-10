@@ -1,27 +1,27 @@
 // ════════════════════════════════════════════════════════════════════
-// downloadLink.ts —— 「点一下就在本页开始下载」的统一下载判定
+// downloadLink.ts —— 「点击后在本页开始下载」的统一下载判定
 //
-// 为什么需要它：站点里 170 多条下载项并不都是文件 —— 有的是官方下载页
+// 背景：站点内一百余条下载项并不都是文件 —— 有的是官方下载页
 // （weixin.qq.com/）、有的是网盘分享页（蓝奏云 / 百度网盘）、有的是商店页。
-// 以前详情页一律 `window.open(url, '_blank')`，于是**文件也会闪一个新标签**，
-// 而真正是网页的又和文件长得一模一样，用户点之前根本不知道会去哪。
+// 若一律 `window.open(url, '_blank')`，文件也会闪出一个新标签页，而真正的
+// 网页与文件在呈现上没有区别，用户点击前无法预知行为。
 //
-// 现在的规矩只有一条：**能直下的就原地下，不能的就如实告诉用户要去哪。**
+// 统一规则：能直接下载的原地下载，不能的如实告知用户将跳转到哪里。
 //
-//   file     文件直链    → 隐藏 <a> 触发下载：当前页不动、不闪标签
+//   file     文件直链    → 隐藏 <a> 触发下载：当前页不跳转、不弹标签
 //   store    应用商店    → 交给详情页的商店卡片（apps.microsoft.com）
-//   netdisk  第三方网盘  → 必须跳转（要密码 / 登录 / 客户端，物理上做不到直下）
-//   page     官网下载页  → 必须跳转（链接由 JS 生成或带签名，浏览器取不到）
+//   netdisk  第三方网盘  → 必须跳转（需要密码 / 登录 / 客户端，无法直接下载）
+//   page     官网下载页  → 必须跳转（链接由 JS 生成或携带签名，浏览器无法直接获取）
 //
-// ⚠️ 判定顺序是「数据里显式声明 → 再按域名/扩展名推断」，不是反过来：
+// 判定顺序为「数据里显式声明 → 再按域名/扩展名推断」，不可颠倒：
 //    geogebra 的包地址不带扩展名（/package/win-autoupdate），bandizip 是 .php，
-//    uu 远程是 /api/v1/release/dl/1 —— 光看 URL 推不出来，必须在 JSON 里写
+//    uu 远程是 /api/v1/release/dl/1 —— 仅凭 URL 无法推断，必须在 JSON 中声明
 //    `"kind": "file"`。字段说明见 软件数据/README-维护手册.md 的 2.4 节。
 //
-// 这套分档和 CI 里的口径是**同一套词**（scripts/untracked-buckets.mjs 的
-// always-latest / store / archive / page-only / netdisk），别另起炉灶。
+// 本套分类与 CI 脚本 scripts/untracked-buckets.mjs 的口径使用同一套词
+// （always-latest / store / archive / page-only / netdisk），需保持一致。
 //
-// 本文件不产出界面文字 —— 文案在 文字设置.ts 的 detail.* 里。
+// 本文件不产出界面文字 —— 文案在 文字设置.ts 的 detail.* 中。
 // ════════════════════════════════════════════════════════════════════
 
 import type { DownloadItem } from './data';
@@ -38,16 +38,16 @@ const NETDISK_RE =
   /^https?:\/\/(?:[\w-]+\.)*(?:pan\.baidu\.com|pan\.quark\.cn|123pan\.com|123684\.com|123865\.com|123912\.com|lanzou[a-z]?\.com|lanzoui\.com|lanzoux\.com|aliyundrive\.com|alipan\.com|cloud\.189\.cn|weiyun\.com|cowtransfer\.com|drive\.uc\.cn|115\.com)\//i;
 
 /**
- * 文件扩展名 —— 命中就当直链。
+ * 文件扩展名 —— 命中即视为直链。
  *
- * 这里只是**兜底推断**，宁可多列几个冷门后缀：漏判的代价是「明明是文件却要跳转」，
- * 而误判的代价是「点了链接把当前页导航走了」，所以表里只放「确定是安装包/压缩包」
- * 的后缀，不放 .php / .html / .asp 这类可能返回网页的。
+ * 此处仅作兜底推断：漏判的代价是「文件被当作网页跳转」，误判的代价是
+ * 「点击链接导致当前页被导航走」。因此表中只收录确定是安装包/压缩包的
+ * 后缀，不放 .php / .html / .asp 等可能返回网页的类型。
  */
 const FILE_EXT_RE =
   /\.(?:exe|msi|msix|msixbundle|appx|appxbundle|appinstaller|zip|7z|rar|tar|tar\.gz|tgz|tar\.xz|txz|tar\.bz2|tbz2|gz|bz2|xz|zst|dmg|pkg|apk|aab|deb|rpm|iso|img|cab|bin|jar|crx|appimage|flatpak|snap|nupkg)(?:[?#]|$)/i;
 
-/** 本站 OSS 对象（`oss://对象键`）：桶是私有的，但读法由 ossDownload.ts 负责换票 */
+/** 本站 OSS 对象（`oss://对象键`）：桶为私有，读取由 ossDownload.ts 负责换票 */
 const OSS_OBJECT_RE = /^oss:\/\//i;
 
 /**
@@ -65,8 +65,8 @@ const DECLARED: readonly DownloadKind[] = ['file', 'store', 'netdisk', 'page'];
 /**
  * 一条下载项该怎么落地。
  *
- * 顺序：数据里显式写了 kind 且取值合法 → 用它；否则按 URL 推断。
- * 数据里的声明**永远优先**，因为只有维护者知道那个没扩展名的地址到底是不是文件。
+ * 顺序：数据中显式声明了 kind 且取值合法 → 直接使用；否则按 URL 推断。
+ * 数据中的声明永远优先，因为只有维护者知道无扩展名的地址是否为文件。
  */
 export function kindOf(download?: DownloadItem | null): DownloadKind {
   const url = (download?.url || '').trim();
@@ -76,7 +76,7 @@ export function kindOf(download?: DownloadItem | null): DownloadKind {
     return declared as DownloadKind;
   }
 
-  // 没有 url 的项（维护者删剩的壳）当作网页处理，跳转时也不会出事
+  // 无 url 的项（数据清理后的残留）按网页处理，跳转时不会产生异常
   if (!url) return 'page';
   // 白名单以外的协议（javascript: / data: / vbscript: / file: …）一律不导航。
   // 返回 'page' 只是为了让界面按「跳转」显示 —— 真正的拦截在 triggerDownload /
@@ -85,8 +85,8 @@ export function kindOf(download?: DownloadItem | null): DownloadKind {
 
   if (STORE_RE.test(url) || /^ms-windows-store:/i.test(url)) return 'store';
   if (NETDISK_RE.test(url)) return 'netdisk';
-  // 本站 OSS 对象一律算文件：它的键末段带不带扩展名不由我们说了算，
-  // 但读取方式（换票据再下）是确定的，交给详情页的 openDownload 处理。
+  // 本站 OSS 对象一律视为文件：对象键末段是否带扩展名无法约束，
+  // 但读取方式（换票据后下载）是确定的，交给详情页的 openDownload 处理。
   if (OSS_OBJECT_RE.test(url)) return 'file';
   if (FILE_EXT_RE.test(url)) return 'file';
   return 'page';
@@ -97,8 +97,8 @@ export const isDirectDownload = (download?: DownloadItem | null): boolean =>
   kindOf(download) === 'file';
 
 /**
- * 这条地址能不能安全地发起导航/下载。
- * 导出给详情页用：window.open 之前先问一次，不安全就别开。
+ * 该地址能否安全地发起导航/下载。
+ * 导出供详情页使用：window.open 前先校验，不安全则不打开。
  */
 export const isSafeNavigateUrl = (url: string): boolean =>
   SAFE_URL_RE.test((url || '').trim());
@@ -106,17 +106,17 @@ export const isSafeNavigateUrl = (url: string): boolean =>
 /**
  * 触发一次下载。
  *
- * 用隐藏的 <a> 而不是 window.open：**不带 target**，所以是「在当前页发起导航」——
- * 响应是文件时浏览器只会弹出下载、页面留在原地（这正是「本页直接下载」的实现）；
- * 用 window.open 会多闪一个标签页，而且新标签会被部分浏览器的弹窗拦截吃掉。
- * desktopDownload.ts 里触发桌面版安装包用的也是这个手法。
+ * 使用隐藏的 <a> 而不是 window.open：不带 target，因此是「在当前页发起导航」——
+ * 响应为文件时浏览器只会弹出下载、页面留在原地（即「本页直接下载」的实现）；
+ * 使用 window.open 会多弹一个标签页，且新标签可能被部分浏览器的弹窗拦截。
+ * desktopDownload.ts 触发桌面版安装包下载也使用同一手法。
  *
- * 注意不要加 download 属性：跨域时它会被浏览器忽略，加了反而让人误以为文件名可控。
+ * 不可添加 download 属性：跨域时它会被浏览器忽略，且会误导维护者以为文件名可控。
  */
 export function triggerDownload(url: string): void {
-  // oss:// 不是浏览器认识的协议，直接塞 href 会整页导航失败 ——
-  // 但走到这里的 url 应该已经换过票（resolveDownloadUrl）变成 https 了；
-  // 万一上游漏换，这里拦下比把伪协议塞进导航强。
+  // oss:// 不是浏览器可识别的协议，直接写入 href 会导致整页导航失败 ——
+  // 正常情况下进入此处的 url 已经换票（resolveDownloadUrl）变为 https；
+  // 若上游未换票，在此拦截优于将伪协议写入导航。
   if (!isSafeNavigateUrl(url)) {
     console.warn('[download] 拒绝非 http(s) 的下载地址:', url.slice(0, 60));
     return;

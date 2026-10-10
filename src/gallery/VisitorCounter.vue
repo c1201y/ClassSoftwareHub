@@ -12,8 +12,8 @@
 </template>
 
 <script setup lang="ts">
-// 纯展示组件：数字来自全站共享的 visitorState（由 App.vue 里的 trackVisit 上报并写入）。
-// 计数动作在应用根组件完成，因此全站所有页面访问都会计入，而不是只在设置页计入。
+// 纯展示组件：数字来自全站共享的 visitorState（由 App.vue 的 trackVisit 上报并写入）。
+// 计数动作在应用根组件完成，因此全站所有页面访问都会计入，而非仅在设置页计入。
 import { visitorState } from './visitor';
 
 function fmt(n: number | null): string {

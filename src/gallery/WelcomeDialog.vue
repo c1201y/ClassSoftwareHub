@@ -4,7 +4,7 @@
      五个外链：仓库地址 / 作者首页 = about.repository-url / about.author-home-url；
                相关文章 = welcome.article + welcome.article-url；
                QQ 群 = about.qq-group + about.qq-group-url；
-               投喂作者 = about.reward + about.reward-url。 -->
+               赞赏作者 = about.reward + about.reward-url。 -->
 <template>
   <WinContentDialog
     :IsOpen="open"
@@ -50,7 +50,7 @@
       </div>
 
       <!-- 法律三件套入口：站内 hash 路由不能用 WinHyperlinkButton（SAFE_URI_RE 白名单只认
-           http(s)，见设置页同名注释），用普通按钮 + router.push；点完先关弹窗再跳转 -->
+           http(s)，见设置页同名注释），用普通按钮 + router.push；点击后先关闭弹窗再跳转 -->
       <div class="welcome-dialog-legal">
         <span class="welcome-legal-text">{{ t('welcome.legal-note') }}</span>
         <button
@@ -89,12 +89,12 @@ const onOpenChange = (value: boolean) => {
   emit('update:open', value);
 };
 
-/** 点“开始探索下载~”：弹窗背后的首页已就绪，直接关闭即可 */
+/** 点击「开始探索下载」：弹窗背后的首页已就绪，直接关闭即可 */
 const onPrimaryClick = () => {
   emit('update:open', false);
 };
 
-/** 从欢迎弹窗跳条款页：先关弹窗再跳，不然条款页会被弹窗盖住 */
+/** 从欢迎弹窗跳转条款页：先关闭弹窗再跳转，否则条款页会被弹窗遮挡 */
 const openLegal = (key: string) => {
   emit('update:open', false);
   router.push({ path: '/agreement', query: { doc: key } });

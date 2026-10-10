@@ -1,4 +1,4 @@
-// English (en-US) resources of the download station.
+// 下载站英文（en-US）文案资源。
 export default {
     "app.title": "Software Download Station",
     "text.back": "Back",
@@ -44,8 +44,8 @@ export default {
     "about.repository-url": "https://github.com/Furry-Xiyi/WinUIonWeb/",
     "about.ui-kernel": "UI framework (WinUIonWeb)",
     "about.ui-kernel-url": "https://github.com/Furry-Xiyi/WinUIonWeb/",
-    // "Echo Cave" expander in Settings (data lives in 回声洞/messages/, one file per message)
-    // "echo-cave.subtitle" is still used by the /echo-cave page, keep it
+    // 设置页 "Echo Cave" 展开区（数据存放在 回声洞/messages/ ，每条消息一个文件）
+    // "echo-cave.subtitle" 仍被 /echo-cave 页面使用，须保留
     "echo-cave.title": "Echo Cave",
     "echo-cave.subtitle": "Funny/absurd messages from our QQ groups. Click to get another one.",
     "echo-cave.description": "Click here to watch the wild things ClassSoftwareHub group members said!",
@@ -54,7 +54,7 @@ export default {
     "echo-cave.submit": "Submit a message",
     "echo-cave.submit-note": "Opens the submissions folder on GitHub — add a .json draft; it goes live after review.",
     "echo-cave.count": "{total} in total",
-    // Submit flyout (button on the right of the expanded Echo Cave card in Settings)
+    // 提交浮层（设置页展开的 Echo Cave 卡片右侧按钮）
     "echo-cave.submit-short": "Submit",
     "echo-cave.submit-title": "Submit to Echo Cave",
     "echo-cave.submit-placeholder": "Write something that makes people laugh",
@@ -290,9 +290,9 @@ export default {
   "about.reward-url": "https://ifdian.net/a/TinyNickCSHub",
   "about.qq-group": "Join the QQ group",
   "about.qq-group-url": "https://qm.qq.com/q/wByO7XG8Wk",
-  // ── Feedback centre (#/feedback) ──────────────────────────────────────
-  // Two-level: kind (report / suggestion); only "report" has sub-kinds.
-  // Which cards and sub-kinds exist is decided by src/gallery/feedback.ts.
+  // ── 反馈中心（#/feedback） ──────────────────────────────
+  // 两级结构：kind（report / suggestion），仅 "report" 含子类型。
+  // 卡片与子类型由 src/gallery/feedback.ts 决定。
   "nav.feedback": "Feedback",
   "search.page-feedback": "Feedback",
   "search.page-feedback-desc": "Report a problem or share an idea",

@@ -2,7 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import { TOOLS } from './tools';
 
-// 路由一览（对应原单文件版的三个页面 + 提交页 + 内置工具）：
+// 路由一览：
 //   #/home              首页（软件卡片列表）
 //   #/download/:id      软件详情页（id 见数据区的软件 id）
 //   #/settings          设置页

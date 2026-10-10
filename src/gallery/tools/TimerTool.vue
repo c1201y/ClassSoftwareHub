@@ -143,7 +143,6 @@ const stopLoop = () => {
 
 const toggle = () => {
   if (running.value) {
-    // 暂停
     const now = performance.now();
     if (mode.value === 'countdown') remainingMs.value = Math.max(0, endAt - now);
     else baseElapsed = elapsedMs.value;
@@ -196,7 +195,7 @@ const beep = () => {
     });
     window.setTimeout(() => { void ctx.close(); }, 1600);
   } catch {
-    /* 静默失败即可 */
+    /* 音频不可用时静默忽略 */
   }
 };
 

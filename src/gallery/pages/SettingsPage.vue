@@ -39,7 +39,7 @@
                 <WinRadioButton :Content="$t('text.acrylic')" />
               </WinRadioButtons>
             </WinExpander>
-            <!-- 节日皮肤（补丁模块，见 src/gallery/holidayTheme.ts；不要可整块删掉） -->
+            <!-- 节日皮肤（补丁模块，见 src/gallery/holidayTheme.ts；不需要时可整块移除） -->
             <WinExpander
               :Header="$t('text.holiday-skin')"
               :Description="$t('text.holiday-skin-desc')"
@@ -97,8 +97,8 @@
                   HorizontalAlignment="Left"
                   :Content="t('about.ui-kernel')" />
                 <!-- 法律三件套（#/agreement）：按钮文字与页面内容都来自根目录「法律文本.ts」。
-                     ⚠️ 不用 WinHyperlinkButton 做站内跳转 —— 它的 SAFE_URI_RE 白名单只认
-                     http(s)/ms-windows-store:，hash 路由会被降级成点了没反应的死按钮 -->
+                     站内跳转不用 WinHyperlinkButton —— 其 SAFE_URI_RE 白名单只认
+                     http(s)/ms-windows-store:，hash 路由会被降级为无响应按钮 -->
                 <div class="legal-links">
                   <WinButton
                     v-for="doc in legalDocLinks"
@@ -110,14 +110,14 @@
               </div>
             </WinExpander>
 
-            <!-- 鸣谢卡片：文字在根目录「鸣谢文本.ts」，加贡献人员去那个文件改 -->
+            <!-- 鸣谢卡片：文字在根目录「鸣谢文本.ts」，贡献人员在该文件中维护 -->
             <div class="credits-card">
               <div class="credits-card-title">{{ credits.title }}</div>
               <div class="credits-card-intro">{{ credits.intro }}</div>
               <ul v-if="credits.people.length > 0" class="credits-people">
                 <li v-for="person in credits.people" :key="person.name" class="credits-person">
-                  <!-- 填了 url 就把名字做成链接（新标签页打开），没填则是普通文字；
-                       链接地址在根目录「鸣谢文本.ts」里改 -->
+                  <!-- 填写 url 时名字渲染为链接（新标签页打开），未填写则为普通文字；
+                       链接地址在根目录「鸣谢文本.ts」中维护 -->
                   <WinHyperlinkButton
                     v-if="person.url"
                     class="credits-person-link"
@@ -133,11 +133,11 @@
               <div v-else class="credits-empty">{{ credits.empty }}</div>
             </div>
 
-            <!-- 访问量 + 稳定运行时长：独立板块，放在鸣谢下方；文字跟随主题（深白/浅黑） -->
+            <!-- 访问量 + 稳定运行时长：独立板块，置于鸣谢下方；文字跟随主题 -->
             <div class="visitor-stat-card">
               <div class="visitor-stat-title">访问量</div>
               <VisitorCounter class="visitor-stat-counter" />
-              <!-- 站点运行时长：起始日见下方 SITE_LAUNCH_DATE，改日期只改那一处 -->
+              <!-- 站点运行时长：起始日见下方 SITE_LAUNCH_DATE，调整日期仅需修改该处 -->
               <div class="visitor-stat-uptime">
                 <span class="visitor-stat-uptime-label">网站已稳定运行</span>
                 <span class="visitor-stat-uptime-value">{{ uptimeText }}</span>
@@ -145,8 +145,7 @@
             </div>
           </div>
 
-          <!-- 回声洞：独立分组（同桌面端 2026-10-03 定稿 —— 不是「关于」里的一张卡），
-               一个可下拉的展开项：正文整块可点换一条，投稿按钮在右侧弹小面板 -->
+          <!-- 回声洞：独立分组（非「关于」区块内的一张卡）；可下拉展开项，正文整块可点换一条，投稿按钮在右侧弹出小面板 -->
           <WinTextBlock class="echo-section-title" :Text="$t('echo-cave.title')" />
           <div class="echo-controls">
             <EchoCaveCard />
@@ -173,7 +172,7 @@ import VisitorCounter from '../VisitorCounter.vue';
 import appManifest from '../../manifest.json';
 import { useI18n } from '../../components/i18n/index';
 import credits from '../../../鸣谢文本';
-// 法律三件套：内容与标题都在根目录「法律文本.ts」，改文案去那个文件
+// 法律三件套：内容与标题均在根目录「法律文本.ts」中维护
 import legalDocs from '../../../法律文本';
 import { useRouter } from 'vue-router';
 import EchoCaveCard from '../EchoCaveCard.vue';
@@ -228,8 +227,8 @@ const openLegal = (key: string) => {
 };
 
 // ── 网站稳定运行时长 ────────────────────────────────────────────────
-// 起始日：2026-08-29（只改这一处即可）。按本地时区零点起算，纯前端计算，
-// 不依赖任何外部服务，所以永远不会空白。
+// 起始日：2026-08-29（仅需修改该处）。按本地时区零点起算，纯前端计算，
+// 不依赖任何外部服务。
 const SITE_LAUNCH_DATE = new Date(2026, 7, 29, 0, 0, 0); // 月份 0 起算，7 = 8 月
 const nowTick = ref(Date.now());
 let uptimeTimer: number | undefined;
@@ -248,7 +247,7 @@ const uptimeText = computed(() => {
 
 onMounted(() => {
   nowTick.value = Date.now();
-  // 显示到「秒」，每秒刷新一次让秒数走动
+  // 显示到「秒」，每秒刷新一次
   uptimeTimer = window.setInterval(() => {
     nowTick.value = Date.now();
   }, 1000);
@@ -394,8 +393,8 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
-/* 可点击的贡献者名字：用两个类提高优先级，盖掉 WinHyperlinkButton 自带的
-   内边距与字号，让它在列表里和普通名字看起来一致，只是颜色是强调色 */
+/* 可点击的贡献者名字：用两个类提高优先级，覆盖 WinHyperlinkButton 自带的
+   内边距与字号，使其在列表中与普通名字样式一致，仅颜色为强调色 */
 .credits-person .credits-person-link {
   padding: 0;
   min-height: 0;
@@ -418,7 +417,7 @@ onBeforeUnmount(() => {
   margin-top: 8px;
 }
 
-/* 关于页·鸣谢下方的访问量与运行时长板块：独立卡片，文字跟随主题（深白/浅黑） */
+/* 关于页·鸣谢下方的访问量与运行时长板块：独立卡片，文字颜色跟随主题 */
 .visitor-stat-card {
   margin-top: 6px;
   padding: 12px 16px;

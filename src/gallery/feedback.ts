@@ -6,8 +6,8 @@
 // 由 .github/workflows/create-review-issue.yml 开出一张带标签的公开 Issue ——
 // 反馈没有审核合并环节，Issue 本身就是它的归宿。
 // 本文件只管**校验 / 正文拼装 / 本地草稿**，网络那一层在页面里。
-// 下面拼 GitHub 预填链接的那几个函数仍然保留：提交服务连不上时，页面会退回
-// 「打开 GitHub 预填的新建 Issue 页」或「复制反馈内容」，那两条兜底路要用它们。
+// 下面拼 GitHub 预填链接的函数仍然保留：提交服务不可用时，页面会退回
+// 「打开 GitHub 预填的新建 Issue 页」或「复制反馈内容」，两条兜底路径均需使用它们。
 //
 // 分类是两层的，改分类只动下面两个数组 + 文字设置.ts 里的对应文案：
 //   一层 kind     ：report（报告问题） / suggestion（提出建议）
@@ -25,17 +25,17 @@ export type ReportSubKind = 'interaction' | 'link' | 'other';
 export interface FeedbackKindDef {
   key: FeedbackKind;
   /** 卡片上的图标标识。页面层据此从 src/assets/feedback/<icon>.png 取图。
-   *  这里只放**文件名**不放图片对象：本文件要保持纯逻辑（不依赖 Vue、不依赖 Vite
-   *  的资源处理），才好单独验证。 */
+   *  仅存放文件名而非图片对象：本文件保持纯逻辑（不依赖 Vue、不依赖 Vite
+   *  的资源处理），便于独立验证。 */
   icon: string;
   /** 卡片标题 / 表单页标题的文案 key */
   titleKey: string;
   /** 卡片下方那句说明的文案 key */
   descKey: string;
-  /** GitHub Issue 标签名。⚠️ 必须与仓库 Labels 里的名字**一字不差**（含空格），
-   *  对不上的标签会被 GitHub 静默忽略——不打上也不报错，很难发现 */
+  /** GitHub Issue 标签名。必须与仓库 Labels 中的名称完全一致（含空格），
+   *  不匹配的标签会被 GitHub 静默忽略——既不标注也不报错，难以察觉 */
   label: string;
-  /** 标题前缀，让维护者一眼看出是哪一类（标签万一没了也还能分辨） */
+  /** 标题前缀，便于维护者快速识别类别（标签缺失时仍可分辨） */
   tag: string;
 }
 
@@ -49,11 +49,10 @@ export interface ReportSubKindDef {
 }
 
 /**
- * 选择态的两张卡片。加/删卡片只动这里，再去 文字设置.ts 补上 titleKey / descKey、
- * 往 src/assets/feedback/ 丢一张同名 png 即可。
+ * 选择态的两张卡片。加/删卡片只改此处，再到 文字设置.ts 补上 titleKey / descKey、
+ * 并在 src/assets/feedback/ 放入同名 png 即可。
  *
  * 图标是 3D 风格 PNG（透明底），由页面层 import 进来 —— 不是图标字体的码点。
- * 先前用过 SEGOEICONS.TTF（E7BA 警告三角 / E781 灯泡），已整体换成这套图。
  */
 export const FEEDBACK_KINDS: FeedbackKindDef[] = [
   {
@@ -76,7 +75,7 @@ export const FEEDBACK_KINDS: FeedbackKindDef[] = [
 
 /**
  * 「报告问题」下面的子类型。建议分支没有子类型（列表为空即可）。
- * ⚠️ 三个 label 要和仓库里的标签名一致；标题前缀会拼成「报告问题 · 链接失效」。
+ * label 必须与仓库标签名一致；标题前缀会拼成「报告问题 · 链接失效」。
  */
 export const REPORT_SUBKINDS: ReportSubKindDef[] = [
   { key: 'interaction', labelKey: 'feedback.sub-interaction', label: '逻辑交互', tag: '逻辑交互' },
@@ -114,24 +113,24 @@ export const emptyDraft = (): FeedbackDraft => ({
 export const FEEDBACK_REPO = 'c1201y/ClassSoftwareHub';
 export const REPO_URL = `https://github.com/${FEEDBACK_REPO}`;
 /**
- * 站点主域。⚠️ 只用于拼 Issue 正文里的详情页直链。
+ * 站点主域。只用于拼 Issue 正文里的详情页直链。
  *    按仓库约定（见 AGENTS.md「SEO & the share card」），绝对 URL 一律用主域，
  *    两个镜像站会被 canonical 折回主域，所以这里写主域是对的。
  */
 export const SITE_ORIGIN = 'https://classsoftwarehub.us.ci/';
 
 // ── 长度上限 ────────────────────────────────────────────────────────────
-/** 标题软上限：超过就拦下来让用户自己压（标题太长 Issue 列表里会很难看） */
+/** 标题软上限：超出时提示用户压缩（标题过长会影响 Issue 列表的可读性） */
 export const TITLE_MAX = 80;
 /** 正文里描述部分的软上限：超过会在拼 URL 时被截断 */
 export const DETAIL_MAX = 1800;
 /**
  * 整个预填 URL 的长度上限（保守值）。
- * ⚠️ 只有**兜底路径**（提交服务连不上、改走 GitHub 预填链接）才会碰到它 ——
- *    主路径把内容 POST 给提交服务，没有 URL 长度这回事。
- *    卡这个不是因为浏览器装不下（Chromium 上限远大于此），而是中间链路
- *    （代理、聊天软件转发、手工复制粘贴）会在某个长度上开始截断，
- *    一旦截断，Issue 正文就是半句话——比主动截断更糟。
+ * 仅兜底路径（提交服务不可用、改走 GitHub 预填链接）受此限制——
+ *    主路径将内容 POST 给提交服务，无 URL 长度约束。
+ * 设置此上限并非浏览器限制（Chromium 上限远大于此），而是中间链路
+ *    （代理、聊天软件转发、手工复制粘贴）会在某个长度截断内容，
+ *    一旦截断，Issue 正文即不完整——比主动截断更糟。
  */
 export const URL_MAX = 7000;
 
@@ -223,11 +222,11 @@ export function buildIssueTitle(draft: FeedbackDraft): string {
 /**
  * 构造 GitHub Issue 新建页的预填链接。
  *
- * 返回实际用到的 body 和「有没有被截断」——页面要据此显示提示条，
- * **绝不能悄悄截断**：维护者看到半句话比看到完整内容还难办。
+ * 返回实际使用的 body 与截断标记，页面据此显示提示——不允许无提示地静默截断：
+ * 维护者看到不完整内容比看到完整内容更难处理。
  *
- * 截断策略：优先砍 detail（保留标题、类型、涉及软件——这三样是分流必需的），
- * 砍完在正文末尾追加一行说明。
+ * 截断策略：优先缩减 detail（保留标题、类型、涉及软件——三者是分流必需项），
+ * 并在正文末尾追加一行说明。
  */
 export function buildIssueUrl(
   draft: FeedbackDraft,
@@ -252,7 +251,7 @@ export function buildIssueUrl(
     // 只砍描述，其余保持原样
     const note = '\n\n（描述过长，已截断；完整内容请点页面上的「复制反馈内容」。）';
     let detail = draft.detail.trim();
-    // 二分找到「砍到多少字能让 URL 落进上限」，比逐字减快得多
+    // 二分查找使 URL 落入上限的最大描述长度，优于逐字递减
     let lo = 0;
     let hi = detail.length;
     while (lo < hi) {
@@ -271,9 +270,9 @@ export function buildIssueUrl(
 }
 
 /**
- * 校验：返回第一条不满足的**文案 key**，全部通过返回空串。
- * 和 SubmitPage.vue 一样把校验放在 JS 里——提交按钮不是原生 submit，
- * HTML 的 required 根本不会触发。
+ * 校验：返回第一条不满足的文案 key，全部通过返回空串。
+ * 校验放在 JS 中执行（与 SubmitPage.vue 一致）——提交按钮不是原生 submit，
+ * HTML 的 required 属性不会触发。
  */
 export function validateFeedback(draft: FeedbackDraft): string {
   if (!draft.kind) return 'feedback.error-kind';
@@ -283,14 +282,14 @@ export function validateFeedback(draft: FeedbackDraft): string {
   return '';
 }
 
-// ── 草稿持久化（照抄 SubmitPage.vue 的写法，隐私模式下静默失败）──────────
+// ── 草稿持久化（与 SubmitPage.vue 实现一致，隐私模式下静默失败）──────────
 const DRAFT_KEY = 'csh-feedback-draft';
 
 export function saveFeedbackDraft(draft: FeedbackDraft): void {
   try {
     window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
   } catch {
-    // 隐私模式 / 配额满：写不进去就算了，不影响提交
+    // 隐私模式或配额已满时静默失败，不影响提交
   }
 }
 
@@ -314,12 +313,11 @@ export function readFeedbackDraft(): FeedbackDraft | null {
 }
 
 /**
- * 清掉本地草稿（localStorage 里的 `csh-feedback-draft`）。
+ * 清除本地草稿（localStorage 里的 `csh-feedback-draft`）。
  *
- * 走到提交服务之后，这里**会被自动调用**：POST 拿到 success 就说明内容已经进了
- * 仓库的 submissions/，再留着草稿只会让用户下次进来又看到一份已经提交过的内容。
- * （旧版跳 GitHub 时不敢清 —— 跨域读不到那边到底提交成功没有。）
- * 兜底路径（复制 / 打开 GitHub）依然不清，那两条路我们同样无法确认用户是否真的提交了。
+ * 走提交服务路径后会自动调用：POST 返回 success 即说明内容已进入
+ * 仓库的 submissions/，继续保留草稿只会让用户下次进入时看到一份已提交的内容。
+ * 兜底路径（复制 / 打开 GitHub）不清除——这两条路径无法确认用户是否实际提交。
  */
 export function clearFeedbackDraft(): void {
   try {
@@ -329,7 +327,7 @@ export function clearFeedbackDraft(): void {
   }
 }
 
-/** 复制到剪贴板；返回是否成功（浏览器不允许时可以提示用户手动选） */
+/** 复制到剪贴板；返回是否成功（浏览器不允许时提示用户手动选择复制） */
 export async function copyText(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text);
