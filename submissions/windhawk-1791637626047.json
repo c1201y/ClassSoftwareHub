@@ -1,0 +1,31 @@
+{
+  "_提交时间": "2026-10-10T13:07:06.047Z",
+  "_原始ID冲突": false,
+  "id": "windhawk",
+  "name": "windhawk",
+  "icon": "https://avatars.githubusercontent.com/u/95488203?v=4",
+  "category": "other",
+  "tagline": "The customization marketplace for Windows programs…",
+  "description": "The customization marketplace for Windows programs: https://windhawk.net/",
+  "version": "v1.7.3",
+  "size": "",
+  "system": "Windows",
+  "website": "https://windhawk.net",
+  "github": "https://github.com/ramensoftware/windhawk",
+  "downloads": [
+    {
+      "platform": "Windows 安装版",
+      "note": "windhawk_setup.exe",
+      "size": "11.0 MB",
+      "url": "https://github.com/ramensoftware/windhawk/releases/download/v1.7.3/windhawk_setup.exe"
+    },
+    {
+      "platform": "Windows 安装版",
+      "note": "windhawk_setup_offline.exe",
+      "size": "142 MB",
+      "url": "https://github.com/ramensoftware/windhawk/releases/download/v1.7.3/windhawk_setup_offline.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA2eTR5WjNsU0NiTlhIc1dR\nWkg0cUpYWlZRMTFXOFBtYjB6eG5yQmVGdUg0CjBsSDN0T1AwNWl5ODVaMGhHYXdv\nWUxjeGZlU0NZdXFQTmRYOGF0QTNUUUEKLS0tIEhvbmk5enBGbEFjcXVnYk1Nb0dC\nZ25mbHhhUmpGZVkxT3c0WEoza3B6c1kKpgI4XQQZ3sPrt35zsRsS3Ael0N/8bB0n\nmwodIv497twnv2SSQt9kkXOw\n-----END AGE ENCRYPTED FILE-----"
+}
