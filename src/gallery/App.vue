@@ -615,6 +615,11 @@ watch(materialSetting, (value) => postUwpSetting('material', value));
   }
 
   /* ── 标题栏搜索框（可直接输入，结果就地弹出下拉；窄标题栏收成放大镜）────── */
+  /* 展开态需 absolute 覆盖标题区，标题栏根提供定位上下文 */
+  .gallery-titlebar.win-titlebar {
+    position: relative;
+  }
+
   .gallery-titlebar-search {
     box-sizing: border-box;
     display: flex;
@@ -758,18 +763,35 @@ watch(materialSetting, (value) => postUwpSetting('material', value));
   }
 
   /* 聚焦 / 打开后，图标态展开回正常搜索框 */
-  /* flex-basis 保持与图标态相同的 40px，只过渡 flex-grow（0→1），宽度即可平滑展开 */
+  /* 展开态：脱离布局流，absolute 相对标题栏锚定右缘（与放大镜原位重合，无跳变），
+     宽度从 40px 平滑向左展开并覆盖标题区；每帧只重排自身，移动端不卡顿。 */
   .gallery-titlebar.is-narrow .gallery-titlebar-search.is-open,
   .gallery-titlebar.is-compact .gallery-titlebar-search.is-open {
-    flex: 1 1 40px !important;
-    width: auto;
-    max-width: 350px;
-    height: 30px;
-    margin: 0 8px 0 0;
-    padding: 0 8px 0 10px;
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    width: calc(100% - 60px);
+    max-width: none;
+    flex: none !important;
+    height: 40px;
+    margin: 0;
+    padding: 0 8px 0 12px;
     justify-content: flex-start;
     border-color: var(--accent-base, #0067C0);
     background: var(--ctrl-fill-default, rgba(255, 255, 255, 0.7));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 10;
+    transition: width 250ms var(--fast-out-slow-in, cubic-bezier(0, 0, 0, 1)),
+      background var(--fast-duration, 150ms) linear,
+      border-color var(--fast-duration, 150ms) linear;
+  }
+
+  /* 展开后恢复清空按钮（图标态被隐藏）；kbd 快捷键提示在触屏无意义，保持隐藏 */
+  .gallery-titlebar.is-narrow .gallery-titlebar-search.is-open .gallery-titlebar-search-clear,
+  .gallery-titlebar.is-compact .gallery-titlebar-search.is-open .gallery-titlebar-search-clear {
+    display: flex;
   }
 
   .gallery-titlebar.is-narrow .gallery-titlebar-search.is-open .gallery-titlebar-search-input,
