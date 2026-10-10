@@ -171,6 +171,21 @@ const updatePosition = () => {
   if (!anchor) return;
   const rect = anchor.getBoundingClientRect();
   const vw = window.innerWidth;
+  // 窄屏：面板改为近全宽、贴标题栏下方固定位置。
+  // 移动端锚点是展开中的搜索框（40px 放大镜 → 全宽过渡），rect 尺寸在动画期间不可靠，
+  // 且面板也不应被压缩成放大镜宽度；标题栏高度固定，直接用固定 top 即可。
+  if (vw <= 640) {
+    const top = 64;
+    const width = vw - 24;
+    const maxHeight = Math.max(200, window.innerHeight - top - 16);
+    panelStyle.value = {
+      left: '12px',
+      top: `${top}px`,
+      width: `${width}px`,
+      maxHeight: `${Math.round(maxHeight)}px`
+    };
+    return;
+  }
   // 锚点为搜索框容器（含图标/输入框/清空按钮的外包块），面板宽度取容器宽度，
   // 左右边缘与搜索框对齐；不使用固定宽度，避免面板偏右。
   const width = Math.min(rect.width, vw - 16);
@@ -449,15 +464,15 @@ onBeforeUnmount(unbindWindowListeners);
   text-overflow: ellipsis;
 }
 
-/* ── 打开 / 关闭动画 ─────────────────────────────────────── */
+/* ── 打开 / 关闭动画：淡入 + 轻微下落缩放，原点在顶部（视觉上从搜索框下方展开） ── */
 .gs-fade-enter-active,
 .gs-fade-leave-active {
-  transition: opacity 120ms linear;
+  transition: opacity 160ms linear;
 }
 
 .gs-fade-enter-active .gs-panel,
 .gs-fade-leave-active .gs-panel {
-  transition: transform 180ms cubic-bezier(0.33, 0, 0.2, 1);
+  transition: transform 200ms cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
 .gs-fade-enter-from,
@@ -467,7 +482,8 @@ onBeforeUnmount(unbindWindowListeners);
 
 .gs-fade-enter-from .gs-panel,
 .gs-fade-leave-to .gs-panel {
-  transform: translateY(-8px);
+  transform: translateY(-10px) scale(0.98);
+  transform-origin: top center;
 }
 
 @media (max-width: 640px) {
