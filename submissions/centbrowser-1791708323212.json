@@ -1,0 +1,29 @@
+{
+  "_提交时间": "2026-10-11T08:45:23.212Z",
+  "_原始ID冲突": false,
+  "id": "centbrowser",
+  "name": "CentBrowser百分浏览器",
+  "icon": "https://www.centbrowser.cn/image/logo.png",
+  "category": "schedule",
+  "tagline": "追求速度、简约和安全的网络浏览器",
+  "description": "百分浏览器是一款追求速度、简约和安全的网络浏览器，它基于最新的Chromium开源内核进行优化开发，提供了鼠标手势",
+  "version": "5.2.1168.83",
+  "size": "110MB",
+  "system": "Windows7~11(x64)",
+  "website": "https://www.centbrowser.cn",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "centbrowser_5.2.1168.83_x64(安装版)",
+      "size": "109MB",
+      "url": "https://static.centbrowser.cn/win_stable/5.2.1168.83/centbrowser_5.2.1168.83_x64.exe"
+    },
+    {
+      "platform": "centbrowser_5.2.1168.83_x64(便携版)",
+      "size": "131MB",
+      "url": "https://static.centbrowser.cn/win_stable/5.2.1168.83/centbrowser_5.2.1168.83_x64_portable.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB2Y1h0c0c1YjlLVXRJLzZE\nMWZiRFdsRlFCVFVUK05oWTZVeEN3ZUxHUDB3CmM3M0htR29uSXhTVDVNVFFwTEJH\nNUZzM1VDK1VoL1p0d1hIaGZSVGNMQ1kKLS0tIElCZmNOTnpWTzhXR3ZjVFhNS0Jh\nUGFDc3B0VTZpa1M5OGFVQTRpeVcwR2MKpbc9XJVojiZshUmPh/09RKJ4y2ZUTVF1\ndIu/5fBtyYdamvTUJcNcQJGTNdML\n-----END AGE ENCRYPTED FILE-----"
+}
