@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-11T09:50:21.408Z",
-  "_原始ID冲突": false,
   "id": "fluentview",
   "name": "FluentView",
   "icon": "https://submit.132614.xyz/api/icon?k=icon%2F2026%2F10%2Fmv3n5eh5-kn7b9n-FluentView_1.ico",
@@ -26,6 +24,5 @@
       "url": "https://github.com/minecraft-os/FluentView/releases/download/1.5.0/FluentView_Setup.exe"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBoWk9oTkRWU2RneUorc3NN\nTkNiSWVYdnAzcWNEOEFWL3ZjUUFRZU9XRlhBCnF0U1habXROZWtXWUt3aUsvMHNu\nOWl5S05XZTJ3Y3I3VCtOSk9IemJGSHMKLS0tIElxNVJuVjhhZy9HWjlGVDVpNUEr\nZ2Z3SUdKMUI4d0FSZ01VWDhjbEhGY28KH/cqRvogVUQ5bZn4DQGgqVPbykhCeTV0\nida/S06sm6lv6QRMPBv30CgHOf2fkwLFdXQCbTD+8tg=\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
