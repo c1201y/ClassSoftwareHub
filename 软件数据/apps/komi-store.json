@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-11T11:55:00.320Z",
-  "_原始ID冲突": false,
   "id": "komi-store",
   "name": "komi-store",
   "icon": "https://avatars.githubusercontent.com/u/323530639?v=4",
@@ -44,6 +42,5 @@
       "url": "https://github.com/komi-store/komi-store/releases/download/v1.9.2/komi-store_1.9.2-1.9.2_amd64-debian12.deb"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBjNkZubEdHMEUyRUNEdW5H\nVkRIS1FwZHA3d0Fueitmd25VaG5hb1hUSGc0ClNTWFVScG1SQlVDNE5wK3JiRzdz\nUFJpU2pFelJVUHRvTzhJR2pLcW5qQ0kKLS0tIEo1NnllSnhpV0JHcERhalFnVWdD\nb2xNQzV3OXczSUxQb3lwQjdYdUkycVkKp5768rvkfZgcgwyET9+2IE8SKu1M09ci\ndMyGT3il11xdPWx4Hn8fy/Lb\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
