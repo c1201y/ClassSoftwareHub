@@ -1,0 +1,49 @@
+{
+  "_提交时间": "2026-10-11T08:32:46.272Z",
+  "_原始ID冲突": false,
+  "id": "lx-music-desktop",
+  "name": "LX Music 桌面版",
+  "icon": "https://lxmusic.toside.cn/img/logo.svg",
+  "category": "other",
+  "tagline": "一个免费&开源的音乐查找工具",
+  "description": "一个免费&开源的音乐查找工具，免费且无广告，基于 Electron",
+  "version": "v2.12.6",
+  "size": "100MB+",
+  "system": "Windows / macOS / Linux",
+  "website": "https://lyswhut.github.io/lx-music-doc/",
+  "github": "https://github.com/lyswhut/lx-music-desktop",
+  "downloads": [
+    {
+      "platform": "macOS（Apple 芯片）（磁盘映像）",
+      "note": "lx-music-desktop-2.12.6-arm64.dmg",
+      "size": "125 MB",
+      "url": "https://github.com/lyswhut/lx-music-desktop/releases/download/v2.12.6/lx-music-desktop-2.12.6-arm64.dmg"
+    },
+    {
+      "platform": "Windows ARM64 安装版",
+      "note": "lx-music-desktop-v2.12.6-arm64-Setup.exe",
+      "size": "111 MB",
+      "url": "https://github.com/lyswhut/lx-music-desktop/releases/download/v2.12.6/lx-music-desktop-v2.12.6-arm64-Setup.exe"
+    },
+    {
+      "platform": "Windows7 x64 安装版",
+      "note": "lx-music-desktop-v2.12.6-win7_x64-Setup.exe",
+      "size": "80.8 MB",
+      "url": "https://github.com/lyswhut/lx-music-desktop/releases/download/v2.12.6/lx-music-desktop-v2.12.6-win7_x64-Setup.exe"
+    },
+    {
+      "platform": "Windows x64 安装版",
+      "note": "lx-music-desktop-v2.12.6-x64-Setup.exe",
+      "size": "116 MB",
+      "url": "https://github.com/lyswhut/lx-music-desktop/releases/download/v2.12.6/lx-music-desktop-v2.12.6-x64-Setup.exe"
+    },
+    {
+      "platform": "Linux x64（.deb）",
+      "note": "lx-music-desktop_2.12.6_amd64.deb",
+      "size": "104 MB",
+      "url": "https://github.com/lyswhut/lx-music-desktop/releases/download/v2.12.6/lx-music-desktop_2.12.6_amd64.deb"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA3Z1pOWFNyelZ0RlZJa1ZS\nUTFHYlhHWGhnNENkaDVSQ3QzWjN1RVVLQldjCkZ5dFdvclRFRlZNdnBObFJQRzE3\ncW00R0J3Q3lEQ2QvS1FVeVBOR3hJM28KLS0tIGRlRmw1bCtDcUhIMVNvNndmdjhH\nYU90NEN3SmlVdXlZcERaZXdVWDl4WG8KdiLCYqJvFXT7JvEMwyPke6i1/p+SPWow\n659ZtUCFj/TsjpJUoSZyVopFPL3u\n-----END AGE ENCRYPTED FILE-----"
+}
