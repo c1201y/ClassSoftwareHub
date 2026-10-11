@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-11T09:01:22.047Z",
-  "_原始ID冲突": false,
   "id": "localsend",
   "name": "localsend",
   "icon": "https://localsend.org/img/logo.png",
@@ -44,6 +42,5 @@
       "url": "https://github.com/localsend/localsend/releases/download/v1.18.2/LocalSend-1.18.2-windows-arm-64.zip"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBrQldtTmtZdXRYZE40dkQx\nTWluQ0hHa051S0ZOU3JHZkRVUzdYOHVvZWtVCkczVHYrTDRPTFg3TDh1dGoxTGZ0\neG9IcktyK2h6a1piU1JhOTdoWmNNaWcKLS0tIGU5Y1FxbTB4V2g2aG43U05tSmJP\nWmlEMzRnTVFQTXR6bVo3T0ROSFBNM28Ky8kuUaXI9i6q9Vl4CfTRwEPJ1hyTrFUf\nmadWWYkSW2txgOHpDSLKfW/bPtch\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
