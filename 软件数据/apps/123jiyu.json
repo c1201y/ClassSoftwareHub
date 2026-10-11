@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-11T10:00:45.545Z",
-  "_原始ID冲突": false,
   "id": "123jiyu",
   "name": "极域U盘-网络解限工具",
   "icon": "",
@@ -21,6 +19,5 @@
     }
   ],
   "sort": 0,
-  "notice": "程序为python文件，需要配合Python使用（当然机房电脑一般都有Py）",
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBBaVJ5UWFvMXE3Ukk2Y3F3\nVDNLY1ZxTFRwS1ZSOEIxd083WUYrL0xnTzBRCjhnUmdSa1djMGhnZm5RMWpzQktL\nb1BaOFBhbXVPL013c0R2TEZWdHhJQW8KLS0tIHk2S25TV0ZCZnpMNmlhZDZ0R0xV\nZXVvZGx5SktRdWZ4cVl2Z1FERjU1RXcKaH8IBPKGt2sK8Fkatpoj45x2Buc7/LtC\nAuP3G6X/RM5hS0bfng4wOoUQ0kD8lJopJuGsz0bAOZw=\n-----END AGE ENCRYPTED FILE-----"
+  "notice": "程序为python文件，需要配合Python使用（当然机房电脑一般都有Py）"
 }
