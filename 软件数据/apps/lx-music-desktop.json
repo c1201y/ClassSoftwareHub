@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-11T08:32:46.272Z",
-  "_原始ID冲突": false,
   "id": "lx-music-desktop",
   "name": "LX Music 桌面版",
   "icon": "https://lxmusic.toside.cn/img/logo.svg",
@@ -44,6 +42,5 @@
       "url": "https://github.com/lyswhut/lx-music-desktop/releases/download/v2.12.6/lx-music-desktop_2.12.6_amd64.deb"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA3Z1pOWFNyelZ0RlZJa1ZS\nUTFHYlhHWGhnNENkaDVSQ3QzWjN1RVVLQldjCkZ5dFdvclRFRlZNdnBObFJQRzE3\ncW00R0J3Q3lEQ2QvS1FVeVBOR3hJM28KLS0tIGRlRmw1bCtDcUhIMVNvNndmdjhH\nYU90NEN3SmlVdXlZcERaZXdVWDl4WG8KdiLCYqJvFXT7JvEMwyPke6i1/p+SPWow\n659ZtUCFj/TsjpJUoSZyVopFPL3u\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
