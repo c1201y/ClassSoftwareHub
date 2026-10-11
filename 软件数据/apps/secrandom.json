@@ -4,97 +4,97 @@
   "icon": "https://raw.githubusercontent.com/SECTL/SecRandom/master/SecRandom/Assets/AppLogo.png",
   "category": "teaching",
   "tagline": "公平随机点名 / 抽签 / 分组，让抽取告别争议",
-  "description": "SecRandom 是一款基于「动态权重」的公平随机抽取工具，专门面向课堂点名、抽签、分组等场景，由 SECTL 开发并开源（GPL-3.0）。它支持按名单范围、小组、性别、人数进行点名，提供「奖池」和「名单」两种抽签模式，还有悬浮窗「闪抽」让抽取几乎不打断课堂节奏；摄像头就绪的教室还可以开启可选的人脸抽取。名单与分组支持完整导入导出，每次抽取都有历史记录可复盘，结果可语音播报，并支持通过 IPC / URL 被脚本或外部工具调用。安全与数据方面提供密码、TOTP、USB 等多重验证，以及备份与恢复。v3.0.0 起新增插件系统与插件市场、Omni TTS 语音（可接 OpenAI、小米 MiMo 等，支持音色克隆）以及倒计时 / 秒表 / 时钟计时器。",
+  "description": "SecRandom 是一款基于「动态权重」的公平随机抽取工具，专门面向课堂点名、抽签、分组等场景，由 SECTL 开发并开源（GPL-3.0）。它支持按名单范围、小组、性别、人数进行点名，提供「奖池」和「名单」两种抽签模式，还有悬浮窗「闪抽」让抽取几乎不打断课堂节奏；摄像头就绪的教室还可以开启可选的人脸抽取。名单与分组支持完整导入导出，每次抽取都有历史记录可复盘，结果可语音播报，并支持通过 IPC / URL 被脚本或外部工具调用。安全与数据方面提供密码、TOTP、USB 等多重验证，以及备份与恢复。v3.0.0 起新增插件系统与插件市场、Omni TTS 语音（可接 OpenAI、小米 MiMo 等，支持音色克隆）以及倒计时 / 秒表 / 时钟计时器；v3.1.5 起插件能力进一步扩展，并支持接入自部署集控。",
   "version": "3.1.5",
-  "size": "90 MB ~ 253 MB（视平台）",
+  "size": "90 MB ~ 254 MB（视平台）",
   "system": "Windows 10/11（x86 / x64 / ARM64）、Linux、macOS、Android、iOS",
   "website": "https://secrandom.sectl.top/",
   "github": "https://github.com/SECTL/SecRandom",
-  "notice": "当前提供的 v3.0.0-alpha.2 为官方「Alpha 早期预览版」，功能未经完整测试、不保证稳定，官方明确建议不要用在关键场景。日常使用建议到官网或 GitHub Releases 下载最新正式版。本站下载链接已换成「思拓创联 GitHub 镜像源」（stk.sectl.cn），国内下载更快，文件与 GitHub 官方发布完全一致，可对照下方 SHA512 校验。",
+  "notice": "当前提供的是 v3.1.5 正式版（2026-10-07 发布，可直接用于日常教学等正式场景）。下载链接走 SECTL 官方 GitHub 加速通道（ghproxy.sectl.top），国内下载更快，文件与 GitHub 官方发布完全一致，可对照下方 SHA512 校验。",
   "downloads": [
     {
       "platform": "Windows x64 安装版",
       "note": "主流 64 位系统，推荐下载这个",
-      "size": "160.0 MB",
-      "hash": "24B3530759A6CD591935B42D42AD4DA570F2C6FB71E30717D7C3F2511C6039717286B8EBAE0ED8DC344645350865B1E6DD220BF1ACB831D7C8E27A4C3B0B976E",
-      "url": "https://stk.sectl.cn/d/SecRandom/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v3.0.0-alpha.2/SecRandom-v3.0.0-alpha.2-win-x64-setup.exe"
+      "size": "160.9 MB",
+      "hash": "67BBEF9A0287B285FF37F159BA81F7942DE2B1E4C0B39BDBA269FDA3627CEFC4CE7ECD9DFA92E6B91ED7C2DCE35AF61B7CD27B38E0F42565ABC8F06E053C1B84",
+      "url": "https://ghproxy.sectl.top/https://github.com/SECTL/SecRandom/releases/download/v3.1.5/SecRandom-v3.1.5-win-x64-setup.exe"
     },
     {
       "platform": "Windows x64 便携版（完整）",
       "note": "免安装，解压即用；自带运行时，体积大一些",
-      "size": "252.7 MB",
-      "hash": "FA54784380D1438EDD5A9A5D9F138F0AFDE14A706F2AAE4EAA5C37970E96CCA7241292997E23DA2F368D1690D045D97C44F75812EEB0930C9C4DA0759A3DD486",
-      "url": "https://stk.sectl.cn/d/SecRandom/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v3.0.0-alpha.2/SecRandom-v3.0.0-alpha.2-win-x64-portable-full.zip"
+      "size": "254.2 MB",
+      "hash": "BC117603D402CC5FC4A2192B98D6FEE7AE8DF367C107A82D82974B5C24B3D792534743A33534B232690A9B4394989088C8714C52AB60DE522F7943DA3F90E306",
+      "url": "https://ghproxy.sectl.top/https://github.com/SECTL/SecRandom/releases/download/v3.1.5/SecRandom-v3.1.5-win-x64-portable-full.zip"
     },
     {
       "platform": "Windows x64 便携版（轻量）",
       "note": "免安装，体积小；需系统已装 .NET 运行时",
-      "size": "148.9 MB",
-      "hash": "67FE669C42CC68146900F6A9B9298C9CEB7D3CE09E7C704DB272B381807D586BEEFDB8691BDC58F635F2BA2A5490281FD2994B2DB86979DAA2574C70DB99C8FB",
-      "url": "https://stk.sectl.cn/d/SecRandom/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v3.0.0-alpha.2/SecRandom-v3.0.0-alpha.2-win-x64-portable-light.zip"
+      "size": "150.3 MB",
+      "hash": "32D86913539C0BC654E85F6882C0C9EBC4BA365CB79DE756218291A039A9110CF5A21B55025CAA1ABE85D78F2F8045852E0EF3608B9E80829A3F9BFD23F6BEBE",
+      "url": "https://ghproxy.sectl.top/https://github.com/SECTL/SecRandom/releases/download/v3.1.5/SecRandom-v3.1.5-win-x64-portable-light.zip"
     },
     {
       "platform": "Windows x86 安装版",
       "note": "适用于老旧 32 位系统",
-      "size": "129.6 MB",
-      "hash": "9AB9B25189F8E8EBEBF53BE2A2F33EB02876E3DB264B4CA62C341ED6662ECEBFDF834619412345351985170906888250531D9A18F614C96586F5B6D4231BB100",
-      "url": "https://stk.sectl.cn/d/SecRandom/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v3.0.0-alpha.2/SecRandom-v3.0.0-alpha.2-win-x86-setup.exe"
+      "size": "130.5 MB",
+      "hash": "4C73DCEE9BBB69CB8A72C6D11B5B90F13B2D0F27D5E913695109BC766DF784521437F9268270BEE0C8CC374780732ADC26A0420ACFC542AE57EF8750A0481828",
+      "url": "https://ghproxy.sectl.top/https://github.com/SECTL/SecRandom/releases/download/v3.1.5/SecRandom-v3.1.5-win-x86-setup.exe"
     },
     {
       "platform": "Windows ARM64 安装版",
       "note": "适用于 Windows on ARM 设备",
-      "size": "127.6 MB",
-      "hash": "5CC97D0C2EDAFAC59D9E3B771020147E569EBE4661857A12AF6F99EE847B02A19CCF15DF04B91FC08640AB99D85A46DB7390E426CC9814B627173D3B45F63EF6",
-      "url": "https://stk.sectl.cn/d/SecRandom/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v3.0.0-alpha.2/SecRandom-v3.0.0-alpha.2-win-arm64-setup.exe"
+      "size": "128.5 MB",
+      "hash": "230DF79E799D110BC84FD9C751746CB2312BF3E57C4990D532228186081F32F6CA2E4276A4B6581047BA3EAEF62E1D16BEB1A29E4E20A0E2FE92D89B79DECA27",
+      "url": "https://ghproxy.sectl.top/https://github.com/SECTL/SecRandom/releases/download/v3.1.5/SecRandom-v3.1.5-win-arm64-setup.exe"
     },
     {
       "platform": "Linux x64（.deb）",
       "note": "Debian / Ubuntu 等，双击安装",
-      "size": "128.0 MB",
-      "hash": "E15D45B0FD8FD57C1FFA492D915A69A1B8FEB89ED649554E16F22247D6CCFB5C7F8D359727427E357ADF9F007672DA435A518C3D17BF99377F96DFED9AD3DA18",
-      "url": "https://stk.sectl.cn/d/SecRandom/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v3.0.0-alpha.2/SecRandom-v3.0.0-alpha.2-linux-x64.deb"
+      "size": "128.9 MB",
+      "hash": "C097CAEC83808E70B46F431350D1622F41A324C7B00E3854B6460C74AA9F9088D086C2787123DD8F7D08AA9E90C4A9C5B305F351B37B51CA66E6EE03BB02753F",
+      "url": "https://ghproxy.sectl.top/https://github.com/SECTL/SecRandom/releases/download/v3.1.5/SecRandom-v3.1.5-linux-x64.deb"
     },
     {
       "platform": "Linux ARM64（.deb）",
       "note": "Debian / Ubuntu 等 ARM 设备",
-      "size": "90.2 MB",
-      "hash": "08F47509FA72D532EDB38D16FB0C04A6D8658682609A53C8F01424FFE1726EE6981FC2824321FB7476D9415DE7BF43F806CAE4550FC767DBC1A315AC347A73EC",
-      "url": "https://stk.sectl.cn/d/SecRandom/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v3.0.0-alpha.2/SecRandom-v3.0.0-alpha.2-linux-arm64.deb"
+      "size": "91.1 MB",
+      "hash": "26B345EC057EDE937DF0C31FF4A90F3CEEB7CD28456134F7BE8F828C07F07B38DF9E0D5EDA65E3F24827A890D9842DAC10E5C54082B84C2572625209C3581F8C",
+      "url": "https://ghproxy.sectl.top/https://github.com/SECTL/SecRandom/releases/download/v3.1.5/SecRandom-v3.1.5-linux-arm64.deb"
     },
     {
       "platform": "macOS（Apple 芯片）",
       "note": "M 系列芯片；解压后拖入「应用程序」",
-      "size": "110.7 MB",
-      "hash": "4B271246A7C1FAF3BF439055C33EC23AE115B1A2A0DBF5043ECAA3E4C84AD316C6414144C08A4B07A2D2E824E9B7627D6EB88401BC7E841FDD08394A4A83FD3C",
-      "url": "https://stk.sectl.cn/d/SecRandom/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v3.0.0-alpha.2/SecRandom-v3.0.0-alpha.2-osx-arm64.app.zip"
+      "size": "112.2 MB",
+      "hash": "1E67CDF203FDAD689FC192CF0191A0D176FE39112C0A9779278F899A6EB78EE2D2F52A9354201DB4BE451B000ADFA31A0F7B45CE8AE6BAB5619C55C54AF884BE",
+      "url": "https://ghproxy.sectl.top/https://github.com/SECTL/SecRandom/releases/download/v3.1.5/SecRandom-v3.1.5-osx-arm64.app.zip"
     },
     {
       "platform": "macOS（Intel）",
       "note": "Intel 芯片；解压后拖入「应用程序」",
-      "size": "112.8 MB",
-      "hash": "7FE7FED5FDE1D2B1A53DFE5CB038F74471F9FF800EB4E816E39C910EBE9A83C1C47372AC2316E171160FC31E79824893BF728C939C848E8D94C2C3241C5F35EB",
-      "url": "https://stk.sectl.cn/d/SecRandom/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v3.0.0-alpha.2/SecRandom-v3.0.0-alpha.2-osx-x64.app.zip"
+      "size": "114.3 MB",
+      "hash": "694C78B6A0CECBFD542F6D5E03B492320EB4D0ADCCB225B8E9C69BA61B3E71796E6B54255065A882C9E4BC2B1BC0901E81E81716C6F33F86378A26F13B35E09F",
+      "url": "https://ghproxy.sectl.top/https://github.com/SECTL/SecRandom/releases/download/v3.1.5/SecRandom-v3.1.5-osx-x64.app.zip"
     },
     {
       "platform": "Android ARM64",
       "note": "安卓手机 / 平板（APK 安装包）",
-      "size": "113.5 MB",
-      "hash": "B9D88F82770A412D725DA715DA3DB3D49C289E55718FBE0D9891D276BDD91B68263F6072FC9D6874CA57AA726A19F3F5278D529E528A114D7E2DDA98BC672F01",
-      "url": "https://stk.sectl.cn/d/SecRandom/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v3.0.0-alpha.2/SecRandom-v3.0.0-alpha.2-android-arm64.apk"
+      "size": "117.8 MB",
+      "hash": "63F5C346CF2EEDC204424EBB4FAE6C048AD8492C9623F42B1AA1B02B95D186385D70108B32864A4E3AF49C5D5252D4FF8448D7A78A6238827351FD2904D90169",
+      "url": "https://ghproxy.sectl.top/https://github.com/SECTL/SecRandom/releases/download/v3.1.5/SecRandom-v3.1.5-android-arm64.apk"
     },
     {
       "platform": "Android x64",
       "note": "安卓模拟器 / x86 设备（APK 安装包）",
-      "size": "163.2 MB",
-      "hash": "B4CC8F6CB5E069FFA349F39491D99ED12A866B143BC139C01CBBDC2F21A2794B94585DB422601FCA6111CD17429B5B9B2A9420925F7630E40E892D009EEBA011",
-      "url": "https://stk.sectl.cn/d/SecRandom/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v3.0.0-alpha.2/SecRandom-v3.0.0-alpha.2-android-x64.apk"
+      "size": "167.8 MB",
+      "hash": "DD03EC79D9FDED6C6D67EE73B048013944ACE883872E9A8239BBD2904AD7A0EDCB3524434BDCB9199E55858883BF90166F044DA9DF5894FC6D8CCB8B5686D005",
+      "url": "https://ghproxy.sectl.top/https://github.com/SECTL/SecRandom/releases/download/v3.1.5/SecRandom-v3.1.5-android-x64.apk"
     },
     {
       "platform": "全部平台 / 更多版本",
-      "note": "网页：镜像目录（含 iOS、便携轻量版等全部文件）。GitHub 原站：github.com/SECTL/SecRandom/releases",
-      "url": "https://stk.sectl.cn/SecRandom/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v3.0.0-alpha.2/"
+      "note": "网页：GitHub Releases（含 iOS、便携轻量版等全部文件）",
+      "url": "https://github.com/SECTL/SecRandom/releases/tag/v3.1.5"
     }
   ],
   "sort": 8,
-  "维护备注": "信息采集于 2026-09-14。官网 https://secrandom.sectl.top/；GitHub SECTL/SecRandom（GPL-3.0，默认分支 master）。版本号 v3.0.0-alpha.2 为 2026-08-16 发布的 prerelease；撰写时最新正式版为 v2.3.100（2026-06-27）。下载链接 = 思拓创联 GitHub 镜像源（stk.sectl.cn，OpenList 网盘，上游为 ghproxy.sectl.top），形式 https://stk.sectl.cn/d/SecRandom/思拓创联 Gihub 镜像源/<tag>/<文件名>；「/d/」是必需的下载端点，不带 /d/ 会返回网盘网页壳。镜像根目录 /SecRandom/思拓创联 Gihub 镜像源/ 下有 v1.3.0 起的全部历史版本；/SecRandom/服务器分发/ 是另一套分发目录。体积与 SHA512 取自官方 SecRandom-update-manifest.json；若版本升级，改 TAG 并重新取 manifest 即可。图标取自仓库 SecRandom/Assets/AppLogo.png。注意目录名里「Gihub」是官方拼写（非 GitHub），勿改。"
+  "维护备注": "信息采集于 2026-10-11。官网 https://secrandom.sectl.top/；GitHub SECTL/SecRandom（GPL-3.0，默认分支 master）。站内版本 v3.1.5 为 2026-10-07 发布的正式版。下载链接 = SECTL 官方 GitHub 加速 ghproxy.sectl.top（形式 https://ghproxy.sectl.top/https://github.com/SECTL/SecRandom/releases/download/<tag>/<文件名>，直连 GitHub 实时同步）。⚠️ 思拓创联镜像 stk.sectl.cn（OpenList，目录 /SecRandom/思拓创联 Gihub 镜像源/）为人工/滞后同步，2026-10-11 时只到 v3.0.0，切回镜像前先核对它是否已收录目标 tag；「/d/」是镜像的下载端点，不带会返回网页壳；目录名「Gihub」是官方拼写，勿改。体积与 SHA512 取自官方 SecRandom-update-manifest.json（GitHub release 资产，其 sha256 已实测经 ghproxy 通道下载校验一致）；若版本升级，改 TAG 并重新取 manifest 即可。图标取自仓库 SecRandom/Assets/AppLogo.png。"
 }
