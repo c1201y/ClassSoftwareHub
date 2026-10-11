@@ -1,0 +1,43 @@
+{
+  "_提交时间": "2026-10-11T11:49:39.445Z",
+  "_原始ID冲突": false,
+  "id": "keystats",
+  "name": "keyStats",
+  "icon": "https://avatars.githubusercontent.com/u/62830430?v=4",
+  "category": "other",
+  "tagline": "Keyboard & Mouse Stats for macOS/Windows",
+  "description": "Keyboard & Mouse Stats for macOS/Windows",
+  "version": "v1.54",
+  "size": "",
+  "system": "Windows / macOS",
+  "website": "https://keystats.vercel.app",
+  "github": "https://github.com/debugtheworldbot/keyStats",
+  "downloads": [
+    {
+      "platform": "其他 XML",
+      "note": "appcast.xml",
+      "size": "795 B",
+      "url": "https://github.com/debugtheworldbot/keyStats/releases/download/v1.54/appcast.xml"
+    },
+    {
+      "platform": "Windows 压缩包",
+      "note": "KeyStats-Windows-1.54.zip",
+      "size": "4.6 MB",
+      "url": "https://github.com/debugtheworldbot/keyStats/releases/download/v1.54/KeyStats-Windows-1.54.zip"
+    },
+    {
+      "platform": "macOS（磁盘映像）",
+      "note": "KeyStats.dmg",
+      "size": "4.0 MB",
+      "url": "https://github.com/debugtheworldbot/keyStats/releases/download/v1.54/KeyStats.dmg"
+    },
+    {
+      "platform": "其他 压缩包",
+      "note": "KeyStats.zip",
+      "size": "3.6 MB",
+      "url": "https://github.com/debugtheworldbot/keyStats/releases/download/v1.54/KeyStats.zip"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAxQ2xoY3JmeDRpTXo3eWhk\nb2VSZUR1QW9uMUV6YU9EL3F3SndJTElXTG5VClBZY1lUZnMzUkZQbTBoSlJnN3cz\nOWhIekdobFZKU3dnejZBaDJkZTl1WG8KLS0tIEEzU09MMUVSNk9UaGVmN1pUNFdZ\nRHg1c1doZFJEWXFHRGZxekNKRE5ORHMKeH/kQlX0NjmFqm5xxbk9dGvHxEy5y66J\nY9JZdfTdAViyu1B19VpfqLGe\n-----END AGE ENCRYPTED FILE-----"
+}
