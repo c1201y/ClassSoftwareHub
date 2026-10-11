@@ -1,7 +1,7 @@
 {
   "id": "VirusDetector",
   "name": "反银狐病毒浏览器插件VirusDetector",
-  "icon": "https://avatars.githubusercontent.com/u/238968503?s=60&v=4",
+  "icon": "https://cdn.jsdelivr.net/gh/Lolitide/VirusDetector@main/icons/icon128.png",
   "category": "system",
   "tagline": "检测网页是否含银狐木马的浏览器插件",
   "description": "由 B 站 UP 主「酪酪肽酪酪」制作的浏览器插件，用来检测当前网页是否被植入银狐木马病毒，并提示正确的官方网址，防止老师从假冒站点下载到木马安装包，向黑产网页宣战！",

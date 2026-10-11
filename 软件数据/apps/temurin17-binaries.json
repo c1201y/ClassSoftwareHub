@@ -1,7 +1,7 @@
 {
   "id": "temurin17-binaries",
   "name": "Eclipse Temurin 17（Java 运行环境）",
-  "icon": "https://avatars.githubusercontent.com/u/67165372?v=4",
+  "icon": "https://adoptium.net/images/adoptium-icon.png",
   "category": "system",
   "tagline": "免费开源的 Java 17 运行环境（OpenJDK 官方构建）",
   "description": "Eclipse Temurin（原 AdoptOpenJDK）是 Eclipse 基金会维护的免费 OpenJDK 构建，这里收录的是 Java 17（长期支持版）的 Windows x64 运行环境。需要 Java 17 才能跑起来的程序（部分 Minecraft 服务端、教学软件、开源小工具）装上它就能用。\n注意：这里只有 JRE（运行环境），不含 JDK（开发工具包）；要写 Java 代码请去 Adoptium 官网下 JDK。",
