@@ -1,0 +1,49 @@
+{
+  "_提交时间": "2026-10-11T13:50:28.463Z",
+  "_原始ID冲突": false,
+  "id": "musicfree",
+  "name": "MusicFree移动端",
+  "icon": "https://musicfree.catcat.work/",
+  "category": "other",
+  "tagline": "插件化、定制化、无广告的免费音乐播放器",
+  "description": "插件化、定制化、无广告的免费音乐播放器\n需要导入音源",
+  "version": "v0.6.2",
+  "size": "",
+  "system": "Android",
+  "website": "https://musicfree.catcat.work",
+  "github": "https://github.com/maotoumao/MusicFree",
+  "downloads": [
+    {
+      "platform": "Android ARM64（APK）",
+      "note": "app-arm64-v8a-release.apk",
+      "size": "17.4 MB",
+      "url": "https://github.com/maotoumao/MusicFree/releases/download/v0.6.2/app-arm64-v8a-release.apk"
+    },
+    {
+      "platform": "Android（APK）",
+      "note": "app-armeabi-v7a-release.apk",
+      "size": "16.8 MB",
+      "url": "https://github.com/maotoumao/MusicFree/releases/download/v0.6.2/app-armeabi-v7a-release.apk"
+    },
+    {
+      "platform": "Android 通用（APK）",
+      "note": "app-universal-release.apk",
+      "size": "30.2 MB",
+      "url": "https://github.com/maotoumao/MusicFree/releases/download/v0.6.2/app-universal-release.apk"
+    },
+    {
+      "platform": "Android x86（APK）",
+      "note": "app-x86-release.apk",
+      "size": "17.8 MB",
+      "url": "https://github.com/maotoumao/MusicFree/releases/download/v0.6.2/app-x86-release.apk"
+    },
+    {
+      "platform": "Android x64（APK）",
+      "note": "app-x86_64-release.apk",
+      "size": "17.5 MB",
+      "url": "https://github.com/maotoumao/MusicFree/releases/download/v0.6.2/app-x86_64-release.apk"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB5LzdTaHFza3gwMXNEdFRz\nZ3QxVjB6RkxoRWp4SElheUh0K2RMNm5qM1dZCnJ4OEtOYzZmZDNtSE92S0hCQzU2\ncDBLOFhBZ0VBa2JPbzZxdjhSbE13SVEKLS0tIG5wNVh5Mk5hbk9WTklDWXpucE9l\nWGlPcnhudFBEVnd6Ymhsb21iaGNqL2sKkG9cq6MX/Qleu67FWMqYOT5XImpJ+VJK\nUtBj9HPhp57H2FV6kUBPrI8dMcOd4Qs=\n-----END AGE ENCRYPTED FILE-----"
+}
