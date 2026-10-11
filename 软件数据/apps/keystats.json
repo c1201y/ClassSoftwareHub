@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-11T11:49:39.445Z",
-  "_原始ID冲突": false,
   "id": "keystats",
   "name": "keyStats",
   "icon": "https://avatars.githubusercontent.com/u/62830430?v=4",
@@ -38,6 +36,5 @@
       "url": "https://github.com/debugtheworldbot/keyStats/releases/download/v1.54/KeyStats.zip"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAxQ2xoY3JmeDRpTXo3eWhk\nb2VSZUR1QW9uMUV6YU9EL3F3SndJTElXTG5VClBZY1lUZnMzUkZQbTBoSlJnN3cz\nOWhIekdobFZKU3dnejZBaDJkZTl1WG8KLS0tIEEzU09MMUVSNk9UaGVmN1pUNFdZ\nRHg1c1doZFJEWXFHRGZxekNKRE5ORHMKeH/kQlX0NjmFqm5xxbk9dGvHxEy5y66J\nY9JZdfTdAViyu1B19VpfqLGe\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
