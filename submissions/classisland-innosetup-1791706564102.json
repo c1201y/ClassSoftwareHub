@@ -1,0 +1,26 @@
+{
+  "_提交时间": "2026-10-11T08:16:04.102Z",
+  "_原始ID冲突": false,
+  "id": "classisland-innosetup",
+  "name": "ClassIsland",
+  "icon": "https://res.classisland.tech/logo.svg",
+  "category": "teaching",
+  "tagline": "用InnoSetup制作的CI安装包…",
+  "description": "用InnoSetup制作的CI安装包，CI是一款功能强、可定制、跨平台，适用于班级多媒体屏幕的课表信息显示工具，可以一目了然地显示各种信息。",
+  "version": "2.1.0.1",
+  "size": "100MB+",
+  "system": "Windows10/11 (x64)",
+  "website": "https://classisland.tech",
+  "github": "https://github.com/1312333/ClassIsland",
+  "downloads": [
+    {
+      "platform": "Windows x64安装版（自带.NET运行时）",
+      "note": ".NET版本可能不是最新",
+      "size": "108 MB",
+      "hash": "db0146a014c78f39dbf9b7e6946776bf15469980255d19b7efa316407657c439",
+      "url": "https://github.com/1312333/ClassIsland/releases"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBJNlpKVS9lYWF2Y0xZZnUv\nZ3hyTW9vUDFidzE1QVgrb2pPeW1YL1IrWVdFCkpLL0c1YzJXS05mMmNSNHRqSG5l\nUUFLTHVsRnRUaEFQcU9DVlk5M1JLd2cKLS0tIFJIaWdUdUNTeXZxWnFpV0hVbnJi\nMGpyS2tDSmJUN2VPd0ErdVFaUndIUnMKmfG+kJiWFSrZwIxMgh1CJL0ZJIJyYau8\nJExb02Td839j+SbVrIjHWy3nt4E8\n-----END AGE ENCRYPTED FILE-----"
+}
