@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-07T05:52:44.073Z",
-  "_原始ID冲突": false,
   "id": "bilibilidownloader",
   "name": "BilibiliDownloader",
   "icon": "https://avatars.githubusercontent.com/u/309121009?v=4",
@@ -44,6 +42,5 @@
       "url": "https://github.com/colever-Beep/BilibiliDownloader/releases/download/v2.0.0/BilibiliDownloader-Setup-2.0.0.exe"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA2TW9ObkVJcUZhWVpKZitN\nekxiK1NIYnd1N2V3d0ExSWNraWk4RlFzUzNRClBRZDFMak5NTXQ0WWVpU3luME5P\nekFJalJtSlhPd21Ca1NjblV3N3YvYjQKLS0tIDlDbk1HajFGVElDL3djWTNFbmFF\nLzRkeVV4dVRJSnczWHo5K25iMVloU2MKrivUghyC6zaJUEfgyfBq83gxmU1nHid8\nFnkAiiVWDd3rSxEmlr9Tn9xz\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
