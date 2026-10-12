@@ -1,0 +1,39 @@
+{
+  "_提交时间": "2026-10-12T05:58:58.977Z",
+  "_原始ID冲突": false,
+  "id": "wiliwili",
+  "name": "wiliwili",
+  "icon": "https://avatars.githubusercontent.com/u/16631584?v=4",
+  "category": "other",
+  "tagline": "第三方B站客户端，目前可以运行在PC全平台、PSVita、PS4 、Xbox 和 Nintendo Switch上",
+  "description": "第三方B站客户端，目前可以运行在PC全平台、PSVita、PS4 、Xbox 和 Nintendo Switch上",
+  "version": "v1.6.0",
+  "size": "",
+  "system": "Windows / macOS / Linux",
+  "website": "https://xfangfang.github.io/wiliwili",
+  "github": "https://github.com/xfangfang/wiliwili",
+  "downloads": [
+    {
+      "platform": "wiliwili-Windows-arm64.zip",
+      "url": "https://github.com/xfangfang/wiliwili/releases/download/v1.6.0/wiliwili-Windows-arm64.zip"
+    },
+    {
+      "platform": "wiliwili-Windows-x86-OldGPU.zip",
+      "url": "https://github.com/xfangfang/wiliwili/releases/download/v1.6.0/wiliwili-Windows-x86-OldGPU.zip"
+    },
+    {
+      "platform": "wiliwili-Windows-x86.zip",
+      "url": "https://github.com/xfangfang/wiliwili/releases/download/v1.6.0/wiliwili-Windows-x86.zip"
+    },
+    {
+      "platform": "wiliwili-Windows-x86_64-OldGPU.zip",
+      "url": "https://github.com/xfangfang/wiliwili/releases/download/v1.6.0/wiliwili-Windows-x86_64-OldGPU.zip"
+    },
+    {
+      "platform": "wiliwili-Windows-x86_64.zip",
+      "url": "https://github.com/xfangfang/wiliwili/releases/download/v1.6.0/wiliwili-Windows-x86_64.zip"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBSRWJBaGEzWDkrRzV3S2FE\ndWtBN3ByeTIxeC9GQ2pVNGhleTg3RUR1UkJrCnRuZGlXVklDN0pUQWRkVm1ZWm5B\nM0U1T2FINjZQcDFyc25XYXhVQW1HQVkKLS0tIFNTWCtxUVZWb295b1hlVlAycmNa\nb1ZCUVlDTENDOWc1c3RMYVlYU1ZVTkUKbQxwyBrcXc+bPBid0KojJP8uo0Bq8pKe\ni8U9SwVnjVYDKX28BvnW\n-----END AGE ENCRYPTED FILE-----"
+}
