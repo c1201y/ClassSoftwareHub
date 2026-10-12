@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-11T13:52:57.722Z",
-  "_原始ID冲突": false,
   "id": "bbplayer",
   "name": "BBPlayer",
   "icon": "https://bbplayer.roitium.com/icon.png",
@@ -38,6 +36,5 @@
       "url": "https://github.com/bbplayer-app/BBPlayer/releases/download/v2.7.0/bbplayer-v2.7.0-prod-x86_64.apk"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBybnlnRHJtdklpLzJYWERE\nZ0M2Y3RqMDdTcGs4d1pSdWYxRFQ1MkRUeTE4CkM1TnR3YU1PQnB1blI4NS9NdlNQ\nSmhkWXB0V0RkQXBlNjVMeUxxUFhoeEkKLS0tIDBuam1qdnB0S0QwWE92TGx0WjFY\nSTBDeU5sd3p6MEdFRHNPYzZEU0s0L0EK2Rq5Z7dwy9/nPWnpD7gS8exwwX1UBRQO\nnnleJKFBSf0TvDVQdLt7JvNrXrGNr9Y=\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
