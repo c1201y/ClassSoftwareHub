@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-11T13:50:28.463Z",
-  "_原始ID冲突": false,
   "id": "musicfree",
   "name": "MusicFree移动端",
   "icon": "https://musicfree.catcat.work/",
@@ -44,6 +42,5 @@
       "url": "https://github.com/maotoumao/MusicFree/releases/download/v0.6.2/app-x86_64-release.apk"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB5LzdTaHFza3gwMXNEdFRz\nZ3QxVjB6RkxoRWp4SElheUh0K2RMNm5qM1dZCnJ4OEtOYzZmZDNtSE92S0hCQzU2\ncDBLOFhBZ0VBa2JPbzZxdjhSbE13SVEKLS0tIG5wNVh5Mk5hbk9WTklDWXpucE9l\nWGlPcnhudFBEVnd6Ymhsb21iaGNqL2sKkG9cq6MX/Qleu67FWMqYOT5XImpJ+VJK\nUtBj9HPhp57H2FV6kUBPrI8dMcOd4Qs=\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
