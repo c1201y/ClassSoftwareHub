@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-11T08:16:04.102Z",
-  "_原始ID冲突": false,
   "id": "classisland-innosetup",
   "name": "ClassIsland",
   "icon": "https://res.classisland.tech/logo.svg",
@@ -21,6 +19,5 @@
       "url": "https://github.com/1312333/ClassIsland/releases"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBJNlpKVS9lYWF2Y0xZZnUv\nZ3hyTW9vUDFidzE1QVgrb2pPeW1YL1IrWVdFCkpLL0c1YzJXS05mMmNSNHRqSG5l\nUUFLTHVsRnRUaEFQcU9DVlk5M1JLd2cKLS0tIFJIaWdUdUNTeXZxWnFpV0hVbnJi\nMGpyS2tDSmJUN2VPd0ErdVFaUndIUnMKmfG+kJiWFSrZwIxMgh1CJL0ZJIJyYau8\nJExb02Td839j+SbVrIjHWy3nt4E8\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
