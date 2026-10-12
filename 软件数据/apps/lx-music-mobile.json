@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-11T13:47:07.263Z",
-  "_原始ID冲突": false,
   "id": "lx-music-mobile",
   "name": "Lx Music移动端",
   "icon": "https://lxmusic.toside.cn/img/logo.svg",
@@ -44,6 +42,5 @@
       "url": "https://github.com/lyswhut/lx-music-mobile/releases/download/v1.9.1/lx-music-mobile-v1.9.1-x86_64.apk"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBvSGFodzFSc3dWUW16b2Zs\nck11WHlpeVpXTVZIRzhqVjVIblViclA4UkhJClhydmpTYTRqSmQ5Z3JZa0xGWFNY\nTjhZK3JITFpPditMcCtXZ1hBdlRhVGMKLS0tIDVRa05nS3A1blBRdmMzbGVNRllm\nTmxHbE9uQStlNFJEaERsdG1OMHZMT28KxYfy91xR4R+c6nQgYR4Mk+VG7FhLk7qg\nZi2+TC/2eknxfjPHFNK/iaHNL3fwL/U=\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
