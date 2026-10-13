@@ -1,0 +1,26 @@
+{
+  "_提交时间": "2026-10-13T05:05:56.058Z",
+  "_原始ID冲突": false,
+  "id": "azusa-player-mobile",
+  "name": "azusa-player-mobile",
+  "icon": "https://avatars.githubusercontent.com/u/106490582?v=4",
+  "category": "other",
+  "tagline": "移动端的抽象b站音乐播放器",
+  "description": "移动端的抽象b站音乐播放器",
+  "version": "dev-build-2026-10-12",
+  "size": "",
+  "system": "Android",
+  "website": "https://azusa-player-mobile.vercel.app/",
+  "github": "https://github.com/lovegaoshi/azusa-player-mobile",
+  "downloads": [
+    {
+      "platform": "Android ARM64（APK）",
+      "note": "app-arm64-v8a-release.apk",
+      "size": "89.9 MB",
+      "url": "https://github.com/lovegaoshi/azusa-player-mobile/releases/download/dev-build-2026-10-12/app-arm64-v8a-release.apk"
+    }
+  ],
+  "sort": 99,
+  "notice": "当前收录的是官方预发布版本 dev-build-2026-10-12（Beta / Alpha），可能不够稳定；建议到 GitHub Releases 下载最新正式版。",
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBTQ21jVklYMDV2UWwyNWRj\nczF4ajd3eGJlR3liMUI0Nkp3Z0hPNVFROHpNCkRKY0dNSE1PTEYxNU9BK3lMeVdX\nYVN5dzg4Y3pON0lycHRiV0tsUjltZncKLS0tIFlsZlhtWVpQbUg3QlhsN3Z6ZEM0\nTUxzZ2E1SSt6eWQxTHpMQUxhQU83clUKtnSA5s3OMaXGRgrAXu10VgNwNXK5WyQx\ngOTFr6Zhnqe/xeOry3tesTTDzvrahNM=\n-----END AGE ENCRYPTED FILE-----"
+}
