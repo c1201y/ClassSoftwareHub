@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-13T16:22:21.516Z",
-  "_原始ID冲突": false,
   "id": "klite",
   "name": "K-Lite",
   "icon": "https://www.codecguide.com/mpc_logo.png",
@@ -37,6 +35,5 @@
       "url": "https://files2.codecguide.com/K-Lite_Codec_Pack_2005_Basic.exe"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBJZlIraUVRTndTeDlXV1dZ\nZ3dLY0tqVW5IdGNvcEZmUGg4K09icEVFbUVrCkhzN2QzZk5aNW8zRTk0YWJ4SlZG\nOHFDQ2tscVdLYTlpeGtnTEg1WHVOZ2MKLS0tIGNZSzlkRTZGajRWUlhjQjFwK2V3\nR2RzNTd5TnFGUnlQNzdjYUpnaFpqR1EKI/lqpvLSXI10fqbhP+8kwemropfIdPNd\nx31olgVEEyphZ7G8JmCtMbcJvAZtKq2AQTiz8k8I/Csy\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
