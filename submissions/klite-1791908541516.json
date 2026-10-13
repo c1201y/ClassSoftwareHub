@@ -1,0 +1,42 @@
+{
+  "_提交时间": "2026-10-13T16:22:21.516Z",
+  "_原始ID冲突": false,
+  "id": "klite",
+  "name": "K-Lite",
+  "icon": "https://www.codecguide.com/mpc_logo.png",
+  "category": "system",
+  "tagline": "视频播放缺少HEVC支持的可以试试",
+  "description": "扩展系统或播放器的解码能力。Windows 系统本身支持的音视频格式有限，安装 K-Lite 后，你的播放器（包括系统自带的）就能播放几乎所有主流及不常见的格式，如 MKV、MP4、AVI、FLV、HEVC (H.265) 等",
+  "version": "",
+  "size": "",
+  "system": "Windows",
+  "website": "https://www.codecguide.com/",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "官方\tServer 1 标准版",
+      "note": "通常使用标准版即可",
+      "url": "https://files2.codecguide.com/K-Lite_Codec_Pack_2005_Standard.exe"
+    },
+    {
+      "platform": "官方\tServer 2 标准版",
+      "note": "通常使用标准版即可",
+      "url": "https://files3.codecguide.com/K-Lite_Codec_Pack_2005_Standard.exe"
+    },
+    {
+      "platform": "官方完整版",
+      "url": "https://files2.codecguide.com/K-Lite_Codec_Pack_2005_Full.exe"
+    },
+    {
+      "platform": "官方组合版",
+      "url": "https://files2.codecguide.com/K-Lite_Codec_Pack_2005_Mega.exe"
+    },
+    {
+      "platform": "官方基础版",
+      "note": "最精简的版本，包含播放主流格式所需的基本解码器，但不附带媒体播放器，适合已有播放器、只需解码支持的用户。",
+      "url": "https://files2.codecguide.com/K-Lite_Codec_Pack_2005_Basic.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBJZlIraUVRTndTeDlXV1dZ\nZ3dLY0tqVW5IdGNvcEZmUGg4K09icEVFbUVrCkhzN2QzZk5aNW8zRTk0YWJ4SlZG\nOHFDQ2tscVdLYTlpeGtnTEg1WHVOZ2MKLS0tIGNZSzlkRTZGajRWUlhjQjFwK2V3\nR2RzNTd5TnFGUnlQNzdjYUpnaFpqR1EKI/lqpvLSXI10fqbhP+8kwemropfIdPNd\nx31olgVEEyphZ7G8JmCtMbcJvAZtKq2AQTiz8k8I/Csy\n-----END AGE ENCRYPTED FILE-----"
+}
