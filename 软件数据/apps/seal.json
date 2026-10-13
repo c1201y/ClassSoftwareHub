@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-13T05:01:03.142Z",
-  "_原始ID冲突": false,
   "id": "seal",
   "name": "Seal",
   "icon": "https://github.com/JunkFood02/Seal/blob/main/fastlane/metadata/android/en-US/images/icon.png",
@@ -44,6 +42,5 @@
       "url": "https://github.com/JunkFood02/Seal/releases/download/v1.13.1/Seal-1.13.1-x86_64-release.apk"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBrd1duMGdLQ3dtcHR5dDAv\nQzZ6OEYxVk9TVGxpbFRYbm1TalEvWDFuYkZBCnBqZ0FFcVEvTWVGQ2R4VDlFOGly\nVndlMGx1NXpGWXovM3plNUJjdVNhK2MKLS0tIENmYjYwZzFQT1Z0NW4vSWRXRzRS\nemNSUzBCRjFIYmhOUDVPYW9HQUp0NlEKHc1sgXW5sRemw2DWLlKbbDXRpV+7BD0D\n52QkDtxDIBhcWn/KrF9Hc2Y7ADkU\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
