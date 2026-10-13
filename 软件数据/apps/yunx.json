@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-13T04:57:09.103Z",
-  "_原始ID冲突": false,
   "id": "yunx",
   "name": "YunX",
   "icon": "https://github.com/CYQawa/YunX/blob/master/app/src/main/res/drawable/icon.png",
@@ -20,6 +18,5 @@
       "url": "https://github.com/CYQawa/YunX/releases/download/v1.2.9/YunX_release_1.2.9.apk"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBUUkFWK2Jsd2hXbjM4V2ZG\nSEtTY3g2R29WZll1ekNScURsTzJHaHVTTlVNCklhRW1EYnFkclB3MXp3MmZVRENh\ndUhDZ2p4eDMweGErTnFtOEltbGVpK1UKLS0tIC83TjNKTWN2RFRTdEl1bjd6emdL\nTnJqYzdJMVdiK2N6b3AzSUt2V3BZYjgKAve/PFhACHLCDnqmemt6nNq6mMuPu5qk\nTAlIDOm4LtAcMZjZ8d+uiq4kuHVr\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
