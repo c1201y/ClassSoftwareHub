@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-14T04:51:02.557Z",
-  "_原始ID冲突": false,
   "id": "dsh-desktop",
   "name": "dsh-desktop",
   "icon": "https://avatars.githubusercontent.com/u/286827603?v=4",
@@ -44,6 +42,5 @@
       "url": "https://github.com/anywhere-labs/dsh-desktop/releases/download/v2.0.17-next/DSH-NEXT-2.0.17-next-x86_64.AppImage"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBvZ25IZVVsZ3FCWnJMaHE1\nNXkzUC9ONjIzV1g4eTJGUTVzQmhHQktINEVvCkV3eHdSRzFZL3BxOE1ZeG1wbHpq\neFlBT2pVN003YU9JVTc3NmFxSytRWGsKLS0tIEYzTmNTOVhtd29uWFBqaTJrOUpo\nd283eEJWbnNlYkNXcFVleHYwc0JNSjQKzXsZlofMubraoToej8bDUKzpXxypRoSI\nHz0QmwL1zAkTCVnoabL8K2yS\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
