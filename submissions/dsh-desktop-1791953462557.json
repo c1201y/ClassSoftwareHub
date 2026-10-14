@@ -1,0 +1,49 @@
+{
+  "_提交时间": "2026-10-14T04:51:02.557Z",
+  "_原始ID冲突": false,
+  "id": "dsh-desktop",
+  "name": "dsh-desktop",
+  "icon": "https://avatars.githubusercontent.com/u/286827603?v=4",
+  "category": "other",
+  "tagline": "为 DeepSeek Harness (DSH)…",
+  "description": "为 DeepSeek Harness (DSH) 插件生态打造的现代化桌面端解决方案。万物皆「插件」，桌面本身也是「插件」。",
+  "version": "v2.0.17-next",
+  "size": "",
+  "system": "Windows / macOS / Linux",
+  "website": "https://dshdesktop.cn",
+  "github": "https://github.com/anywhere-labs/dsh-desktop",
+  "downloads": [
+    {
+      "platform": "Linux x64（.deb）",
+      "note": "DSH-NEXT-2.0.17-next-amd64.deb",
+      "size": "249 MB",
+      "url": "https://github.com/anywhere-labs/dsh-desktop/releases/download/v2.0.17-next/DSH-NEXT-2.0.17-next-amd64.deb"
+    },
+    {
+      "platform": "Linux x64 压缩包",
+      "note": "DSH-NEXT-2.0.17-next-linux-x64.tar.gz",
+      "size": "323 MB",
+      "url": "https://github.com/anywhere-labs/dsh-desktop/releases/download/v2.0.17-next/DSH-NEXT-2.0.17-next-linux-x64.tar.gz"
+    },
+    {
+      "platform": "macOS（磁盘映像）",
+      "note": "DSH-NEXT-2.0.17-next-universal.dmg",
+      "size": "508 MB",
+      "url": "https://github.com/anywhere-labs/dsh-desktop/releases/download/v2.0.17-next/DSH-NEXT-2.0.17-next-universal.dmg"
+    },
+    {
+      "platform": "Windows x64 安装版",
+      "note": "DSH-NEXT-2.0.17-next-x64-Setup.exe",
+      "size": "266 MB",
+      "url": "https://github.com/anywhere-labs/dsh-desktop/releases/download/v2.0.17-next/DSH-NEXT-2.0.17-next-x64-Setup.exe"
+    },
+    {
+      "platform": "Linux x64（AppImage）",
+      "note": "DSH-NEXT-2.0.17-next-x86_64.AppImage",
+      "size": "330 MB",
+      "url": "https://github.com/anywhere-labs/dsh-desktop/releases/download/v2.0.17-next/DSH-NEXT-2.0.17-next-x86_64.AppImage"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBvZ25IZVVsZ3FCWnJMaHE1\nNXkzUC9ONjIzV1g4eTJGUTVzQmhHQktINEVvCkV3eHdSRzFZL3BxOE1ZeG1wbHpq\neFlBT2pVN003YU9JVTc3NmFxSytRWGsKLS0tIEYzTmNTOVhtd29uWFBqaTJrOUpo\nd283eEJWbnNlYkNXcFVleHYwc0JNSjQKzXsZlofMubraoToej8bDUKzpXxypRoSI\nHz0QmwL1zAkTCVnoabL8K2yS\n-----END AGE ENCRYPTED FILE-----"
+}
