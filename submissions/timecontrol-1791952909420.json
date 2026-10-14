@@ -1,0 +1,43 @@
+{
+  "_提交时间": "2026-10-14T04:41:49.420Z",
+  "_原始ID冲突": false,
+  "id": "timecontrol",
+  "name": "TimeControl",
+  "icon": "https://cshapi.132614.xyz/api/icon?k=icon%2F2026%2F10%2Fmv7meka8-wn86f4-time.webp",
+  "category": "teaching",
+  "tagline": "时间小工具 - 一个支持高度自定义的时钟挂件",
+  "description": "时间小工具 - 一个支持高度自定义的时钟挂件\n支持WinXP-Win11+",
+  "version": "1.1.29.26102",
+  "size": "",
+  "system": "Windows",
+  "website": "",
+  "github": "https://github.com/cjhdevact/TimeControl",
+  "downloads": [
+    {
+      "platform": "组策略 WinXP ADM",
+      "note": "TimeControl.adm",
+      "size": "6.7 KB",
+      "url": "https://github.com/cjhdevact/TimeControl/releases/download/1.1.29.26102/TimeControl.adm"
+    },
+    {
+      "platform": "组策略（Windows Vista+）",
+      "note": "TimeControlAdmxs.exe",
+      "size": "409 KB",
+      "url": "https://github.com/cjhdevact/TimeControl/releases/download/1.1.29.26102/TimeControlAdmxs.exe"
+    },
+    {
+      "platform": "ARM64 压缩包",
+      "note": "TimeControlv5-1.1.29.26102-ARM64-Bin.7z",
+      "size": "155 KB",
+      "url": "https://github.com/cjhdevact/TimeControl/releases/download/1.1.29.26102/TimeControlv5-1.1.29.26102-ARM64-Bin.7z"
+    },
+    {
+      "platform": "x64 x86 安装版本",
+      "note": "TimeControlv5-1.1.29.26102-Bin.7z",
+      "size": "307 KB",
+      "url": "https://github.com/cjhdevact/TimeControl/releases/download/1.1.29.26102/TimeControlv5-1.1.29.26102-Bin.7z"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBVQzJSeGFBUnJ4Tmg5Tmly\naWcwcDgzUTVuU0d0VzJ3RG1rTERqbm9iZms4CnpHTFoyS0U3dGUxVFhJQXNKMkdu\nU0VMY2VJcHFVS1Y3NURLSEo0RXdTdGMKLS0tIDYxa1RJSmdvTnpyL0l0a0lZN2U0\nNkV2K1lkWjVTbitkZGdZcDNZZDJJNjAKRWyRn9b6pn7w25WzOltAMpgp5BLX69ry\nL+zBtToyk6EKS0SjAyA927LyRwmSJSfrrb/K\n-----END AGE ENCRYPTED FILE-----"
+}
