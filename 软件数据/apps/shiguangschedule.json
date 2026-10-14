@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-14T04:48:49.317Z",
-  "_原始ID冲突": false,
   "id": "shiguangschedule",
   "name": "拾光课程表",
   "icon": "https://avatars.githubusercontent.com/u/332142885?v=4",
@@ -44,6 +42,5 @@
       "url": "https://github.com/ShiGuangSchedule/shiguangschedule/releases/download/v2.1.0/shiguangschedule-v2.1.0-windows-x64-release.msi"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBUdlNWbnNoR2pkd0hsY3lt\nSmhTV0UxN0JFZTVDUk5BYmFCdEY3bDVnaEc4CnMrdWJLM0U3VHJlMmNNM0QzcThh\nbXlxRlNxU1hTcVg5cGZVOFNWK3J2SXcKLS0tIGJlU1hZMzhXQ21idUFHbkwyMm9j\nQm5zZU0xUDJKOFo5WW5YRlFZcmdsc1kKnh0mwtCT4Q9a+gJnEKKHYuFTpFjjUsbN\nojj8Mgwcx4ZNeR00irzQ6ucGeANt2+U=\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
