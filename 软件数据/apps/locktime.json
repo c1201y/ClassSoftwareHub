@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-14T04:43:12.549Z",
-  "_原始ID冲突": false,
   "id": "locktime",
   "name": "LockTime",
   "icon": "https://cshapi.132614.xyz/api/icon?k=icon%2F2026%2F10%2Fmv7mih7b-8qcbob-time.webp",
@@ -20,6 +18,5 @@
       "url": "https://github.com/cjhdevact/LockTime/releases/download/2.0.2.25013/LockTime-2.0.2.24013-Bin.7z"
     }
   ],
-  "sort": 5,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBBQzJJTXBMODdZOTZ5Qi85\naDA5QVhCY2h0bUphZ2N2KyswaTlWNUNOWTNrCjJoK1N3SzhCWlkydVI0aTZCSXJJ\nQ2RjWGNrZTkzYzZhbkFUQnAyQVFuVHcKLS0tIDZ1cW1GbTBBWkZ4c29BWTJTc2xl\nZW9ua3hGZ01yUTlWM2ZNeVVuSUZYTTgKTaOht3j5RWuzoRB3RWqgGKfQjO+vToOq\ncKIsyDtLz2PzlDdWtzXCE7KnrXR71doAmWfP\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 5
 }
