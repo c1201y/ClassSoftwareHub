@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-15T11:47:04.284Z",
-  "_原始ID冲突": false,
   "id": "starpie",
   "name": "StarPie",
   "icon": "https://avatars.githubusercontent.com/u/329320540?v=4",
@@ -33,6 +31,5 @@
     }
   ],
   "sort": 99,
-  "notice": "当前收录的是官方预发布版本 v1.8.0-beta.7（Beta / Alpha），可能不够稳定；建议到 GitHub Releases 下载最新正式版。",
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBZV1cwVnRzbkpvSmlrR0ZN\nVDNOd0ZDR09VSmdSZHdadlRWMVQ4WUlJVGdNCnFqYjRqK2M2WG5kVnhHVVB0K3Vs\nWm9TN2c3WXU4UytSMlEvT2J6dGluMjgKLS0tIHMxaVhtMm5YT1E3QjlCbjY0NStF\nQ0Q4NTY0enMyRUhzUlNLUVRaSUphOHcKPn612vn9X4jwjR2YDqgMdWMUX355m0k+\njvOAzWNcXpm1Jd0lRr0q5OMk\n-----END AGE ENCRYPTED FILE-----"
+  "notice": "当前收录的是官方预发布版本 v1.8.0-beta.7（Beta / Alpha），可能不够稳定；建议到 GitHub Releases 下载最新正式版。"
 }
