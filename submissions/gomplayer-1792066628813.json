@@ -1,0 +1,30 @@
+{
+  "_提交时间": "2026-10-15T12:17:08.813Z",
+  "_原始ID冲突": false,
+  "id": "gomplayer",
+  "name": "GOM Player Plus(mefcl)",
+  "icon": "https://ts2.tc.mm.bing.net/th/id/OIP-C.9xxpDrXp0w_Hsl3gAxUu_AHaHa?r=0&dpr=2.5&pid=ImgDetMain&o=7&rm=3",
+  "category": "other",
+  "tagline": "老牌视频播放器，功能强大",
+  "description": "由韩国GOM Labs公司开发的老牌视频播放器，由mefcl做出修改，在视频播放方面游刃有余。",
+  "version": "2.3.93.5363",
+  "size": "30 MB",
+  "system": "Windows 7 以上/64位",
+  "website": "https://www.gomlab.com/en/gomplayer-media-player",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "Windows 安装包（蓝奏云）",
+      "note": "提取码：71y4",
+      "size": "30 MB",
+      "url": "https://mefcl.lanzouw.com/b012zjwyj"
+    },
+    {
+      "platform": "Windows 安装包（123云盘）",
+      "size": "30 MB",
+      "url": "https://www.123pan.com/s/QdiA-Q1pmh.html"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBzK3Zia3lvcHdOek1xZG0r\nalNHTitSYk5uSlB4M1dBSlZ0eTdtRUFLV0dJCkUxZnRudXBtb3JQNzBEQTNrU0pq\nSkV3cXRmQkNsL2pyUDZCT2lPdW1BaVUKLS0tIDNnNytKMFRoQk10b1pJb3ZiSkJX\neG0xOTZSbjYraFVpaDNuV1NsRlNZL1kK8eHt+Cfh/QNRVr7bGdEwkjWW61h9JWzR\nmYhaARZcjkNwcer6R+18jXgcKw5vV54BUA==\n-----END AGE ENCRYPTED FILE-----"
+}
