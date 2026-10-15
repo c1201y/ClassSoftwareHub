@@ -1,0 +1,25 @@
+{
+  "_提交时间": "2026-10-15T09:48:01.492Z",
+  "_原始ID冲突": false,
+  "id": "pyas",
+  "name": "PYAS",
+  "icon": "https://avatars.githubusercontent.com/u/85057800?v=4",
+  "category": "other",
+  "tagline": "一款开源的强大杀毒软件，体积小，占用低",
+  "description": "一款开源的强大杀毒软件，体积小，占用低（较激进，易误杀）",
+  "version": "v3.7.1",
+  "size": "",
+  "system": "Windows",
+  "website": "https://pyas-security.com",
+  "github": "https://github.com/87owo/PYAS",
+  "downloads": [
+    {
+      "platform": "Windows 安装版",
+      "note": "PYAS_Setup.exe",
+      "size": "75.5 MB",
+      "url": "oss://upload/2026/10/mv9cu5u4-884h62-PYAS_Setup.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBCSFZZbEU3MVgwUDF3d01i\neVZ4c1htbHFlbkU0WndMeGVtNDF1NFdITFFRCkpTOE5MSnBYbzlHbG1TMENtMmZO\nSmJxNUgrR1ltR0M5V0ZDNTkyVnFveVUKLS0tICtxRUo2bE8yUjdHK0xHODJhUVNh\nVWRycUZnTERiQ08vTGxrcHY3eTNoWUUKw3LpYnz43ao6i7lJojdHf8SqFsHUegY3\nfgFFtz9rH5iChnTHWv4SNymz\n-----END AGE ENCRYPTED FILE-----"
+}
