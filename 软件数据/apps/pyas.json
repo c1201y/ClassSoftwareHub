@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-15T09:48:42.122Z",
-  "_原始ID冲突": false,
   "id": "pyas",
   "name": "PYAS",
   "icon": "https://avatars.githubusercontent.com/u/85057800?v=4",
@@ -17,9 +15,8 @@
       "platform": "Windows 安装版",
       "note": "PYAS_Setup.exe",
       "size": "75.5 MB",
-      "url": "oss://upload/2026/10/mv9cu5u4-884h62-PYAS_Setup.exe"
+      "url": "oss://releases/2026/10/mv9cu5u4-884h62-PYAS_Setup.exe"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBPaC9iRHZHd2lBWGpQUllu\nZGQyRENNRmgzRzNLajlwNzc2bzlUWTdaS0dVCnp2WFM4bmdMVVdDU1NRdDdSVzFv\nZFpVNlVrN1JwdFFFRWdWSE9TazA5bkEKLS0tIFpaQlRheEthZW13aUVyY2hoNHNF\nLzZXVVRCVEJsM1ZXa0YyeWs0T1h1bjgKhj+EtApd6erC9eBxUnMrtB6U5yfq6uh+\n0tTOumlwLWqnOzisNWXefhfK\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
