@@ -1,0 +1,25 @@
+{
+  "_提交时间": "2026-10-15T11:39:44.084Z",
+  "_原始ID冲突": false,
+  "id": "classtopland",
+  "name": "ClassTopLand",
+  "icon": "https://avatars.githubusercontent.com/u/98873438?v=4",
+  "category": "teaching",
+  "tagline": "一个使用Qt6构建的跨平台桌面课程表与倒计时组件",
+  "description": "一个轻量级的、简易使用的课表显示软件，占用低且轻巧，配置简单，适合在运行CI时占用骤增的白板使用。",
+  "version": "e0b06e6",
+  "size": "41 MB",
+  "system": "Windows",
+  "website": "",
+  "github": "https://github.com/Aero8m/ClassTopLand",
+  "downloads": [
+    {
+      "platform": "Windows x64 安装版",
+      "note": "ClassTopLand-setup_build_e0b06e6-amd64.exe",
+      "size": "41.1 MB",
+      "url": "https://github.com/Aero8m/ClassTopLand/releases/download/e0b06e6/ClassTopLand-setup_build_e0b06e6-amd64.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBpSjNoVHlTa216bzh2Y0lm\nTWdZdEJXMDBPN1p6VnVjcFFQWHh6bWhRVmpRCnpkU0xwVjc5U3FtS0JOK3c0Y3Va\nWVlwYTBPN3dVWkw3N0FMWnlUQ2hiRlEKLS0tIHo3YVIxQTBlODdEdkd4YlRBeDFE\ncUdMNmhyVG42aE5qY1dnN2YwV1BoOFkKHyAinfmhZoOaF0SdxgoYQ8jeukBDJlCY\nT5eOVSxGo1wy2EZ7lE/0rBca91MGUNA2YQ==\n-----END AGE ENCRYPTED FILE-----"
+}
