@@ -1,0 +1,37 @@
+{
+  "_提交时间": "2026-10-15T11:46:32.289Z",
+  "_原始ID冲突": false,
+  "id": "starpie",
+  "name": "StarPie",
+  "icon": "https://avatars.githubusercontent.com/u/329320540?v=4",
+  "category": "system",
+  "tagline": "StarPie 现代化 Windows 鼠标轮盘手势系统",
+  "description": "StarPie 现代化 Windows 鼠标轮盘手势系统",
+  "version": "v1.7.4",
+  "size": "",
+  "system": "Windows",
+  "website": "",
+  "github": "https://github.com/Star-Pie/StarPie",
+  "downloads": [
+    {
+      "platform": "Windows x64 压缩包",
+      "note": "StarPie-v1.7.4-Lightweight-win-x64.zip",
+      "size": "11.6 MB",
+      "url": "https://github.com/Star-Pie/StarPie/releases/download/v1.7.4/StarPie-v1.7.4-Lightweight-win-x64.zip"
+    },
+    {
+      "platform": "Windows x64 安装版",
+      "note": "StarPie-v1.7.4-Setup-win-x64.exe",
+      "size": "53.3 MB",
+      "url": "https://github.com/Star-Pie/StarPie/releases/download/v1.7.4/StarPie-v1.7.4-Setup-win-x64.exe"
+    },
+    {
+      "platform": "Windows x64 压缩包",
+      "note": "StarPie-v1.7.4-Standalone-win-x64.zip",
+      "size": "76.0 MB",
+      "url": "https://github.com/Star-Pie/StarPie/releases/download/v1.7.4/StarPie-v1.7.4-Standalone-win-x64.zip"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBERlplOE12UXg1cmVXZ2ZG\nbXlFbHNDTnFwWHhURWt5TWVTRktiN25IRlg0CmZOY3YwSW0zZHBsZnZMdnRLZWIy\nQWlDSXkyVzdBUDczY1BobTdSa3hEbjQKLS0tIEMwZzBuVHVKOGs2VHRBUlNkK1l6\nWTR2d2xSak5laDNURlN4aE1HUWVDeUkK0WJgTPSPBKD2Le/954nSkZV9tEPDJInx\nail9MCygJpf5DlIQYJE4TChS\n-----END AGE ENCRYPTED FILE-----"
+}
