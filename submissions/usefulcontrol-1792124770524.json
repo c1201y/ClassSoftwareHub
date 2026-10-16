@@ -1,0 +1,31 @@
+{
+  "_提交时间": "2026-10-16T04:26:10.524Z",
+  "_原始ID冲突": false,
+  "id": "usefulcontrol",
+  "name": "UsefulControl",
+  "icon": "https://cshapi.132614.xyz/api/icon?k=icon%2F2026%2F10%2Fmvagrlen-ek66dr-appicon.webp",
+  "category": "system",
+  "tagline": "实用工具集合小工具 - 一款为大屏类电脑（如希沃）编写的实用工具，当然普通电脑也可以使用。",
+  "description": "实用工具集合小工具 - 一款为大屏类电脑（如希沃）编写的实用工具，当然普通电脑也可以使用。\n\n本程序支持的功能有：\n\n 系统操作（睡眠，休眠，锁定，关闭屏幕，调节音量，强制重启，强制关机）\n 小工具系列（时钟锁屏屏保，公告栏，图片展示，一键关闭课件）\n 模拟界面系列（模拟希沃联想关机界面，模拟系统关机界面，模拟黑屏）",
+  "version": "1.0.15.25022",
+  "size": "",
+  "system": "Windows",
+  "website": "",
+  "github": "https://github.com/cjhdevact/UsefulControl",
+  "downloads": [
+    {
+      "platform": "x86 x64 安装包",
+      "note": "UsefulControl-1.0.15.25022-Bin.7z",
+      "size": "1.2 MB",
+      "url": "https://github.com/cjhdevact/UsefulControl/releases/download/1.0.15.25022/UsefulControl-1.0.15.25022-Bin.7z"
+    },
+    {
+      "platform": "Windows Vista+ 组策略文件",
+      "note": "UsefulControlAdmxs.exe",
+      "size": "352 KB",
+      "url": "https://github.com/cjhdevact/UsefulControl/releases/download/1.0.15.25022/UsefulControlAdmxs.exe"
+    }
+  ],
+  "sort": 11,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB3MnZPZUxURXRETm92a1VU\nVWRSalBFbU1aKzAxV0tYZXBKd2UxN0R5RFJZCjUwZXRlVzNteGkwNWtEWld4bzVN\nQTF0SjkvWWhxeTR5aXdpaVBxM3hFNHMKLS0tIGdqTXp3RVczQWNGdjU2U2cwdjBp\nb0R1VG9RVFExNUgrWDZoU0paZjUyNmcKRENS5fN+QbihB8eaWnyKTAvxxpxl5egh\nM/PRNir6iqZhZTMfjd6fXSzJ+7UtNRhx8wpO\n-----END AGE ENCRYPTED FILE-----"
+}
