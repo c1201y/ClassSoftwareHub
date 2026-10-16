@@ -1,0 +1,25 @@
+{
+  "_提交时间": "2026-10-16T01:24:32.489Z",
+  "_原始ID冲突": false,
+  "id": "seewo-custom-start",
+  "name": "Seewo-Custom_Start",
+  "icon": "https://avatars.githubusercontent.com/u/174720645?v=4",
+  "category": "other",
+  "tagline": "用定制启动器点缀万物！",
+  "description": "用定制启动器点缀万物！",
+  "version": "V4.0",
+  "size": "",
+  "system": "Windows",
+  "website": "",
+  "github": "https://github.com/SRInternet-Studio/Seewo-Custom_Start",
+  "downloads": [
+    {
+      "platform": "Windows 安装版",
+      "note": "SeewoStart-Installer.exe",
+      "size": "121 MB",
+      "url": "https://github.com/SRInternet-Studio/Seewo-Custom_Start/releases/download/V4.0/SeewoStart-Installer.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBrQ3RZMW1lcHd5eXplWWtD\nOWxWRXlDVmlxUlZPKzQybmlueVcvV29IQmcwCkllWWJ0TmdwQTBMdjlaZ28wOHJR\nWHMwTjlwN3RnQStZUWJ5b1VFbll3UHMKLS0tIGV1a2wvcTVkZG5mUzNDSS9Od1pa\nc2x0MFRyS0NBQ0hXTExLZDdUMTlhaU0KwhUs7+Z2RWpfoBMh/6V5T2BFrZeWnzWD\nNpo/FMvmS/nxeMymrgJtvGE=\n-----END AGE ENCRYPTED FILE-----"
+}
