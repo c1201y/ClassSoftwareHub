@@ -1,0 +1,37 @@
+{
+  "_提交时间": "2026-10-16T04:22:49.625Z",
+  "_原始ID冲突": false,
+  "id": "countdowncontrol",
+  "name": "CountDownControl 倒计时小工具",
+  "icon": "https://cshapi.132614.xyz/api/icon?k=icon%2F2026%2F10%2Fmvaglof3-0kyv47-time.webp",
+  "category": "teaching",
+  "tagline": "倒计时小工具 - 一款占用小，支持高度自定义的倒计时小工具",
+  "description": "倒计时小工具 - 一款占用小，支持高度自定义的倒计时小工具\n\n本程序支持的功能有：\n 倒计时（基础功能）\n 深浅色模式\n 多种主题（可以自定义）\n 自定义倒计时显示格式以及文字\n 支持通过组策略配置策略\n 支持保存你的设置\n UIAccess 级别顶置（需要 Windows 8 以上版本）",
+  "version": "1.0.4.26081",
+  "size": "<1mb",
+  "system": "Windows",
+  "website": "",
+  "github": "https://github.com/cjhdevact/CountDownControl",
+  "downloads": [
+    {
+      "platform": "x86 x64 安装包",
+      "note": "CountDownControl-1.0.4.26081-Bin.7z",
+      "size": "287 KB",
+      "url": "https://github.com/cjhdevact/CountDownControl/releases/download/1.0.4.26081/CountDownControl-1.0.4.26081-Bin.7z"
+    },
+    {
+      "platform": "Windows XP 组策略文件",
+      "note": "CountDownControl.adm",
+      "size": "7.0 KB",
+      "url": "https://github.com/cjhdevact/CountDownControl/releases/download/1.0.4.26081/CountDownControl.adm"
+    },
+    {
+      "platform": "Windows Vista+ 组策略文件",
+      "note": "CountDownControlAdmxs.exe",
+      "size": "363 KB",
+      "url": "https://github.com/cjhdevact/CountDownControl/releases/download/1.0.4.26081/CountDownControlAdmxs.exe"
+    }
+  ],
+  "sort": 10,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAvR096NUtDOGFuOWxucWpL\na3BnS0pGVTUvQ2lZOTdLcnZKeENvNHZPSDNzCndoRnhLTk1UTVBjWVpyY1grbDRx\nOUpleTNacU5ZQ1Z2MW5OdVUwc045UDAKLS0tIEZIUHBOZU5GRENtZTg3L1Bja0pn\nOW13c1k4aDdtOFBlY2phdDBYNGpXZ3MK0VG4vVvkbZPPo6eGKvuvQjj4A1h+NeBc\ntAVMGHAfhR9Zxvd+E/9/6j1Ak15NJ5mI9FPo\n-----END AGE ENCRYPTED FILE-----"
+}
