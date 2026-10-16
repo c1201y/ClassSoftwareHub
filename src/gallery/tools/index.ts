@@ -24,6 +24,14 @@ export interface ToolDef {
 
 export const TOOLS: ToolDef[] = [
   {
+    id: 'announce',
+    name: '教室喊话',
+    desc: '在网页上输入教室机的 6 位配对码，文字就会在对方屏幕上全屏大字展示——点名、通知、找人都行，无需安装任何东西。',
+    icon: '\uE720',
+    group: '课堂',
+    load: () => import('../pages/AnnouncePage.vue')
+  },
+  {
     id: 'image-color',
     name: '图片取色',
     desc: '上传一张图片，在浏览器本地提取出一组柔和的配色方案（像 Win11 提取壁纸主题色那样），点击色块即可复制色值。',
