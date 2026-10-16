@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-16T04:22:49.625Z",
-  "_原始ID冲突": false,
   "id": "countdowncontrol",
   "name": "CountDownControl 倒计时小工具",
   "icon": "https://cshapi.132614.xyz/api/icon?k=icon%2F2026%2F10%2Fmvaglof3-0kyv47-time.webp",
@@ -32,6 +30,5 @@
       "url": "https://github.com/cjhdevact/CountDownControl/releases/download/1.0.4.26081/CountDownControlAdmxs.exe"
     }
   ],
-  "sort": 10,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAvR096NUtDOGFuOWxucWpL\na3BnS0pGVTUvQ2lZOTdLcnZKeENvNHZPSDNzCndoRnhLTk1UTVBjWVpyY1grbDRx\nOUpleTNacU5ZQ1Z2MW5OdVUwc045UDAKLS0tIEZIUHBOZU5GRENtZTg3L1Bja0pn\nOW13c1k4aDdtOFBlY2phdDBYNGpXZ3MK0VG4vVvkbZPPo6eGKvuvQjj4A1h+NeBc\ntAVMGHAfhR9Zxvd+E/9/6j1Ak15NJ5mI9FPo\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 10
 }
