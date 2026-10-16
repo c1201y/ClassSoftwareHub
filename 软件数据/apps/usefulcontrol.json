@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-16T04:26:10.524Z",
-  "_原始ID冲突": false,
   "id": "usefulcontrol",
   "name": "UsefulControl",
   "icon": "https://cshapi.132614.xyz/api/icon?k=icon%2F2026%2F10%2Fmvagrlen-ek66dr-appicon.webp",
@@ -26,6 +24,5 @@
       "url": "https://github.com/cjhdevact/UsefulControl/releases/download/1.0.15.25022/UsefulControlAdmxs.exe"
     }
   ],
-  "sort": 11,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB3MnZPZUxURXRETm92a1VU\nVWRSalBFbU1aKzAxV0tYZXBKd2UxN0R5RFJZCjUwZXRlVzNteGkwNWtEWld4bzVN\nQTF0SjkvWWhxeTR5aXdpaVBxM3hFNHMKLS0tIGdqTXp3RVczQWNGdjU2U2cwdjBp\nb0R1VG9RVFExNUgrWDZoU0paZjUyNmcKRENS5fN+QbihB8eaWnyKTAvxxpxl5egh\nM/PRNir6iqZhZTMfjd6fXSzJ+7UtNRhx8wpO\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 11
 }
