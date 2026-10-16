@@ -5,7 +5,7 @@
   "category": "schedule",
   "tagline": "希沃白板5 官方正版下载",
   "description": "希沃白板5 是希沃生态里的互动课件与授课工具，支持课件制作、课堂活动、投屏互动等功能。这里提供官方正版下载入口，装到的就是最新版本，避免第三方渠道夹带捆绑。",
-  "version": "5.2.4.11451",
+  "version": "5.2.4.11582",
   "size": "195 MB",
   "system": "Windows 7 +",
   "website": "https://easinote.seewo.com/",
@@ -13,7 +13,7 @@
     {
       "platform": "Windows",
       "note": "Linux版可访问官网下载；官方按产品码下发，永远是最新版",
-      "size": "226 MB",
+      "size": "227 MB",
       "kind": "file",
       "url": "https://e.seewo.com/download/file?code=EasiNote5"
     }
