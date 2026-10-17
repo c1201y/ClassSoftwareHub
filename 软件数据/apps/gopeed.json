@@ -6,7 +6,6 @@
   "tagline": "高速开源下载器，支持 HTTP / BT / 磁力 / ed2k",
   "description": "Gopeed 是一款开源免费的高速下载器，采用 Golang + Flutter 构建，支持 HTTP(S)、BitTorrent、磁力链、ed2k 等多种协议，跨平台、界面简洁、无广告无捆绑。",
   "version": "v1.9.3",
-  "size": "",
   "system": "Windows / macOS / Linux / Android / iOS",
   "website": "https://gopeed.com",
   "github": "https://github.com/GopeedLab/gopeed",
@@ -28,5 +27,5 @@
       "url": "https://gopeed.com/api/download?tpl=Gopeed-v1.9.3-windows-arm64-portable.zip"
     }
   ],
-  "sort": 5
+  "sort": 80
 }
