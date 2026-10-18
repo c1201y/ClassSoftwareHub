@@ -6,9 +6,7 @@
   "tagline": "时钟锁屏 - 一个具有深/浅色主题，云母/亚克力背景，Fluent UI…",
   "description": "时钟锁屏 - 一个具有深/浅色主题，云母/亚克力背景，Fluent UI 2界面的时钟锁屏（屏保），可以作为屏保使用，也可以自习时在教学白板上使用。",
   "version": "2.0.2.25013",
-  "size": "",
   "system": "Windows 7+",
-  "website": "",
   "github": "https://github.com/cjhdevact/LockTime",
   "downloads": [
     {
@@ -18,5 +16,5 @@
       "url": "https://github.com/cjhdevact/LockTime/releases/download/2.0.2.25013/LockTime-2.0.2.24013-Bin.7z"
     }
   ],
-  "sort": 11
+  "sort": 24
 }
