@@ -5,7 +5,7 @@
   "category": "other",
   "tagline": "✨一个安卓网盘解析下载app✨",
   "description": "粘贴分享链接，直接高速下载 —— 一个开源的 Android 网盘解析下载应用\n\n识别夸克 / UC / 迅雷 / 百度 / 139 / 123 / 115 / 光鸭 / 蓝奏云 / 蓝奏云优享版 分享链接，自动匹配提取码，Range 分片并发 + 断点续传。",
-  "version": "v1.2.9",
+  "version": "v1.3.0",
   "size": "",
   "system": "Android",
   "website": "",
@@ -14,8 +14,8 @@
     {
       "platform": "Android（APK）",
       "note": "YunX_release_1.2.9.apk",
-      "size": "4.7 MB",
-      "url": "https://github.com/CYQawa/YunX/releases/download/v1.2.9/YunX_release_1.2.9.apk"
+      "size": "6.0 MB",
+      "url": "https://github.com/CYQawa/YunX/releases/download/v1.3.0/YunX_release_1.3.0.apk"
     }
   ],
   "sort": 119

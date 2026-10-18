@@ -5,7 +5,7 @@
   "category": "system",
   "tagline": "基于 PyQt5 + PyQt-Fluent-Widgets 的现代风格照片查看器。且能在Win7系统运行",
   "description": "基于 PyQt5 + PyQt-Fluent-Widgets 的现代风格照片查看器。且能在Win7系统运行",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "size": "80MB",
   "system": "Windows",
   "website": "https://pictureviews.netlify.app",
@@ -14,14 +14,14 @@
     {
       "platform": "Windows便携版",
       "note": "FluentView-v1.5.0-x64.exe",
-      "size": "97.0 MB",
-      "url": "https://github.com/minecraft-os/FluentView/releases/download/1.5.0/FluentView-v1.5.0-x64.exe"
+      "size": "94 MB",
+      "url": "https://github.com/minecraft-os/FluentView/releases/download/1.6.0/FluentView-v1.6.0-x64.exe"
     },
     {
       "platform": "Windows 安装版",
       "note": "FluentView_Setup.exe",
-      "size": "37.2 MB",
-      "url": "https://github.com/minecraft-os/FluentView/releases/download/1.5.0/FluentView_Setup.exe"
+      "size": "37 MB",
+      "url": "https://github.com/minecraft-os/FluentView/releases/download/1.6.0/FluentView_Setup.exe"
     }
   ],
   "sort": 91

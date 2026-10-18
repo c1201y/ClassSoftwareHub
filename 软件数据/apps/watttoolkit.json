@@ -5,7 +5,7 @@
   "category": "other",
   "tagline": "开源跨平台工具箱（Steam / GitHub 加速等）",
   "description": "Watt Toolkit（原名 Steam++）是一款开源免费的多功能工具箱，常用功能包括 Steam 社区与商店加速、GitHub 页面与下载加速、脚本扩展等，网络环境受限时访问这些站点会顺畅不少。安装后按需开启对应模块即可。",
-  "version": "上次更新日期  2026/3/12",
+  "version": "3.1.0",
   "size": "438.1 MB",
   "system": "Windows 10/11、Android、iOS、macOS、Linux",
   "website": "https://steampp.net/",

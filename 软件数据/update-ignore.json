@@ -23,17 +23,7 @@
   },
   "geek-uninstaller": {
     "skip": "updates",
-    "reason": "Geek Uninstaller 上游没有 GitHub 仓库（github 字段误填了 bilibili 视频链接），无法体检",
+    "reason": "直链与版本号由 resolve-direct-links.mjs 从 winget 清单（GeekUninstaller.GeekUninstaller）自动刷新；此处仅因历史勾选保留，可删",
     "at": "2026-09-16"
-  },
-  "screenbox": {
-    "skip": "updates",
-    "reason": "体检 Issue 里勾选",
-    "at": "2026-09-18"
-  },
-  "watttoolkit": {
-    "skip": "updates",
-    "reason": "体检 Issue 里勾选",
-    "at": "2026-09-18"
   }
 }

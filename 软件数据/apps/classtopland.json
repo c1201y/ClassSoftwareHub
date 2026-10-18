@@ -5,7 +5,7 @@
   "category": "teaching",
   "tagline": "一个使用Qt6构建的跨平台桌面课程表与倒计时组件",
   "description": "一个轻量级的、简易使用的课表显示软件，占用低且轻巧，配置简单，适合在运行CI时占用骤增的白板使用。",
-  "version": "e0b06e6",
+  "version": "17ac32f",
   "size": "41 MB",
   "system": "Windows",
   "website": "",
@@ -13,9 +13,9 @@
   "downloads": [
     {
       "platform": "Windows x64 安装版",
-      "note": "ClassTopLand-setup_build_e0b06e6-amd64.exe",
       "size": "41.1 MB",
-      "url": "https://github.com/Aero8m/ClassTopLand/releases/download/e0b06e6/ClassTopLand-setup_build_e0b06e6-amd64.exe"
+      "url": "https://github.com/Aero8m/ClassTopLand/releases/download/17ac32f/ClassTopLand-setup_build_17ac32f-amd64.exe",
+      "kind": "file"
     }
   ],
   "sort": 8

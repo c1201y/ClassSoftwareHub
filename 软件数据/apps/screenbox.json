@@ -5,7 +5,7 @@
   "category": "other",
   "tagline": "Fluent Design 开源播放器，基于 LibVLC 全格式硬解",
   "description": "一款专为 Windows 10/11 设计的开源媒体播放器，界面采用微软 Fluent Design 设计语言，底层基于 LibVLC，解码能力强，支持 4K / HDR / AV1 等格式硬解，观感和 Win11 系统界面统一，放视频很舒服。",
-  "version": "上次更新日期  2026/8/18",
+  "version": "v0.23.0",
   "size": "222.5 MB",
   "system": "Windows 10/11",
   "github": "https://github.com/huynhsontung/Screenbox",

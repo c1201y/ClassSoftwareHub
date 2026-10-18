@@ -9,8 +9,11 @@
   "system": "WinRAR 7.10及以上支持最低系统win7 x64或更高版本",
   "downloads": [
     {
-      "platform": "官方链接",
-      "url": "https://www.winrar.com.cn/download.htm"
+      "platform": "Windows x64 安装版",
+      "note": "RARLAB 官方简体中文版；32 位与便携版可在官网下载页获取",
+      "url": "https://www.rarlab.com/rar/winrar-x64-723sc.exe",
+      "kind": "file",
+      "size": "3.8 MB"
     }
   ],
   "sort": 51
