@@ -92,6 +92,6 @@
       "url": "https://github.com/ClassIsland/ClassIsland/releases/download/2.1.0.1/ClassIsland_app_linux_arm64_selfContained_deb.deb"
     }
   ],
-  "sort": 2,
+  "sort": 0,
   "维护备注": "⚠️ 注意：ClassIsland 分多个平台/架构，官方发布包含 x64 / x86 / ARM64， 且同时提供「安装版」和「便携版」（便携版免安装，适合教室大屏直接解压使用）。 下面按官方发布格式列出，url 请分别填入对应架构的直链。"
 }

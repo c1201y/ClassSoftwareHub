@@ -34,6 +34,6 @@
       "url": "https://www.officetool.plus/zh-cn/introduction/download.html"
     }
   ],
-  "sort": 18,
+  "sort": 34,
   "维护备注": "唯一英文标识，如 'myapp'（决定网址 #/download/myapp）\n图标图片链接，没有就留 ''\n分类：system / schedule / teaching / other          tagline: 'x 正版下载',\n版本号，不知道留 ''\n体积，不知道留 ''\n官网，没有留 ''\nGitHub 仓库，没有留 ''\n系统限制：支持的操作系统/平台，不知道就留 ''（详情页显示\"待补充\"）"
 }
