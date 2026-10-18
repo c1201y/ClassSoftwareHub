@@ -6,10 +6,17 @@ on:
 
 jobs:
   review:
+    # ⚠️ 这里**不能**要求 Issue 当前还挂着「待审核」标签（2026-10-18 踩过）：
+    #    审核的自然动作是「移除待审核 + 打上 approved」，GitHub 会为此发出两个
+    #    issues.labeled 事件。等第二个事件（label.name == 'approved'）到达时，
+    #    Issue 的标签列表里已经没有「待审核」了 —— 加上这个条件，整轮审核会被
+    #    GitHub 判为 job 条件不满足而**整体 skipped**，草稿原地不动、审核静默丢失。
+    #    实测那一次 17 条审核（11 approved / 6 rejected）全部这么丢的。
+    #    脚本自己也会摘「待审核」（见下文「顺手摘掉」），所以靠标签判断「是否
+    #    已处理」本来就不可靠 —— 只认本次事件打的是哪个标签就够了。
     if: |
-      (github.event.label.name == 'approved' || github.event.label.name == 'rejected'
-       || github.event.label.name == '覆盖已存在' || github.event.label.name == 'overwrite')
-      && contains(github.event.issue.labels.*.name, '待审核')
+      github.event.label.name == 'approved' || github.event.label.name == 'rejected'
+      || github.event.label.name == '覆盖已存在' || github.event.label.name == 'overwrite'
     runs-on: ubuntu-latest
     # 批量审核（UI 里勾选多个 Issue 一起打标签）会同时触发多个运行，它们从同一
     # HEAD 各自 commit，谁先 push 成功谁赢，其余全部 non-fast-forward 失败
