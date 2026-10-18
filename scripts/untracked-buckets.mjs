@@ -75,16 +75,14 @@ export const BUCKETS = {
   //    原先列在这里的 vlc / geogebra / diskgenius / 360 急救箱 / 360 极速浏览器 /
   //    huorong-security / tencent-meeting / 希沃 5 个，都已登记进 resolve-direct-links.mjs，
   //    直链与版本号每周自动刷新 → 自动落进 auto，不再需要人偶尔看一眼。
-  '360-safe-guard-speed': { bucket: 'page-only', reason: '直链已换成官方固定「始终最新」地址 dl.360scdn.com/setupbeta_jisu.exe，无需维护；但页面里没有任何版本锚点、winget 也没收录 360 —— 版本号只能人看' },
+  //    ⚠️ hibit-uninstaller / spacesniffer 也曾列在这里，但它们同样已登记进
+  //    RESOLVERS —— 显式登记会盖掉 auto，让体检报告声称它们没人跟，与事实相反，故删除。
+  '360-safe-guard-speed': { bucket: 'page-only', reason: '直链已换成官方固定「始终最新」地址 dl.360scdn.com/setupbeta_jisu.exe，无需维护；唯一能读到版本号的 360 软件宝库页（appid 2000003222）比站内还旧（15.0.3.1005 < 15.0.3.1058），登记了也会被降级闸门每次拦下 —— 版本号只能人看' },
   dingtalk: { bucket: 'page-only', reason: 'winget 清单停在 7.1.0、官网页面里那条固定链接是 8.2.0，**两者都比站内 8.5.0 旧**，被解析器的降级闸门拦下 —— 暂只能跳官网，等上游清单跟上' },
   xrkayxingz: { bucket: 'page-only', reason: '下载页是 Nuxt SSR，整页里一个安装包地址都没有（down.oray.com 那条固定名只是 302 回下载页）；也没有可解析的版本接口，**只能跳官网**' },
   yjxzsayxingz: { bucket: 'page-only', reason: '下载页是 Vue SPA，安装包地址由接口下发（yunmdload.hik-cloud.com/…/V\<版本\>/…），要逆向接口才跟得上，**只能跳官网**' },
 
-  winrar: { bucket: 'page-only', reason: '下载页是 winrar.com.cn 官方中文下载页，无 GitHub / winget 版本源，版本号只能人看' },
   'maxhub-whiteboard': { bucket: 'page-only', reason: '疑似 MAXHUB 会议平板内置应用，无独立可下载 PC 版本号对应站内 6.8.0.7815；下载直链是带签名过期的 seewo CDN 链接，版本号只能人看' },
-  xwgjayxingz: { bucket: 'page-only', reason: '希沃管家下载直链是带签名过期的 seewo CDN 链接，无可用版本接口，版本号只能人看（站内 version 也还空着）' },
-  'hibit-uninstaller': { bucket: 'page-only', reason: '官网 hibitsoft.ir 提供含版本号直链，但无 GitHub / winget 版本源，版本号只能人看' },
-  spacesniffer: { bucket: 'page-only', reason: '官网 uderzo.it 提供含版本号直链，但无 GitHub / winget 版本源，版本号只能人看' },
 
   // ── 网盘 ──
   'directx-repair': { bucket: 'netdisk', reason: '分发在蓝奏云 + 百度网盘；版本号能读，但链接没法自动验证' },

@@ -292,9 +292,18 @@ async function ghRaw(apiUrl, fallbackUrl) {
 //   yjxzsayxingz         —— Vue SPA，要逆向接口
 //   dingtalk             —— winget 清单停在 7.1.0，比站内还旧、被闸门拦下
 //   '360-jijiuxiang'     —— 抓到的唯一 .exe 是页面里推广的 360 优盘助手，不是本软件
-//   '360-safe-guard-speed' —— 直链固定但页面没有版本锚点（winget 也没收录 360）
+//   '360-safe-guard-speed' —— 直链固定，但唯一能读到版本号的 360 软件宝库页（appid
+//                           2000003222）**比站内还旧**（宝库 15.0.3.1005 < 站内
+//                           15.0.3.1058），登记了也会被降级闸门每次拦下，反而让报告
+//                           误以为"有人在跟" —— 不如如实留在 page-only
 //   'driver-ceo'         —— 直链是在线安装器，官网页面抓不到版本
 //   VirusDetector / directx-repair —— 纯网盘分发，物理上做不到直连
+//   sxsrfayxingz 手心输入法 —— 官网页面没有任何版本文字，直链也不带版本号
+//   qq-music             —— PC 端直链无版本且带防盗链，Mac/安卓那条的签名 URL 只对
+//                           签名时绑定的文件名有效，无法推广到新版本
+//   gomplayer            —— 站内收录的是第三方修改版（mefcl），与官方 release-note 的
+//                           版本线对不上，硬跟会把版本号写错
+//   heysafex             —— 未能识别出对应的 Windows 软件，无从下书
 //   仅 Microsoft Store 分发的若干 —— 官方就没有安装包（见 BUCKETS 里的 store 档）
 // ════════════════════════════════════════════════════════════════════════
 const SEEWO_DL = 'https://e.seewo.com/download/file?code='
@@ -306,6 +315,10 @@ export const RESOLVERS = {
   xwbb5: { kind: 'seewo', code: 'EasiNote5' },
   xwspztayxingz: { kind: 'seewo', code: 'EasiCamera' },
   xiwopinke: { kind: 'seewo', code: 'seewoPincoTeacher' },
+  //    希沃管家：站内原来存的是腾讯 COS 的**带签名**直链（签名一到期就 403），
+  //    e.seewo.com 上确实有它的产品码，改成 code 地址后版本号顺带能从
+  //    Content-Disposition 的文件名里读出来（…SeewoServiceSetup_1.6.7.4018.exe）。
+  xwgjayxingz: { kind: 'seewo', code: 'SeewoServiceSetup' },
 
   // ── 稳定入口 + 跟重定向读版本（入口不变，只刷新版本号）──────────────────
   //    Firefox 的 302 直接落在 …/releases/<版本>/… 里 —— 版本号是白拿的。
@@ -392,6 +405,67 @@ export const RESOLVERS = {
     pickUrlMax: true,
     versionRe: /spacesniffer_(\d+(?:_\d+)+)_x64\.zip/i,
     versionFix: (s) => cur(s).replace(/_/g, '.'),
+  },
+
+  //   WinRAR：⚠️ rarlab.com 的下载页把 **beta 表放在稳定版表前面**，直接全文匹配
+  //   第一个 winrar-x64-*.exe 会抓到 7.30 beta 1。用 pickUrl 限定「三位数字 + sc 后缀」
+  //   的形状（`/rar/winrar-x64-723sc.exe`）就只会命中稳定版的**简体中文**包 ——
+  //   beta（730b1）与其他语言后缀（ar/tc/ru…）都被这个形状排除。
+  //   版本号从抠出的 URL 文件名里读，天然与下载项一致。
+  //   另注：winrar.com.cn 那个中文站不能当入口 —— 页面里唯一的安装包是
+  //   汉化包 winrarcn-1.5.2sc.exe，按文件名取版本会得到错的 1.5.2。
+  winrar: {
+    kind: 'probe',
+    entry: 'https://www.rarlab.com/download.htm',
+    pickUrl: /\/rar\/winrar-x64-(\d{3})sc\.exe/i,
+  },
+
+  //   K-Lite：下载页的 <h4> 就是当期版本（`Version 20.0.5 Full`），
+  //   四个变体的文件名规则完全确定（`K-Lite_Codec_Pack_<版本去点>_<变体>.exe`），
+  //   所以用 rewrite 把站内那 5 条一次性全部重建；旧版本文件不会被删，缓存友好。
+  //   ⚠️ rewrite 规则要**按 files2 / files3 分别写**：官方给每个变体都提供两个镜像，
+  //   站内把「Server 1 / Server 2」分开登记，若两条都重建到同一个主机就丢了冗余。
+  klite: {
+    kind: 'probe',
+    entry: 'https://codecguide.com/download_k-lite_codec_pack_full.htm',
+    versionRe: /Version\s+(\d+(?:\.\d+)+)\s+Full/i,
+    rewrite: [
+      { match: /files2\.codecguide\.com\/K-Lite_Codec_Pack_\d+_Full\.exe/i, url: (v) => `https://files2.codecguide.com/K-Lite_Codec_Pack_${v.replace(/\./g, '')}_Full.exe` },
+      { match: /files3\.codecguide\.com\/K-Lite_Codec_Pack_\d+_Full\.exe/i, url: (v) => `https://files3.codecguide.com/K-Lite_Codec_Pack_${v.replace(/\./g, '')}_Full.exe` },
+      { match: /files2\.codecguide\.com\/K-Lite_Codec_Pack_\d+_Standard\.exe/i, url: (v) => `https://files2.codecguide.com/K-Lite_Codec_Pack_${v.replace(/\./g, '')}_Standard.exe` },
+      { match: /files3\.codecguide\.com\/K-Lite_Codec_Pack_\d+_Standard\.exe/i, url: (v) => `https://files3.codecguide.com/K-Lite_Codec_Pack_${v.replace(/\./g, '')}_Standard.exe` },
+      { match: /files2\.codecguide\.com\/K-Lite_Codec_Pack_\d+_Mega\.exe/i, url: (v) => `https://files2.codecguide.com/K-Lite_Codec_Pack_${v.replace(/\./g, '')}_Mega.exe` },
+      { match: /files3\.codecguide\.com\/K-Lite_Codec_Pack_\d+_Mega\.exe/i, url: (v) => `https://files3.codecguide.com/K-Lite_Codec_Pack_${v.replace(/\./g, '')}_Mega.exe` },
+      { match: /files2\.codecguide\.com\/K-Lite_Codec_Pack_\d+_Basic\.exe/i, url: (v) => `https://files2.codecguide.com/K-Lite_Codec_Pack_${v.replace(/\./g, '')}_Basic.exe` },
+      { match: /files3\.codecguide\.com\/K-Lite_Codec_Pack_\d+_Basic\.exe/i, url: (v) => `https://files3.codecguide.com/K-Lite_Codec_Pack_${v.replace(/\./g, '')}_Basic.exe` },
+    ],
+  },
+
+  //   CentBrowser：官网首页同时给出 `版本号：` 文字与带版本的直链，两边互证。
+  //   走 .cn 镜像（与站内数据一致，国内可达）；下载地址模板里版本号出现两次。
+  //   便携版与安装版共用同一个 rewrite 之外的路径，靠 platform 名区分。
+  centbrowser: {
+    kind: 'probe',
+    entry: 'https://www.centbrowser.cn/index.html',
+    versionRe: /版本号：\s*(\d+(?:\.\d+)+)/,
+    rewrite: [
+      { match: /_x64_portable\.exe/i, url: (v) => `https://static.centbrowser.cn/win_stable/${v}/centbrowser_${v}_x64_portable.exe` },
+      { match: /_x64\.exe/i, url: (v) => `https://static.centbrowser.cn/win_stable/${v}/centbrowser_${v}_x64.exe` },
+    ],
+  },
+
+  //   IDM：⚠️ 下载页那条 URL 里的版本号是**装饰性**的 —— 实测 idman643build15 /
+  //   idman642build11 / idman639build1 返回完全相同的字节，服务端只认 idman* 前缀，
+  //   返回的永远是当前最新版。所以版本号必须从 news.html 的正文读，
+  //   **不能**从下载 URL 读（会把版本号判断带偏）；直链本身 keepUrl 不动。
+  //   正文形状是 `What's new in version 6.43 Build 15`，用 versionFix 把中间那段
+  //   换成点号，得到与 winget 清单一致的 6.43.15。
+  idm: {
+    kind: 'probe',
+    entry: 'https://www.internetdownloadmanager.com/news.html',
+    keepUrl: true,
+    versionRe: /What's new in version\s+\d+\.\d+\s+Build\s+\d+/i,
+    versionFix: (s) => cur(s).replace(/^.*?version\s+/i, '').replace(/\s+Build\s+/i, '.'),
   },
 
   // ── winget 官方清单：直链带版本号，链接与版本号一起自动刷新 ───────────────
