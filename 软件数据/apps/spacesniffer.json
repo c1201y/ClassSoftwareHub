@@ -18,6 +18,6 @@
       "kind": "file"
     }
   ],
-  "sort": 99,
+  "sort": 58,
   "维护备注": "官网首页推荐的主镜像 dAppCDN 对脚本/爬虫恒 403（带 Referer 也没用），所以直链取官网「备用下载」页的版本化 zip，已登记进 scripts/resolve-direct-links.mjs（kind=probe，pickUrlMax 取最高版本）。原 github 字段指向 redtrillix/SpaceSniffer —— 那是别人建的**非官方**镜像（仓库自己写明 unofficial），2022-06 起停更，会让体检报告误以为「有人在跟」，故移除。图标原本是那个镜像站的头像（显示 RedTrillix），已换成 src/assets/icons/spacesniffer.webp。"
 }

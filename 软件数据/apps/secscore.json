@@ -67,6 +67,6 @@
       "url": "https://stk.sectl.cn/SecScore/%E6%80%9D%E6%8B%93%E5%88%9B%E8%81%94%20Gihub%20%E9%95%9C%E5%83%8F%E6%BA%90/v0.9.0/"
     }
   ],
-  "sort": 9,
+  "sort": 14,
   "维护备注": "信息采集于 2026-09-14。官网 https://secscore.sectl.cn（VitePress 英文文档站，无版本号）；GitHub SECTL/SecScore（GPL-3.0，约 20 stars，默认分支 main，最后推送 2026-09-11）。公开 release 只有 v0.9.0（Latest，2026-03-28）与 v0.0.2（2026-03-29）；v0.9.0 的资源文件名却标的是 1.0.0，属 SECTL CI 命名习惯，非站点写错。⚠️ 镜像站 /SecScore/思拓创联 Gihub 镜像源/ 下另有 v1.0.0 / v1.0.2 / v1.0.3 / v1.0.4 目录，但其上游 raw_url 指向 GitHub 草稿 release（releases/download/untagged-0513251378121e56fc17/...），实测 404 无法下载，故一律不收录；将来若官方正式发布 1.0.x，再把 TAG 与 SHA256 换掉即可。下载链接为思拓创联 GitHub 镜像源（stk.sectl.cn），形式 https://stk.sectl.cn/d/SecScore/思拓创联 Gihub 镜像源/v0.9.0/<文件名>（「/d/」是下载端点，必需）。体积取自镜像文件字节数；SHA256 取自 GitHub release 页面自动摘要。图标取自仓库 src-tauri/icons/128x128.png（128×128 PNG，实测可访问）。同类 SECTL 软件：SecRandom（站内已有）。"
 }

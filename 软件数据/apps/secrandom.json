@@ -95,6 +95,6 @@
       "url": "https://github.com/SECTL/SecRandom/releases/tag/v3.1.5"
     }
   ],
-  "sort": 8,
+  "sort": 13,
   "维护备注": "信息采集于 2026-10-11。官网 https://secrandom.sectl.top/；GitHub SECTL/SecRandom（GPL-3.0，默认分支 master）。站内版本 v3.1.5 为 2026-10-07 发布的正式版。下载链接 = SECTL 官方 GitHub 加速 ghproxy.sectl.top（形式 https://ghproxy.sectl.top/https://github.com/SECTL/SecRandom/releases/download/<tag>/<文件名>，直连 GitHub 实时同步）。⚠️ 思拓创联镜像 stk.sectl.cn（OpenList，目录 /SecRandom/思拓创联 Gihub 镜像源/）为人工/滞后同步，2026-10-11 时只到 v3.0.0，切回镜像前先核对它是否已收录目标 tag；「/d/」是镜像的下载端点，不带会返回网页壳；目录名「Gihub」是官方拼写，勿改。体积与 SHA512 取自官方 SecRandom-update-manifest.json（GitHub release 资产，其 sha256 已实测经 ghproxy 通道下载校验一致）；若版本升级，改 TAG 并重新取 manifest 即可。图标取自仓库 SecRandom/Assets/AppLogo.png。"
 }

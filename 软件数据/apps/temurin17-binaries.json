@@ -24,6 +24,6 @@
       "url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.20.1%2B1/OpenJDK17U-jre_x64_windows_hotspot_17.0.20.1_1.zip"
     }
   ],
-  "sort": 99,
+  "sort": 81,
   "notice": "本站收录的是 JRE（运行环境），不含 JDK（开发工具包）。"
 }

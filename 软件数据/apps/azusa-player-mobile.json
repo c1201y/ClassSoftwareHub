@@ -18,6 +18,6 @@
       "url": "https://github.com/lovegaoshi/azusa-player-mobile/releases/download/dev-build-2026-10-12/app-arm64-v8a-release.apk"
     }
   ],
-  "sort": 99,
+  "sort": 123,
   "notice": "当前收录的是官方预发布版本 dev-build-2026-10-12（Beta / Alpha），可能不够稳定；建议到 GitHub Releases 下载最新正式版。"
 }
