@@ -1,0 +1,25 @@
+{
+  "_提交时间": "2026-10-18T06:25:46.307Z",
+  "_原始ID冲突": false,
+  "id": "touchglide",
+  "name": "TouchGlide",
+  "icon": "https://avatars.githubusercontent.com/u/120377625?v=4",
+  "category": "teaching",
+  "tagline": "让不适配触屏滚动的 Windows 桌面应用重新支持手指滑动。",
+  "description": "TouchGlide\n让不适配触屏滚动的 Windows 桌面应用重新支持手指滑动。\n\n单个 EXE · 无安装 · 无运行时依赖 · Windows 10 / 11\n\nEnglish · 下载\n\n它解决什么问题？\n一些 Windows 桌面应用把手指拖动误识别成鼠标左键拖拽：聊天列表划不动、内容会被选中，触屏设备不得不接回鼠标。\n\nTouchGlide 将这类应用中的单指拖动转为定向滚轮消息，并提供惯性滚动；轻点、双击、长按仍由 Windows 原生处理。\n\n初始预设适配：微信 Windows 4.x（Weixin.exe / WeChat.exe / WeChatAppEx.exe）。\n\n下载与使用\n在 Releases 下载 TouchGlide.exe。\n双击运行。首次运行会出现托盘图标，并自动创建 TouchGlide.ini。\n打开微信，直接用手指上下划动列表或内容区。\n右键托盘图标可暂停、切换自然滚动、开启开机自启，或打开配置文件。\n无需管理员权限、无需安装、无需修改微信文件。\n\n若 Windows SmartScreen 显示提示：这是未签名的全新开源程序的正常行为。请只从本仓库 Release 下载，并可自行从源码构建核验。\n\n手势\n手势\t行为\n单指滑动\t平滑滚动（自动锁定横/纵方向）\n快速甩动后松手\t惯性滚动\n轻点 / 双击\t原生点击 / 双击\n长按\t原生 Windows 长按右键菜单\n窗口顶部标题栏\t不接管，保留原生拖动窗口行为\n配置\n首次运行后的 TouchGlide.ini：绿色版优先放在 EXE 同目录；若目录不可写，则放在 %APPDATA%\\TouchGlide\\TouchGlide.ini。\n\n[general]\nenabled=1\nnatural=1\nnotch=0\n\n[scroll]\nscale=3.2\n; 0.90-0.97，越大惯性越远\ndecay=0.94\n\n[targets]\nlist=Weixin.exe,WeChat.exe,WeChatAppEx.exe\n保存配置后约 1 秒自动生效，无需重启程序。\n\n安全与隐私边界\nTouchGlide 的设计边界是刻意收紧的：\n\n不注入目标进程，不 Hook 目标进程；\n不读取聊天记录、窗口内容、账号或任何应用数据；\n不模拟微信协议，不连接微信服务器；\n不群发、不自动回复、不多开、不执行账号自动化；\n仅在 Windows 系统输入层识别触摸拖动，并向命中的窗口投递标准滚轮消息。\nTouchGlide 与腾讯/微信没有任何隶属、授权或合作关系；“微信”仅用于说明兼容目标。使用者应自行遵守目标应用服务协议。\n\n构建\n需要 MinGW-w64（g++、windres）和 Bash：\n\nbash build.sh\n# 产物: build/TouchGlide.exe\n产物是静态链接的原生 x64 Windows EXE。\n\n已验证环境\nWindows 11 26200（触屏设备）\n微信 Windows 4.x\n手指滑动、惯性、轻点、双击、长按右键、聊天区域与公众号内容区域\n欢迎在 Issue 中报告其他 Windows 版本、DPI 缩放和应用兼容性结果。\n\n许可证\nMIT",
+  "version": "v0.1.0",
+  "size": "",
+  "system": "Windows",
+  "website": "",
+  "github": "https://github.com/likangxian1007/TouchGlide",
+  "downloads": [
+    {
+      "platform": "Windows 安装版",
+      "note": "TouchGlide.exe",
+      "size": "1.0 MB",
+      "url": "https://github.com/likangxian1007/TouchGlide/releases/download/v0.1.0/TouchGlide.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBlbVI5R3preUtYMWE5Q0R1\nK1pPK3JaSGk2ZjhMMkVzVjJmL3poNXNMZURzCmpBakFXb3NqMkpadW1rYW8rSE9W\nT3F1UXdReWpPQ3JrSi9iR1lJQnU2ZzgKLS0tIG1zbmhtN1laLzFTUVRZQzNuc3FR\nRCtkZ0JDVy9XY3l2dlBHakg5MmNrSVUKUiUZzH23DthBHvJH22vck1vr9o8zSmiu\nyLfl6jhcXWLC4c/W4pb/\n-----END AGE ENCRYPTED FILE-----"
+}
