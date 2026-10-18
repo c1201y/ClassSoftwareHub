@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.0",
+  "updated": "2026-10-18",
+  "note": "只读工具声明。执行实现内置在客户端程序中，本文件不含任何可执行内容。",
+  "tools": [
+    {
+      "id": "get_machine_snapshot",
+      "name": "重新读取本机概况",
+      "description": "重新采集一次硬件、内存、磁盘、进程与已装软件的概况。当用户询问当前状态，或距上次采集已过一段时间、需要最新数据时使用。返回固定字段的文本摘要。",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "readOnly": true
+    },
+    {
+      "id": "list_disk_folders",
+      "name": "列出目录占用",
+      "description": "列出指定目录下体积最大的若干个子项。整盘扫描（例如 C:\\）文件数量极多，可能超过一分钟甚至超时，因此优先传入具体目录，例如 C:\\Users\\用户名\\AppData。当用户询问空间被什么占用时使用。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "要扫描的目录完整路径，例如 C:\\Users\\用户名\\AppData。已知具体位置时应优先使用本参数"
+          },
+          "drive": {
+            "type": "string",
+            "description": "盘符，例如 C:\\。仅在不知道具体目录时使用，扫描较慢"
+          },
+          "top": {
+            "type": "integer",
+            "description": "返回前几项，默认 8，最大 20"
+          }
+        },
+        "required": []
+      },
+      "readOnly": true
+    },
+    {
+      "id": "search_software_library",
+      "name": "检索软件库",
+      "description": "在站内软件库中按关键词检索，返回候选软件（编号、名称、一句话简介、分类、体积）。推荐软件前必须先调用本工具取得候选，不得凭记忆提及其他软件。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "关键词，例如 解压 / PDF / 截图"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "最多返回几条，默认 5，最大 10"
+          }
+        },
+        "required": ["query"]
+      },
+      "readOnly": true
+    },
+    {
+      "id": "list_installed_apps",
+      "name": "列出已安装软件",
+      "description": "列出本机已安装的软件名称，可按关键词过滤。用于判断某款软件是否已经装过，避免重复推荐。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string",
+            "description": "可选，按名称过滤的关键词"
+          }
+        },
+        "required": []
+      },
+      "readOnly": true
+    },
+    {
+      "id": "list_startup_items",
+      "name": "列出开机启动项",
+      "description": "列出开机自动启动的程序名称与来源位置。当用户询问开机缓慢时，配合启动项数量一起判断。",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "readOnly": true
+    }
+  ]
+}
