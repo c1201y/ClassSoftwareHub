@@ -1,0 +1,37 @@
+{
+  "_提交时间": "2026-10-18T06:46:22.000Z",
+  "_原始ID冲突": false,
+  "id": "classisland-mobile",
+  "name": "ClassIsland-mobile",
+  "icon": "https://avatars.githubusercontent.com/u/344191236?v=4",
+  "category": "teaching",
+  "tagline": "基于ClassIsland使用AI开发的第三方ClassIsland安卓版客户端",
+  "description": "基于ClassIsland使用AI开发的第三方ClassIsland安卓版客户端",
+  "version": "V1.6",
+  "size": "",
+  "system": "Android",
+  "website": "",
+  "github": "https://github.com/HelloLCX/ClassIsland-mobile",
+  "downloads": [
+    {
+      "platform": "Android ARM32（APK）",
+      "note": "ClassIsland-Mobile-v1.6.0-arm32-debug.apk",
+      "size": "5.8 MB",
+      "url": "https://github.com/HelloLCX/ClassIsland-mobile/releases/download/V1.6/ClassIsland-Mobile-v1.6.0-arm32-debug.apk"
+    },
+    {
+      "platform": "Android ARM64（APK）",
+      "note": "ClassIsland-Mobile-v1.6.0-arm64-debug.apk",
+      "size": "5.8 MB",
+      "url": "https://github.com/HelloLCX/ClassIsland-mobile/releases/download/V1.6/ClassIsland-Mobile-v1.6.0-arm64-debug.apk"
+    },
+    {
+      "platform": "Android（APK）",
+      "note": "ClassIsland-Mobile-v1.6.0-island-debug.apk",
+      "size": "12.8 MB",
+      "url": "https://github.com/HelloLCX/ClassIsland-mobile/releases/download/V1.6/ClassIsland-Mobile-v1.6.0-island-debug.apk"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBNR2pzTGdNTWJkbkhHUW16\nVXZGU2V5T0ducmhZWENRdXRZc1lRVkt3TWlJCmlRTHVCckg4QVVQQ3RRTTZWMUp2\neEIyZ2lmVHFYa2pXKy9uajJ2TTF1ZzAKLS0tIDJvcHFiZUQwTXZ2ZTBqOVRIbGNV\nNm1aaEFlemVQRGxSR1p0d1dpU1NZSUUKluSzR82ErwjDWb2N637yBuRSL3CvDKYa\nG60VUvsxQG6QqQOP0Wp2fbwP\n-----END AGE ENCRYPTED FILE-----"
+}
