@@ -5,20 +5,22 @@
   "category": "schedule",
   "tagline": "让老系统也能用上新版 Chromium 的浏览器",
   "description": "Supermium 是一款基于 Chromium 的浏览器，专门针对旧版 Windows（如 Win7、Win8.1）做了兼容优化，让老系统也能跑上较新的 Chromium 内核。教室里的老机器如果装不了新版 Chrome 或 Edge，可以试试它。",
-  "version": "144.0.7559.256 R5",
+  "version": "v150-r2",
   "size": "110 MB+",
   "system": "Windows 7+",
   "github": "https://github.com/win32ss/supermium",
   "downloads": [
     {
-      "platform": "Windwos 64 位",
-      "size": "124 MB",
-      "url": "https://github.com/win32ss/supermium/releases/download/v144-r5/supermium_144_64_setup.exe"
+      "platform": "Windows 64 位",
+      "size": "133.2 MB",
+      "url": "https://github.com/win32ss/supermium/releases/download/v150-r2/supermium_150_64_setup.exe",
+      "kind": "file"
     },
     {
       "platform": "Windows 32 位",
-      "size": "110 MB",
-      "url": "https://github.com/win32ss/supermium/releases/download/v144-r5/supermium_144_32_setup.exe"
+      "size": "118.5 MB",
+      "url": "https://github.com/win32ss/supermium/releases/download/v150-r2/supermium_150_32_setup.exe",
+      "kind": "file"
     }
   ],
   "sort": 44,

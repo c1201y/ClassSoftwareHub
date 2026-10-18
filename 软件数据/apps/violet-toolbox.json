@@ -5,11 +5,11 @@
   "category": "system",
   "tagline": "紫罗兰工具箱面向Android开发的多功能刷机工具",
   "description": "紫罗兰工具箱，\n面向Android开发的\n多功能刷机工具",
-  "version": "",
-  "size": "",
-  "system": "wim",
+  "version": "v3.7.0",
+  "size": "34.9 MB",
+  "system": "Windows",
   "website": "",
-  "github": "",
+  "github": "https://github.com/Smart-Paocai/VioletToolBox",
   "downloads": [
     {
       "platform": "",

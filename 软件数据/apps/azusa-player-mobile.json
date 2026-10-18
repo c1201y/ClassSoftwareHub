@@ -5,7 +5,7 @@
   "category": "other",
   "tagline": "移动端的抽象b站音乐播放器",
   "description": "移动端的抽象b站音乐播放器",
-  "version": "dev-build-2026-10-12",
+  "version": "dev-build-2026-10-18",
   "size": "",
   "system": "Android",
   "website": "https://azusa-player-mobile.vercel.app/",
@@ -13,9 +13,9 @@
   "downloads": [
     {
       "platform": "Android ARM64（APK）",
-      "note": "app-arm64-v8a-release.apk",
-      "size": "89.9 MB",
-      "url": "https://github.com/lovegaoshi/azusa-player-mobile/releases/download/dev-build-2026-10-12/app-arm64-v8a-release.apk"
+      "size": "91.6 MB",
+      "url": "https://github.com/lovegaoshi/azusa-player-mobile/releases/download/dev-build-2026-10-18/app-arm64-v8a-release.apk",
+      "kind": "file"
     }
   ],
   "sort": 123,
