@@ -115,6 +115,7 @@ import GlobalSearch from './GlobalSearch.vue';
 import { syncHolidayTheme, isHolidaySeason, type HolidayTheme } from './holidayTheme';
 import { appIconUrl } from './appIcons';
 import { trackVisit, hasTracked } from './visitor';
+import { rememberScroll, restoreScroll } from './scrollMemory';
 import appIcon from '../assets/AppIcon.ico';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from '../components/i18n/index';
@@ -322,8 +323,10 @@ const syncNavigationFreezeState = (frozen: boolean) => {
   else appRoot.removeAttribute('aria-busy');
 };
 watch(isNavigationFrozen, syncNavigationFreezeState, { flush: 'post' });
-const removeNavigationBeforeEach = router.beforeEach(() => {
+const removeNavigationBeforeEach = router.beforeEach((to, from) => {
   freezeNavigation();
+  // 记住离开页的滚动位置，返回时恢复（GitHub Issue #117）
+  rememberScroll(from);
 });
 const removeNavigationAfterEach = router.afterEach((to, from, failure) => {
   if (failure) {
@@ -333,6 +336,8 @@ const removeNavigationAfterEach = router.afterEach((to, from, failure) => {
   const historyState = router.options.history.state;
   canGoBack.value = Boolean(historyState?.back);
   releaseNavigation();
+  // 到达新页面：恢复这个页面上次的滚动位置（没有记录则保持顶部）
+  restoreScroll(to);
 });
 const removeNavigationErrorHandler = router.onError(() => releaseNavigation());
 // ── 访问量统计：每次路由切换上报一次（含首屏），覆盖全站所有页面 ────────
