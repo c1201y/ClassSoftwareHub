@@ -15,9 +15,8 @@
       "platform": "Windows x64安装版（自带.NET运行时）",
       "note": ".NET版本可能不是最新",
       "size": "108 MB",
-      "hash": "db0146a014c78f39dbf9b7e6946776bf15469980255d19b7efa316407657c439",
       "url": "https://github.com/1312333/ClassIsland/releases"
     }
   ],
-  "sort": 2
+  "sort": 15
 }
