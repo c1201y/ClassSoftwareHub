@@ -8,7 +8,6 @@
   "version": "1.0.4.26081",
   "size": "<1mb",
   "system": "Windows",
-  "website": "",
   "github": "https://github.com/cjhdevact/CountDownControl",
   "downloads": [
     {
@@ -30,5 +29,5 @@
       "url": "https://github.com/cjhdevact/CountDownControl/releases/download/1.0.4.26081/CountDownControlAdmxs.exe"
     }
   ],
-  "sort": 10
+  "sort": 20
 }
