@@ -5,31 +5,31 @@
   "category": "system",
   "tagline": "StarPie 现代化 Windows 鼠标轮盘手势系统",
   "description": "StarPie 现代化 Windows 鼠标轮盘手势系统",
-  "version": "v1.8.0-beta.7",
+  "version": "v2.0.0",
   "size": "",
   "system": "Windows",
   "website": "",
   "github": "https://github.com/Star-Pie/StarPie",
   "downloads": [
     {
-      "platform": "Windows x64 压缩包",
-      "note": "StarPie-v1.8.0-beta.7-Lightweight-win-x64.zip",
-      "size": "12.2 MB",
-      "url": "https://github.com/Star-Pie/StarPie/releases/download/v1.8.0-beta.7/StarPie-v1.8.0-beta.7-Lightweight-win-x64.zip"
+      "platform": "Windows x64 轻量包",
+      "note": "需系统已安装 .NET 8 Desktop Runtime x64",
+      "size": "12 MB",
+      "url": "https://github.com/Star-Pie/StarPie/releases/download/v2.0.0/StarPie-v2.0.0-Lightweight-win-x64.zip"
     },
     {
       "platform": "Windows x64 安装版",
-      "note": "StarPie-v1.8.0-beta.7-Setup-win-x64.exe",
-      "size": "53.7 MB",
-      "url": "https://github.com/Star-Pie/StarPie/releases/download/v1.8.0-beta.7/StarPie-v1.8.0-beta.7-Setup-win-x64.exe"
+      "note": "含 .NET 运行时，支持开始菜单与桌面快捷方式",
+      "size": "53.6 MB",
+      "url": "https://github.com/Star-Pie/StarPie/releases/download/v2.0.0/StarPie-v2.0.0-Setup-win-x64.exe"
     },
     {
-      "platform": "Windows x64 压缩包",
-      "note": "StarPie-v1.8.0-beta.7-Standalone-win-x64.zip",
-      "size": "76.6 MB",
-      "url": "https://github.com/Star-Pie/StarPie/releases/download/v1.8.0-beta.7/StarPie-v1.8.0-beta.7-Standalone-win-x64.zip"
+      "platform": "Windows x64 免安装完整包",
+      "note": "含 .NET 运行时，解压即用",
+      "size": "76.4 MB",
+      "url": "https://github.com/Star-Pie/StarPie/releases/download/v2.0.0/StarPie-v2.0.0-Standalone-win-x64.zip"
     }
   ],
   "sort": 95,
-  "notice": "当前收录的是官方预发布版本 v1.8.0-beta.7（Beta / Alpha），可能不够稳定；建议到 GitHub Releases 下载最新正式版。"
+  "notice": "v2.0.0 起官方动作改为独立插件，需在「插件与扩展」中单独下载安装，不随主程序发行包附带；升级前请备份配置与插件数据。本次发行包未做代码签名，Windows 可能提示未知发布者，请从 GitHub Release 下载并核对 SHA256SUMS.txt。"
 }
