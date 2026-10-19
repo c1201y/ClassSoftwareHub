@@ -11,19 +11,19 @@
 
 /* ── 中秋节：青色 ───────────────────────────────────────────────── */
 html.holiday-skin.holiday-midautumn {
-  --accent-base: #0F566C;
-  --accent: #0F566C;
+  --accent-base: #802C22;
+  --accent: #802C22;
   --accent-hover: rgba(15, 86, 108, 0.90);
   --accent-pressed: rgba(15, 86, 108, 0.80);
-  --accent-aa-fill: #0A3D4C;
+  --accent-aa-fill: #802C22;
   --accent-aa-text: #FFFFFF;
   --accent-text: #FFFFFF;
   --accent-text-secondary: rgba(255, 255, 255, 0.70);
-  --accent-text-fill-color-primary: #52B6CE;
-  --AccentFillColorDefaultBrush: #0F566C;
+  --accent-text-fill-color-primary: #C6786C;
+  --AccentFillColorDefaultBrush: #A94637;
   --AccentFillColorSecondaryBrush: rgba(15, 86, 108, 0.90);
   --AccentFillColorTertiaryBrush: rgba(15, 86, 108, 0.80);
-  --SystemFillColorAttentionBrush: #0F566C;
+  --SystemFillColorAttentionBrush: #A94637;
 }
 
 /* 分类角标在深色模式默认是亮蓝，换成配套的亮青 */
