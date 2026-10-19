@@ -1,0 +1,39 @@
+/* ════════════════════════════════════════════════════════════════
+   站点主题色（由 CSHcontroller 生成，请不要手改）
+   亮色 = html.theme-light，暗色 = html.theme-dark
+   本文件须在 theme.css 之后被 import（src/main.ts 里已按此顺序）
+   ════════════════════════════════════════════════════════════════ */
+
+/* 亮色模式主题色 */
+html.theme-light {
+  --accent-base: #C31D1D;
+  --accent: #C31D1D;
+  --accent-hover: rgba(195, 29, 29, 0.90);
+  --accent-pressed: rgba(195, 29, 29, 0.80);
+  --accent-aa-fill: #9C1717;
+  --accent-aa-text: #FFFFFF;
+  --accent-text: #FFFFFF;
+  --accent-text-secondary: rgba(255, 255, 255, 0.70);
+  --accent-text-fill-color-primary: #D86C6C;
+  --AccentFillColorDefaultBrush: #C31D1D;
+  --AccentFillColorSecondaryBrush: rgba(195, 29, 29, 0.90);
+  --AccentFillColorTertiaryBrush: rgba(195, 29, 29, 0.80);
+  --SystemFillColorAttentionBrush: #C31D1D;
+}
+
+/* 暗色模式主题色 */
+html.theme-dark {
+  --accent-base: #68241C;
+  --accent: #68241C;
+  --accent-hover: rgba(104, 36, 28, 0.90);
+  --accent-pressed: rgba(104, 36, 28, 0.80);
+  --accent-aa-fill: #531D16;
+  --accent-aa-text: #FFFFFF;
+  --accent-text: #FFFFFF;
+  --accent-text-secondary: rgba(255, 255, 255, 0.70);
+  --accent-text-fill-color-primary: #9D716B;
+  --AccentFillColorDefaultBrush: #68241C;
+  --AccentFillColorSecondaryBrush: rgba(104, 36, 28, 0.90);
+  --AccentFillColorTertiaryBrush: rgba(104, 36, 28, 0.80);
+  --SystemFillColorAttentionBrush: #68241C;
+}
