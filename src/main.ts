@@ -1,3 +1,4 @@
+import './styles/site-accent.css';
 import { createApp } from 'vue'
 import App from './gallery/App.vue'
 import router from './gallery/router'
