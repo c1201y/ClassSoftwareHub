@@ -46,13 +46,19 @@ export const HOLIDAY_THEMES: Record<'dark' | 'light', HolidayTheme> = {
 };
 
 // ── 档期（档期内自动开启节日皮肤；档期外默认关闭，但设置里仍可手动开启）──
-export const HOLIDAY_WINDOW = { from: '2026-09-20', to: '2026-10-20' };
+export const HOLIDAY_WINDOW = { from: '2026-10-19', to: '2026-10-31' };
+
+/** 节日皮肤开关（由维护控制台设置）：auto 按档期 / always 永久显示 / never 永不显示 */
+export type HolidayMode = 'auto' | 'always' | 'never';
+export const HOLIDAY_MODE: HolidayMode = 'auto';
 
 const toDateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
 /** 今天是否在节日档期内（决定「节日皮肤」开关的默认值） */
 export const isHolidaySeason = (now: Date = new Date()): boolean => {
+  if (HOLIDAY_MODE === 'always') return true;
+  if (HOLIDAY_MODE === 'never') return false;
   const today = toDateKey(now);
   return today >= HOLIDAY_WINDOW.from && today <= HOLIDAY_WINDOW.to;
 };
