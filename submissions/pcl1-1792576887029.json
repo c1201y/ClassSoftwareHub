@@ -1,0 +1,25 @@
+{
+  "_提交时间": "2026-10-21T10:01:27.029Z",
+  "_原始ID冲突": false,
+  "id": "pcl1",
+  "name": "Plain Craft Launcher 1.exe",
+  "icon": "https://avatars.githubusercontent.com/u/40348278?v=4",
+  "category": "other",
+  "tagline": "下载Minecraft",
+  "description": "pcl1玩家幸存，他们没搞到，下载Minecraft",
+  "version": "1.0.0",
+  "size": "5mb",
+  "system": "32+64",
+  "website": "https://afdian.com/p/ecee26da1ecb11ec8edf52540025c377",
+  "github": "https://github.com/LTCatt/PCL1",
+  "downloads": [
+    {
+      "platform": "32+64",
+      "size": "5mb",
+      "url": "https://github.com/LTCatt/PCL1"
+    }
+  ],
+  "sort": 99,
+  "notice": "没人维护",
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBWZkcvdnc1dWRUZGFVS080\nUW5DRDFlczZVSnFEL29DRHlLbTdIb28wemdVClVWSmxKZEtuVE4rMzBqK3pxdnhr\ndnNobTBDSHJFNUpudEhra1BHYzZaMlkKLS0tIDRIdURPVFJ0TVR1cjNTVS96VHpP\ndEl2Unpiay9wU29zcWZFNElQUWN3VGMKpT+PLhX+sL32o5ZCE423v2z+0ilZra2n\n5V0M7tqoexLAC1iXpDfUUGdTNwPns4f0ocTd\n-----END AGE ENCRYPTED FILE-----"
+}
