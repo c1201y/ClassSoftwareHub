@@ -1,12 +1,11 @@
 {
   "id": "windhawk",
   "name": "windhawk",
-  "icon": "https://avatars.githubusercontent.com/u/95488203?v=4",
+  "icon": "https://img.3dmgame.com/uploads/images/thumbnews/20231120/1700472738_266564.png",
   "category": "other",
   "tagline": "The customization marketplace for Windows programs…",
   "description": "The customization marketplace for Windows programs: https://windhawk.net/",
   "version": "v1.7.3",
-  "size": "",
   "system": "Windows",
   "website": "https://windhawk.net",
   "github": "https://github.com/ramensoftware/windhawk",
