@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-18T06:25:46.307Z",
-  "_原始ID冲突": false,
   "id": "touchglide",
   "name": "TouchGlide",
   "icon": "https://avatars.githubusercontent.com/u/120377625?v=4",
@@ -20,6 +18,5 @@
       "url": "https://github.com/likangxian1007/TouchGlide/releases/download/v0.1.0/TouchGlide.exe"
     }
   ],
-  "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBlbVI5R3preUtYMWE5Q0R1\nK1pPK3JaSGk2ZjhMMkVzVjJmL3poNXNMZURzCmpBakFXb3NqMkpadW1rYW8rSE9W\nT3F1UXdReWpPQ3JrSi9iR1lJQnU2ZzgKLS0tIG1zbmhtN1laLzFTUVRZQzNuc3FR\nRCtkZ0JDVy9XY3l2dlBHakg5MmNrSVUKUiUZzH23DthBHvJH22vck1vr9o8zSmiu\nyLfl6jhcXWLC4c/W4pb/\n-----END AGE ENCRYPTED FILE-----"
+  "sort": 99
 }
