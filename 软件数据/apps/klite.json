@@ -5,7 +5,7 @@
   "category": "system",
   "tagline": "视频播放缺少HEVC支持的可以试试",
   "description": "扩展系统或播放器的解码能力。Windows 系统本身支持的音视频格式有限，安装 K-Lite 后，你的播放器（包括系统自带的）就能播放几乎所有主流及不常见的格式，如 MKV、MP4、AVI、FLV、HEVC (H.265) 等",
-  "version": "20.0.5",
+  "version": "20.1.0",
   "size": "",
   "system": "Windows",
   "website": "https://www.codecguide.com/",
@@ -14,33 +14,33 @@
     {
       "platform": "官方\tServer 1 标准版",
       "note": "通常使用标准版即可",
-      "url": "https://files2.codecguide.com/K-Lite_Codec_Pack_2005_Standard.exe",
+      "url": "https://files2.codecguide.com/K-Lite_Codec_Pack_2010_Standard.exe",
       "size": "39 MB",
       "kind": "file"
     },
     {
       "platform": "官方\tServer 2 标准版",
       "note": "通常使用标准版即可",
-      "url": "https://files3.codecguide.com/K-Lite_Codec_Pack_2005_Standard.exe",
+      "url": "https://files3.codecguide.com/K-Lite_Codec_Pack_2010_Standard.exe",
       "size": "39 MB",
       "kind": "file"
     },
     {
       "platform": "官方完整版",
-      "url": "https://files2.codecguide.com/K-Lite_Codec_Pack_2005_Full.exe",
+      "url": "https://files2.codecguide.com/K-Lite_Codec_Pack_2010_Full.exe",
       "size": "55 MB",
       "kind": "file"
     },
     {
       "platform": "官方组合版",
-      "url": "https://files2.codecguide.com/K-Lite_Codec_Pack_2005_Mega.exe",
-      "size": "65 MB",
+      "url": "https://files2.codecguide.com/K-Lite_Codec_Pack_2010_Mega.exe",
+      "size": "66 MB",
       "kind": "file"
     },
     {
       "platform": "官方基础版",
       "note": "最精简的版本，包含播放主流格式所需的基本解码器，但不附带媒体播放器，适合已有播放器、只需解码支持的用户。",
-      "url": "https://files2.codecguide.com/K-Lite_Codec_Pack_2005_Basic.exe",
+      "url": "https://files2.codecguide.com/K-Lite_Codec_Pack_2010_Basic.exe",
       "size": "22 MB",
       "kind": "file"
     }
