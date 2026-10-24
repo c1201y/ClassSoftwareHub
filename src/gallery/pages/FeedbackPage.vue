@@ -334,9 +334,10 @@ const FLOW_STEPS = [
 const ISSUE_LIST_URL = `${REPO_URL}/issues`;
 
 // 提交入口与「提交软件」（SubmitPage.vue）、「回声洞」（EchoCaveCard.vue）**同一套**：
-// 同样的两个域名顺序、同样的超时、同样把上次成功的那个记在 localStorage（key 也共用）。
-// 三处刻意保持一致 —— 任何一个入口出问题时，用户的体验应该完全一样。
-const SUBMIT_ENDPOINTS = ['https://cshapi.132614.xyz', 'https://submit.132614.xyz'];
+// 同一个后端域名、同样的超时、同样把上次成功的那个记在 localStorage（key 也共用）。
+// 三处刻意保持一致 —— 入口出问题时，用户的体验应该完全一样。
+// 2026-10-24：后端迁移至 EdgeOne Pages，详见 submitEndpoints.ts 头部注释。
+const SUBMIT_ENDPOINTS = ['https://api.classsoftwarehub.cn'];
 const SUBMIT_TIMEOUT_MS = 10000;
 const ENDPOINT_CACHE_KEY = 'csh-submit-endpoint';
 

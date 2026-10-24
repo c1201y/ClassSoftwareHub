@@ -1,16 +1,14 @@
 // 提交服务的入口清单，以及「记住上次成功的那个」的选路逻辑。
 //
-// 投稿（/api/submit）、回声洞、反馈、以及投稿页的 OSS 直传签名（/api/oss-sign）
-// 都挂在同一个 Cloudflare Worker 上，入口只在此处维护一份 —— 多处各留一份
+// 投稿（/api/submit）、回声洞、反馈、以及投稿页的 OSS 直传签名（/api/oss-sign）、
+// 下载票据（/api/dl-ticket）都挂在同一个后端上，入口只在此处维护一份 —— 多处各留一份
 // 易在变更时失同步。
 //
-// 为什么要两个入口、还要记路：
-//   .workers.dev 域名在国内不可访问，面向访客的接口必须走自定义域；而自定义域可能
-//   暂时失效，需能自动切换下一条。因此按顺序尝试，首个返回业务 JSON 响应的入口即为
-//   可用入口，并记入 localStorage，下次优先尝试，避免重复等待必然失败的请求。
+// 2026-10-24：后端由 Cloudflare Worker（cshapi / submit.132614.xyz 双域）整体迁移至
+// EdgeOne Pages（api.classsoftwarehub.cn）。新后端单入口即可用，选路与记忆逻辑保留：
+// 若将来需要备用入口，直接往数组里加即可，调用方无需改动。
 const SUBMIT_ENDPOINTS = [
-  'https://cshapi.132614.xyz',
-  'https://submit.132614.xyz'
+  'https://api.classsoftwarehub.cn'
 ];
 
 /** 单个入口的超时时间：超时后尽快切换下一个入口，避免用户长时间等待（两个入口最坏 20 秒） */
