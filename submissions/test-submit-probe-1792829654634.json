@@ -1,0 +1,26 @@
+{
+  "_提交时间": "2026-10-24T08:14:14.634Z",
+  "_原始ID冲突": false,
+  "id": "test-submit-probe",
+  "name": "test 投稿探针·platforms 适配验收",
+  "icon": "",
+  "category": "other",
+  "tagline": "test 一句话简介",
+  "description": "test 详细介绍：部署后验证 platforms 与 _系统版本 字段适配",
+  "version": "1.0.0",
+  "size": "1MB",
+  "system": "Windows 10+",
+  "website": "",
+  "github": "https://github.com/c1201y/csh-api",
+  "downloads": [],
+  "sort": 99,
+  "platforms": [
+    "windows"
+  ],
+  "_系统版本": {
+    "windows": [
+      "10"
+    ]
+  },
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\ntest\n-----END AGE ENCRYPTED FILE-----"
+}
