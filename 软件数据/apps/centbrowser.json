@@ -1,7 +1,7 @@
 {
   "id": "centbrowser",
   "name": "CentBrowser百分浏览器",
-  "icon": "https://www.centbrowser.cn/image/logo.png",
+  "icon": "https://img03.sogoucdn.com/v2/thumb/resize/w/80/h/80?appid=100520147&url=https%3A%2F%2Fcu003.www.duba.net%2Fduba%2Ftools%2Fdubatools%2Fsoftmgricon%2F70006737.png",
   "category": "schedule",
   "tagline": "追求速度、简约和安全的网络浏览器",
   "description": "百分浏览器是一款追求速度、简约和安全的网络浏览器，它基于最新的Chromium开源内核进行优化开发，提供了鼠标手势",
@@ -9,19 +9,16 @@
   "size": "110MB",
   "system": "Windows7~11(x64)",
   "website": "https://www.centbrowser.cn",
-  "github": "",
   "downloads": [
     {
       "platform": "Windows x64 安装版",
       "size": "117 MB",
-      "url": "https://static.centbrowser.cn/win_stable/5.3.1184.25/centbrowser_5.3.1184.25_x64.exe",
-      "kind": "file"
+      "url": "https://static.centbrowser.cn/win_stable/5.3.1184.25/centbrowser_5.3.1184.25_x64.exe"
     },
     {
       "platform": "Windows x64 便携版",
       "size": "149 MB",
-      "url": "https://static.centbrowser.cn/win_stable/5.3.1184.25/centbrowser_5.3.1184.25_x64_portable.exe",
-      "kind": "file"
+      "url": "https://static.centbrowser.cn/win_stable/5.3.1184.25/centbrowser_5.3.1184.25_x64_portable.exe"
     }
   ],
   "sort": 45
