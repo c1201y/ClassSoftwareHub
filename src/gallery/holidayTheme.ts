@@ -50,7 +50,7 @@ export const HOLIDAY_WINDOW = { from: '2026-10-19', to: '2026-10-31' };
 
 /** 节日皮肤开关（由维护控制台设置）：auto 按档期 / always 永久显示 / never 永不显示 */
 export type HolidayMode = 'auto' | 'always' | 'never';
-export const HOLIDAY_MODE: HolidayMode = 'auto';
+export const HOLIDAY_MODE = 'auto' as HolidayMode;
 
 const toDateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
