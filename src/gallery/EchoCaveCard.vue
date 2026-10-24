@@ -164,7 +164,7 @@ const next = async () => {
 // ══════════ 投稿 ══════════
 
 // 提交入口与「提交软件」页同一套（SubmitPage.vue）：记忆入口也共用同一个 localStorage key
-const SUBMIT_ENDPOINTS = ['https://cshapi.132614.xyz', 'https://submit.132614.xyz'];
+const SUBMIT_ENDPOINTS = ['https://api.classsoftwarehub.cn'];
 const SUBMIT_TIMEOUT_MS = 10000;
 const ENDPOINT_CACHE_KEY = 'csh-submit-endpoint';
 

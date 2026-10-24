@@ -47,7 +47,7 @@ export class OssDownloadError extends Error {
  * 从一个下载项 URL 里认出「本站 OSS 对象」，取出对象键。
  * 支持三种写法：
  *   oss://upload/2026/10/xxx.exe           ← 现在用的
- *   https://submit.132614.xyz/api/dl?k=... ← 票据地址（反解出 key）
+ *   https://api.classsoftwarehub.cn/api/dl?k=... ← 票据地址（反解出 key）
  *   https://<bucket>.oss-cn-shanghai.aliyuncs.com/upload/... ← 历史公开直链
  * 认不出来就返回 null（调用方按原来的跳转逻辑走）。
  */
