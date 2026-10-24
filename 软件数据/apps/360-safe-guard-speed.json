@@ -8,6 +8,7 @@
   "version": "15.0.3.1058",
   "size": "约 93 MB",
   "system": "Windows 7 ~ 11",
+  "platforms": ["windows"],
   "website": "https://www.360.cn/",
   "downloads": [
     {

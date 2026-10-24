@@ -7,7 +7,8 @@
   "description": "7-Zip 是一款开源免费的文件压缩 / 解压软件，压缩率高、解压速度快，支持 7z、ZIP、RAR、ISO 等多种格式。轻量纯净、无广告无捆绑，是教室大屏上的必备工具。",
   "version": "26.05",
   "size": "1.6 MB",
-  "system": "Windows XP ~ 11",
+  "system": "Windows XP ~ 11、Linux x64 / x86 / ARM64",
+  "platforms": ["windows", "linux"],
   "website": "https://www.7-zip.org/",
   "github": "https://github.com/ip7z/7zip",
   "downloads": [

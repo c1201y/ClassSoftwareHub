@@ -18,7 +18,7 @@
 | Stack | Vue 3.5 + Vue Router 4 (**hash routing**) + Vite 8 + TypeScript. Pure static front end, no backend |
 | Boot path | `index.html` → `src/main.ts` → `src/gallery/App.vue` (shell) → `src/gallery/router.ts` (8 routes: home / detail / settings / submit / feedback / tools / single tool / AI nav) |
 | App code | Everything lives in `src/gallery/` — **the only place you should change code** |
-| Data | `软件数据/apps/*.json` (one file per app; 71 today, plus `_模板.json`) + `软件数据/categories.json` (4 categories) |
+| Data | `软件数据/apps/*.json` (one file per app; 71 today, plus `_模板.json`) + `软件数据/categories.json` (6 categories) + `软件数据/platforms.json` (6 platforms) |
 | Strings | Chinese = `文字设置.ts` at repo root; English = `src/gallery/Strings/en-US/Resources.ts` |
 | Live site | https://classsoftwarehub.us.ci (main) — mirrors: classsoftwarehub.132614.xyz (see `CNAME`) · classsoftwarehub.xfane.com |
 | Output | `npm run build` → `dist/` (multi-file, **what CI ships**); `SINGLEFILE=1` → one HTML file (offline / double-click) |
@@ -43,7 +43,8 @@ npm run check         # type-check + build
 鸣谢文本.ts                       Credits list on the Settings page (independent of 文字设置.ts)
 AI导航文本.ts                    Site list + copy for the AI-nav page (independent of 文字设置.ts)
 软件数据/
-  ├─ categories.json             The 4 categories: system / schedule / teaching / other
+  ├─ categories.json             The 6 categories: classroom / office / system / media / network / utility
+  ├─ platforms.json              The 6 platforms: windows / macos / linux / android / ios / web
   ├─ update-ignore.json          Apps the update checker should stop nagging about (see "CI Notes")
   ├─ README-维护手册.md          ★ Read this before editing data
   └─ apps/<id>.json              One file per app; files starting with `_` are not loaded
@@ -150,7 +151,8 @@ Fields and meanings (full reference: `软件数据/README-维护手册.md` and `
 | `id` | **Unique** ASCII identifier: lowercase letters, digits, hyphens only. URL = `#/download/<id>` |
 | `name` | App name |
 | `icon` | Icon image URL (square, 256×256 recommended); empty shows a placeholder. ⚠️ Hosted on GitHub / jsDelivr → **also add a 64 px local copy** (see "App icons") |
-| `category` | Must be a key from `categories.json`: `system` / `schedule` / `teaching` / `other` |
+| `category` | Must be a key from `categories.json`: `classroom` / `office` / `system` / `media` / `network` / `utility` |
+| `platforms` | Systems it runs on — keys from `platforms.json`: `windows` / `macos` / `linux` / `android` / `ios` / `web`. Drives the home page “系统” filter; `system` stays the human-readable text |
 | `tagline` | One-line summary (home card) |
 | `description` | Full description (detail page) |
 | `version` `size` `system` | Version / download size / OS limits (e.g. `Windows 10/11（x86 / x64 / ARM64）`) |
@@ -173,6 +175,18 @@ Key constraints:
   a Store card, so you do not have to add `store` separately (both forms are supported).
 - Keep the established platform labels: `Windows x64 安装版` / `Windows x64 便携版` /
   `macOS（Apple 芯片）` / `Linux x64（.deb）` / `Android ARM64（APK）`.
+- **`platforms` is separate from `system`.** `system` is the human-readable text (platform + version
+  details); `platforms` is the machine-readable key array that the home page OS filter matches. An app
+  without `platforms` is only listed under “全部系统”. The submit page asks for `platforms` through a
+  multi-select (`platforms.json`) and derives `system` from the ticked platforms **and versions**; the
+  home page filter deliberately stays platform-level.
+- **Version details live in `platforms.json`, not in app files.** Each platform may carry
+  `versions: [{ key, name }]` sorted oldest → newest, plus `versionRange: true` for numeric versions
+  that can collapse into an open range (`10` + `11` → `Windows 10+`, `7` + `10` + `11` →
+  `Windows 7+`); omit it for distro lists such as Linux (`Linux（Debian / Arch）`). Every list ends
+  with the `other` key (`其他`), which the submit page requires when the real version is unknown.
+  Version tick marks are draft-only metadata (`_系统版本`); the review workflow strips all `_` keys,
+  so only the generated `system` text is published.
 - **Fault tolerance is deliberate**: one broken JSON can never take the site down — the bad file is
   skipped, everything else still renders, and a red bar at the top lists "how many files failed + file
   name + approximate line + reason" (`dataLoadIssues`, see `src/gallery/data/index.ts`). Data edits are safe.
@@ -293,8 +307,10 @@ changes are replayed by `visitor.ts`.
    it is a backup, not a deployment source.
    ⚠️ Drafts submitted **before** that date genuinely lack the key; a missing contact there is
    expected, not a submitter mistake.
-   Required before submission: `id`, `name`, `category`, `tagline`, `description`, `system`, a contact
-   (`_联系方式`) and **at least one direct download link**. All of it is validated in
+   Required before submission: `id`, `name`, `category`, `tagline`, `description`, at least one
+   system key in `platforms` **and a version for every ticked platform that has version options**
+   (multi-select + second-level menu fed by `platforms.json` — `system` is derived from it), a
+   contact (`_联系方式`) and **at least one direct download link**. All of it is validated in
    `SubmitPage.vue` → `buildPayload()` — the submit button is not a native submit control, so the
    HTML `required` attribute never fires and validation has to stay in JS.
    Download items also take an **optional checksum** (`下载项 → 校验值`). It is normalized on submit

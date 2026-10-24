@@ -2,12 +2,13 @@
   "id": "xiwopinke",
   "name": "希沃品课",
   "icon": "https://imlizhi-store-https.seewo.com/12f46683065e40e5b6d5db8a8b1cbab2",
-  "category": "schedule",
+  "category": "classroom",
   "tagline": "希沃品课官方正版下载",
   "description": "希沃品课是希沃出品的课堂互动与教学工具，方便老师在课堂上组织互动、推送学习资源。这里提供官方正版下载入口，避免从第三方渠道下载到带捆绑的版本。",
   "version": "1.2.43.7326",
   "size": "340 MB",
   "system": "Windows 10 +",
+  "platforms": ["windows"],
   "website": "https://e.seewo.com/#/",
   "downloads": [
     {

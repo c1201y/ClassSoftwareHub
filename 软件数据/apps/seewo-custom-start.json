@@ -2,11 +2,12 @@
   "id": "seewo-custom-start",
   "name": "Seewo-Custom_Start",
   "icon": "https://raw.githubusercontent.com/SRInternet-Studio/Seewo-Custom_Start/master/en.png",
-  "category": "other",
+  "category": "classroom",
   "tagline": "用定制启动器点缀万物！",
   "description": "用定制启动器点缀万物！",
   "version": "V4.0",
   "system": "Windows",
+  "platforms": ["windows"],
   "github": "https://github.com/SRInternet-Studio/Seewo-Custom_Start",
   "downloads": [
     {

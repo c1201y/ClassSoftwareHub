@@ -8,6 +8,7 @@
   "version": "1.63",
   "size": "0.7 MB",
   "system": "Windows Vista ~ 11（32 / 64 位）",
+  "platforms": ["windows"],
   "website": "https://learn.microsoft.com/zh-cn/sysinternals/downloads/rammap",
   "downloads": [
     {

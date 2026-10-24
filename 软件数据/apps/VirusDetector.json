@@ -8,6 +8,7 @@
   "version": "2.5.2",
   "size": "0.1 MB",
   "system": "浏览器（Chrome/Edge 等）",
+  "platforms": ["web"],
   "website": "https://www.bilibili.com/video/BV1B5Kj6bEmk/",
   "github": "https://github.com/Lolitide/VirusDetector",
   "downloads": [

@@ -2,12 +2,13 @@
   "id": "centbrowser",
   "name": "CentBrowser百分浏览器",
   "icon": "https://img03.sogoucdn.com/v2/thumb/resize/w/80/h/80?appid=100520147&url=https%3A%2F%2Fcu003.www.duba.net%2Fduba%2Ftools%2Fdubatools%2Fsoftmgricon%2F70006737.png",
-  "category": "schedule",
+  "category": "office",
   "tagline": "追求速度、简约和安全的网络浏览器",
   "description": "百分浏览器是一款追求速度、简约和安全的网络浏览器，它基于最新的Chromium开源内核进行优化开发，提供了鼠标手势",
   "version": "5.3.1184.25",
   "size": "110MB",
   "system": "Windows7~11(x64)",
+  "platforms": ["windows"],
   "website": "https://www.centbrowser.cn",
   "downloads": [
     {

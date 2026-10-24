@@ -8,6 +8,7 @@
   "version": "7.0.1873.0",
   "size": "约 20 MB",
   "system": "Windows 10/11 64/Arm64 位",
+  "platforms": ["windows"],
   "website": "https://nanazip.org",
   "github": "https://github.com/M2Team/NanaZip",
   "store": "https://apps.microsoft.com/detail/9N8G7TSCL18R",

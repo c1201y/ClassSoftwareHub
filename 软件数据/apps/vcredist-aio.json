@@ -8,6 +8,7 @@
   "version": "0.106.0",
   "size": "17 MB ~ 31 MB",
   "system": "Windows Vista ~ 11（x86 / x64 / ARM64）",
+  "platforms": ["windows"],
   "github": "https://github.com/abbodi1406/vcredist",
   "downloads": [
     {

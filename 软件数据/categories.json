@@ -1,22 +1,32 @@
 [
   {
+    "key": "classroom",
+    "name": "教学课堂",
+    "icon": "\ue954"
+  },
+  {
+    "key": "office",
+    "name": "办公通讯",
+    "icon": "\ue787"
+  },
+  {
     "key": "system",
     "name": "系统工具",
-    "icon": ""
+    "icon": "\ue90f"
   },
   {
-    "key": "schedule",
-    "name": "教学软件",
-    "icon": ""
+    "key": "media",
+    "name": "影音图像",
+    "icon": "\ue768"
   },
   {
-    "key": "teaching",
-    "name": "教学辅助",
-    "icon": ""
+    "key": "network",
+    "name": "网络工具",
+    "icon": "\ue774"
   },
   {
-    "key": "other",
+    "key": "utility",
     "name": "其他工具",
-    "icon": ""
+    "icon": "\ue71d"
   }
 ]

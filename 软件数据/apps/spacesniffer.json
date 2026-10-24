@@ -8,6 +8,7 @@
   "version": "2.2.0.27",
   "size": "约 2.9 MB",
   "system": "Windows 7 / 8 / 10 / 11（x64，便携版）",
+  "platforms": ["windows"],
   "website": "http://www.uderzo.it/main_products/space_sniffer/",
   "downloads": [
     {

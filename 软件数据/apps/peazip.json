@@ -8,6 +8,7 @@
   "version": "11.4.0",
   "size": "8 MB ~ 16 MB",
   "system": "Windows 7 ~ 11（32 / 64 位）",
+  "platforms": ["windows"],
   "website": "https://peazip.github.io/",
   "github": "https://github.com/peazip/PeaZip",
   "downloads": [

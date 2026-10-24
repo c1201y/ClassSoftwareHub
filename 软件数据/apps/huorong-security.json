@@ -8,6 +8,7 @@
   "version": "6.0.12.3",
   "size": "约 68 MB",
   "system": "Windows 7+",
+  "platforms": ["windows"],
   "website": "https://www.huorong.cn/",
   "downloads": [
     {

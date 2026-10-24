@@ -2,12 +2,13 @@
   "id": "yjxzsayxingz",
   "name": "海康易教学助手",
   "icon": "https://www.hik-cloud.com/teach-prepare-web/favicon.ico",
-  "category": "schedule",
+  "category": "classroom",
   "tagline": "海康威视开发的一个类似希沃白板的教学软件",
   "description": "一个类似于希沃白板的软件，但是自带PPT组件和画笔功能，在任何页面都可以调用画笔，全屏PPT后自动适配PPT翻页按键等，自带白板功能，无需登录也能使用大部分功能",
   "version": "1.26.4",
   "size": "353.7MB",
   "system": "Windows系统(一般建议Windows10)",
+  "platforms": ["windows"],
   "website": "https://www.hik-cloud.com/teach-prepare-web/download.html#/download",
   "downloads": [
     {

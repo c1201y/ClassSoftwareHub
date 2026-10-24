@@ -8,6 +8,7 @@
   "version": "2026.2",
   "size": "约 2 MB（x64 便携版）",
   "system": "Windows 10 / 11（x64 / ARM64）",
+  "platforms": ["windows"],
   "website": "https://translucenttb.github.io",
   "github": "https://github.com/TranslucentTB/TranslucentTB",
   "downloads": [

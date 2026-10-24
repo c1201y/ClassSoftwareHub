@@ -2,12 +2,13 @@
   "id": "potplayer",
   "name": "PotPlayer 播放器",
   "icon": "https://tse4-mm.cn.bing.net/th/id/OIP-C.RZU5vtuGv4JxeGmSHX4__AHaHa?w=167&h=180&c=7&r=0&o=7&pid=1.7&rm=3",
-  "category": "other",
+  "category": "media",
   "tagline": "功能强大的全能播放器（字幕、倍速、截屏齐全）",
   "description": "PotPlayer 是 Kakao（原 Daum）出品的免费视频播放器，解码能力极强、资源占用低，支持几乎所有常见格式，字幕、音轨切换、倍速播放（还能保音调）、逐帧播放、截屏录屏、3D/VR 等一应俱全。放课件视频、英语听力、电影都很合适，是很多教室电脑的主力播放器。",
   "version": "26.10.21.0",
   "size": "约 30 MB",
   "system": "Windows 7 ~ 11（32 / 64 / ARM64）",
+  "platforms": ["windows"],
   "website": "https://potplayer.daum.net/",
   "downloads": [
     {
