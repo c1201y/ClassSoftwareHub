@@ -59,7 +59,7 @@ import { classify, BUCKET_LABEL } from './untracked-buckets.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const APPS_DIR = path.join(ROOT, '软件数据', 'apps')
-const UA = 'ClassSoftwareHub-UpdateChecker/1.0 (+https://classsoftwarehub.us.ci)'
+const UA = 'ClassSoftwareHub-UpdateChecker/1.0 (+https://classsoftwarehub.cn)'
 
 // ── 参数 ────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2)

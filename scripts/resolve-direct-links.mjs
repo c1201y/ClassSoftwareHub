@@ -41,7 +41,7 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const APPS_DIR = path.join(ROOT, '软件数据', 'apps')
-const UA = 'ClassSoftwareHub-Resolver/1.0 (+https://classsoftwarehub.us.ci)'
+const UA = 'ClassSoftwareHub-Resolver/1.0 (+https://classsoftwarehub.cn)'
 const TIMEOUT = 20000
 const API_BASE = (process.env.GITHUB_API_BASE || 'https://api.github.com').replace(/\/+$/, '')
 const TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || ''

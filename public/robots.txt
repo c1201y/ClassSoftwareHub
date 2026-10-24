@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://classsoftwarehub.us.ci/sitemap.xml
+Sitemap: https://classsoftwarehub.cn/sitemap.xml
