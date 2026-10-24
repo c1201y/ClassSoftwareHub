@@ -117,7 +117,7 @@ export const REPO_URL = `https://github.com/${FEEDBACK_REPO}`;
  *    按仓库约定（见 AGENTS.md「SEO & the share card」），绝对 URL 一律用主域，
  *    两个镜像站会被 canonical 折回主域，所以这里写主域是对的。
  */
-export const SITE_ORIGIN = 'https://classsoftwarehub.us.ci/';
+export const SITE_ORIGIN = 'https://classsoftwarehub.cn/';
 
 // ── 长度上限 ────────────────────────────────────────────────────────────
 /** 标题软上限：超出时提示用户压缩（标题过长会影响 Issue 列表的可读性） */

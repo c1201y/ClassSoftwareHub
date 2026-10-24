@@ -20,7 +20,7 @@
 | App code | Everything lives in `src/gallery/` — **the only place you should change code** |
 | Data | `软件数据/apps/*.json` (one file per app; 71 today, plus `_模板.json`) + `软件数据/categories.json` (6 categories) + `软件数据/platforms.json` (6 platforms) |
 | Strings | Chinese = `文字设置.ts` at repo root; English = `src/gallery/Strings/en-US/Resources.ts` |
-| Live site | https://classsoftwarehub.us.ci (main) — mirrors: classsoftwarehub.132614.xyz (see `CNAME`) · classsoftwarehub.xfane.com |
+| Live site | https://classsoftwarehub.cn (main) — mirrors: classsoftwarehub.132614.xyz (see `CNAME`) · classsoftwarehub.xfane.com |
 | Output | `npm run build` → `dist/` (multi-file, **what CI ships**); `SINGLEFILE=1` → one HTML file (offline / double-click) |
 
 ### Commands
@@ -413,7 +413,7 @@ label.
 
 - JSON, not Markdown-only: the body is assembled from the draft plus, when a `appId` is set, a
   **涉及软件** row carrying the app name, its backticked `id` and a link to
-  `https://classsoftwarehub.us.ci/#/download/<id>` (always the main domain — see "SEO & the share
+  `https://classsoftwarehub.cn/#/download/<id>` (always the main domain — see "SEO & the share
   card"). Free text is the last section.
   ⚠️ **The issue body exists twice.** The primary path is built by `create-review-issue.yml`'s
   embedded script (that is the one reporters actually see); `feedback.ts#buildIssueBody` produces the
@@ -729,7 +729,7 @@ searchable go into the `SEARCH_PAGES` table in `searchIndex.ts` (title + descrip
 `index.html` (`description` / `keywords` / `canonical` / Open Graph / Twitter card / JSON-LD) plus
 files in `public/` — `robots.txt`, `sitemap.xml`, `favicon.ico`, and `og-cover.png` (1200×630, the
 preview image shown when the link is posted in QQ / WeChat). **Every absolute URL in these files must
-use the main domain `https://classsoftwarehub.us.ci/`** — Bing rejects a sitemap that lists another
+use the main domain `https://classsoftwarehub.cn/`** — Bing rejects a sitemap that lists another
 domain ("not contained in this site"); the two mirrors (132614.xyz / xfane.com) are folded into the
 main domain by `canonical`. Vite copies `public/` verbatim into
 `dist/`, so all three deploy targets (Pages · FTP · OpenList) carry them.

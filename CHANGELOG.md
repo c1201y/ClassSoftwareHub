@@ -19,10 +19,11 @@
 - 【新增】 新增 7 款电教委员常用软件：**微信输入法、QQ 音乐、Python、Wise Disk Cleaner、WPS 教育考试专用版、Microsoft .NET 运行库合集、BongoCat**。（by[@椰汁](https://github.com/c1201y/)）
 - 【变更】 更新 9 款软件至上游最新版（WinRAR、希沃白板、运行库、bilibili 下载器、BongoCat、SpaceSniffer、NanaZip 等），移除长期失效的 **Luanti（原 Minetest）**。（by[@椰汁](https://github.com/c1201y/)）
 - 【新增】 鸣谢新增「凭舟吟」（提供 GitHub 加速节点与落盘缓存支持）。（by[@椰汁](https://github.com/c1201y/)）
+- 【变更】 **站点主域名改为 `classsoftwarehub.cn`**：搜索收录、分享卡片、站点地图、robots 与反馈回链中的主域名从 `classsoftwarehub.us.ci` 统一切换为 `classsoftwarehub.cn`；`132614.xyz` 与 `xfane.com` 镜像照常可用。（by[@椰汁](https://github.com/c1201y/)）
 
 ### 其他内容
 
-- 网站链接1：[电教委员常用软件下载站](https://classsoftwarehub.us.ci/#/home)
+- 网站链接1：[电教委员常用软件下载站](https://classsoftwarehub.cn/#/home)
 - 网站链接2：[备用站](https://classsoftwarehub.132614.xyz/#/home)
   > 【提示】福建闽北，闽西地区的用户可能会遇上打不开的问题。
 - 夸克网盘：[夸克网盘分享](https://pan.quark.cn/s/7cbf21203ad9)
@@ -59,7 +60,7 @@
 
 ### 其他内容
 
-- 网站链接1：[电教委员常用软件下载站](https://classsoftwarehub.us.ci/#/home)
+- 网站链接1：[电教委员常用软件下载站](https://classsoftwarehub.cn/#/home)
 - 网站链接2：[备用站](https://classsoftwarehub.132614.xyz/#/home)
   > 【提示】福建闽北，闽西地区的用户可能会遇上打不开的问题。
 - 夸克网盘：[夸克网盘分享](https://pan.quark.cn/s/7cbf21203ad9)
@@ -100,7 +101,7 @@
 
 ### 其他内容
 
-- 网站链接1：[电教委员常用软件下载站](https://classsoftwarehub.us.ci/#/home)
+- 网站链接1：[电教委员常用软件下载站](https://classsoftwarehub.cn/#/home)
 - 网站链接2：[备用站](https://classsoftwarehub.132614.xyz/#/home)
   > 【提示】福建闽北，闽西地区的用户可能会遇上打不开的问题。
 - 夸克网盘：[夸克网盘分享](https://pan.quark.cn/s/7cbf21203ad9)
