@@ -7,7 +7,8 @@
   "description": "伟大的python，无需多言",
   "version": "",
   "size": "",
-  "system": "无限制",
+  "system": "Windows / macOS / Linux",
+  "platforms": ["windows", "macos", "linux"],
   "website": "https://www.python.org/downloads/",
   "github": "",
   "downloads": [

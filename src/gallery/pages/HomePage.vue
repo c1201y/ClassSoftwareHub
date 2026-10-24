@@ -65,6 +65,14 @@
             </button>
             <button
               type="button"
+              class="home-desktop-download-btn is-win7"
+              :disabled="desktopDownloading !== null"
+              :title="desktopPromo.win7Hint"
+              @click="downloadDesktop('win7')">
+              {{ desktopDownloading === 'win7' ? desktopPromo.pending : desktopPromo.win7 }}
+            </button>
+            <button
+              type="button"
               class="home-desktop-download-btn is-insider"
               :disabled="desktopDownloading !== null"
               @click="downloadDesktop('insider')">
@@ -116,12 +124,20 @@
             :Items="filterItems"
             :SelectedItem="selectedItem"
             @SelectionChanged="onFilterChanged" />
-          <span class="filter-count">{{ t('filter.collected', { count: apps.length }) }}</span>
+          <div class="filter-meta">
+            <WinComboBox
+              v-if="platformItems.length > 1"
+              class="platform-filter"
+              :ItemsSource="platformItems"
+              DisplayMemberPath="name"
+              v-model:SelectedIndex="platformIndex" />
+            <span class="filter-count">{{ countText }}</span>
+          </div>
         </div>
 
         <!-- 软件卡片网格（列表最上方可能带一张分类推荐卡） -->
         <div class="switch-presenter">
-          <!-- 分类推荐卡：选到「教学辅助」时，在软件列表最上方插一条整页宽的外链卡片
+          <!-- 分类推荐卡：选到「教学课堂」时，在软件列表最上方插一条整页宽的外链卡片
                （文案/网址在根目录 文字设置.ts 的 home.iwb-card-*，title、desc 留空即隐藏） -->
           <a
             v-if="showIwbCard"
@@ -139,6 +155,7 @@
               <span class="category-promo-link-icon" aria-hidden="true">&#xE8A7;</span>
             </span>
           </a>
+          <p v-if="filteredApps.length === 0" class="filter-empty">{{ t('filter.empty') }}</p>
           <div class="grid-view download-grid">
             <button
               v-for="app in filteredApps"
@@ -184,8 +201,9 @@ import type { HolidayTheme } from '../holidayTheme';
 import WinScrollViewer from '../../components/WinScrollViewer.vue';
 import WinTextBlock from '../../components/WinTextBlock.vue';
 import WinSelectorBar from '../../components/WinSelectorBar.vue';
+import WinComboBox from '../../components/WinComboBox.vue';
 import { useI18n } from '../../components/i18n/index';
-import { apps, categories, categoryName } from '../data';
+import { apps, categories, categoryName, platforms } from '../data';
 import type { SoftwareApp } from '../data';
 import { appIconUrlSafe, markIconBroken } from '../appIcons';
 // 桌面应用版的 exe 直接下载（取最新版本 + 镜像加速 + Release 页兜底）
@@ -218,10 +236,28 @@ const activeFilter = ref('all');
 
 const selectedItem = computed(() => filterItems.value[selectedIndex.value]);
 
+/** 系统下拉：第一项是“全部系统”，后面取自 软件数据/platforms.json */
+const platformItems = computed(() => [
+  { key: 'all', name: t('filter.platform-all') },
+  ...platforms.map((platform) => ({ key: platform.key, name: platform.name }))
+]);
+
+const platformIndex = ref(0);
+const activePlatform = computed(() => platformItems.value[platformIndex.value]?.key ?? 'all');
+
+/** 分类与系统是「且」的关系；没写 platforms 的软件只在「全部系统」下出现 */
 const filteredApps = computed(() =>
-  activeFilter.value === 'all'
-    ? apps
-    : apps.filter((app) => app.category === activeFilter.value)
+  apps.filter(
+    (app) =>
+      (activeFilter.value === 'all' || app.category === activeFilter.value) &&
+      (activePlatform.value === 'all' || app.platforms?.includes(activePlatform.value))
+  )
+);
+
+const countText = computed(() =>
+  activeFilter.value === 'all' && activePlatform.value === 'all'
+    ? t('filter.collected', { count: apps.length })
+    : t('filter.showing', { count: filteredApps.value.length })
 );
 
 /** WinSelectorBar 的 SelectionChanged：sender 带 Items / SelectedItem */
@@ -232,13 +268,13 @@ const onFilterChanged = (sender: { Items?: { Tag?: string }[]; SelectedItem?: { 
 };
 
 /**
- * 「教学辅助」分类顶部的推荐卡（Awesome IWB）：
+ * 「教学课堂」分类顶部的推荐卡（Awesome IWB）：
  * 只在选中该分类时出现；文案中 title/desc 全部清空时自动隐藏（等效于移除该卡片）。
  */
-const teachingCategoryKey = 'teaching';
+const classroomCategoryKey = 'classroom';
 const showIwbCard = computed(
   () =>
-    activeFilter.value === teachingCategoryKey &&
+    activeFilter.value === classroomCategoryKey &&
     Boolean(t('home.iwb-card-title')?.trim()) &&
     Boolean(t('home.iwb-card-desc')?.trim()) &&
     Boolean(t('home.iwb-card-url')?.trim())
@@ -261,6 +297,8 @@ const desktopPromo = {
         title: '体验桌面应用版',
         desc: '原生 WinUI 界面 · 内置工具 · 托盘常驻 · 自动更新，不用打开浏览器',
         stable: '下载稳定版',
+        win7: '下载 Win7 版',
+        win7Hint: 'Windows 7 SP1 及以上 · Avalonia 移植版，与原版独立更新',
         insider: '试用 Insider 版',
         pending: '连接中…',
         allVersions: '全部版本'
@@ -269,6 +307,8 @@ const desktopPromo = {
         title: 'Try the desktop app',
         desc: 'Native WinUI shell · built-in tools · tray · auto updates',
         stable: 'Download stable',
+        win7: 'Download for Windows 7',
+        win7Hint: 'Windows 7 SP1+ · Avalonia port, updated separately',
         insider: 'Try Insider build',
         pending: 'Connecting…',
         allVersions: 'All releases'

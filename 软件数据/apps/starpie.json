@@ -8,6 +8,7 @@
   "version": "v2.0.0",
   "size": "",
   "system": "Windows",
+  "platforms": ["windows"],
   "website": "",
   "github": "https://github.com/Star-Pie/StarPie",
   "downloads": [

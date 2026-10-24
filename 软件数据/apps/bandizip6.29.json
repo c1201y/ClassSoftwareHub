@@ -8,6 +8,7 @@
   "version": "6.29",
   "size": "约 7 MB",
   "system": "Windows 7 ~ 11",
+  "platforms": ["windows"],
   "website": "https://www.bandisoft.com/",
   "downloads": [
     {

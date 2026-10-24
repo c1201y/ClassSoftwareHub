@@ -97,12 +97,13 @@ npm run build   # 正式打包 → dist/
 | `id`          | 唯一英文标识     | **不可重复**；网址为 `#/download/<id>`；仅允许英文小写、数字与短横线，**不得包含 `?` `&` `=`**        |
 | `name`        | 软件名称       | 无限制                                                                       |
 | `icon`        | 图标图片链接     | 建议使用正方形（256×256）；留空则显示空白占位                                                |
-| `category`    | 所属分类       | 必须是 `categories.json` 中的 key：`system` / `schedule` / `teaching` / `other` |
+| `category`    | 所属分类       | 必须是 `categories.json` 中的 key：`classroom` / `office` / `system` / `media` / `network` / `utility` |
 | `tagline`     | 一句话简介      | 显示在首页卡片                                                                   |
 | `description` | 详细介绍       | 显示在详情页                                                                    |
 | `version`     | 版本号        |                                                                           |
 | `size`        | 软件体积       |                                                                           |
 | `system`      | 系统限制       | 如 `Windows 10/11（x86 / x64 / ARM64）、macOS、Linux`                          |
+| `platforms`   | 支持的系统     | 首页「系统」筛选用：取自 `platforms.json` 的 key 数组，如 `["windows", "macos"]`；不写则只在「全部系统」下出现 |
 | `website`     | 官方网站       |                                                                           |
 | `github`      | GitHub 仓库  |                                                                           |
 | `notice`      | 更新提示（可选）   | 显示在详情页「下载」上方的蓝色提示条；如不需要，整行删除                                              |
@@ -353,17 +354,42 @@ node scripts/verify-links.mjs --only github.com      # 只探某一类域名
 
 ## 三、分类配置
 
-`软件数据/categories.json` 包含 4 个分类（key / 名称 / 图标）：
+`软件数据/categories.json` 包含 6 个分类（key / 名称 / 图标）：
 
 | key        | 含义   |
 | ---------- | ---- |
-| `system`   | 系统工具 |
-| `schedule` | 教学软件 |
-| `teaching` | 教学辅助 |
-| `other`    | 其他工具 |
+| `classroom` | 教学课堂 |
+| `office`    | 办公通讯 |
+| `system`    | 系统工具 |
+| `media`     | 影音图像 |
+| `network`   | 网络工具 |
+| `utility`   | 其他工具 |
 
 - 修改名称：编辑 `name` 字段。
 - 修改图标：`icon` 为字体符号代码（形如 `\uE90F` 的转义形式），需对照 Fluent 图标表，**不建议随意改动**。
+
+### 系统平台（首页筛选）
+
+`软件数据/platforms.json` 定义首页「系统」下拉的选项：
+
+| key       | 含义                |
+| --------- | ----------------- |
+| `windows` | Windows           |
+| `macos`   | macOS             |
+| `linux`   | Linux（含 UOS / 麒麟） |
+| `android` | Android           |
+| `ios`     | iOS               |
+| `web`     | 网页版               |
+
+- 每个软件的 `platforms` 数组写它**支持运行**的系统，例如 `["windows", "macos", "linux"]`；首页的分类与系统是「且」的关系。
+- `system` 是详情页展示的文本：网页投稿页按「平台 + 版本」自动拼成 `Windows 10+ / Linux（Debian / Arch）`，旧数据仍可保留更详细的说明。`platforms` 只用于首页筛选，两者都要写。
+- `platforms.json` 里每个平台可以带 `versions`（从旧到新排序）和 `versionRange`：
+  - `versionRange: true` 表示数字版本可压成开区间：勾选 10 + 11 得到 `Windows 10+`，勾选 7 + 10 + 11 得到 `Windows 7+`；跳着勾（7 + 11）则原样列出。
+  - `versionRange: false`（如 Linux）表示发行版清单，原样列在括号里：`Linux（Debian / Arch）`。
+  - 每个版本列表最后都有 `other`（其他）；投稿页要求勾了平台就必须选版本，拿不准就选「其他」。
+- 投稿页的版本勾选只存在草稿的 `_系统版本` 里，审核合并时会连同其它 `_` 字段一起剥掉；真正上线的是拼好的 `system` 文本，首页筛选仍然只看平台。
+- 新增平台：在 `platforms.json` 加一项（需要二级版本就一并写 `versions`），再给相关软件补 key，前端会自动出现这一项。
+- HarmonyOS 暂未单列（目前只有 1 个软件），需要时加 `harmony` 即可。
 
 ---
 

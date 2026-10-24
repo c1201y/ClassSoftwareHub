@@ -2,11 +2,12 @@
   "id": "xwgjayxingz",
   "name": "希沃管家",
   "icon": "https://soft-img.30405.com/2026/0417/04171652553162.jpg?resize=p_5,w_128",
-  "category": "schedule",
+  "category": "classroom",
   "tagline": "希沃管家软件",
   "description": "需要加入学校集控用",
   "size": "121MB(Windows)",
   "system": "Windows7及以上，通信UOS，银河麒麟",
+  "platforms": ["windows", "linux"],
   "notice": "如遇链接失效，建议去官网下载",
   "downloads": [
     {

@@ -8,6 +8,7 @@
   "version": "2.20.0.8",
   "size": "26.5 MB（在线版）/ 663 MB（万能网卡版）",
   "system": "Windows XP ~ 11（也可在 PE 下运行）",
+  "platforms": ["windows"],
   "website": "https://www.sysceo.com/dc",
   "notice": "驱动总裁的下载直链文件名里带版本号，官方一更新旧链接就会失效；如果点不开，请走下面的官网下载页。",
   "downloads": [

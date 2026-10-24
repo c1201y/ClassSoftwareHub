@@ -8,6 +8,7 @@
   "version": "v13.05.25",
   "size": "2.23GB",
   "system": "windows7-11",
+  "platforms": ["windows"],
   "website": "",
   "github": "https://github.com/vgfbfbgbgf/Microsoft.Net.Packages.AIO.v13.05.25",
   "downloads": [

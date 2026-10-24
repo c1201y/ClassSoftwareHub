@@ -8,6 +8,7 @@
   "version": "v0.106.0",
   "size": "约 30 MB（x64 安装版）",
   "system": "Windows 7 / 8 / 8.1 / 10 / 11（x86 / x64 / ARM64）",
+  "platforms": ["windows"],
   "github": "https://github.com/abbodi1406/vcredist",
   "notice": "第三方重打包版（非微软官方安装包）：安装前会自动清理系统里已有的旧版 VC++ 运行库。",
   "downloads": [

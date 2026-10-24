@@ -116,7 +116,7 @@
   color: var(--text-primary);
 }
 /* 卡片本身不再是链接（下载动作在右边按钮上），所以没有整卡 hover / focus 态。
-   右侧一栏：两个下载按钮 + 「全部版本」链接；放不下就整体换行。 */
+   右侧一栏：三个下载按钮 + 「全部版本」链接；放不下就整体换行。 */
 .home-desktop-promo-actions {
   display: flex;
   align-items: center;
@@ -207,17 +207,20 @@
   outline: 2px solid var(--accent-base, #0067C0);
   outline-offset: 2px;
 }
-.home-desktop-download-btn.is-insider {
+.home-desktop-download-btn.is-insider,
+.home-desktop-download-btn.is-win7 {
   color: var(--accent-base, #0067C0);
   background: transparent;
 }
-.home-desktop-download-btn.is-insider:hover:not(:disabled) {
+.home-desktop-download-btn.is-insider:hover:not(:disabled),
+.home-desktop-download-btn.is-win7:hover:not(:disabled) {
   background: color-mix(in srgb, var(--accent-base, #0067C0) 12%, transparent);
 }
-.home-desktop-download-btn.is-insider:active:not(:disabled) {
+.home-desktop-download-btn.is-insider:active:not(:disabled),
+.home-desktop-download-btn.is-win7:active:not(:disabled) {
   background: color-mix(in srgb, var(--accent-base, #0067C0) 20%, transparent);
 }
-/* 探测镜像的这几秒里两个按钮一起禁用（文字会变成「连接中…」），避免重复触发 */
+/* 探测镜像的这几秒里三个按钮一起禁用（文字会变成「连接中…」），避免重复触发 */
 .home-desktop-download-btn:disabled {
   cursor: default;
   opacity: 0.65;
@@ -411,6 +414,25 @@
   line-height: 18px;
   color: var(--text-secondary);
   white-space: nowrap;
+}
+/* 「系统」下拉 + 已收录数量：并排在分类筛选条下方 */
+.filter-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  max-width: 100%;
+}
+.platform-filter {
+  width: 136px;
+  flex: none;
+}
+.filter-empty {
+  margin: 16px 0 28px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 .token-filter-bar {
   --SelectorBarItemSpacing: 8px;

@@ -8,6 +8,7 @@
   "version": "跟随商店更新",
   "size": "17.3 MB",
   "system": "Windows 10+",
+  "platforms": ["windows"],
   "website": "https://apps.microsoft.com/detail/9p90zdp3f501?hl=zh-CN&gl=CN",
   "downloads": [
     {

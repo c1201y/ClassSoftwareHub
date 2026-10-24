@@ -8,6 +8,7 @@
   "version": "v2.16.16",
   "size": "20~25MB",
   "system": "Windows",
+  "platforms": ["windows"],
   "website": "https://www.lightc.app/",
   "github": "https://github.com/Chunyu33/light-c",
   "downloads": [

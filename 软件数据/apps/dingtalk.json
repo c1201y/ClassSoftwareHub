@@ -2,12 +2,13 @@
   "id": "dingtalk",
   "name": "钉钉",
   "icon": "https://pc3.gtimg.com/softmgr/logo/48/26980_48_1775182015.png",
-  "category": "schedule",
+  "category": "office",
   "tagline": "阿里巴巴的办公协作平台（消息 / 会议 / 考勤）",
   "description": "钉钉是阿里巴巴集团推出的企业级智能办公平台，集即时通讯、视频会议、考勤打卡、审批流程、文档协作等功能于一体，支持 Windows、macOS、手机全平台，是学校和公司日常办公、远程会议的常用工具。",
   "version": "9.0.1",
   "size": "约 294 MB",
   "system": "Windows 7+",
+  "platforms": ["windows"],
   "website": "https://www.dingtalk.com/",
   "downloads": [
     {

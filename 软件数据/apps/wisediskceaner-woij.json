@@ -7,7 +7,8 @@
   "description": "一个可以整理磁盘及清理的轻量化工具",
   "version": "11.4.0",
   "size": "11.8MB",
-  "system": "All",
+  "system": "Windows XP ~ 11（32 / 64 位）",
+  "platforms": ["windows"],
   "website": "https://wisediskcleaner.com.cn/wise-disk-cleaner.html",
   "downloads": [
     {

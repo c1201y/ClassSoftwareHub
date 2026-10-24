@@ -8,6 +8,7 @@
   "version": "0.102.2933.0",
   "size": "约 280 MB",
   "system": "Windows 10/11（x64 / ARM64）",
+  "platforms": ["windows"],
   "website": "https://learn.microsoft.com/zh-cn/windows/powertoys/",
   "github": "https://github.com/microsoft/PowerToys",
   "notice": "PowerToys 更新非常频繁（基本每月一版），所以这里不写死安装包版本。推荐直接用 Microsoft Store 安装（自动更新），或到官网 / GitHub 下载最新版。",

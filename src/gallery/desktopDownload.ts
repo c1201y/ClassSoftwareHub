@@ -26,19 +26,23 @@ import type { MirrorChannel } from './githubMirror';
 
 /** 桌面版仓库（安装包由该仓库发布，与本站主仓库相互独立） */
 const REPO = 'c1201y/ClassSoftwareHub-Desktop';
+/** Win7 移植版仓库：Avalonia 重做 UI，独立发布、独立更新，安装包文件名带 win7 */
+const WIN7_REPO = 'c1201y/ClassSoftwareHub-windows7';
 
 /** 桌面版仓库的 Releases 页 —— 卡片「全部版本」链接及镜像全部不可用时的兜底跳转目标 */
 export const DESKTOP_RELEASES_URL = `https://github.com/${REPO}/releases`;
 
 /**
- * 取 Release 清单的接口入口，按顺序试，第一个成功的胜出。
+ * 取某个仓库 Release 清单的接口入口，按顺序试，第一个成功的胜出。
  * 两个入口都带 CORS 头，浏览器能直接读 JSON。
  */
-const API_BASES = [
-  // 本站统计 Worker 的反代：国内可达、Cloudflare 服务端代调，固定排最前
-  `https://service.132614.xyz/api/gh/repos/${REPO}/releases`,
-  `https://gh-proxy.com/https://api.github.com/repos/${REPO}/releases`
-];
+function apiBases(repo: string): string[] {
+  return [
+    // 本站统计 Worker 的反代：国内可达、Cloudflare 服务端代调，固定排最前
+    `https://service.132614.xyz/api/gh/repos/${repo}/releases`,
+    `https://gh-proxy.com/https://api.github.com/repos/${repo}/releases`
+  ];
+}
 
 /** 单次接口请求超时（毫秒） */
 const REQUEST_TIMEOUT = 12000;
@@ -53,8 +57,8 @@ const RESOLVE_GRACE = 2500;
 const CACHE_KEY = 'csh-desktop-builds';
 const CACHE_TTL = 30 * 60 * 1000;
 
-/** 两个下载通道 */
-export type DesktopChannel = 'stable' | 'insider';
+/** 三个下载通道：稳定版 / Insider 版来自原版仓库，Win7 版来自独立的移植仓库 */
+export type DesktopChannel = 'stable' | 'insider' | 'win7';
 
 /** 一条可下载的桌面版安装包 */
 export interface DesktopBuild {
@@ -72,16 +76,23 @@ export interface DesktopBuild {
 export interface DesktopBuilds {
   stable: DesktopBuild;
   insider: DesktopBuild;
+  win7: DesktopBuild;
+}
+
+/** 通道对应的 GitHub 仓库 */
+function repoOf(channel: DesktopChannel): string {
+  return channel === 'win7' ? WIN7_REPO : REPO;
 }
 
 /** 构造 DesktopBuild（tag 与文件名均由仓库约定决定） */
 function buildOf(channel: DesktopChannel, tag: string, name: string): DesktopBuild {
+  const repo = repoOf(channel);
   return {
     channel,
     tag,
     name,
-    url: `https://github.com/${REPO}/releases/download/${tag}/${name}`,
-    releaseUrl: `https://github.com/${REPO}/releases/tag/${tag}`
+    url: `https://github.com/${repo}/releases/download/${tag}/${name}`,
+    releaseUrl: `https://github.com/${repo}/releases/tag/${tag}`
   };
 }
 
@@ -92,7 +103,8 @@ function buildOf(channel: DesktopChannel, tag: string, name: string): DesktopBui
  */
 const FALLBACK: DesktopBuilds = {
   stable: buildOf('stable', 'dv1.0.0', 'ClassSoftwareHub-Setup-dv1.0.0-stable.exe'),
-  insider: buildOf('insider', 'dv1.0.0-insider1.3', 'ClassSoftwareHub-Setup-dv1.0.0-insider1.3.exe')
+  insider: buildOf('insider', 'dv1.0.0-insider1.3', 'ClassSoftwareHub-Setup-dv1.0.0-insider1.3.exe'),
+  win7: buildOf('win7', 'dv1.1.0', 'ClassSoftwareHub-Setup-win7-dv1.1.0.exe')
 };
 
 /* ── 接口返回结构（只声明用得到的字段）──────────────────────────── */
@@ -113,7 +125,9 @@ interface RawRelease {
 
 /** 从一个 Release 列表里挑出指定通道的安装包 */
 function pickBuild(releases: RawRelease[], channel: DesktopChannel): DesktopBuild | null {
+  // Win7 移植版只有正式通道，取最新正式版；不跟随原版的 Insider 预览
   const wantPrerelease = channel === 'insider';
+  const repo = repoOf(channel);
   for (const release of releases) {
     if (release.draft || release.prerelease !== wantPrerelease) continue;
     const exe = (release.assets ?? []).find((asset) => /\.exe$/i.test(asset.name));
@@ -123,16 +137,16 @@ function pickBuild(releases: RawRelease[], channel: DesktopChannel): DesktopBuil
       tag: release.tag_name,
       name: exe.name,
       url: exe.browser_download_url,
-      releaseUrl: `https://github.com/${REPO}/releases/tag/${release.tag_name}`
+      releaseUrl: `https://github.com/${repo}/releases/tag/${release.tag_name}`
     };
   }
   return null;
 }
 
-/** 依次尝试各接口入口，获取 Release 列表 */
-async function fetchReleases(): Promise<RawRelease[]> {
+/** 依次尝试各接口入口，获取指定仓库的 Release 列表 */
+async function fetchReleases(repo: string): Promise<RawRelease[]> {
   let lastError: unknown = null;
-  for (const base of API_BASES) {
+  for (const base of apiBases(repo)) {
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
     try {
@@ -159,7 +173,7 @@ function readCache(): DesktopBuilds | null {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as { at?: number; builds?: DesktopBuilds };
-    if (!parsed.builds?.stable?.url || !parsed.builds?.insider?.url) return null;
+    if (!parsed.builds?.stable?.url || !parsed.builds?.insider?.url || !parsed.builds?.win7?.url) return null;
     if (typeof parsed.at !== 'number' || Date.now() - parsed.at > CACHE_TTL) return null;
     return parsed.builds;
   } catch {
@@ -181,21 +195,25 @@ let inFlight: Promise<DesktopBuilds> | null = null;
 
 /** 执行一次版本获取；无论成败均以 resolve 结束（失败时返回兜底版本） */
 async function loadBuilds(): Promise<DesktopBuilds> {
-  const builds: DesktopBuilds = { stable: FALLBACK.stable, insider: FALLBACK.insider };
-  try {
-    const releases = await fetchReleases();
-    builds.stable = pickBuild(releases, 'stable') ?? builds.stable;
-    builds.insider = pickBuild(releases, 'insider') ?? builds.insider;
-    writeCache(builds);
-  } catch {
-    /* 接口全部不可用：本次会话使用兜底版本，刷新页面后会重试 */
+  const builds: DesktopBuilds = { ...FALLBACK };
+  // 两个仓库并行取；任一仓库失败都不影响另一个仓库的版本更新
+  const [desktop, win7] = await Promise.all([
+    fetchReleases(REPO).catch(() => null),
+    fetchReleases(WIN7_REPO).catch(() => null)
+  ]);
+  if (desktop) {
+    builds.stable = pickBuild(desktop, 'stable') ?? builds.stable;
+    builds.insider = pickBuild(desktop, 'insider') ?? builds.insider;
   }
+  if (win7) builds.win7 = pickBuild(win7, 'win7') ?? builds.win7;
+  // 接口全部不可用时不写缓存：本次会话用兜底版本，刷新页面后会重试
+  if (desktop || win7) writeCache(builds);
   memoryBuilds = builds;
   return builds;
 }
 
 /**
- * 获取两个通道的可下载版本。
+ * 获取三个通道的可下载版本。
  *
  * - 命中内存 / 本地缓存 → 立即返回（首页 onMounted 会预热一次，点击按钮时通常命中此路径）
  * - 均未命中 → 向接口获取，最多等待 RESOLVE_GRACE 后改用兜底版本返回

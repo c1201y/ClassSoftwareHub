@@ -533,6 +533,33 @@ jobs:
               for (const key of Object.keys(clean)) {
                 if (key.startsWith('_')) delete clean[key]
               }
+              // 提交服务按字段白名单重建草稿（见 submit-worker 分支），目前不会带上
+              // `platforms`；旧版投稿页也只有 `system` 文本。这里按 system 兜底补齐，
+              // 否则合并后的软件数据缺少首页「系统」筛选要用的 key。
+              // 别名表与 src/gallery/pages/SubmitPage.vue 的 PLATFORM_ALIASES 保持一致。
+              if (!Array.isArray(clean.platforms) || clean.platforms.length === 0) {
+                const alias = {
+                  windows: ['windows'],
+                  macos: ['macos', 'mac os', 'osx', 'os x', 'mac'],
+                  linux: ['linux'],
+                  android: ['android'],
+                  ios: ['ios', 'iphone', 'ipad'],
+                  web: ['web', '网页']
+                }
+                try {
+                  const platformList = JSON.parse(fs.readFileSync(path.join(stage, '软件数据', 'platforms.json'), 'utf8'))
+                  const systemText = String(clean.system ?? '').toLowerCase()
+                  const keys = platformList
+                    .filter((item) => {
+                      const names = [item.key, item.name, ...(alias[item.key] || [])].filter(Boolean)
+                      return names.some((name) => systemText.includes(String(name).toLowerCase()))
+                    })
+                    .map((item) => item.key)
+                  if (keys.length) clean.platforms = keys
+                } catch (e) {
+                  core.warning(`无法从 system 推导 platforms（不影响审核）：${e && e.message}`)
+                }
+              }
               // 审核通过 → 对象从 upload/ 迁到 releases/（服务端复制，不吃外网流量），
               // 并把这份数据里的引用改成新键。真正删源留到推送成功之后。
               const moved = []

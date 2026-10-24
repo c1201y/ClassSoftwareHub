@@ -2,12 +2,13 @@
   "id": "xpfp7f8rl7mb1w",
   "name": "Bing Wallpaper",
   "icon": "https://images-eds-ssl.xboxlive.com/image?url=4rt9.lXDC4H_93laV1_eHM0OYfiFeMI2p9MWie0CvL99U4GA1gf6_kayTt_kBblFwHwo8BW8JXlqfnYxKPmmBeRogmRf1xieDJbrjYvc.hUvqidNQtgZY7VtoCuVM31yHuXAFled7S57y0AM6xx1XMCHawJ_zIRORv7SCOGYUFs-&format=source&h=307",
-  "category": "other",
+  "category": "media",
   "tagline": "必应每日壁纸，自动更换桌面背景",
   "description": "微软官方出品的壁纸工具，每天自动把必应首页的精选图片设为桌面壁纸，并附带图片出处信息卡片，也可以手动翻看往期图片。给教室大屏换个好看的背景，开机就有新鲜感。",
   "version": "上次更新日期  2026/3/12",
   "size": "未知",
   "system": "Windows 10 +",
+  "platforms": ["windows"],
   "website": "https://apps.microsoft.com/detail/xpfp7f8rl7mb1w?hl=zh-CN&gl=CN",
   "downloads": [
     {

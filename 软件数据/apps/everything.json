@@ -8,6 +8,7 @@
   "version": "1.4.1.1032",
   "size": "1.3 MB+",
   "system": "Windows 7 ~ 11",
+  "platforms": ["windows"],
   "website": "https://www.voidtools.com/zh-cn/",
   "github": "https://github.com/voidtools/Everything",
   "downloads": [

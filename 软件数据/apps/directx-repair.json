@@ -8,6 +8,7 @@
   "version": "4.4.0.36953",
   "size": "116 MB（7z）/ 198 MB（zip）",
   "system": "Windows XP ~ 11（32 / 64 位）",
+  "platforms": ["windows"],
   "website": "https://www.zysoftware.top/post/10.html",
   "downloads": [
     {

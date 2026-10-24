@@ -8,6 +8,7 @@
   "version": "1.3.0.12",
   "size": "2.18MB",
   "system": "Windows",
+  "platforms": ["windows"],
   "website": "",
   "github": "",
   "downloads": [

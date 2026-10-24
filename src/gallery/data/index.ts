@@ -12,11 +12,26 @@
 //   哪个文件出错、一共几个、大概错在哪一行（dataLoadIssues）。
 // ════════════════════════════════════════════════════════════════════
 import categoriesRaw from '../../../软件数据/categories.json?raw';
+import platformsRaw from '../../../软件数据/platforms.json?raw';
 
 export interface DownloadCategory {
   key: string;
   name: string;
   icon: string;
+}
+
+export interface SoftwarePlatformVersion {
+  key: string;
+  name: string;
+}
+
+export interface SoftwarePlatform {
+  key: string;
+  name: string;
+  /** 投稿页二级菜单里的版本选项（老到新排序）；首页筛选不使用 */
+  versions?: SoftwarePlatformVersion[];
+  /** true = 版本是数字区间（可显示「Windows 10+」）；false/省略 = 发行版清单，逐一列出 */
+  versionRange?: boolean;
 }
 
 export interface DownloadItem {
@@ -43,6 +58,8 @@ export interface SoftwareApp {
   version?: string;
   size?: string;
   system?: string;
+  /** 支持运行的系统（platforms.json 里的 key），只用于筛选；展示仍用 system 原文 */
+  platforms?: string[];
   website?: string;
   github?: string;
   /** 更新提示（可选）：更新频繁 / 链接易失效的软件，在详情页下载区上方显示一条提示 */
@@ -119,6 +136,7 @@ const PICK = [
   'version',
   'size',
   'system',
+  'platforms',
   'website',
   'github',
   'notice',
@@ -222,6 +240,42 @@ if (!categoriesData) {
 
 /** 全部分类（左侧导航按此渲染） */
 export const categories: DownloadCategory[] = categoriesData;
+
+// ── 平台（容错：platforms.json 坏了就不显示「系统」筛选，软件照常展示）──
+function parsePlatforms(): SoftwarePlatform[] {
+  const result = parseJson(platformsRaw);
+  if (!result.ok || !Array.isArray(result.value)) {
+    dataLoadIssues.push({
+      file: 'platforms.json',
+      message: '平台文件没读进来，首页暂时不显示「系统」筛选，请检查 软件数据/platforms.json 语法',
+    });
+    return [];
+  }
+  const list: SoftwarePlatform[] = [];
+  for (const item of result.value) {
+    if (typeof item !== 'object' || item === null) continue;
+    const o = item as Record<string, unknown>;
+    if (typeof o.key !== 'string' || typeof o.name !== 'string') continue;
+    const platform: SoftwarePlatform = { key: o.key, name: o.name };
+    if (Array.isArray(o.versions)) {
+      const versions: SoftwarePlatformVersion[] = [];
+      for (const raw of o.versions) {
+        if (typeof raw !== 'object' || raw === null) continue;
+        const v = raw as Record<string, unknown>;
+        if (typeof v.key === 'string' && typeof v.name === 'string') {
+          versions.push({ key: v.key, name: v.name });
+        }
+      }
+      if (versions.length) platform.versions = versions;
+    }
+    if (o.versionRange === true) platform.versionRange = true;
+    list.push(platform);
+  }
+  return list;
+}
+
+/** 支持的系统（首页「系统」下拉） */
+export const platforms: SoftwarePlatform[] = parsePlatforms();
 
 /** 按 id 查找软件（id 即网址 #/download/<id> 中的 id） */
 export const findAppById = (id: string): SoftwareApp | undefined =>

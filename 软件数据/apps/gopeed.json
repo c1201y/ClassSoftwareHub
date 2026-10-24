@@ -2,11 +2,12 @@
   "id": "gopeed",
   "name": "Gopeed",
   "icon": "https://cdn.jsdelivr.net/gh/GopeedLab/gopeed@main/ui/flutter/assets/icon/icon_512.png",
-  "category": "other",
+  "category": "network",
   "tagline": "高速开源下载器，支持 HTTP / BT / 磁力 / ed2k",
   "description": "Gopeed 是一款开源免费的高速下载器，采用 Golang + Flutter 构建，支持 HTTP(S)、BitTorrent、磁力链、ed2k 等多种协议，跨平台、界面简洁、无广告无捆绑。",
   "version": "v1.9.3",
   "system": "Windows / macOS / Linux / Android / iOS",
+  "platforms": ["windows", "macos", "linux", "android", "ios"],
   "website": "https://gopeed.com",
   "github": "https://github.com/GopeedLab/gopeed",
   "downloads": [

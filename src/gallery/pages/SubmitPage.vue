@@ -200,12 +200,73 @@
                 :PlaceholderText="t('submit.size-placeholder')"
                 v-model:Text="form.size" />
             </div>
-            <WinTextBox
-              :Header="t('submit.system')"
-              :PlaceholderText="t('submit.system-placeholder')"
-              v-model:Text="form.system">
-              <template #header>{{ t('submit.system') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
-            </WinTextBox>
+            <!-- 系统限制：多选下拉（选项来自 软件数据/platforms.json），不再让投稿人手写 -->
+            <div class="submit-platform-field">
+              <div class="submit-platform-label">
+                {{ t('submit.system') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span>
+              </div>
+              <WinFlyout v-model:IsOpen="platformFlyoutOpen" Placement="Bottom">
+                <template #trigger>
+                  <WinButton
+                    class="submit-platform-trigger"
+                    HorizontalContentAlignment="Stretch"
+                    aria-haspopup="true"
+                    :aria-expanded="platformFlyoutOpen"
+                    @Click="platformFlyoutOpen = !platformFlyoutOpen">
+                    <span class="submit-platform-value">
+                      <span
+                        class="submit-platform-text"
+                        :class="{ 'is-placeholder': form.platforms.length === 0 }">{{ platformSummary }}</span>
+                      <span class="submit-platform-chevron" aria-hidden="true">&#xE70D;</span>
+                    </span>
+                  </WinButton>
+                </template>
+                <div ref="platformPickerRef" class="submit-platform-picker">
+                  <div class="submit-platform-list" role="group" :aria-label="t('submit.system')">
+                    <div
+                      v-for="platform in platforms"
+                      :key="platform.key"
+                      class="submit-platform-row"
+                      :class="{ 'is-active': detailPlatform?.key === platform.key }">
+                      <WinCheckBox
+                        :IsChecked="form.platforms.includes(platform.key)"
+                        :aria-label="platform.name"
+                        @update:IsChecked="togglePlatform(platform.key, $event)" />
+                      <button
+                        type="button"
+                        class="submit-platform-name"
+                        :aria-current="detailPlatform?.key === platform.key ? 'true' : undefined"
+                        @click="focusPlatform(platform.key)">
+                        {{ platform.name }}
+                      </button>
+                    </div>
+                  </div>
+                  <div v-if="detailPlatform" class="submit-platform-detail">
+                    <div class="submit-platform-detail-head">
+                      <span class="submit-platform-detail-title">{{ detailPlatform.name }}</span>
+                      <span v-if="detailPlatform.versions?.length" class="submit-platform-detail-hint">
+                        {{ t('submit.system-versions') }}
+                      </span>
+                    </div>
+                    <div
+                      v-if="detailPlatform.versions?.length"
+                      class="submit-platform-versions"
+                      role="group"
+                      :aria-label="`${detailPlatform.name} ${t('submit.system-versions')}`">
+                      <WinCheckBox
+                        v-for="version in detailPlatform.versions"
+                        :key="version.key"
+                        class="submit-platform-version"
+                        :Content="versionLabel(detailPlatform, version)"
+                        :IsChecked="form.platformVersions[detailPlatform.key]?.includes(version.key) ?? false"
+                        @update:IsChecked="toggleVersion(detailPlatform.key, version.key, $event)" />
+                    </div>
+                    <p v-else class="submit-platform-no-versions">{{ t('submit.system-no-versions') }}</p>
+                  </div>
+                </div>
+              </WinFlyout>
+              <p class="submit-platform-desc">{{ t('submit.system-desc') }}</p>
+            </div>
             <WinTextBox
               :Header="t('submit.website')"
               :PlaceholderText="t('submit.website-placeholder')"
@@ -378,8 +439,10 @@ import WinComboBox from '../../components/WinComboBox.vue';
 import WinButton from '../../components/WinButton.vue';
 import WinInfoBar from '../../components/WinInfoBar.vue';
 import WinCheckBox from '../../components/WinCheckBox.vue';
+import WinFlyout from '../../components/WinFlyout.vue';
 import { useI18n } from '../../components/i18n/index';
-import { apps, categories } from '../data';
+import { apps, categories, platforms } from '../data';
+import type { SoftwarePlatform, SoftwarePlatformVersion } from '../data';
 import { GithubImportError, importFromGithub, repoToId, toTagline } from '../githubImport';
 import type { GithubImportResult } from '../githubImport';
 import { SUBMIT_TIMEOUT_MS, orderedEndpoints, rememberEndpoint } from '../submitEndpoints';
@@ -442,7 +505,10 @@ const form = reactive({
   contact: '',
   version: '',
   size: '',
-  system: '',
+  /** 支持的系统（platforms.json 的 key）；提交时拼出展示文本 system，并原样写入 platforms */
+  platforms: [] as string[],
+  /** 每个平台勾选的具体版本（platform key → version key[]），只用来拼 system 文本和恢复草稿 */
+  platformVersions: {} as Record<string, string[]>,
   website: '',
   github: '',
   notice: '',
@@ -472,6 +538,172 @@ const categoryIndex = ref(-1);
 watch(categoryIndex, (index) => {
   form.category = index >= 0 && index < categories.length ? categories[index].key : '';
 });
+
+/** 系统多选下拉：左栏勾系统，右栏选它支持的版本；选项与顺序取自 软件数据/platforms.json */
+const platformFlyoutOpen = ref(false);
+const platformPickerRef = ref<HTMLElement | null>(null);
+/** 右栏正在展示哪个系统的版本，点击左栏系统名或勾选时切换 */
+const platformDetailKey = ref('');
+
+const detailPlatform = computed<SoftwarePlatform | undefined>(() =>
+  platforms.find((platform) => platform.key === platformDetailKey.value) ??
+  platforms.find((platform) => form.platforms.includes(platform.key) && (platform.versions?.length ?? 0) > 0) ??
+  platforms.find((platform) => (platform.versions?.length ?? 0) > 0) ??
+  platforms[0]
+);
+
+/** 点左栏系统名：切到它的版本；还没选中的顺手勾上（取消要按左侧勾选框） */
+function focusPlatform(key: string) {
+  const platform = platforms.find((item) => item.key === key);
+  if (!form.platforms.includes(key)) {
+    const selected = new Set(form.platforms);
+    selected.add(key);
+    form.platforms = platforms.filter((item) => selected.has(item.key)).map((item) => item.key);
+    if (platform?.versions?.length && !form.platformVersions[key]) form.platformVersions[key] = [];
+  }
+  if (platformDetailKey.value === key) return;
+  platformDetailKey.value = key;
+  // 不同系统的版本数量不一样，切换后右栏高度会变
+  refreshPlatformFlyoutPosition();
+}
+
+/** 右栏单独展示版本，补上系统名，避免只看到「7」「10」不知道属于哪个系统 */
+function versionLabel(platform: SoftwarePlatform, version: SoftwarePlatformVersion): string {
+  if (version.key === 'other' || !platform.versionRange) return version.name;
+  return `${platform.name} ${version.name}`;
+}
+
+/**
+ * 把一个平台勾选的版本拼成人能读的文本。
+ * 数字版本（versionRange）勾中了「最新的连续几档」时压成最老一档 +，
+ * 例如 Windows 勾 10 / 11 → Windows 10+；勾 7 / 10 / 11 → Windows 7+；
+ * 跳着勾（7 / 11）则老实列出。Linux 这类发行版清单不做 + 号。
+ */
+function formatPlatformRequirement(platform: (typeof platforms)[number], selectedKeys: string[]): string {
+  const versions = platform.versions ?? [];
+  if (!versions.length) return platform.name;
+
+  const ordered = versions.filter((version) => version.key !== 'other');
+  const picked = ordered.filter((version) => selectedKeys.includes(version.key));
+  const hasOther = selectedKeys.includes('other');
+
+  if (!picked.length) {
+    return hasOther ? `${platform.name}（其他）` : t('submit.system-version-needed', { platform: platform.name });
+  }
+
+  if (!platform.versionRange) {
+    return `${platform.name}（${picked.map((version) => version.name).join(' / ')}${hasOther ? ' / 其他' : ''}）`;
+  }
+
+  const start = ordered.indexOf(picked[0]);
+  const isRange = picked.length >= 2 &&
+    start + picked.length === ordered.length &&
+    picked.every((version, index) => ordered[start + index] === version);
+  const expression = isRange ? `${picked[0].name}+` : picked.map((version) => version.name).join(' / ');
+  return `${platform.name} ${expression}${hasOther ? ' / 其他' : ''}`;
+}
+
+const selectedSystemText = computed(() =>
+  platforms
+    .filter((platform) => form.platforms.includes(platform.key))
+    .map((platform) => formatPlatformRequirement(platform, form.platformVersions[platform.key] ?? []))
+    .join(' / ')
+);
+
+const platformSummary = computed(() => selectedSystemText.value || t('submit.system-placeholder'));
+
+/**
+ * WinFlyout 的内容滚动层拿不到 max-height（内容再高也会被外层裁掉），
+ * 所以选择器自己限高：版本多时右栏内部滚动，不会被浮出层切掉。
+ */
+function clampPlatformPickerHeight() {
+  const picker = platformPickerRef.value;
+  const flyout = picker?.closest('.win-flyout') as HTMLElement | null;
+  if (!picker || !flyout) return;
+  const maxHeight = Number.parseFloat(flyout.style.maxHeight);
+  // WinFlyout 固定 16px 上下内边距
+  const available = Number.isFinite(maxHeight) && maxHeight > 0
+    ? maxHeight - 32
+    : window.innerHeight - 32;
+  picker.style.maxHeight = `${Math.max(160, available)}px`;
+}
+
+/**
+ * WinFlyout 只在打开和窗口尺寸变化时量位置；勾选平台后二级菜单才出现，
+ * 弹层可能因此长到视口外面。这里借它的 scroll 监听触发一次重新定位。
+ */
+function refreshPlatformFlyoutPosition() {
+  if (!platformFlyoutOpen.value) return;
+  nextTick(() => {
+    if (!platformFlyoutOpen.value) return;
+    clampPlatformPickerHeight();
+    window.dispatchEvent(new Event('scroll'));
+    // scroll 后 WinFlyout 异步重算高度，下一帧再按新的 max-height 收一次
+    window.requestAnimationFrame(clampPlatformPickerHeight);
+  });
+}
+
+// 重新打开时内容可能已经是全展开状态，也要先限高
+watch(platformFlyoutOpen, (open) => {
+  if (open) refreshPlatformFlyoutPosition();
+});
+
+/** 勾选平台后右栏切到它的版本；取消勾选保留已选版本，重新勾选还能接着用 */
+function togglePlatform(key: string, checked: boolean) {
+  const platform = platforms.find((item) => item.key === key);
+  const keys = new Set(form.platforms);
+  if (checked) {
+    keys.add(key);
+    focusPlatform(key);
+    if (platform?.versions?.length && !form.platformVersions[key]) {
+      form.platformVersions[key] = [];
+    }
+  } else {
+    keys.delete(key);
+  }
+  form.platforms = platforms.filter((item) => keys.has(item.key)).map((item) => item.key);
+}
+
+/** 版本勾选后按 platforms.json 的顺序重排，拼出的 system 文本才稳定 */
+function toggleVersion(platformKey: string, versionKey: string, checked: boolean) {
+  const platform = platforms.find((item) => item.key === platformKey);
+  const keys = new Set(form.platformVersions[platformKey] ?? []);
+  if (checked) keys.add(versionKey);
+  else keys.delete(versionKey);
+  form.platformVersions[platformKey] = (platform?.versions ?? [])
+    .filter((version) => keys.has(version.key))
+    .map((version) => version.key);
+  // 直接在右栏勾版本时顺手选中该系统，避免出现「选了版本但平台没选」的状态
+  if (checked && !form.platforms.includes(platformKey)) {
+    const selected = new Set(form.platforms);
+    selected.add(platformKey);
+    form.platforms = platforms.filter((item) => selected.has(item.key)).map((item) => item.key);
+  }
+}
+
+/**
+ * 旧草稿和「从 GitHub 一键读取」只有 system 文本，需要反推出 platforms 的 key。
+ * 别名只做包含匹配：system 里常见的写法是「Windows 10/11 64位」「macOS（Intel）安装版」。
+ */
+const PLATFORM_ALIASES: Record<string, string[]> = {
+  windows: ['windows'],
+  macos: ['macos', 'mac os', 'osx', 'os x', 'mac'],
+  linux: ['linux'],
+  android: ['android'],
+  ios: ['ios', 'iphone', 'ipad'],
+  web: ['web', '网页']
+};
+
+function platformKeysFromText(value: string): string[] {
+  const normalized = (value || '').toLowerCase();
+  if (!normalized.trim()) return [];
+  return platforms
+    .filter((platform) => {
+      const aliases = [platform.key, platform.name.toLowerCase(), ...(PLATFORM_ALIASES[platform.key] ?? [])];
+      return aliases.some((alias) => alias && normalized.includes(alias));
+    })
+    .map((platform) => platform.key);
+}
 
 // ════════════════════════════════════════════════════════════════════
 // 上传文件到本站的阿里云 OSS（浏览器直传一条有时效的预签名地址，不经后端中转，前端也不需要任何密钥；详见 src/gallery/ossUpload.ts）
@@ -807,7 +1039,24 @@ function applyImport(result: GithubImportResult) {
   put(t('submit.tagline'), form.tagline, toTagline(repo.description), (text) => { form.tagline = text; });
   put(t('submit.description'), form.description, repo.description, (text) => { form.description = text; });
   put(t('submit.version'), form.version, release ? release.tagName : '', (text) => { form.version = text; });
-  put(t('submit.system'), form.system, system, (text) => { form.system = text; });
+  put(t('submit.system'), selectedSystemText.value, system, (text) => {
+    const keys = platformKeysFromText(text);
+    if (!keys.length) return;
+    form.platforms = keys;
+    form.platformVersions = {};
+    let needsVersions = false;
+    for (const key of keys) {
+      const platform = platforms.find((item) => item.key === key);
+      if (!platform?.versions?.length) continue;
+      form.platformVersions[key] = [];
+      needsVersions = true;
+    }
+    platformDetailKey.value = keys.find((key) =>
+      (platforms.find((platform) => platform.key === key)?.versions?.length ?? 0) > 0
+    ) ?? keys[0] ?? '';
+    // GitHub 只能看出「支持哪些系统」，看不出具体版本，交给投稿人补选
+    if (needsVersions) warnings.push(t('submit.import-warn-system-versions'));
+  });
   put(t('submit.website'), form.website, repo.homepage, (text) => { form.website = text; });
   put(t('submit.github'), form.github, repo.htmlUrl, (text) => { form.github = text; });
   // 仓库主页为微软商店链接时，同时填写「商店下载」字段
@@ -962,7 +1211,9 @@ async function buildPayload(): Promise<{ payload: Record<string, unknown> | null
     description: form.description.trim(),
     version: form.version.trim(),
     size: form.size.trim(),
-    system: form.system.trim(),
+    // system 是详情页展示用的文本，由平台 + 版本拼出；platforms 是首页筛选用 key 数组
+    system: selectedSystemText.value,
+    platforms: [...form.platforms],
     website: form.website.trim(),
     github: form.github.trim(),
     notice: form.notice.trim(),
@@ -987,6 +1238,15 @@ async function buildPayload(): Promise<{ payload: Record<string, unknown> | null
         return entry;
       }),
     /**
+     * 版本勾选：只用于本地草稿恢复。Worker 的入参白名单不带这个键，
+     * 审核合并时所有 `_` 开头的字段也会被剥掉，所以它不会进站点数据。
+     */
+    _系统版本: Object.fromEntries(
+      form.platforms
+        .filter((key) => (form.platformVersions[key]?.length ?? 0) > 0)
+        .map((key) => [key, [...form.platformVersions[key]]])
+    ),
+    /**
      * 联系方式：下划线开头的字段是「审核用元数据」，不写进站点的软件数据 ——
      * review-submission.yml 合并时会把所有 `_` 开头的键剥掉，只在审核 Issue 里显示。
      * 值是本地加密后的 age 密文（ASCII armor），不再是明文；管理员用私钥才能解出联系方式。
@@ -995,10 +1255,25 @@ async function buildPayload(): Promise<{ payload: Record<string, unknown> | null
   };
 
   // 必填校验不使用原生 required：提交按钮并非原生 submit 按钮，原生校验不会触发
-  // 「系统限制」也计入必填：留空时详情页只会显示「待补充」；从 GitHub 一键读取时会自动归纳填上
+  // 「系统限制」是必填的多选：一个都没勾时给专门提示（详情页的 system 文本由勾选项拼出）
   // contactField 为 ''（已填写但加密失败）时优先使用专门文案，不落入通用必填提示
   if (contactField === '') {
     return { payload: null, error: t('submit.error-encrypt') };
+  }
+  if (form.platforms.length === 0) {
+    platformFlyoutOpen.value = true;
+    return { payload: null, error: t('submit.error-system') };
+  }
+  // 平台有版本选项时必须至少选一个版本（不确定就选「其他」），否则「精细一点」就落空了
+  const missingVersion = platforms.find((platform) =>
+    form.platforms.includes(platform.key) &&
+    (platform.versions?.length ?? 0) > 0 &&
+    (form.platformVersions[platform.key]?.length ?? 0) === 0
+  );
+  if (missingVersion) {
+    focusPlatform(missingVersion.key);
+    platformFlyoutOpen.value = true;
+    return { payload: null, error: t('submit.error-system-version', { platform: missingVersion.name }) };
   }
   const missing =
     !payload.id || !payload.name || !payload.category ||
@@ -1167,7 +1442,30 @@ function applyPayload(data: Record<string, unknown>) {
   form.contact = contact.startsWith('-----BEGIN AGE') ? '' : contact;
   form.version = text('version');
   form.size = text('size');
-  form.system = text('system');
+  // 新草稿直接带 platforms；旧草稿只有 system 文本，按平台名反推后填回多选
+  const savedPlatforms = Array.isArray(data.platforms)
+    ? data.platforms.map((key) => String(key))
+    : platformKeysFromText(text('system'));
+  form.platforms = platforms
+    .filter((platform) => savedPlatforms.includes(platform.key))
+    .map((platform) => platform.key);
+
+  // 版本勾选存在 `_系统版本`（审核用元数据）；旧草稿没有这一项，恢复后提示补选
+  form.platformVersions = {};
+  const savedVersions = data._系统版本 && typeof data._系统版本 === 'object' && !Array.isArray(data._系统版本)
+    ? data._系统版本 as Record<string, unknown>
+    : {};
+  for (const platform of platforms) {
+    if (!form.platforms.includes(platform.key) || !platform.versions?.length) continue;
+    const saved = savedVersions[platform.key];
+    const raw = Array.isArray(saved) ? saved.map((key) => String(key)) : [];
+    form.platformVersions[platform.key] = platform.versions
+      .filter((version) => raw.includes(version.key))
+      .map((version) => version.key);
+  }
+  platformDetailKey.value = form.platforms.find((key) =>
+    (platforms.find((platform) => platform.key === key)?.versions?.length ?? 0) > 0
+  ) ?? form.platforms[0] ?? '';
   form.website = text('website');
   form.github = text('github');
   form.notice = text('notice');
@@ -1341,6 +1639,197 @@ async function submit() {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+
+/* 系统多选：标签与输入框的分区对齐 WinTextBox，触发器外观对齐 WinComboBox */
+.submit-platform-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.submit-platform-label {
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.submit-platform-trigger {
+  width: 100%;
+  min-height: 32px;
+  justify-content: flex-start;
+  padding: 5px 11px 6px 12px;
+  text-align: left;
+}
+
+.submit-platform-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.submit-platform-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.submit-platform-text.is-placeholder {
+  color: var(--text-secondary);
+}
+
+.submit-platform-chevron {
+  flex: none;
+  font-family: 'WinUIOnWebIcons';
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* 左栏选系统、右栏选该系统版本；两栏共用浮出层的宽度 */
+.submit-platform-picker {
+  display: flex;
+  gap: 16px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.submit-platform-list {
+  display: flex;
+  flex: 0 0 200px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-right: 12px;
+  border-right: 1px solid var(--stroke-divider, var(--ctrl-border, rgba(0, 0, 0, 0.12)));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.submit-platform-detail {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.submit-platform-detail-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.submit-platform-detail-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.submit-platform-detail-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.submit-platform-no-versions {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+/* 原生滚动条太宽还带箭头，按 WinUI 收缩态的样式画成细圆角条 */
+.submit-platform-list::-webkit-scrollbar,
+.submit-platform-detail::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.submit-platform-list::-webkit-scrollbar-track,
+.submit-platform-detail::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.submit-platform-list::-webkit-scrollbar-thumb,
+.submit-platform-detail::-webkit-scrollbar-thumb {
+  background: var(--ScrollBarThumbBackground, rgba(128, 128, 128, 0.55));
+  border-radius: 3px;
+}
+
+.submit-platform-list::-webkit-scrollbar-button,
+.submit-platform-detail::-webkit-scrollbar-button {
+  display: none;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .submit-platform-list,
+  .submit-platform-detail {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ScrollBarThumbBackground, rgba(128, 128, 128, 0.55)) transparent;
+  }
+}
+
+.submit-platform-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 32px;
+  padding: 0 4px;
+  border-radius: 4px;
+}
+
+.submit-platform-row.is-active {
+  background: var(--ctrl-fill-secondary, rgba(0, 0, 0, 0.05));
+}
+
+.submit-platform-row > :first-child {
+  flex: none;
+}
+
+.submit-platform-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 4px 2px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.submit-platform-name:focus-visible {
+  outline: 2px solid var(--focus-stroke-outer, var(--text-primary));
+  outline-offset: 1px;
+}
+
+.submit-platform-versions {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 4px 24px;
+}
+
+.submit-platform-version {
+  min-height: 28px;
+}
+
+.submit-platform-desc {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 16px;
 }
 
 .submit-download-list {
@@ -1527,6 +2016,19 @@ async function submit() {
   .submit-import-line {
     grid-template-columns: 1fr;
     gap: 2px;
+  }
+
+  .submit-platform-picker {
+    gap: 10px;
+  }
+
+  .submit-platform-list {
+    flex-basis: 132px;
+    padding-right: 8px;
+  }
+
+  .submit-platform-versions {
+    gap: 2px 12px;
   }
 }
 </style>

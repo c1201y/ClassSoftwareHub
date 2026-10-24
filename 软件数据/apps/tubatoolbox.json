@@ -8,6 +8,7 @@
   "version": "1.7.1",
   "size": "226 MB ~ 418 MB",
   "system": "Windows 10/11（x64 / ARM64）",
+  "platforms": ["windows"],
   "website": "https://tubawinui3.cn/",
   "github": "https://github.com/luolangaga/tubatools",
   "notice": "该软件更新较频繁，建议用 Microsoft Store 版本（装完自动更新，不用手动找新版）；下面的 GitHub 直链是当前版本 1.6.1。",

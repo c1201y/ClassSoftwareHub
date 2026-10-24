@@ -8,6 +8,7 @@
   "version": "17.0.20.1+1",
   "size": "约 30 MB（x64 MSI 安装版）",
   "system": "Windows 10 / 11（x64）",
+  "platforms": ["windows"],
   "website": "https://adoptium.net",
   "github": "https://github.com/adoptium/temurin17-binaries",
   "downloads": [

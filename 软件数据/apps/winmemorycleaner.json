@@ -8,6 +8,7 @@
   "version": "3.0.8",
   "size": "0.5 MB",
   "system": "Windows 7 ~ 11（32 / 64 位）",
+  "platforms": ["windows"],
   "website": "https://winmemorycleaner.com/",
   "github": "https://github.com/IgorMundstein/WinMemoryCleaner",
   "downloads": [

@@ -8,6 +8,7 @@
   "version": "v3.7.0",
   "size": "34.9 MB",
   "system": "Windows",
+  "platforms": ["windows"],
   "github": "https://github.com/Smart-Paocai/VioletToolBox",
   "downloads": [
     {
