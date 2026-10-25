@@ -1,15 +1,12 @@
 {
   "id": "seal",
   "name": "Seal",
-  "icon": "https://github.com/JunkFood02/Seal/blob/main/fastlane/metadata/android/en-US/images/icon.png",
+  "icon": "https://tse2-mm.cn.bing.net/th/id/OIP-C.5A-YGjy5TLiWqYYNMhtkjQAAAA?w=150&h=150&c=7&r=0&o=7&dpr=1.1&pid=1.7&rm=3",
   "category": "network",
   "tagline": "一个简单的 Android 视频/音频下载器，使用 Jetpack Compose 进行开发",
   "description": "一个简单的 Android 视频/音频下载器，使用 Jetpack Compose 进行开发",
   "version": "v1.13.1",
-  "size": "",
   "system": "Android",
-  "platforms": ["android"],
-  "website": "",
   "github": "https://github.com/JunkFood02/Seal",
   "downloads": [
     {
