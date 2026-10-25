@@ -1,14 +1,12 @@
 {
   "id": "wiliwili",
   "name": "wiliwili",
-  "icon": "https://avatars.githubusercontent.com/u/16631584?v=4",
+  "icon": "https://imgproxy.flathub.org/insecure/dpr:2/f:avif/q:100/rs:fit:128:128/aHR0cHM6Ly9kbC5mbGF0aHViLm9yZy9tZWRpYS9jbi94ZmFuZ2Zhbmcvd2lsaXdpbGkvMDFmYTQyYjZlMTg1YjYwYmNkOTE0MTExZTU4YTcyYjgvaWNvbnMvMTI4eDEyOC9jbi54ZmFuZ2Zhbmcud2lsaXdpbGkucG5n",
   "category": "media",
   "tagline": "第三方B站客户端，目前可以运行在PC全平台、PSVita、PS4 、Xbox 和 Nintendo Switch上",
   "description": "第三方B站客户端，目前可以运行在PC全平台、PSVita、PS4 、Xbox 和 Nintendo Switch上",
   "version": "v1.6.0",
-  "size": "",
   "system": "Windows / macOS / Linux",
-  "platforms": ["windows", "macos", "linux"],
   "website": "https://xfangfang.github.io/wiliwili",
   "github": "https://github.com/xfangfang/wiliwili",
   "downloads": [
