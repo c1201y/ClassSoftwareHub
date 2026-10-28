@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-28T13:34:17.201Z",
-  "_原始ID冲突": false,
   "id": "pulse",
   "name": "pulse",
   "icon": "https://avatars.githubusercontent.com/u/137846552?v=4",
@@ -23,12 +21,5 @@
   "sort": 99,
   "platforms": [
     "windows"
-  ],
-  "_系统版本": {
-    "windows": [
-      "10",
-      "11"
-    ]
-  },
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBINDVSTE9HQWljUTZQV2hV\nL1dLdVZZV1FwdHhQcFd2SDFpd0ZEVzhOUTB3ClNROHBJTWhBaGkwRG9JTkp1Vjk3\nRExvRU00TVFqdlJOWW4vZU8rRWE4Q1EKLS0tIHYrQkZXY2FiRjBuWGplWThsVFBw\nc3BlMU12Skt5MlVNTjBJUWJiN1Q1OWMKL+Vv9vQhp8dISbC01Mzl23+ycDpRh0i6\nWToq1EW1xFQrvJ9D+XEFnLI=\n-----END AGE ENCRYPTED FILE-----"
+  ]
 }
