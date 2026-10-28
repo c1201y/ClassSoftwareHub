@@ -36,9 +36,9 @@ ClassSoftwareHub 是一个面向电教委员的常用软件下载站，基于 **
 
 本站已部署，可直接访问：
 
-- [ClassSoftwareHub](classsoftwarehub.cn)
+- [ClassSoftwareHub](https://classsoftwarehub.cn)
 
-- [备用站点](classsoftwarehub.132614.xyz) 此站服务速度更快喵
+- [备用站点](https://classsoftwarehub.132614.xyz) 此站服务速度更快喵
 
 ### 本地运行
 
