@@ -5,17 +5,20 @@
   "category": "utility",
   "tagline": "🐱 跨平台互动桌宠，按键时小猫跟着一起敲",
   "description": "BongoCat 是一款开源免费的跨平台互动桌面宠物：敲键盘、点鼠标时，屏幕上的小猫都会跟着一起动，可爱又轻量，给课堂电脑添一点趣味。",
-  "version": "v2.3.1",
+  "version": "v2.4.1",
   "system": "Windows / macOS",
-  "platforms": ["windows", "macos"],
+  "platforms": [
+    "windows",
+    "macos"
+  ],
   "website": "https://github.com/ayangweb/Awesome-BongoCat",
   "github": "https://github.com/ayangweb/BongoCat",
   "downloads": [
     {
       "platform": "Windows x64 安装版",
       "note": "BongoCat_2.0.1_x64.exe",
-      "size": "9.9 MB",
-      "url": "https://github.com/ayangweb/BongoCat/releases/download/v2.3.1/BongoCat_2.3.1_x64.exe"
+      "size": "11 MB",
+      "url": "https://github.com/ayangweb/BongoCat/releases/download/v2.4.1/BongoCat_2.4.1_x64.exe"
     }
   ],
   "sort": 124

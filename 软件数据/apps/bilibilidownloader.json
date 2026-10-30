@@ -5,10 +5,14 @@
   "category": "network",
   "tagline": "B 站视频下载器 (BilibiliDownloader) — 可以下载B站绝大多数的视频或直播内容",
   "description": "基于 PySide6 + qfluentwidgets 的 B 站内容下载桌面工具，Fluent / WinUI 风格界面，支持视频、番剧、直播、音频、歌单、收藏夹、UP 主、合集、课程等多种内容的解析与下载，以及直播录制与批量解析。",
-  "version": "v2.0.0",
+  "version": "v2.1.0",
   "size": "",
   "system": "Windows / macOS / Linux",
-  "platforms": ["windows", "macos", "linux"],
+  "platforms": [
+    "windows",
+    "macos",
+    "linux"
+  ],
   "website": "https://colever-beep.github.io/BilibiliDownloader/",
   "github": "https://github.com/colever-Beep/BilibiliDownloader",
   "downloads": [
@@ -16,31 +20,31 @@
       "platform": "Linux ARM64（AppImage）",
       "note": "BilibiliDownloader-aarch64.AppImage",
       "size": "270 MB",
-      "url": "https://github.com/colever-Beep/BilibiliDownloader/releases/download/v2.0.0/BilibiliDownloader-aarch64.AppImage"
+      "url": "https://github.com/colever-Beep/BilibiliDownloader/releases/download/v2.1.0/BilibiliDownloader-aarch64.AppImage"
     },
     {
       "platform": "macOS（Apple 芯片）（磁盘映像）",
       "note": "BilibiliDownloader-macos-arm64.dmg",
       "size": "261 MB",
-      "url": "https://github.com/colever-Beep/BilibiliDownloader/releases/download/v2.0.0/BilibiliDownloader-macos-arm64.dmg"
+      "url": "https://github.com/colever-Beep/BilibiliDownloader/releases/download/v2.1.0/BilibiliDownloader-macos-arm64.dmg"
     },
     {
       "platform": "macOS（Intel）（磁盘映像）",
       "note": "BilibiliDownloader-macos-x86_64.dmg",
-      "size": "285 MB",
-      "url": "https://github.com/colever-Beep/BilibiliDownloader/releases/download/v2.0.0/BilibiliDownloader-macos-x86_64.dmg"
+      "size": "287 MB",
+      "url": "https://github.com/colever-Beep/BilibiliDownloader/releases/download/v2.1.0/BilibiliDownloader-macos-x86_64.dmg"
     },
     {
       "platform": "其他 便携版",
       "note": "BilibiliDownloader-portable.zip",
       "size": "456 MB",
-      "url": "https://github.com/colever-Beep/BilibiliDownloader/releases/download/v2.0.0/BilibiliDownloader-portable.zip"
+      "url": "https://github.com/colever-Beep/BilibiliDownloader/releases/download/v2.1.0/BilibiliDownloader-portable.zip"
     },
     {
       "platform": "Windows 安装版",
       "note": "BilibiliDownloader-Setup-2.0.0.exe",
-      "size": "317 MB",
-      "url": "https://github.com/colever-Beep/BilibiliDownloader/releases/download/v2.0.0/BilibiliDownloader-Setup-2.0.0.exe"
+      "size": "318 MB",
+      "url": "https://github.com/colever-Beep/BilibiliDownloader/releases/download/v2.1.0/BilibiliDownloader-Setup-2.1.0.exe"
     }
   ],
   "sort": 118
