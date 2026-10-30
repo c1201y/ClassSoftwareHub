@@ -8,18 +8,22 @@
   "version": "5.3.1184.25",
   "size": "110MB",
   "system": "Windows7~11(x64)",
-  "platforms": ["windows"],
+  "platforms": [
+    "windows"
+  ],
   "website": "https://www.centbrowser.cn",
   "downloads": [
     {
       "platform": "Windows x64 安装版",
       "size": "117 MB",
-      "url": "https://static.centbrowser.cn/win_stable/5.3.1184.25/centbrowser_5.3.1184.25_x64.exe"
+      "url": "https://static.centbrowser.cn/win_stable/5.3.1184.25/centbrowser_5.3.1184.25_x64.exe",
+      "kind": "file"
     },
     {
       "platform": "Windows x64 便携版",
       "size": "149 MB",
-      "url": "https://static.centbrowser.cn/win_stable/5.3.1184.25/centbrowser_5.3.1184.25_x64_portable.exe"
+      "url": "https://static.centbrowser.cn/win_stable/5.3.1184.25/centbrowser_5.3.1184.25_x64_portable.exe",
+      "kind": "file"
     }
   ],
   "sort": 45

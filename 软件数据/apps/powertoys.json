@@ -5,10 +5,12 @@
   "category": "system",
   "tagline": "微软官方效率工具合集（窗口置顶、取色器、批量重命名…）",
   "description": "PowerToys 是微软官方出品的 Windows 效率工具合集，免费开源。常用功能：Always On Top 窗口置顶、Color Picker 屏幕取色、PowerRename 批量重命名、FancyZones 窗口布局、Text Extractor 屏幕取字（OCR）、Awake 防止息屏、快捷键指南等。对电教委员来说，讲课时圈重点、整理素材、批量改文件名都非常省事。",
-  "version": "0.102.2933.0",
+  "version": "0.102.3001",
   "size": "约 280 MB",
   "system": "Windows 10/11（x64 / ARM64）",
-  "platforms": ["windows"],
+  "platforms": [
+    "windows"
+  ],
   "website": "https://learn.microsoft.com/zh-cn/windows/powertoys/",
   "github": "https://github.com/microsoft/PowerToys",
   "notice": "PowerToys 更新非常频繁（基本每月一版），所以这里不写死安装包版本。推荐直接用 Microsoft Store 安装（自动更新），或到官网 / GitHub 下载最新版。",
@@ -18,13 +20,13 @@
       "platform": "Windows x64 安装版（当前用户）",
       "note": "单用户安装，不需要管理员权限，教室公共账号也能装",
       "size": "309 MB",
-      "url": "https://github.com/microsoft/PowerToys/releases/download/v0.102.2933.0/PowerToysUserSetup-0.102.2933.0-x64.exe"
+      "url": "https://github.com/microsoft/PowerToys/releases/download/v0.102.3001/PowerToysUserSetup-0.102.3001.0-x64.exe"
     },
     {
       "platform": "Windows x64 安装版（全机器）",
       "note": "per-machine 安装，需要管理员权限；新版发布后地址由体检流程自动更新",
       "size": "309 MB",
-      "url": "https://github.com/microsoft/PowerToys/releases/download/v0.102.2933.0/PowerToysSetup-0.102.2933.0-x64.exe"
+      "url": "https://github.com/microsoft/PowerToys/releases/download/v0.102.3001/PowerToysSetup-0.102.3001.0-x64.exe"
     },
     {
       "platform": "微软官方介绍 / 下载",

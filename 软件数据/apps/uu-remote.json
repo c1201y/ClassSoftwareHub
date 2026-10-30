@@ -5,10 +5,15 @@
   "category": "network",
   "tagline": "网易免费远程控制软件，4K/144 帧、超低延迟",
   "description": "UU 远程是网易出品的免费远程控制软件，自研传输协议，主打低延迟高画质（支持 4K / 144 帧），可远程控制电脑、手机远控电脑、手机远控手机，也支持机身文件互传与手柄直连。和 ToDesk 类似，适合电教远程协助维护教室电脑。目前个人使用免费。",
-  "version": "4.44.0.3919",
+  "version": "4.45.0.4318",
   "size": "约 40 MB",
   "system": "Windows / macOS / Android / iOS",
-  "platforms": ["windows", "macos", "android", "ios"],
+  "platforms": [
+    "windows",
+    "macos",
+    "android",
+    "ios"
+  ],
   "website": "https://uuyc.163.com/",
   "store": "https://apps.microsoft.com/detail/xpfg34g49rcsft",
   "downloads": [

@@ -5,10 +5,12 @@
   "category": "system",
   "tagline": "NanaZip 是一款基于 7-Zip 与 WinUI 3 开发的开源免费的文件解压缩软件。",
   "description": "NanaZip 是一个面向现代 Windows 体验的开源文件归档器，由知名开源文件归档器 7-Zip 的源代码分支而成。\nNanaZip is an open source file archiver intended for the modern Windows experience, forked from the source code of well-known open source file archiver 7-Zip.",
-  "version": "7.0.1873.0",
+  "version": "7.0.1882.0",
   "size": "约 20 MB",
   "system": "Windows 10/11 64/Arm64 位",
-  "platforms": ["windows"],
+  "platforms": [
+    "windows"
+  ],
   "website": "https://nanazip.org",
   "github": "https://github.com/M2Team/NanaZip",
   "store": "https://apps.microsoft.com/detail/9N8G7TSCL18R",
@@ -16,14 +18,14 @@
     {
       "platform": "UWP 安装包（x64/Arm64）",
       "note": "GitHub 直链",
-      "size": "11 MB",
-      "url": "https://github.com/M2Team/NanaZip/releases/download/7.0.1873.0/NanaZip_7.0.1873.0.msixbundle"
+      "size": "12 MB",
+      "url": "https://github.com/M2Team/NanaZip/releases/download/7.0.1882.0/NanaZip_7.0.1882.0.msixbundle"
     },
     {
       "platform": "便携版安装包（x64/Arm64）",
       "note": "GitHub 直链",
-      "size": "7.7 MB",
-      "url": "https://github.com/M2Team/NanaZip/releases/download/7.0.1873.0/NanaZip_7.0.1873.0_Binaries.zip"
+      "size": "8.1 MB",
+      "url": "https://github.com/M2Team/NanaZip/releases/download/7.0.1882.0/NanaZip_7.0.1882.0_Binaries.zip"
     }
   ],
   "sort": 48
