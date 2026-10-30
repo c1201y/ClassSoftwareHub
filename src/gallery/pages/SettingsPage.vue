@@ -110,26 +110,31 @@
               </div>
             </WinExpander>
 
-            <!-- 鸣谢卡片：文字在根目录「鸣谢文本.ts」，贡献人员在该文件中维护 -->
+            <!-- 鸣谢卡片：文字在根目录「鸣谢文本.ts」，贡献人员在该文件中维护（分开发团队 / 赞助人员两组） -->
             <div class="credits-card">
               <div class="credits-card-title">{{ credits.title }}</div>
               <div class="credits-card-intro">{{ credits.intro }}</div>
-              <ul v-if="credits.people.length > 0" class="credits-people">
-                <li v-for="person in credits.people" :key="person.name" class="credits-person">
-                  <!-- 填写 url 时名字渲染为链接（新标签页打开），未填写则为普通文字；
-                       链接地址在根目录「鸣谢文本.ts」中维护 -->
-                  <WinHyperlinkButton
-                    v-if="person.url"
-                    class="credits-person-link"
-                    :NavigateUri="person.url"
-                    TargetName="_blank"
-                    Padding="0"
-                    Margin="0"
-                    :Content="person.name" />
-                  <span v-else class="credits-person-name">{{ person.name }}</span>
-                  <span v-if="person.note" class="credits-person-note">{{ person.note }}</span>
-                </li>
-              </ul>
+              <template v-if="credits.people.length > 0">
+                <div v-for="group in creditGroups" :key="group.key" class="credits-group">
+                  <div class="credits-group-title">{{ group.title }}</div>
+                  <ul class="credits-people">
+                    <li v-for="person in group.people" :key="person.name" class="credits-person">
+                      <!-- 填写 url 时名字渲染为链接（新标签页打开），未填写则为普通文字；
+                           链接地址在根目录「鸣谢文本.ts」中维护 -->
+                      <WinHyperlinkButton
+                        v-if="person.url"
+                        class="credits-person-link"
+                        :NavigateUri="person.url"
+                        TargetName="_blank"
+                        Padding="0"
+                        Margin="0"
+                        :Content="person.name" />
+                      <span v-else class="credits-person-name">{{ person.name }}</span>
+                      <span v-if="person.note" class="credits-person-note">{{ person.note }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </template>
               <div v-else class="credits-empty">{{ credits.empty }}</div>
             </div>
 
@@ -178,6 +183,17 @@ import { useRouter } from 'vue-router';
 import EchoCaveCard from '../EchoCaveCard.vue';
 
 const { t, locale } = useI18n();
+
+// 鸣谢分组：按「鸣谢文本.ts」的 groupOrder / groupTitles 渲染（开发团队 / 赞助人员）
+const creditGroups = computed(() =>
+  credits.groupOrder
+    .map((key) => ({
+      key,
+      title: credits.groupTitles[key],
+      people: credits.people.filter((person) => person.group === key),
+    }))
+    .filter((group) => group.people.length > 0),
+);
 
 // App.vue 始终 provide 以下设置项（ref），这里按约定直接注入
 const themeSetting = inject('themeSetting') as Ref<string>;
@@ -414,6 +430,39 @@ onBeforeUnmount(() => {
 .credits-empty {
   color: var(--TextFillColorSecondaryBrush, var(--text-secondary));
   font-size: 12px;
+  margin-top: 8px;
+}
+
+/* 鸣谢分组：组标题 + 细分割线，行距与颜色沿用原有变量，深浅色主题自适应 */
+.credits-group {
+  margin-top: 10px;
+}
+
+.credits-group + .credits-group {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--CardStrokeColorDefaultBrush, var(--card-stroke, rgba(128, 128, 128, 0.28)));
+}
+
+.credits-group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--TextFillColorPrimaryBrush, var(--text-primary));
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.credits-group-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--CardStrokeColorDefaultBrush, var(--card-stroke, rgba(128, 128, 128, 0.28)));
+  opacity: 0.6;
+}
+
+.credits-group .credits-people {
   margin-top: 8px;
 }
 
