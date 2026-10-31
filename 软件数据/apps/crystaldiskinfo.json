@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-10-30T13:36:17.724Z",
-  "_原始ID冲突": false,
   "id": "crystaldiskinfo",
   "name": "CrystalDiskInfo",
   "icon": "https://api.classsoftwarehub.cn/api/icon?k=icon%2F2026%2F10%2Fmvv0aw2d-g959n7-image.png",
@@ -23,12 +21,5 @@
   "platforms": [
     "windows"
   ],
-  "store": "https://apps.microsoft.com/detail/xp8k4rgx25g3gm?hl=zh-CN&gl=CN",
-  "_系统版本": {
-    "windows": [
-      "10",
-      "11"
-    ]
-  },
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBVWUxLZTNHRVhPZ1R5WmJC\nRTdseGZhdTN0M1RlOWpmazVYcXpzRUhvV2x3CmpxYThuaHFidXpBT2ErNDZkWUdV\nSWtBT0hFdXV3K1d6MzJSYldSZElLRkkKLS0tIGd1aEt5YzNlWERwU0d2Q3ljeE5T\nSlB5S25Eaks1N1hLYnlFbHRkMHBNWVUKs5FzCvSEb+6wwrOwmOXQhFICdQ3CwYdY\n2G6dY72O4wqL7tvBm1VOtS7d\n-----END AGE ENCRYPTED FILE-----"
+  "store": "https://apps.microsoft.com/detail/xp8k4rgx25g3gm?hl=zh-CN&gl=CN"
 }
