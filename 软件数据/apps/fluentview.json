@@ -1,7 +1,7 @@
 {
   "id": "fluentview",
   "name": "FluentView",
-  "icon": "https://submit.132614.xyz/api/icon?k=icon%2F2026%2F10%2Fmv3n5eh5-kn7b9n-FluentView_1.ico",
+  "icon": "https://api.classsoftwarehub.cn/api/icon?k=icon%2F2026%2F10%2Fmv3n5eh5-kn7b9n-FluentView_1.ico",
   "category": "media",
   "tagline": "基于 PyQt5 + PyQt-Fluent-Widgets 的现代风格照片查看器。且能在Win7系统运行",
   "description": "基于 PyQt5 + PyQt-Fluent-Widgets 的现代风格照片查看器。且能在Win7系统运行",
