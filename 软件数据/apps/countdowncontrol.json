@@ -1,7 +1,7 @@
 {
   "id": "countdowncontrol",
   "name": "CountDownControl 倒计时小工具",
-  "icon": "https://cshapi.132614.xyz/api/icon?k=icon%2F2026%2F10%2Fmvaglof3-0kyv47-time.webp",
+  "icon": "https://api.classsoftwarehub.cn/api/icon?k=icon%2F2026%2F10%2Fmvaglof3-0kyv47-time.webp",
   "category": "classroom",
   "tagline": "倒计时小工具 - 一款占用小，支持高度自定义的倒计时小工具",
   "description": "倒计时小工具 - 一款占用小，支持高度自定义的倒计时小工具\n\n本程序支持的功能有：\n 倒计时（基础功能）\n 深浅色模式\n 多种主题（可以自定义）\n 自定义倒计时显示格式以及文字\n 支持通过组策略配置策略\n 支持保存你的设置\n UIAccess 级别顶置（需要 Windows 8 以上版本）",
