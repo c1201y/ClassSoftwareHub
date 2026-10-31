@@ -1,0 +1,25 @@
+{
+  "_提交时间": "2026-10-31T00:39:25.668Z",
+  "_原始ID冲突": false,
+  "id": "pixlens",
+  "name": "PixLens",
+  "icon": "https://avatars.githubusercontent.com/u/313223487?v=4",
+  "category": "system",
+  "tagline": "本地离线免费 OCR 图片文字提取工具，支持表格识别导出 Excel，深色/浅色双主题，启动轻快",
+  "description": "本地离线免费 OCR 图片文字提取工具，支持表格识别导出 Excel，深色/浅色双主题，启动轻快",
+  "version": "v1.2.0",
+  "size": "85.8MB",
+  "system": "Windows系统均可",
+  "website": "",
+  "github": "https://github.com/G95467/PixLens",
+  "downloads": [
+    {
+      "platform": "其他 压缩包",
+      "note": "PixLens-v1.2.0.zip",
+      "size": "85.8 MB",
+      "url": "oss://upload/2026/10/mvvo9s8g-3xsy0v-PixLens-v1.2.0.zip"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA0WVozSlFMQXZCSDdxYUpY\nZWNlVG1TR2d0U3lOZ2t4NHVaNVhuVGhDOEV3CkZHclgweXBiZ1dWWTIxZ1J3TmpC\nSzRWTGNZSDYxeWlzaFVNYUtobjc4aHMKLS0tIE5LZXBCQ0xEVUI1aURZV2pvZ3Nu\nYmdRdGFjZ0FMcStoQmk4SVg5ZDVPV3MKBiWyyu2z3ebrFw2UAsKRCNffNHpbNawQ\nNo0sM2v60pO2nQ+vEmhAwvRv4NhK4vqX98CfSPk=\n-----END AGE ENCRYPTED FILE-----"
+}
