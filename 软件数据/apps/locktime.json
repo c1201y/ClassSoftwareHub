@@ -9,6 +9,8 @@
   "system": "Windows 7+",
   "platforms": ["windows"],
   "github": "https://github.com/cjhdevact/LockTime",
+  "author": "cjhdevact",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "程序文件",

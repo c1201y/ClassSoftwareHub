@@ -11,18 +11,19 @@
   "platforms": ["windows"],
   "website": "https://heysafex.com",
   "github": "",
+  "author": "Heysafe",
   "downloads": [
     {
       "platform": "Windows10/11",
       "note": "离线完整安装包（无法连网时请使用）",
       "size": "12.42",
-      "url": "oss://releases/2026/10/muyrb3bl-5h7v9x-HeySafe-X-setup-0.3.1.exe"
+      "url": "https://heysafex.com"
     },
     {
       "platform": "Windows10/11",
       "note": "在线安装器（会联网获取完整组件)",
       "size": "7.25",
-      "url": "oss://upload/2026/10/muyrd4nq-0pyxfl-HeySafe-X-online.exe"
+      "url": "https://heysafex.com"
     }
   ],
   "sort": 93,

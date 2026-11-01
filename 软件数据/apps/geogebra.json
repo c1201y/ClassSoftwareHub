@@ -19,6 +19,7 @@
   "website": "https://www.geogebra.org/download?lang=zh-CN",
   "notice": "下面的两个安装包链接是 GeoGebra 官方的「始终最新版」地址，会自动指向当前最新版本，不会过期。",
   "store": "https://apps.microsoft.com/detail/9wzdncrfj48n",
+  "author": "GeoGebra",
   "downloads": [
     {
       "platform": "Classic 6 自动更新版",

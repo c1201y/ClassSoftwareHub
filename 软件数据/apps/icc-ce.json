@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "https://inkcanvasforclass.github.io/",
   "github": "https://github.com/InkCanvasForClass/community",
+  "author": "InkCanvasForClass",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "InkCanvasForClass.CE.1.8.0.4-x64.Setup.exe",

@@ -11,6 +11,7 @@
   "platforms": ["windows"],
   "website": "https://y.qq.com/download/download.html",
   "github": "",
+  "author": "腾讯",
   "downloads": [
     {
       "platform": "Windows",

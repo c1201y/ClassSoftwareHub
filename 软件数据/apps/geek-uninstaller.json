@@ -10,6 +10,7 @@
   "system": "Windows 7 ~ 11",
   "platforms": ["windows"],
   "website": "https://geekuninstaller.com/",
+  "author": "Thomas Koen",
   "downloads": [
     {
       "platform": "Windows 单文件版",

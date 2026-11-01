@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "https://www.inkeys.top/",
   "github": "https://github.com/Alan-CRL/Inkeys",
+  "author": "Alan-CRL",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "x64",

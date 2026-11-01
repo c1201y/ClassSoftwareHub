@@ -11,6 +11,8 @@
   "platforms": ["windows", "macos", "linux", "android", "ios"],
   "website": "https://secrandom.sectl.top/",
   "github": "https://github.com/SECTL/SecRandom",
+  "author": "SECTL",
+  "license": "GPL-3.0",
   "notice": "当前提供的是 v3.1.5 正式版（2026-10-07 发布，可直接用于日常教学等正式场景）。下载链接走 SECTL 官方 GitHub 加速通道（ghproxy.sectl.top），国内下载更快，文件与 GitHub 官方发布完全一致，可对照下方 SHA512 校验。",
   "downloads": [
     {

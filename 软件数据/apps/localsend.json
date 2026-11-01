@@ -11,6 +11,8 @@
   "platforms": ["windows", "macos", "linux", "android"],
   "website": "https://localsend.org",
   "github": "https://github.com/localsend/localsend",
+  "author": "localsend",
+  "license": "Apache-2.0",
   "downloads": [
     {
       "platform": "Android ARM64（APK）",

@@ -11,6 +11,8 @@
   "platforms": ["windows", "linux"],
   "website": "",
   "github": "https://github.com/SECTL/ViewPDF",
+  "author": "SECTL",
+  "license": "Apache-2.0",
   "downloads": [
     {
       "platform": "Linux x64（AppImage）",

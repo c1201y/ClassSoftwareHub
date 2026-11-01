@@ -11,6 +11,7 @@
   "platforms": ["windows", "macos", "linux"],
   "website": "https://www.python.org/downloads/",
   "github": "",
+  "author": "Python Software Foundation",
   "downloads": [
     {
       "platform": "无平台限制",

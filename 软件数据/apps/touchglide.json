@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "",
   "github": "https://github.com/likangxian1007/TouchGlide",
+  "author": "likangxian1007",
+  "license": "MIT",
   "downloads": [
     {
       "platform": "Windows 安装版",

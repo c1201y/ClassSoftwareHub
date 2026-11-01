@@ -8,6 +8,8 @@
   "version": "v1.3.0",
   "system": "Android",
   "github": "https://github.com/CYQawa/YunX",
+  "author": "CYQawa",
+  "license": "AGPL-3.0",
   "downloads": [
     {
       "platform": "Android（APK）",

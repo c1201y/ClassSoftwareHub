@@ -10,6 +10,8 @@
   "system": "Windows 10 / 11（32 / 64 位）",
   "platforms": ["windows"],
   "github": "https://github.com/clansty/ClassTools",
+  "author": "clansty",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "其他 便携版",

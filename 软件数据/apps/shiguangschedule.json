@@ -11,6 +11,8 @@
   "platforms": ["windows", "macos", "linux", "android"],
   "website": "",
   "github": "https://github.com/ShiGuangSchedule/shiguangschedule",
+  "author": "ShiGuangSchedule",
+  "license": "Apache-2.0",
   "downloads": [
     {
       "platform": "Android ARM64（APK）",

@@ -16,6 +16,8 @@
   ],
   "website": "https://www.komistore.app",
   "github": "https://github.com/komi-store/komi-store",
+  "author": "komi-store",
+  "license": "Apache-2.0",
   "downloads": [
     {
       "platform": "Windows 便携版",

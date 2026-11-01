@@ -10,6 +10,7 @@
   "system": "Windows XP 及以上",
   "platforms": ["windows"],
   "website": "https://pc.qq.com/detail/9/detail_27349.html",
+  "author": "腾讯",
   "downloads": [
     {
       "platform": "Windows安装版",

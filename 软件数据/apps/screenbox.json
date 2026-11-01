@@ -12,6 +12,8 @@
     "windows"
   ],
   "github": "https://github.com/huynhsontung/Screenbox",
+  "author": "huynhsontung",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "通过 Microsoft Store 下载",

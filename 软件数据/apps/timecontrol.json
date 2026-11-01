@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "",
   "github": "https://github.com/cjhdevact/TimeControl",
+  "author": "cjhdevact",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "组策略 WinXP ADM",

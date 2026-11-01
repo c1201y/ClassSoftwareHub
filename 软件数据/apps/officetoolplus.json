@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "https://www.officetool.plus/zh-cn/",
   "github": "https://github.com/YerongAI/Office-Tool",
+  "author": "YerongAI",
+  "license": "MIT",
   "downloads": [
     {
       "platform": "Windows x64 含运行时（推荐）",

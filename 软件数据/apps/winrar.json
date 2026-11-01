@@ -8,6 +8,7 @@
   "version": "7.23",
   "system": "WinRAR 7.10及以上支持最低系统win7 x64或更高版本",
   "platforms": ["windows"],
+  "author": "RARLAB",
   "downloads": [
     {
       "platform": "Windows x64 安装版",

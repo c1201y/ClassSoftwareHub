@@ -11,6 +11,7 @@
   "platforms": ["windows", "macos", "linux", "android", "ios"],
   "website": "https://www.todesk.com/",
   "notice": "这里给的是 ToDesk 官网「始终最新」的在线安装器直链（安装时会联网取最新版）。如果要离线安装包，请走下面的官网下载页按版本下载。",
+  "author": "青岛飞扬",
   "downloads": [
     {
       "platform": "Windows 在线安装器",

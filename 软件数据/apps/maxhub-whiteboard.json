@@ -11,6 +11,7 @@
   "platforms": ["windows"],
   "website": "https://www.maxhub.vip",
   "notice": "更新频繁，直链易失效",
+  "author": "MAXHUB（视源股份）",
   "downloads": [
     {
       "platform": "Windows x64 安装版",

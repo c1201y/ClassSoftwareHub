@@ -11,6 +11,8 @@
   "platforms": ["web"],
   "website": "https://www.bilibili.com/video/BV1B5Kj6bEmk/",
   "github": "https://github.com/Lolitide/VirusDetector",
+  "author": "Lolitide",
+  "license": "MIT",
   "downloads": [
     {
       "platform": "123云盘",

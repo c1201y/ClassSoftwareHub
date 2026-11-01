@@ -11,6 +11,7 @@
   "platforms": ["windows", "macos", "linux", "android", "ios"],
   "website": "https://sunlogin.oray.com/download",
   "notice": "该软件更新频繁，请到官网下载",
+  "author": "Oray（贝锐）",
   "downloads": [
     {
       "platform": "官方安装网站",

@@ -10,6 +10,8 @@
   "system": "Windows 10+",
   "website": "https://crystalmark.info/en/download/",
   "github": "https://github.com/hiyohiyo/CrystalDiskInfo",
+  "author": "hiyohiyo",
+  "license": "MIT",
   "downloads": [
     {
       "platform": "Windows",

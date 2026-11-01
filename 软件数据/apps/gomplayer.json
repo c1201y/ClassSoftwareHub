@@ -11,6 +11,7 @@
   "platforms": ["windows"],
   "website": "https://www.gomlab.com/en/gomplayer-media-player",
   "github": "",
+  "author": "GOMLab",
   "downloads": [
     {
       "platform": "Windows 安装包（蓝奏云）",

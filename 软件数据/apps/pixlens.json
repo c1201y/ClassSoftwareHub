@@ -10,12 +10,13 @@
   "system": "Windows系统均可",
   "website": "",
   "github": "https://github.com/G95467/PixLens",
+  "author": "G95467",
   "downloads": [
     {
       "platform": "其他 压缩包",
       "note": "PixLens-v1.2.0.zip",
       "size": "85.8 MB",
-      "url": "oss://releases/2026/10/mvvo9s8g-3xsy0v-PixLens-v1.2.0.zip"
+      "url": "https://github.com/G95467/PixLens/releases/download/v1.2.0/PixLens-v1.2.0.zip"
     }
   ],
   "sort": 99,

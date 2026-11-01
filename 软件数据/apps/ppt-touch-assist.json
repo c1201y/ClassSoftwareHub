@@ -10,6 +10,8 @@
   "system": "Windows 10/11（需触控屏）",
   "platforms": ["windows"],
   "github": "https://github.com/RinLit-233-shiroko/PowerPoint-Touch-Assist",
+  "author": "RinLit-233-shiroko",
+  "license": "CC0-1.0",
   "downloads": [
     {
       "platform": "Windows 安装版",

@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "https://rocksdanister.com/lively",
   "github": "https://github.com/rocksdanister/lively",
+  "author": "lively-community",
+  "license": "GPL-3.0",
   "store": "https://apps.microsoft.com/detail/9ntm2qc6qws7?hl=zh-CN&gl=CN",
   "downloads": [
     {

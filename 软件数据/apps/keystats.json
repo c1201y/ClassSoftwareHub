@@ -11,6 +11,8 @@
   "platforms": ["windows", "macos"],
   "website": "https://keystats.vercel.app",
   "github": "https://github.com/debugtheworldbot/keyStats",
+  "author": "debugtheworldbot",
+  "license": "MIT",
   "downloads": [
     {
       "platform": "其他 XML",

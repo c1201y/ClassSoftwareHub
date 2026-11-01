@@ -11,6 +11,7 @@
   "platforms": ["windows"],
   "website": "https://www.sysceo.com/dc",
   "notice": "驱动总裁的下载直链文件名里带版本号，官方一更新旧链接就会失效；如果点不开，请走下面的官网下载页。",
+  "author": "系统总裁",
   "downloads": [
     {
       "platform": "在线版（26.5 MB）",

@@ -11,6 +11,7 @@
   "platforms": ["windows", "macos", "android", "ios"],
   "website": "https://z.weixin.qq.com/",
   "github": "",
+  "author": "腾讯",
   "downloads": [
     {
       "platform": "Windows",

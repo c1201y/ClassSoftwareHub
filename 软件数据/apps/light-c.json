@@ -13,6 +13,8 @@
   ],
   "website": "https://www.lightc.app/",
   "github": "https://github.com/Chunyu33/light-c",
+  "author": "Chunyu33",
+  "license": "Source Available（非开源）",
   "downloads": [
     {
       "platform": "Windows x64 安装版",

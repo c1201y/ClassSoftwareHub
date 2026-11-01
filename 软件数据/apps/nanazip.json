@@ -13,6 +13,8 @@
   ],
   "website": "https://nanazip.org",
   "github": "https://github.com/M2Team/NanaZip",
+  "author": "M2Team",
+  "license": "MIT",
   "store": "https://apps.microsoft.com/detail/9N8G7TSCL18R",
   "downloads": [
     {

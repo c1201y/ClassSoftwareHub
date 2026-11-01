@@ -10,6 +10,7 @@
   "system": "Windows 10 +",
   "platforms": ["windows"],
   "website": "https://apps.microsoft.com/detail/xpfp7f8rl7mb1w?hl=zh-CN&gl=CN",
+  "author": "Microsoft",
   "downloads": [
     {
       "platform": "通过 Microsoft Store 下载",

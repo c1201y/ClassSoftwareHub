@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "https://adoptium.net",
   "github": "https://github.com/adoptium/temurin17-binaries",
+  "author": "adoptium",
+  "license": "GPL-2.0（含 Classpath 例外）",
   "downloads": [
     {
       "platform": "Windows x64（MSI 安装版）",

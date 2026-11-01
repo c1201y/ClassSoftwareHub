@@ -11,6 +11,8 @@
   "platforms": ["windows", "macos", "linux"],
   "website": "https://lyswhut.github.io/lx-music-doc/",
   "github": "https://github.com/lyswhut/lx-music-desktop",
+  "author": "lyswhut",
+  "license": "Apache-2.0",
   "downloads": [
     {
       "platform": "macOS（Apple 芯片）（磁盘映像）",
