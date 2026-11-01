@@ -275,6 +275,16 @@
               :Header="t('submit.github')"
               :PlaceholderText="t('submit.github-placeholder')"
               v-model:Text="form.github" />
+            <!-- 开发者与开源协议：都选填。详情页只在有值时显示这两行，
+                 所以「查不到作者」的商业软件留空即可，不用硬编一个「未知」。 -->
+            <WinTextBox
+              :Header="t('submit.author')"
+              :PlaceholderText="t('submit.author-placeholder')"
+              v-model:Text="form.author" />
+            <WinTextBox
+              :Header="t('submit.license')"
+              :PlaceholderText="t('submit.license-placeholder')"
+              v-model:Text="form.license" />
             <WinTextBox
               :Header="t('submit.notice')"
               :PlaceholderText="t('submit.notice-placeholder')"
@@ -511,6 +521,9 @@ const form = reactive({
   platformVersions: {} as Record<string, string[]>,
   website: '',
   github: '',
+  /** 开发者名称与开源协议：选填，详情页「详细信息」区展示（有值才显示） */
+  author: '',
+  license: '',
   notice: '',
   store: '',
   downloads: [emptyDownload()] as DownloadDraft[]
@@ -1216,6 +1229,8 @@ async function buildPayload(): Promise<{ payload: Record<string, unknown> | null
     platforms: [...form.platforms],
     website: form.website.trim(),
     github: form.github.trim(),
+    author: form.author.trim(),
+    license: form.license.trim(),
     notice: form.notice.trim(),
     store: form.store.trim(),
     sort: sortText.value.trim() === '' ? undefined : Number(sortText.value),
@@ -1468,6 +1483,8 @@ function applyPayload(data: Record<string, unknown>) {
   ) ?? form.platforms[0] ?? '';
   form.website = text('website');
   form.github = text('github');
+  form.author = text('author');
+  form.license = text('license');
   form.notice = text('notice');
   form.store = text('store');
   sortText.value = data.sort === undefined || data.sort === null ? '' : String(data.sort);

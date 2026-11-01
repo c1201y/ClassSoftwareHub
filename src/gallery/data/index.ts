@@ -62,6 +62,16 @@ export interface SoftwareApp {
   platforms?: string[];
   website?: string;
   github?: string;
+  /**
+   * 开发者名称（可选）：个人或团队。详情页「详细信息」区展示，没填就不显示这一行。
+   * 主要用于用户自制软件 —— 官方软件大多能顺着 github / website 找到，不必重复一遍。
+   */
+  author?: string;
+  /**
+   * 开源协议（可选）：SPDX 标识或协议全名，如 `MIT`、`GPL-3.0`。
+   * 和 `author` 一起出现在「详细信息」区；不开源的软件留空即可。
+   */
+  license?: string;
   /** 更新提示（可选）：更新频繁 / 链接易失效的软件，在详情页下载区上方显示一条提示 */
   notice?: string;
   /** 应用商店链接（可选）：如 Microsoft Store 网页地址，详情页会给一个"商店下载"入口 */
@@ -139,6 +149,11 @@ const PICK = [
   'platforms',
   'website',
   'github',
+  // ⚠️ 2026-11-01 加：详情页「详细信息」区要显示开发者与开源协议。
+  //    ⛔ 这个白名单是硬过滤 —— 漏一行，json 里写了也不会出现在界面上（踩过一次：
+  //    数据里有 license 但页面不显示，查了半天以为是模板问题）。
+  'author',
+  'license',
   'notice',
   'store',
   'downloads',
