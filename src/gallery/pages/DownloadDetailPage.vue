@@ -57,6 +57,16 @@
               :NavigateUri="app.github"
               TargetName="_blank" />
           </div>
+          <!-- 开发者与开源协议：都是选填字段，投稿时由提交者自己填（见 SubmitPage.vue）。
+               没有就不显示这一行 —— 大多数商业软件查不到作者，硬写「未知」反而像漏填。 -->
+          <div v-if="app.author" class="detail-info-row">
+            <span class="detail-info-label">{{ t('detail.author') }}</span>
+            <span class="detail-info-value">{{ app.author }}</span>
+          </div>
+          <div v-if="app.license" class="detail-info-row">
+            <span class="detail-info-label">{{ t('detail.license') }}</span>
+            <span class="detail-info-value">{{ app.license }}</span>
+          </div>
         </div>
 
         <!-- 更新提示：更新频繁 / 直链易失效的软件，提醒去官网或应用商店拿最新版 -->
@@ -83,6 +93,17 @@
             Style="AccentButtonStyle"
             @click="openStore" />
         </div>
+
+        <!-- 文件存在本站 OSS 的软件：这些文件由投稿者自己上传，不是官方渠道。
+             写清来源是给下载的人看的 —— 出问题时他能判断该找谁，而不是回头找下载站。 -->
+        <WinInfoBar
+          v-if="hasOssDownload"
+          class="detail-notice"
+          :IsOpen="true"
+          :IsClosable="false"
+          Severity="Warning"
+          :Title="t('detail.oss-title')"
+          :Message="t('detail.oss-notice')" />
 
         <!-- 换票失败时的原因说明（额度用完 / 入口不通），紧贴下载列表上方 -->
         <div v-if="downloadError" class="detail-download-error">{{ downloadError }}</div>
@@ -221,6 +242,17 @@ const storeLink = computed(() => {
 /** 除商店外的普通下载项 */
 const otherDownloads = computed(() =>
   ((app.value?.downloads) || []).filter((item) => kindOf(item) !== 'store')
+);
+
+/**
+ * 这个软件有没有「文件存在本站 OSS」的下载项。
+ *
+ * 投稿页把上传到本站的文件记成 `oss://<对象键>`（见 src/gallery/ossUpload.ts）——
+ * 这是唯一一种「文件真的在咱们机器上」的分发方式，其余全是官方直链 / 网盘跳转。
+ * 只有这种才需要在详情页说明来源：文件是投稿者传的，不是官方渠道。
+ */
+const hasOssDownload = computed(() =>
+  (app.value?.downloads || []).some((item) => /^oss:\/\//i.test(String(item.url || '')))
 );
 
 // ── 下载项的落地方式（判定规则见 src/gallery/downloadLink.ts）───────────
