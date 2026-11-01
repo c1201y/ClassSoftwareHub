@@ -10,6 +10,8 @@
   "system": "Windows 10+",
   "website": "",
   "github": "https://github.com/jimmgreen/pulse",
+  "author": "jimmgreen",
+  "license": "Apache-2.0",
   "downloads": [
     {
       "platform": "其他 LZMS",

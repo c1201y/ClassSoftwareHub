@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "https://classisland.tech/",
   "github": "https://github.com/ClassIsland/ClassIsland",
+  "author": "ClassIsland",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "ClassIsland.zip",

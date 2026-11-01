@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "https://t.me/ECSchedule",
   "github": "https://github.com/Yamikani-Flipped/LingYun-Class-Widgets",
+  "author": "Yamikani-Flipped",
+  "license": "AGPL-3.0",
   "downloads": [
     {
       "platform": "Windows x64 安装版",

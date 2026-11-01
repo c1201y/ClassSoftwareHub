@@ -10,6 +10,8 @@
   "system": "Windows 10 / 11（需 .NET Framework 4.7.2）",
   "platforms": ["windows"],
   "github": "https://github.com/he55/DreamScene2",
+  "author": "he55",
+  "license": "MIT",
   "store": "https://apps.microsoft.com/detail/9PLPG9M93TLC?hl=zh-CN&gl=CN",
   "downloads": [
     {

@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "https://schedule.wanzii.cn/",
   "github": "https://github.com/xwzkj/CheeseSchedule",
+  "author": "xwzkj",
+  "license": "AGPL-3.0",
   "downloads": [
     {
       "platform": "Windows x64 安装版",

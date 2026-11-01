@@ -9,6 +9,7 @@
   "system": "Windows7及以上，通信UOS，银河麒麟",
   "platforms": ["windows", "linux"],
   "notice": "如遇链接失效，建议去官网下载",
+  "author": "希沃（视源股份）",
   "downloads": [
     {
       "platform": "Windows x86安装版",

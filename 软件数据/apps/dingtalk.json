@@ -10,6 +10,7 @@
   "system": "Windows 7+",
   "platforms": ["windows"],
   "website": "https://www.dingtalk.com/",
+  "author": "阿里巴巴",
   "downloads": [
     {
       "platform": "该应用更新频繁，其他版本下载故引导至官网",

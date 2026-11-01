@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "https://classisland.tech",
   "github": "https://github.com/1312333/ClassIsland",
+  "author": "1312333",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "Windows x64安装版（自带.NET运行时）",

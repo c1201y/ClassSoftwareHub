@@ -10,6 +10,8 @@
   "system": "Windows",
   "platforms": ["windows"],
   "github": "https://github.com/cjhdevact/CountDownControl",
+  "author": "cjhdevact",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "x86 x64 安装包",

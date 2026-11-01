@@ -10,6 +10,7 @@
   "system": "Windows XP +",
   "platforms": ["windows"],
   "website": "https://browser.360.cn/ee/",
+  "author": "360",
   "downloads": [
     {
       "platform": "Windows 64位 官方下载",

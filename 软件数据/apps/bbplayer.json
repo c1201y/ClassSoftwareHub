@@ -13,6 +13,8 @@
   ],
   "website": "https://bbplayer.roitium.com",
   "github": "https://github.com/bbplayer-app/BBPlayer",
+  "author": "bbplayer-app",
+  "license": "MIT",
   "downloads": [
     {
       "platform": "Android ARM64（APK）",

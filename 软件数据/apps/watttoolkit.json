@@ -11,6 +11,8 @@
   "platforms": ["windows", "macos", "linux", "android", "ios"],
   "website": "https://steampp.net/",
   "github": "https://github.com/BeyondDimension/SteamTools",
+  "author": "BeyondDimension",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "通过 Microsoft Store 下载",

@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "https://peazip.github.io/",
   "github": "https://github.com/peazip/PeaZip",
+  "author": "peazip",
+  "license": "LGPL-3.0",
   "downloads": [
     {
       "platform": "安装版（64 位）",

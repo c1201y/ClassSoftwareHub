@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "https://winmemorycleaner.com/",
   "github": "https://github.com/IgorMundstein/WinMemoryCleaner",
+  "author": "IgorMundstein",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "单文件 exe",

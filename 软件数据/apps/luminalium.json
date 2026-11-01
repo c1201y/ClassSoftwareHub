@@ -10,6 +10,8 @@
   "system": "Windows 10/11（x64）",
   "platforms": ["windows"],
   "github": "https://github.com/SECTL/Luminalium",
+  "author": "SECTL",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "Windows    ",

@@ -9,6 +9,8 @@
   "system": "Windows / macOS / Linux",
   "website": "https://xfangfang.github.io/wiliwili",
   "github": "https://github.com/xfangfang/wiliwili",
+  "author": "xfangfang",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "wiliwili-Windows-arm64.zip",

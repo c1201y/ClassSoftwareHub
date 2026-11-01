@@ -10,6 +10,7 @@
   "system": "Windows Vista ~ 11（32 / 64 位）",
   "platforms": ["windows"],
   "website": "https://learn.microsoft.com/zh-cn/sysinternals/downloads/rammap",
+  "author": "Microsoft",
   "downloads": [
     {
       "platform": "官方单文件包",

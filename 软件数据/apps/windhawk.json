@@ -10,6 +10,8 @@
   "platforms": ["windows"],
   "website": "https://windhawk.net",
   "github": "https://github.com/ramensoftware/windhawk",
+  "author": "ramensoftware",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "Windows 安装版",

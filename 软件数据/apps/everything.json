@@ -10,7 +10,7 @@
   "system": "Windows 7 ~ 11",
   "platforms": ["windows"],
   "website": "https://www.voidtools.com/zh-cn/",
-  "github": "https://github.com/voidtools/Everything",
+  "author": "voidtools",
   "downloads": [
     {
       "platform": "Windows 64位 安装版",

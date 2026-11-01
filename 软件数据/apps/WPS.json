@@ -10,6 +10,7 @@
   "system": "Windows 7+",
   "platforms": ["windows"],
   "website": "https://www.wps.cn/",
+  "author": "金山办公",
   "downloads": [
     {
       "platform": "Windows 安装版",

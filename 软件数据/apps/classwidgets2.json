@@ -10,6 +10,8 @@
   "system": "Windows 10/11、macOS（x64 / ARM64）",
   "platforms": ["windows", "macos"],
   "github": "https://github.com/RinLit-233-shiroko/Class-Widgets-2",
+  "author": "RinLit-233-shiroko",
+  "license": "MIT",
   "downloads": [
     {
       "platform": "Windows",

@@ -11,6 +11,7 @@
   "platforms": ["windows"],
   "website": "https://www.internetdownloadmanager.com/",
   "github": "",
+  "author": "Tonec",
   "downloads": [
     {
       "platform": "Windows X64",

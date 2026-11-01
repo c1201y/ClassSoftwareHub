@@ -11,6 +11,8 @@
   "platforms": ["windows", "linux"],
   "website": "https://www.7-zip.org/",
   "github": "https://github.com/ip7z/7zip",
+  "author": "ip7z",
+  "license": "LGPL-2.1",
   "downloads": [
     {
       "platform": "Windows 64位 安装版",

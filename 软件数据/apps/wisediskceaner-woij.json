@@ -10,11 +10,12 @@
   "system": "Windows XP ~ 11（32 / 64 位）",
   "platforms": ["windows"],
   "website": "https://wisediskcleaner.com.cn/wise-disk-cleaner.html",
+  "author": "WiseCleaner",
   "downloads": [
     {
       "platform": "x86",
       "size": "11.8MB",
-      "url": "oss://releases/2026/10/muwf0mjy-bun7ef-WDCFree_11.4.0.860.exe"
+      "url": "https://www.wisecleaner.com/wise-disk-cleaner.html"
     }
   ],
   "sort": 68

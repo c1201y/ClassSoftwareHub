@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "",
   "github": "https://github.com/cjhdevact/UsefulControl",
+  "author": "cjhdevact",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "x86 x64 安装包",

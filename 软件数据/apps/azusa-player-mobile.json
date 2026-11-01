@@ -11,6 +11,8 @@
   "platforms": ["android"],
   "website": "https://azusa-player-mobile.vercel.app/",
   "github": "https://github.com/lovegaoshi/azusa-player-mobile",
+  "author": "lovegaoshi",
+  "license": "AGPL-3.0",
   "downloads": [
     {
       "platform": "Android ARM64（APK）",

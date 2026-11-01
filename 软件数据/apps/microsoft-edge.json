@@ -10,6 +10,7 @@
   "system": "Windows 7 ~ 11、macOS、Linux",
   "platforms": ["windows", "macos", "linux"],
   "website": "https://www.microsoft.com/zh-cn/edge",
+  "author": "Microsoft",
   "downloads": [
     {
       "platform": "Windows x64 离线安装包（MSI）",

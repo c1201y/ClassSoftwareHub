@@ -9,6 +9,8 @@
   "system": "Windows / Linux",
   "platforms": ["windows", "linux"],
   "github": "https://github.com/hiroi-sora/Umi-OCR",
+  "author": "hiroi-sora",
+  "license": "MIT",
   "downloads": [
     {
       "platform": "Linux XZ",

@@ -11,6 +11,7 @@
   "system": "Windows 10 +",
   "platforms": ["windows"],
   "website": "https://apps.microsoft.com/detail/9wzdncrfjbmp?hl=zh-CN&gl=CN",
+  "author": "Microsoft",
   "downloads": [
     {
       "platform": "Download",

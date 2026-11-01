@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "https://www.henrypp.org/product/memreduct",
   "github": "https://github.com/henrypp/memreduct",
+  "author": "henrypp",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "Windows x64 安装版",

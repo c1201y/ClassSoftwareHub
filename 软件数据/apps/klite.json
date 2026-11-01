@@ -11,6 +11,7 @@
   "platforms": ["windows"],
   "website": "https://www.codecguide.com/",
   "github": "",
+  "author": "CodecGuide",
   "downloads": [
     {
       "platform": "官方\tServer 1 标准版",

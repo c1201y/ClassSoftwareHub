@@ -13,6 +13,8 @@
   ],
   "website": "https://msime.app",
   "github": "https://github.com/metasequoiaime/msime-windows",
+  "author": "metasequoiaime",
+  "license": "GPL-3.0",
   "notice": "",
   "store": "",
   "downloads": [

@@ -11,6 +11,8 @@
   "platforms": ["android"],
   "website": "https://musicfree.catcat.work",
   "github": "https://github.com/maotoumao/MusicFree",
+  "author": "maotoumao",
+  "license": "AGPL-3.0",
   "downloads": [
     {
       "platform": "Android ARM64（APK）",

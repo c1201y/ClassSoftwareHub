@@ -9,6 +9,7 @@
   "system": "Windows",
   "platforms": ["windows"],
   "github": "https://github.com/SRInternet-Studio/Seewo-Custom_Start",
+  "author": "SRInternet-Studio",
   "downloads": [
     {
       "platform": "Windows 安装版",

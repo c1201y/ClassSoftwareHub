@@ -11,6 +11,8 @@
   "platforms": ["windows", "macos", "linux"],
   "website": "https://imageglass.org",
   "github": "https://github.com/d2phap/ImageGlass",
+  "author": "d2phap",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "Linux x64（AppImage）",

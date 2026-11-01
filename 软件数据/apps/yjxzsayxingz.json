@@ -10,6 +10,7 @@
   "system": "Windows系统(一般建议Windows10)",
   "platforms": ["windows"],
   "website": "https://www.hik-cloud.com/teach-prepare-web/download.html#/download",
+  "author": "海康威视",
   "downloads": [
     {
       "platform": "Windows安装版",

@@ -11,12 +11,14 @@
   "platforms": ["windows"],
   "website": "https://pyas-security.com",
   "github": "https://github.com/87owo/PYAS",
+  "author": "87owo",
+  "license": "Source Available（非开源）",
   "downloads": [
     {
       "platform": "Windows 安装版",
       "note": "PYAS_Setup.exe",
       "size": "75.5 MB",
-      "url": "oss://releases/2026/10/mv9cu5u4-884h62-PYAS_Setup.exe"
+      "url": "https://github.com/87owo/PYAS/releases/download/v3.7.1/PYAS_Setup.exe"
     }
   ],
   "sort": 92

@@ -11,6 +11,8 @@
   "platforms": ["windows", "macos", "linux"],
   "website": "",
   "github": "https://github.com/WangGithubUser/FastGitHub",
+  "author": "WangGithubUser",
+  "license": "MIT",
   "downloads": [
     {
       "platform": "Windows x64 压缩包",

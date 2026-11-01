@@ -10,6 +10,7 @@
   "system": "Windows（64 位）",
   "platforms": ["windows"],
   "github": "https://github.com/Gaoyongxian666/CountBoard",
+  "author": "Gaoyongxian666",
   "downloads": [
     {
       "platform": "Windows 安装版",

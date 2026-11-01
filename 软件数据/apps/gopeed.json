@@ -10,6 +10,8 @@
   "platforms": ["windows", "macos", "linux", "android", "ios"],
   "website": "https://gopeed.com",
   "github": "https://github.com/GopeedLab/gopeed",
+  "author": "GopeedLab",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "Windows EXE amd64",

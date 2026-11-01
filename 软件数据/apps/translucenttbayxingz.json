@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "https://translucenttb.github.io",
   "github": "https://github.com/TranslucentTB/TranslucentTB",
+  "author": "TranslucentTB",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "其他 MSIXBUNDLE",

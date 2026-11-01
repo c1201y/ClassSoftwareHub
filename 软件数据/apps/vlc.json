@@ -12,6 +12,7 @@
   "website": "https://www.videolan.org/vlc/",
   "store": "https://apps.microsoft.com/detail/xpdm1zw6815mqm",
   "notice": "VLC 的安装包文件名里带版本号，官方升级后旧链接会失效（页面可能提示 404）。推荐用 Microsoft Store 版（自动更新），或走官网下载页。",
+  "author": "VideoLAN",
   "downloads": [
     {
       "platform": "Windows 64 位安装版",

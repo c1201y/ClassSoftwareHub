@@ -11,6 +11,7 @@
   "platforms": ["windows"],
   "website": "https://pictureviews.netlify.app",
   "github": "https://github.com/minecraft-os/FluentView",
+  "author": "minecraft-os",
   "downloads": [
     {
       "platform": "Windows便携版",

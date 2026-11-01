@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "",
   "github": "https://github.com/Aero8m/ClassTopLand",
+  "author": "Aero8m",
+  "license": "GPL-2.0",
   "downloads": [
     {
       "platform": "Windows x64 安装版",

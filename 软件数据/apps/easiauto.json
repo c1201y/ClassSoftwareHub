@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "https://easiauto.0xabcd.dev",
   "github": "https://github.com/hxabcd/EasiAuto",
+  "author": "hxabcd",
+  "license": "GPL-3.0",
   "downloads": [
     {
       "platform": "其他 压缩包",

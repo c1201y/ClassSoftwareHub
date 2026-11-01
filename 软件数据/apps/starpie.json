@@ -11,6 +11,8 @@
   "platforms": ["windows"],
   "website": "",
   "github": "https://github.com/Star-Pie/StarPie",
+  "author": "Star-Pie",
+  "license": "MIT",
   "downloads": [
     {
       "platform": "Windows x64 轻量包",

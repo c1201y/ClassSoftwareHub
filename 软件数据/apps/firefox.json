@@ -14,6 +14,7 @@
     "linux"
   ],
   "website": "https://www.mozilla.org/zh-CN/firefox/",
+  "author": "Mozilla",
   "downloads": [
     {
       "platform": "通过 Microsoft Store 下载",
