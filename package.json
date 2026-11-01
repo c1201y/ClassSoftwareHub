@@ -8,11 +8,12 @@
   "scripts": {
     "dev": "vite --host=0.0.0.0",
     "build-only": "vite build",
-    "build": "npm run build-only",
-    "build:single": "cross-env SINGLEFILE=1 vite build",
+    "legal:json": "node scripts/gen-legal-json.mjs",
+    "build": "npm run legal:json && npm run build-only",
+    "build:single": "npm run legal:json && cross-env SINGLEFILE=1 vite build",
     "preview": "vite preview",
     "type-check": "vue-tsc --build",
-    "check": "npm run type-check && npm run build-only"
+    "check": "npm run type-check && npm run legal:json && npm run build-only"
   },
   "dependencies": {
     "age-encryption": "^0.3.1",
