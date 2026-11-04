@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-11-04T00:53:22.155Z",
-  "_原始ID冲突": false,
   "id": "mt",
   "name": "MT管理器",
   "icon": "",
@@ -15,9 +13,11 @@
   "downloads": [
     {
       "platform": "安卓",
-      "url": "oss://upload/2026/11/mw1eey2q-rs152f-MT2.26.11.apk"
+      "url": "oss://releases/2026/11/mw1eey2q-rs152f-MT2.26.11.apk"
     }
   ],
   "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBVSGpvcWNpYkZEcWUvcEhP\nOHlpZHB2YnNKcmpYelBxZkJxY2ZkVDBUZ2dvCmZ5anZuU1kwYVpXKy9SVE9rQ08y\ndFhvMTR3OGJ1bCtWaG85TlAvRFBydGcKLS0tIDcwR1VYcC9ka1VIMkVRVlI5RzhD\nNVQ4a2ZES2JIeG4zQ04rSFpkU1ZsSW8K8FGEIkmvwe4zvnr4enWX7zY3LS515DVC\nlpFmuWtmvC/MC3HNCq1YAh9A\n-----END AGE ENCRYPTED FILE-----"
+  "platforms": [
+    "android"
+  ]
 }
