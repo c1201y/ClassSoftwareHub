@@ -1,0 +1,23 @@
+{
+  "_提交时间": "2026-11-04T00:53:22.155Z",
+  "_原始ID冲突": false,
+  "id": "mt",
+  "name": "MT管理器",
+  "icon": "",
+  "category": "system",
+  "tagline": "一个好用的Android 平台文件管理 & 逆向修改神器",
+  "description": "双窗口操作\n独创的双窗口操作模式，两个目录同时显示，结合前进/后退/同步等功能，熟悉之后相比传统操作方式更加高效。\n多功能\n内置了许多既强大又好用的功能，并且还在持续不断地更新中，您只需要装一个 MT 就可以满足许多的功能需求。\n玩机必备\n经过十余年的更新迭代与积累，MT 获得众多好评，如今已成为许多玩机爱好者、技术极客装机必备的 APP 之一。",
+  "version": "v2.26.11",
+  "size": "",
+  "system": "Android5+",
+  "website": "https://mt.cc/",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "安卓",
+      "url": "oss://upload/2026/11/mw1eey2q-rs152f-MT2.26.11.apk"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBVSGpvcWNpYkZEcWUvcEhP\nOHlpZHB2YnNKcmpYelBxZkJxY2ZkVDBUZ2dvCmZ5anZuU1kwYVpXKy9SVE9rQ08y\ndFhvMTR3OGJ1bCtWaG85TlAvRFBydGcKLS0tIDcwR1VYcC9ka1VIMkVRVlI5RzhD\nNVQ4a2ZES2JIeG4zQ04rSFpkU1ZsSW8K8FGEIkmvwe4zvnr4enWX7zY3LS515DVC\nlpFmuWtmvC/MC3HNCq1YAh9A\n-----END AGE ENCRYPTED FILE-----"
+}
