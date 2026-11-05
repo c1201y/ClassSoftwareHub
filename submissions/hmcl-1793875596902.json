@@ -1,0 +1,60 @@
+{
+  "_提交时间": "2026-11-05T10:46:36.902Z",
+  "_原始ID冲突": false,
+  "id": "hmcl",
+  "name": "HMCL",
+  "icon": "https://avatars.githubusercontent.com/u/155959482?v=4",
+  "category": "utility",
+  "tagline": "A Minecraft Launcher which is multi-functional…",
+  "description": "A Minecraft Launcher which is multi-functional, cross-platform and popular",
+  "version": "v3.16.4",
+  "size": "",
+  "system": "Windows（其他） / macOS（其他） / Linux（其他）",
+  "website": "https://hmcl.huangyuhui.net",
+  "github": "https://github.com/HMCL-dev/HMCL",
+  "downloads": [
+    {
+      "platform": "Linux（.deb）",
+      "note": "HMCL-3.16.4.deb",
+      "size": "9.4 MB",
+      "url": "https://github.com/HMCL-dev/HMCL/releases/download/v3.16.4/HMCL-3.16.4.deb"
+    },
+    {
+      "platform": "Windows 安装版",
+      "note": "HMCL-3.16.4.exe",
+      "size": "10.4 MB",
+      "url": "https://github.com/HMCL-dev/HMCL/releases/download/v3.16.4/HMCL-3.16.4.exe"
+    },
+    {
+      "platform": "其他 JAR",
+      "note": "HMCL-3.16.4.jar",
+      "size": "10.0 MB",
+      "url": "https://github.com/HMCL-dev/HMCL/releases/download/v3.16.4/HMCL-3.16.4.jar"
+    },
+    {
+      "platform": "其他 SH",
+      "note": "HMCL-3.16.4.sh",
+      "size": "10.0 MB",
+      "url": "https://github.com/HMCL-dev/HMCL/releases/download/v3.16.4/HMCL-3.16.4.sh"
+    }
+  ],
+  "sort": 99,
+  "platforms": [
+    "windows",
+    "macos",
+    "linux"
+  ],
+  "_提交指纹": "089868f0d876e039",
+  "_系统版本": {
+    "windows": [
+      "other"
+    ],
+    "macos": [
+      "other"
+    ],
+    "linux": [
+      "other"
+    ]
+  },
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBYaXBnWXk5aU0wNzZ5U3Vx\neDRYckV1WlNEUnBpSGl1dHQ4Y3E0NUV3YjJjClBoc3NvMElYV1F4aHhRM1JjU3Ez\na0d5aFNHMWtrU2V6allPQ1VCMkZqamMKLS0tIHUxSnNSZ25WQjJOcGNZVVBIQmNQ\nQnhCZGVnQVRyS1I4djgxWWh1MElaZ2sKhty8jJF2ElBcBhOqUolnk27SvpLxcJLH\n6HB2XbtTlNcvxJjKnC+GXqxR\n-----END AGE ENCRYPTED FILE-----"
+}
