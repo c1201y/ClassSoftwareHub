@@ -8,20 +8,22 @@
   "version": "v150-r2",
   "size": "110 MB+",
   "system": "Windows 7+",
-  "platforms": ["windows"],
+  "platforms": [
+    "windows"
+  ],
   "github": "https://github.com/win32ss/supermium",
   "author": "win32ss",
   "downloads": [
     {
       "platform": "Windows 64 位",
       "size": "133 MB",
-      "url": "https://github.com/win32ss/supermium/releases/download/v150-r2.01/supermium_150_64_setup.exe",
+      "url": "https://github.com/win32ss/supermium/releases/download/v150-r2.02/supermium_150_64_setup.exe",
       "kind": "file"
     },
     {
       "platform": "Windows 32 位",
       "size": "119 MB",
-      "url": "https://github.com/win32ss/supermium/releases/download/v150-r2.01/supermium_150_32_setup.exe",
+      "url": "https://github.com/win32ss/supermium/releases/download/v150-r2.02/supermium_150_32_setup.exe",
       "kind": "file"
     }
   ],
