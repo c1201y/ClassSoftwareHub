@@ -5,7 +5,7 @@
   "category": "office",
   "tagline": "追求速度、简约和安全的网络浏览器",
   "description": "百分浏览器是一款追求速度、简约和安全的网络浏览器，它基于最新的Chromium开源内核进行优化开发，提供了鼠标手势",
-  "version": "5.3.1184.25",
+  "version": "5.3.1184.31",
   "size": "110MB",
   "system": "Windows7~11(x64)",
   "platforms": [
@@ -17,13 +17,13 @@
     {
       "platform": "Windows x64 安装版",
       "size": "117 MB",
-      "url": "https://static.centbrowser.cn/win_stable/5.3.1184.25/centbrowser_5.3.1184.25_x64.exe",
+      "url": "https://static.centbrowser.cn/win_stable/5.3.1184.31/centbrowser_5.3.1184.31_x64.exe",
       "kind": "file"
     },
     {
       "platform": "Windows x64 便携版",
       "size": "149 MB",
-      "url": "https://static.centbrowser.cn/win_stable/5.3.1184.25/centbrowser_5.3.1184.25_x64_portable.exe",
+      "url": "https://static.centbrowser.cn/win_stable/5.3.1184.31/centbrowser_5.3.1184.31_x64_portable.exe",
       "kind": "file"
     }
   ],
