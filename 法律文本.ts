@@ -41,8 +41,8 @@ const legalDocs: LegalDoc[] = [
   // ── 用户协议 ──────────────────────────────────────────────────────
   {
     key: 'agreement',
-    version: 'v1.2',
-    effective: '2026-10-23',
+    version: 'v1.3',
+    effective: '2026-11-07',
     zh: {
       title: '用户协议',
       intro:
@@ -52,10 +52,10 @@ const legalDocs: LegalDoc[] = [
           heading: '一、服务内容',
           items: [
             '1.1 网站面向电教委员与班级电脑，提供软件目录与详情、下载导航、内置小工具、AI 网站导航、软件投稿、回声洞与问题反馈等功能。',
-            '1.2 客户端在网站功能的基础上，额外提供：软件下载与分片加速下载、软件更新、本机硬件与软件信息查看、侧边工具栏、Hub AI 电脑顾问、以及若干实验性系统工具（软件卸载与残留清理、AppData 管理、自动关机等）。',
+            '1.2 客户端在网站功能的基础上，额外提供：软件下载与分片加速下载、软件更新、本机硬件与软件信息查看、侧边工具栏、全局搜索、初次配置向导、内置工具（课堂工具与系统工具）、查阅单词、文档库、教室喊话与 Hub AI 电脑顾问；此外还提供会修改系统状态的功能，包括软件卸载与残留清理、AppData 管理、自动关机、虚拟内存、系统功能、系统优化、幽灵文件清理与 PowerPoint 触控优化等。',
             '1.3 本服务不设账号、无需注册登录，全部功能免费提供。',
             '1.4 本服务仅收录与指向软件：安装包来自软件官方、GitHub、应用商店、用户自制软件或程序（已经过审核，其中部分由本服务对象存储保存并分发）、第三方网盘或第三方公益镜像。本开发组不开发、不修改这些软件，也不对其安全性、合法性作保证（详见《免责声明》）。',
-            '1.5 客户端的系统操作类功能（卸载、清理、关机）具有破坏性，其风险与责任划分详见《免责声明》第六节。',
+            '1.5 客户端的系统操作类功能（卸载、清理、关机、修改系统设置、删除残留条目等）具有破坏性，其风险与责任划分详见《免责声明》第六节。',
           ]
         },
         {
@@ -69,7 +69,7 @@ const legalDocs: LegalDoc[] = [
             '（4）以任何方式暗示本开发组对某软件的担保或背书，或以本服务名义发布信息、冒充本开发组及维护者；',
             '（5）绕过、破解或伪造本服务下载加速节点（含自建节点与第三方镜像）的防盗链、限时签名、限速或其他访问控制措施，或盗链、批量刷取流量，或将加速链接、签名接口用于本服务之外的传播、代理、分发与商业用途；',
             '（6）将投稿、反馈或上传通道用于存储、分发与投稿无关的文件（如图床、网盘），或提交含恶意代码、病毒的文件；',
-            '（7）**将客户端的系统操作功能（卸载、清理、关机等）用于您无权管理的计算机**，或在未经设备所有者明确同意的情况下对他人设备执行上述操作；',
+            '（7）**将客户端的系统操作功能（卸载、清理、关机、修改系统设置等）用于您无权管理的计算机**，或在未经设备所有者明确同意的情况下对他人设备执行上述操作；',
             '（8）**对客户端进行反向工程以绕过其校验、签名、更新验证或其他安全机制**（客户端源码依 GPL-3.0 公开，您可依该许可自由研究、修改与再分发本程序，但不因此获得绕过服务端访问控制的权利）。',
             '2.3 您理解并同意：下载额度（具体次数以站点实时公布为准）与临时票据等是为防止滥用设置的合理限制；额度以本服务服务端记录为准，本开发组有权对异常设备或异常请求合并计算或拒绝服务。客户端的下载不单独计额度。',
             '2.4 对违反第 2.2 条或滥用本服务的行为，本开发组有权视情节采取限制访问、拒绝下载、封禁设备标识、删除内容、停止提供服务等措施，且无需事先通知；涉嫌违法犯罪的，本开发组将依法向有关部门报告并配合调查。您对处理措施有异议的，可通过第七节渠道申诉。',
@@ -103,6 +103,7 @@ const legalDocs: LegalDoc[] = [
             '5.2 客户端会在发现新版本后提示更新。更新过程会退出正在运行的实例并启动安装程序，**正在进行的下载任务将中断**。',
             '5.3 卸载客户端不会自动删除用户数据目录（%LOCALAPPDATA%\\ClassSoftwareHub），其中包含设置、日志、对话历史与清理备份。如需彻底清除，请手动删除该目录。',
             '5.4 您可随时停止使用本服务，无需通知本开发组。',
+            '5.5 客户端包含授权校验：由官方渠道获取的安装包无需额外操作即可正常使用；自行编译或修改的版本需通过激活码启用，激活码有效期为一年。授权校验在本机完成，不收集您的个人信息。',
           ]
         },
         {
@@ -146,10 +147,10 @@ const legalDocs: LegalDoc[] = [
           heading: '1. The Service',
           items: [
             '1.1 The Site serves classroom IT commissioners and classroom PCs, offering an app catalogue and details, download navigation, built-in tools, an AI-site directory, app submissions, the Echo Cave and feedback.',
-            '1.2 The Client additionally offers: software downloads with parallel-chunk acceleration, software updates, local hardware and software inspection, a side toolbar, the Hub AI computer advisor, and several experimental system tools (app uninstall and leftover cleanup, AppData management, scheduled shutdown).',
+            '1.2 The Client additionally offers: software downloads with parallel-chunk acceleration, software updates, local hardware and software inspection, a side toolbar, global search, a first-run setup wizard, built-in tools (Classroom tools and System tools), Word Lookup, the Document Library, Classroom Announce and the Hub AI computer advisor; it further offers features that modify system state, including app uninstall and leftover cleanup, AppData management, scheduled shutdown, virtual memory, system features, system tweaks, ghost-entry cleanup and PowerPoint touch enhancement.',
             '1.3 The Service has no accounts and requires no sign-in; all features are free.',
             '1.4 The Service only lists and links to software: installers come from vendors, GitHub, app stores, user-made software or programs (subject to review; some are stored and distributed via this Service\'s object storage), third-party netdisks or third-party mirrors. The Group does not develop or modify such software and gives no warranty as to its safety or legality (see the Disclaimer).',
-            '1.5 The Client\'s system-operation features (uninstall, cleanup, shutdown) are destructive; risks and liability are set out in Section 6 of the Disclaimer.',
+            '1.5 The Client\'s system-operation features (uninstall, cleanup, shutdown, changing system settings, deleting stale entries) are destructive; risks and liability are set out in Section 6 of the Disclaimer.',
           ]
         },
         {
@@ -163,7 +164,7 @@ const legalDocs: LegalDoc[] = [
             '(4) imply that the Group endorses or guarantees any software, publish information in the Service\'s name, or impersonate the Group or its maintainers;',
             '(5) bypass, break or forge the anti-leech, time-limited signature, rate limits or other access controls of the Service\'s download acceleration node (including the self-built node and third-party mirrors), hotlink, generate abusive traffic in bulk, or use acceleration links or the signing endpoint for distribution, proxying, re-hosting or commercial purposes outside the Service;',
             '(6) use the submission, feedback or upload channels to store or distribute unrelated files (such as image hosting or netdisk use), or submit files containing malicious code or viruses;',
-            '(7) **use the Client\'s system-operation features (uninstall, cleanup, shutdown) on computers you are not authorised to administer**, or perform such operations on another person\'s device without that owner\'s explicit consent;',
+            '(7) **use the Client\'s system-operation features (uninstall, cleanup, shutdown, changing system settings) on computers you are not authorised to administer**, or perform such operations on another person\'s device without that owner\'s explicit consent;',
             '(8) **reverse engineer the Client to circumvent its verification, signing, update validation or other security mechanisms** (the Client\'s source code is published under GPL-3.0; you may study, modify and redistribute it under that licence, but this grants no right to circumvent server-side access controls).',
             '2.3 You understand and agree that download limits (as published on the Site) and temporary tickets are reasonable anti-abuse measures; quotas are based on the Service\'s server-side records. Client downloads are not separately metered.',
             '2.4 For violations of Section 2.2 or abuse of the Service, the Group may restrict access, refuse downloads, block device identifiers, remove content or suspend the service without prior notice; suspected unlawful activity will be reported to the competent authorities.',
@@ -197,6 +198,7 @@ const legalDocs: LegalDoc[] = [
             '5.2 The Client prompts for updates when a new version is found. The application exits and the installer launches; **in-progress downloads are interrupted**.',
             '5.3 Uninstalling does not delete the user data directory (%LOCALAPPDATA%\\ClassSoftwareHub), which holds settings, logs, conversation history and cleanup backups. Delete it manually for a complete removal.',
             '5.4 You may stop using the Service at any time without notice.',
+            '5.5 The Client includes licence verification: installers obtained from official channels work without any extra step; versions you compile or modify yourself must be enabled with an activation code, which is valid for one year. Verification is performed locally and collects no personal information.',
           ]
         },
         {
@@ -235,8 +237,8 @@ const legalDocs: LegalDoc[] = [
   // ── 隐私政策 ──────────────────────────────────────────────────────
   {
     key: 'privacy',
-    version: 'v1.2',
-    effective: '2026-10-23',
+    version: 'v1.3',
+    effective: '2026-11-07',
     zh: {
       title: '隐私政策',
       intro:
@@ -247,6 +249,7 @@ const legalDocs: LegalDoc[] = [
           items: [
             '1.1 本政策同时适用于网站与客户端。凡涉及两者差异之处，均在相应条款中分别说明。',
             '1.2 客户端自 v1.2 版本起纳入本政策。此前版本若存在与本政策不一致的处理行为，以本政策为准；因技术原因无法回溯调整的部分，将在后续版本中修正。',
+            '1.3 本次修订（v1.3）补充了查阅单词、文档库、教室喊话、应用内公告与授权校验涉及的信息处理说明，并更新了客户端的功能清单。',
           ]
         },
         {
@@ -271,11 +274,12 @@ const legalDocs: LegalDoc[] = [
           heading: '四、客户端处理的信息',
           items: [
             '4.1 客户端在本机保存的数据。以下数据仅存于您的设备，默认不上传：',
-            '（1）设置项：界面偏好、下载路径、侧边布局、实验性功能开关等，存于 %LOCALAPPDATA%\\ClassSoftwareHub\\settings.json；',
+            '（1）设置项：界面偏好、下载路径、侧边布局、各项功能开关等，存于 %LOCALAPPDATA%\\ClassSoftwareHub\\settings.json；',
             '（2）设备标识：与网站一致的本地生成标识，存于 device-id.txt，用于下载与更新的异常请求识别；',
             '（3）本机通讯与加速配置：自建加速节点密钥、站点内容接口地址等，存于对应文本文件；',
-            '（4）清理与修复的备份：实验性功能「应用卸载残留清理」「AppData 管理」在删除前会将被删内容备份至 quarantine 目录，供您自行还原；',
+            '（4）清理与修复的备份：清理类功能在删除前会将被删内容备份至 quarantine 目录，供您自行还原；幽灵文件清理为永久删除，不留备份；',
             '（5）日志：运行日志、崩溃日志，存于 logs 目录，用于故障排查。',
+            '（6）授权信息：激活票据与激活时间，存于 license.json，仅在本机用于显示激活状态。',
             '4.2 客户端读取的本机信息。以下信息由客户端读取后**仅在界面展示**，除非您主动使用 Hub AI 并要求其分析（见第五节），否则不上传：',
             '（1）硬件概况：处理器型号与核心数、内存容量与占用、磁盘分区与容量、显卡型号与显存；',
             '（2）系统信息：操作系统版本、屏幕分辨率与缩放、电池状态（若适用）；',
@@ -288,6 +292,10 @@ const legalDocs: LegalDoc[] = [
             '（3）下载请求：向文件所在域名发起下载请求，该域名会接触您的 IP 地址；',
             '（4）自建加速：使用自建加速节点时，请求经该节点中转（位于中华人民共和国境外，日本东京），节点会接触您的 IP 地址与所请求的文件地址，用于完成下载、防盗链与限流；',
             '（5）反馈与投稿：仅在您主动提交时发送，内容见第六节。',
+            '（6）应用内公告：向本站内容接口与公共代码托管镜像请求公告，请求中携带当前版本号；',
+            '（7）文档库：向本站与公共代码托管镜像请求文章清单与正文；',
+            '（8）查阅单词：本地词库未收录的词以及您提交翻译的句子，会发送至第三方词典与翻译服务（有道词典、dictionaryapi.dev、MyMemory）；',
+            '（9）教室喊话：发送方填写的通知正文、配对码与署名，经本站服务端暂存后转发至目标设备；同一局域网内可直接点对点发送，此时不经过服务端，接收方本机会显示发送方标识与配对码；',
             '4.4 客户端不收集：您在本机打开的文件内容、浏览器历史、其他程序的输入输出、屏幕内容（除您主动使用截图工具并保存外）。',
           ]
         },
@@ -333,6 +341,8 @@ const legalDocs: LegalDoc[] = [
             '（5）第三方公益下载镜像与网盘：下载跳转，处理下载请求与 IP 地址；',
             '（6）主站托管服务商：页面托管，处理访问请求；',
             '（7）**您自行配置的 AI 服务商**：处理 Hub AI 的对话内容与本机信息摘要（见第五节）。',
+            '（8）第三方词典与翻译服务（有道词典、dictionaryapi.dev、MyMemory）：处理您查阅单词与整句翻译时提交的内容；',
+            '（9）公共代码托管与分发镜像（GitHub、jsDelivr、gh-proxy 等）：处理公告与文档库内容的拉取请求；',
             '8.2 其中部分服务、本站位于境外的自建下载加速节点，以及您可能选择的境外 AI 服务商，可能在中华人民共和国境外处理您的信息。本开发组将依法履行相应义务；但第三方处理行为由其自行负责。',
             '8.3 上述第三方对信息的处理适用其各自规则或本政策的相应说明，本开发组对其处理行为无法完全控制。',
           ]
@@ -360,7 +370,7 @@ const legalDocs: LegalDoc[] = [
             '11.2 您可随时删除客户端的本机数据：',
             '（1）在客户端内「设置」中清理本地缓存与日志；',
             '（2）直接删除 %LOCALAPPDATA%\\ClassSoftwareHub 目录，将一并清除设置、日志、Hub AI 对话历史与加密密钥；',
-            '（3）实验性功能产生的清理备份位于该目录下的 quarantine 子目录，可自行检查后删除。',
+            '（3）清理功能产生的备份位于该目录下的 quarantine 子目录，可自行检查后删除。',
             '11.3 如需查询、复制、更正、删除您提交的内容，或撤回同意、清除本地数据，可通过下面的渠道联系我们；我们将在合理期限内处理。',
           ]
         },
@@ -384,6 +394,7 @@ const legalDocs: LegalDoc[] = [
           items: [
             '1.1 This Policy applies to both the Site and the Client. Where the two differ, the relevant clause states so separately.',
             '1.2 The Client has been covered by this Policy since v1.2. Should any earlier version have processed data inconsistently with this Policy, this Policy prevails; any part that cannot be adjusted retroactively for technical reasons will be corrected in a subsequent version.',
+            '1.3 This revision (v1.3) adds notes on information handling for Word Lookup, the Document Library, Classroom Announce, in-app notices and licence verification, and updates the list of client features.',
           ]
         },
         {
@@ -408,11 +419,12 @@ const legalDocs: LegalDoc[] = [
           heading: '4. Information Processed by the Client',
           items: [
             '4.1 Data stored locally by the Client. The following stays on your device and is not uploaded by default:',
-            '(1) settings: interface preferences, download path, sidebar layout, experimental feature switches — stored in %LOCALAPPDATA%\\ClassSoftwareHub\\settings.json;',
+            '(1) settings: interface preferences, download path, sidebar layout and feature switches — stored in %LOCALAPPDATA%\\ClassSoftwareHub\\settings.json;',
             '(2) device identifier: the same locally generated identifier as on the Site, stored in device-id.txt, used to identify abnormal download and update requests;',
             '(3) acceleration and content endpoint configuration: the self-built node key and site content endpoints, stored in corresponding text files;',
-            '(4) backups from cleanup and repair: the experimental "uninstall leftovers cleanup" and "AppData management" features back up removed content to the quarantine directory before deletion, so you can restore it yourself;',
+            '(4) backups from cleanup and repair: cleanup features back up removed content to the quarantine directory before deletion so you can restore it yourself; ghost-entry cleanup deletes permanently and keeps no backup;',
             '(5) logs: runtime and crash logs in the logs directory, used for troubleshooting.',
+            '(6) licence information: the activation ticket and activation time, stored in license.json and used locally only to show activation status.',
             '4.2 Local information the Client reads. The following is read and **displayed in the interface only**. Unless you actively use Hub AI and ask it to analyse this information (see Section 5), it is not uploaded:',
             '(1) hardware overview: CPU model and core count, memory capacity and usage, disk partitions and capacity, graphics model and video memory;',
             '(2) system information: OS version, screen resolution and scaling, battery status (if applicable);',
@@ -425,6 +437,10 @@ const legalDocs: LegalDoc[] = [
             '(3) download requests: requests files from the domain hosting them, which will see your IP address;',
             '(4) accelerated downloads: when using the self-built acceleration node, requests are relayed through a node located outside the PRC (Tokyo, Japan), which sees your IP address and the requested file URL for delivery, anti-leech and rate limiting;',
             '(5) feedback and submissions: sent only when you choose to submit (see Section 6).',
+            '(6) in-app notices: requests the notice list from the content endpoint of this Site and public code-hosting mirrors, carrying the current version number;',
+            '(7) Document Library: requests article lists and article text from this Site and public code-hosting mirrors;',
+            '(8) Word Lookup: words missing from the local dictionary, and sentences you submit for translation, are sent to third-party dictionary and translation services (Youdao, dictionaryapi.dev, MyMemory);',
+            '(9) Classroom Announce: the notice text, pairing code and signature entered by the sender are held temporarily on the server of this Site and forwarded to the target device; within the same local network messages may be sent directly peer-to-peer, in which case the server is not involved, and the receiving device shows the label and pairing code of the sender;',
             '4.4 The Client does not collect: the contents of files you open, browser history, input or output of other programs, or screen contents (other than files you actively capture and save with the screenshot tool).',
           ]
         },
@@ -470,6 +486,8 @@ const legalDocs: LegalDoc[] = [
             '(5) third-party public download mirrors and netdisks: download redirection — download requests and IP addresses;',
             '(6) hosting provider: page hosting — access requests;',
             '(7) **the AI provider you configure**: Hub AI conversation content and local information snapshots (see Section 5).',
+            '(8) third-party dictionary and translation services (Youdao, dictionaryapi.dev, MyMemory): process the content you submit when looking up words or translating sentences;',
+            '(9) public code-hosting and delivery mirrors (GitHub, jsDelivr, gh-proxy, etc.): handle requests for notices and Document Library content;',
             '8.2 Some of these services, this Site\'s overseas self-built acceleration node, and any overseas AI provider you select may process your information outside the PRC. The Development Group will perform its obligations under applicable law; third parties remain responsible for their own processing.',
             '8.3 Their handling is governed by their own rules or the relevant descriptions in this Policy, and the Development Group cannot fully control their processing.',
           ]
@@ -497,7 +515,7 @@ const legalDocs: LegalDoc[] = [
             '11.2 You may delete the Client\'s local data at any time:',
             '(1) clear local cache and logs in the client\'s Settings;',
             '(2) delete the %LOCALAPPDATA%\\ClassSoftwareHub directory, which removes settings, logs, Hub AI history and the encrypted key;',
-            '(3) cleanup backups created by experimental features are in the quarantine subdirectory and may be reviewed and deleted.',
+            '(3) backups created by cleanup features are in the quarantine subdirectory and may be reviewed and deleted.',
             '11.3 To access, copy, correct or delete content you submitted, or to withdraw consent or clear local data, contact us via the channels below; we will handle your request within a reasonable period.',
           ]
         },
@@ -515,8 +533,8 @@ const legalDocs: LegalDoc[] = [
   // ── 免责声明 ──────────────────────────────────────────────────────
   {
     key: 'disclaimer',
-    version: 'v1.2',
-    effective: '2026-10-23',
+    version: 'v1.3',
+    effective: '2026-11-07',
     zh: {
       title: '免责声明',
       intro:
@@ -584,8 +602,23 @@ const legalDocs: LegalDoc[] = [
             '（1）更新过程中应用会退出，正在进行的下载任务会中断；',
             '（2）安装包在下载后经过校验，校验失败会重新获取；',
             '（3）安装程序由 Inno Setup 生成，其行为受该工具与安装脚本约束。',
-            '6.5 **实验性功能**。导航中标注为实验性或带 Exp 标记的功能，其稳定性、准确性与兼容性均未达到正式标准，可能在新版本中被修改或移除，也可能对系统产生非预期影响。请在使用前自行评估。',
-            '6.6 **本开发组不对上述系统操作造成的任何数据丢失、系统异常、业务中断或其他损失承担责任**，但本条第 6.6 款不排除因故意或重大过失造成的责任，也不排除依适用法律不得排除或限制的责任。',
+            '6.5 **标记为实验性或 Beta 的功能**。导航中标注为实验性的功能，其稳定性、准确性与兼容性均未达到正式标准，可能在新版本中被修改或移除；标注为 Beta 的功能已确定上线，仍在打磨。以上功能均可能对系统产生非预期影响，请在使用前自行评估。',
+            '6.6 **虚拟内存**。该功能会修改各驱动器的分页文件设置：',
+            '（1）修改在重启后生效，重启前系统仍按原设置运行；',
+            '（2）设置过小可能导致内存不足报错、程序崩溃或系统卡顿；设置过大将长期占用磁盘空间；',
+            '（3）**请保留系统盘的分页文件**，关闭后部分程序可能无法正常运行。',
+            '6.7 **系统功能与系统优化**。这两项功能会一次性提权写入注册表与电源相关设置：',
+            '（1）改动可能影响休眠、快速启动、任务栏与资源管理器的行为，部分项目需重启或重新登录后完全生效；',
+            '（2）不同版本的 Windows 对同一项的默认值不同，恢复时以本机读到的原值为准；',
+            '（3）**请逐项确认后再应用**，尤其在共用或受管理的设备上。',
+            '6.8 **幽灵文件清理**。该功能会删除文件系统中已失效、但仍在资源管理器或桌面上显示的条目：',
+            '（1）删除为**永久删除**，不进入回收站，删除后无法还原；',
+            '（2）判定依据为条目是否仍能访问，个别情况下可能误判，**请勿对尚在使用的条目执行清理**。',
+            '6.9 **PowerPoint 触控优化**。该功能会在放映时模拟按键与单击：',
+            '（1）仅在检测到 PowerPoint 放映窗口时生效，退出放映即停止；',
+            '（2）可能与远程控制软件、第三方输入法或其他全局工具冲突，出现异常时请先关闭本功能；',
+            '（3）使用笔、荧光笔、橡皮或激光笔时不会干预，长按交由 PowerPoint 自身处理。',
+            '6.10 **本开发组不对上述系统操作造成的任何数据丢失、系统异常、业务中断或其他损失承担责任**，但本条第 6.10 款不排除因故意或重大过失造成的责任，也不排除依适用法律不得排除或限制的责任。',
           ]
         },
         {
@@ -688,8 +721,23 @@ const legalDocs: LegalDoc[] = [
             '(1) the application exits during the update and in-progress downloads are interrupted;',
             '(2) downloaded installers are verified, and re-fetched if verification fails;',
             '(3) the installer is produced by Inno Setup and its behaviour is governed by that tool and the install script.',
-            '6.5 **Experimental features.** Features marked as experimental or labelled Exp have not reached stability, accuracy or compatibility standards; they may change or be removed in later versions and may affect your system unexpectedly. Evaluate before use.',
-            '6.6 **The Development Group accepts no liability for data loss, system abnormality, business interruption or other damage caused by the operations above**, except for liability arising from intent or gross negligence, or liability that cannot be excluded or limited under applicable law.',
+            '6.5 **Features marked Experimental or Beta.** Features marked Experimental may be changed or removed in later versions, and their stability, accuracy and compatibility are below production standard; features marked Beta are confirmed for release and still being refined. Both may affect your system in unexpected ways; assess before use.',
+            '6.6 **Virtual memory.** This feature changes page-file settings for each drive:',
+            '(1) changes take effect after a restart, and the system keeps the previous settings until then;',
+            '(2) an undersized setting may cause out-of-memory errors, application crashes or sluggishness; an oversized one occupies disk space permanently;',
+            '(3) **keep a page file on the system drive**; disabling it may prevent some programs from running correctly.',
+            '6.7 **System features and system tweaks.** These features write registry and power-related settings in one elevated batch:',
+            '(1) changes may affect sleep, fast startup, taskbar and File Explorer behaviour, and some items fully apply only after a restart or sign-out;',
+            '(2) defaults differ between Windows versions; reverting uses the original values read on your machine;',
+            '(3) **review each item before applying**, especially on shared or managed devices.',
+            '6.8 **Ghost-entry cleanup.** This feature deletes entries that no longer exist in the file system but are still shown in File Explorer or on the desktop:',
+            '(1) deletion is **permanent**, bypasses the Recycle Bin and cannot be undone;',
+            '(2) the check is whether an entry is still accessible, which may misjudge in rare cases — **do not clean entries still in use**.',
+            '6.9 **PowerPoint touch enhancement.** This feature simulates key presses and clicks during a slide show:',
+            '(1) it applies only while a PowerPoint slide-show window is detected and stops when the show ends;',
+            '(2) it may conflict with remote-control software, third-party input methods or other global tools; disable it first if problems occur;',
+            '(3) it does not intervene when the pen, highlighter, eraser or laser pointer is in use, and leaves long presses to PowerPoint itself.',
+            '6.10 **The Development Group accepts no liability for data loss, system abnormality, business interruption or other damage caused by the operations above**, except for liability arising from intent or gross negligence, or liability that cannot be excluded or limited under applicable law.',
           ]
         },
         {
