@@ -1,0 +1,36 @@
+{
+  "_提交时间": "2026-11-07T03:46:27.097Z",
+  "_原始ID冲突": false,
+  "id": "classsoftwarehub",
+  "name": "ClassSoftwareHub",
+  "icon": "https://avatars.githubusercontent.com/u/264530092?v=4",
+  "category": "classroom",
+  "tagline": "ClassSoftwareHub 是一个面向电教委员的常用软件下载站，基于 Vue 3 + Vite +…",
+  "description": "ClassSoftwareHub 是一个面向电教委员的常用软件下载站，基于 Vue 3 + Vite + TypeScript 构建，采用 WinUIonWeb 组件库，提供 WinUI 风格的界面。",
+  "version": "v2.3.5-Tangram",
+  "size": "",
+  "system": "Windows 7+",
+  "website": "http://classsoftwarehub.cn/",
+  "github": "https://github.com/c1201y/ClassSoftwareHub",
+  "downloads": [
+    {
+      "platform": "其他 PNG",
+      "note": "v2.3.5.png",
+      "size": "702 KB",
+      "url": "https://github.com/c1201y/ClassSoftwareHub/releases/download/v2.3.5-Tangram/v2.3.5.png"
+    }
+  ],
+  "sort": 99,
+  "platforms": [
+    "windows"
+  ],
+  "_提交指纹": "089868f0d876e039",
+  "_系统版本": {
+    "windows": [
+      "7",
+      "10",
+      "11"
+    ]
+  },
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBXWFp1YXZ2QUIvdTVnV1pQ\nUE5kTGhublR5bWFJOGhlQ0QrU0FqMmE1eTNFCnpaZWtLZjVkZ2R5SklHNUtsKzhs\na3VXVTVxQTJ1SkNtc0FqbkZWT1JzTmsKLS0tIFBoditxcHpLZlF1S1ZjeWw1WktQ\nQzh3V3NoRzRRTzRQRDJOclB3eFFDOFkKq+SO2/OQ0dWjr/HAaR+HJhH0+DgpcLcC\nayv/mOfFcnrxkfjwSasH4wOz\n-----END AGE ENCRYPTED FILE-----"
+}
