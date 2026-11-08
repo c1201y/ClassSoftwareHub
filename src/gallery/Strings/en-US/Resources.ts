@@ -188,6 +188,7 @@ export default {
     "submit.import-warn-newer-prerelease": "A newer pre-release {tag} exists; tick \"Include pre-releases\" and read again if you want it.",
     "submit.import-warn-archived": "This repository has been archived by its owner and may no longer be updated.",
     "submit.import-warn-icon": "The icon currently points at the repository owner's avatar ({owner}); consider replacing it with the app's own icon.",
+    "submit.import-warn-author-owner": "Developer was filled with the repository owner \"{owner}\"; change it if the actual author differs.",
     "submit.import-warn-system-versions": "Platforms were ticked from the repository, but the exact versions still need to be picked (choose \"Other\" if unsure).",
     "submit.import-warn-downloads-kept": "The downloads section already had content, so it was left alone. Tick \"Overwrite what I already typed\" and read again to use the release assets.",
     "submit.import-id-taken": "The app ID \"{id}\" already exists, so it was changed to \"{newId}\".",
