@@ -1179,6 +1179,14 @@ async function handleSubmit(request, env) {
     downloads,
     sort: typeof data.sort === 'number' ? data.sort : 99,
   }
+  // 开发者与开源协议（选填，2026-11-08 加）：投稿页与详情页从 2026-11-01 就有这两个字段，
+  // 但当时的白名单没带它们 —— 前端填了也会在这里被整个丢掉，草稿里根本没有这两项。
+  // 详情页是「有值才显示、没值整行不出现」，所以空值不能写进草稿（写了会多出一条空白行）。
+  // 长度按团队名与 SPDX 标识留余量，同时挡住往里塞整段文字。
+  const author = cleanText(data.author, 120)
+  if (author) fileContent.author = author
+  const licenseText = cleanText(data.license, 120)
+  if (licenseText) fileContent.license = licenseText
   const notice = cleanText(data.notice, 1000)
   if (notice) fileContent.notice = notice
   const store = cleanText(data.store, 1000)
