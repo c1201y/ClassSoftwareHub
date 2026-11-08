@@ -336,6 +336,14 @@ jobs:
                 `**提交文件**：\`${mdInline(file, 200)}\``,
                 `**软件 ID**：\`${mdInline(data.id, 60)}\``,
                 `**分类**：\`${mdInline(data.category, 40)}\``,
+                // 开发者与开源协议（2026-11-08 加）：审核时要判断「这份软件能不能按这个方式分发」，
+                // 完整 JSON 里虽然有，但折在 details 里，一眼看不到。有值才单列一行。
+                ...(String(data.author ?? '').trim()
+                  ? [`**开发者**：${mdInline(data.author, 120)}`]
+                  : []),
+                ...(String(data.license ?? '').trim()
+                  ? [`**开源协议**：${mdInline(data.license, 60)}`]
+                  : []),
                 `**提交时间**：${mdInline(data._提交时间, 40)}`,
                 ...sidLine,
                 conflictHint,
