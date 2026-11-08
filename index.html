@@ -26,7 +26,7 @@
             （132614.xyz / xfane.com 指向同一份页面，靠 canonical 把权重合并到主域名）。 -->
     <meta
       name="description"
-      content="面向电教委员与班级电脑的软件下载站：收录数十款教学辅助、班级管理、白板与多媒体软件，无广告、无捆绑、开源优先；另有课堂小工具与国产 AI 导航，全部在浏览器本地运行、不上传数据。"
+      content="面向电教委员与班级电脑的软件下载站：收录教学辅助、班级管理、白板与多媒体软件，无广告、无捆绑、开源优先；另有课堂小工具与国产 AI 导航，全部本地运行。"
     />
     <meta
       name="keywords"
@@ -37,6 +37,10 @@
     <meta name="theme-color" content="#0067C0" />
     <link rel="canonical" href="https://classsoftwarehub.cn/" />
     <link rel="icon" href="./favicon.ico" sizes="any" />
+    <!-- iOS「添加到主屏幕」用的图标：必须是不透明的 180×180 方图，
+         否则系统会拿网页截图当图标。safari 会自动套圆角，所以图内的
+         mark 已经留了 10% 边距，四周不要贴边。 -->
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -62,6 +66,9 @@
     <meta property="og:image" content="https://classsoftwarehub.cn/og-cover.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <!-- 没有 alt 时，读屏软件只会念出「图片」，这是无障碍与部分平台的硬要求 -->
+    <meta property="og:image:alt" content="ClassSoftwareHub 电教委员常用软件下载站：V2.3 Tangram 版本的界面预览" />
     <meta property="og:locale" content="zh_CN" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="电教委员常用软件下载站" />
