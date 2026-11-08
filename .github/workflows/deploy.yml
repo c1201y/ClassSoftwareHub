@@ -127,3 +127,24 @@ jobs:
           protocol: ftp
           local-dir: ./dist/
           server-dir: /
+
+  notify-indexnow:
+    # 三个目标都发完之后再通知搜索引擎，否则引擎来抓时可能还是旧页面。
+    # 这一步永远不失败（脚本内部把一切异常都降级成 warning）：IndexNow 只是
+    # 「让重抓快一点」的加速器，挂了不该把一次成功的部署染色。
+    needs: [deploy-github-pages, upload-to-ftp]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: 取出源码
+        # scripts/indexnow.mjs 与 public/<key>.txt 都在仓库里，这一步不能省。
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 通知 Bing / Yandex 等 IndexNow 引擎（本站只有首页可提交，见 AGENTS.md）
+        run: node scripts/indexnow.mjs
+
