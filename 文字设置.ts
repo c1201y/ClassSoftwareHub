@@ -232,6 +232,7 @@ export default {
       "submit.import-warn-newer-prerelease": "更新的 {tag} 是预发布版本；需要收录的话，勾选「包含预发布版本」再读一次。",
       "submit.import-warn-archived": "该仓库已被作者归档，可能不再更新。",
       "submit.import-warn-icon": "图标先用了仓库所有者（{owner}）的头像，建议换成软件自己的图标。",
+      "submit.import-warn-author-owner": "开发者已按仓库所有者「{owner}」填写，若实际作者不同请手动修改。",
       "submit.import-warn-system-versions": "已按平台勾选支持系统，请再选具体版本（不确定就选「其他」）。",
       "submit.import-warn-downloads-kept": "下载项里已经有内容，这次没有覆盖；想用读取到的安装包，请勾选「覆盖已填写的内容」再读一次。",
       "submit.import-id-taken": "软件 ID「{id}」本站已存在，已自动改成「{newId}」。",

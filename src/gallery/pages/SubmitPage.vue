@@ -1072,6 +1072,14 @@ function applyImport(result: GithubImportResult) {
   });
   put(t('submit.website'), form.website, repo.homepage, (text) => { form.website = text; });
   put(t('submit.github'), form.github, repo.htmlUrl, (text) => { form.github = text; });
+  // 开发者与开源协议（2026-11-08，与桌面端提交页同一口径）：协议取 GitHub 给的 SPDX
+  // 标识，比手填准确；开发者只能拿仓库所有者顶 —— fork 出来的仓库这里会是 fork 者，
+  // 所以填上之后要提示核对一句。
+  put(t('submit.license'), form.license, repo.license, (text) => { form.license = text; });
+  put(t('submit.author'), form.author, repo.owner, (text) => { form.author = text; });
+  if (filled.includes(t('submit.author'))) {
+    warnings.push(t('submit.import-warn-author-owner', { owner: repo.owner }));
+  }
   // 仓库主页为微软商店链接时，同时填写「商店下载」字段
   if (repo.homepage.includes('apps.microsoft.com')) {
     put(t('submit.store'), form.store, repo.homepage, (text) => { form.store = text; });
