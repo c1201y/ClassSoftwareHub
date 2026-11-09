@@ -21,7 +21,7 @@
 // 本文件不产出界面文字 —— 按钮文案在 HomePage.vue 的 desktopPromo 中。
 // ════════════════════════════════════════════════════════════════════
 
-import { fetchSelfSignedUrl, mirrorUrl, orderedChannels } from './githubMirror';
+import { fetchSelfSignedUrl, mirrorUrl, orderedChannels, rememberChannel, usableChannels } from './githubMirror';
 import type { MirrorChannel } from './githubMirror';
 
 /** 桌面版仓库（安装包由该仓库发布，与本站主仓库相互独立） */
@@ -96,6 +96,12 @@ export interface DesktopBuild {
   url: string;
   /** 该版本的 Release 页（镜像不可用时的兜底） */
   releaseUrl: string;
+  /** 文件体积（字节），用于按「MB」显示 */
+  size?: number;
+  /** 该版本 Release 的更新说明（Markdown 原文，可能为空） */
+  changelog?: string;
+  /** 发布日期（ISO 串，可能为空） */
+  publishedAt?: string;
 }
 
 export interface DesktopBuilds {
@@ -153,11 +159,15 @@ const FALLBACK: DesktopBuilds = {
 
 interface RawAsset {
   name: string;
+  size: number;
   browser_download_url: string;
 }
 
 interface RawRelease {
   tag_name: string;
+  name: string;
+  published_at: string;
+  body: string;
   prerelease: boolean;
   draft: boolean;
   assets?: RawAsset[];
@@ -209,7 +219,10 @@ function pickAsset(
       tag: release.tag_name,
       name: asset.name,
       url: asset.browser_download_url,
-      releaseUrl: `https://github.com/${repo}/releases/tag/${release.tag_name}`
+      releaseUrl: `https://github.com/${repo}/releases/tag/${release.tag_name}`,
+      size: asset.size,
+      changelog: release.body || '',
+      publishedAt: release.published_at || ''
     };
   }
   return null;
@@ -525,6 +538,74 @@ function triggerDownload(url: string): void {
   document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();
+}
+
+/* ── 下载页：让用户自己选线路 ────────────────────────────────────── */
+
+/**
+ * 「自建节点」在选择器里的固定 id。
+ *
+ * 复用 githubMirror.ts 的 SELF_CHANNEL_ID，页面只认这一个常量，
+ * 不要在各处重复写字符串 'self'。
+ */
+export { SELF_CHANNEL_ID } from './githubMirror';
+
+/**
+ * 下载页可选的线路清单（自建节点排最前，其余按 githubMirror 的顺序）。
+ *
+ * 与首页/详情页的「自动挑一条能用」不同：下载页把选择权交给用户 ——
+ * 文档站就是这么做的，而且用户往往比自动探测更清楚自己这边哪条通。
+ * 但**候选范围仍然只来自 MIRROR_CHANNELS**，不另开一套清单，
+ * 否则通道增删时两处会漂移。
+ */
+export function mirrorChoices(): MirrorChannel[] {
+  const usable = usableChannels();
+  const self = usable.find((channel) => channel.self);
+  return self ? [self, ...usable.filter((channel) => channel !== self)] : usable;
+}
+
+/**
+ * 「GitHub 官方」这条线的虚拟 id。
+ *
+ * 它不在 MIRROR_CHANNELS 里 —— 那是个「加前缀转发」的清单，
+ * 官方直链是原样的 url，前缀为空，放进去会和 mirrorUrl() 的语义打架。
+ * 因此单独作为一个选项 id，下载时走 downloadBuildDirect()。
+ */
+export const OFFICIAL_CHANNEL_ID = 'github';
+
+/**
+ * 按用户**明确选定**的线路下载某个产物。
+ *
+ * 与 downloadBuild 的差别：那条路会自动探测、失败就换下一条；
+ * 这条路尊重用户的选择 —— 选了哪条就下哪条，不通就是不通（由页面提示换一条）。
+ *
+ * 自建节点要签名（防盗链），签名失败时回退到该线路前缀直拼，
+ * 让用户至少看到一次真实的 403，而不是静默跳到别的线路。
+ */
+export async function downloadBuildVia(
+  build: DesktopBuild,
+  channelId: string
+): Promise<DesktopDownloadResult | 'failed'> {
+  const channel =
+    mirrorChoices().find((item) => item.id === channelId) ??
+    mirrorChoices()[0];
+  if (!channel) return 'failed';
+
+  let href = '';
+  if (channel.self) {
+    href = (await fetchSelfSignedUrl(build.url)) || mirrorUrl(build.url, channel);
+  } else {
+    href = mirrorUrl(build.url, channel);
+  }
+  if (!href) return 'failed';
+  triggerDownload(href);
+  rememberChannel(channel.id);
+  return 'mirror';
+}
+
+/** 直接走 GitHub 官方源下载（不走任何镜像） */
+export function downloadBuildDirect(build: DesktopBuild): void {
+  triggerDownload(build.url);
 }
 
 export type DesktopDownloadResult = 'mirror' | 'release';
