@@ -4,209 +4,138 @@
     VerticalScrollBarVisibility="Auto"
     VerticalScrollMode="Auto">
     <div class="gallery-page-content desktop-page">
-      <!-- ── A. Hero ───────────────────────────────────────────────
-           与文档站一致：图标 + 标题 + 一句话说明，居中。 -->
-      <section class="dl-hero">
-        <img class="dl-hero-logo" :src="siteIcon" alt="ClassSoftwareHub" />
-        <h1 class="dl-hero-title">{{ t('desktop.hero-title') }}</h1>
-        <p class="dl-hero-subtitle">{{ t('desktop.hero-subtitle') }}</p>
+      <!-- ═══ A. Hero：与文档站一致（图标 + 标题 + 副标题，居中）═══ -->
+      <section class="hero-section">
+        <img class="hero-logo" :src="siteIcon" alt="ClassSoftwareHub" />
+        <h1 class="hero-title">{{ t('desktop.hero-title') }}</h1>
+        <p class="hero-subtitle">{{ t('desktop.hero-subtitle') }}</p>
       </section>
 
-      <!-- ── B. 通道切换（正式版 / 预览版）─────────────────────────
-           文档站是「版本通道」按钮组；这里按平台各自一组，
-           因为 Win7 的预览线与主桌面版不同步。 -->
-      <section class="dl-platforms">
-        <button
-          v-for="p in platformTabs"
-          :key="p.id"
-          type="button"
-          class="dl-platform-tab"
-          :class="{ 'is-active': activePlatform === p.id, 'is-soon': p.soon }"
-          @click="activePlatform = p.id">
-          <span class="dl-platform-icon" aria-hidden="true">{{ p.icon }}</span>
-          <span class="dl-platform-name">{{ t(p.nameKey) }}</span>
-        </button>
+      <!-- ═══ B. 主下载按钮（WinSplitButton：主按钮 + 下拉换产物）═══ -->
+      <section class="download-btn-section">
+        <p v-if="loading" class="loading-inline">{{ t('desktop.loading') }}</p>
+
+        <WinInfoBar
+          v-else-if="allEmpty"
+          class="error-bar"
+          :IsOpen="true"
+          :IsClosable="false"
+          Severity="Error"
+          :Title="t('desktop.load-failed-title')"
+          :Message="t('desktop.load-failed-desc')" />
+
+        <template v-else-if="primaryRow">
+          <WinSplitButton
+            class="split-download-btn"
+            :Content="busy ? t('desktop.downloading') : t('desktop.download-now')"
+            :IsEnabled="!busy"
+            :Options="assetOptions"
+            @Click="download(primaryRow.id)"
+            @Select="onAssetSelect">
+            <!-- @vue-expect-error 上游 WinSplitButton 未导出插槽类型，运行时正常 -->
+            <template #main="{ onClick, isDisabled }">
+              <WinButton
+                class="win-split-main-button main-btn"
+                Style="AccentButtonStyle"
+                :IsEnabled="!isDisabled"
+                @Click="onClick">
+                <span class="btn-icon" aria-hidden="true">&#xE896;</span>
+                <span>{{ busy ? t('desktop.downloading') : t('desktop.download-now') }}</span>
+              </WinButton>
+            </template>
+          </WinSplitButton>
+
+          <div class="download-meta">
+            <span class="meta-tag">{{ primaryRow.build?.tag }}</span>
+            <span class="meta-size">{{ formatSize(primaryRow.build?.size) }}</span>
+          </div>
+        </template>
+
+        <p v-else class="no-assets">{{ t('desktop.no-builds') }}</p>
       </section>
 
-      <p v-if="loading" class="dl-loading">{{ t('desktop.loading') }}</p>
+      <!-- ═══ C. 选项行：下载源（ComboBox）+ 版本通道（SelectorBar）═══ -->
+      <section class="options-row">
+        <div class="option-group">
+          <label class="option-label">{{ t('desktop.source-label') }}</label>
+          <WinComboBox
+            class="source-combo"
+            :ItemsSource="sourceOptions"
+            DisplayMemberPath="name"
+            v-model:SelectedIndex="sourceIndex" />
+        </div>
 
+        <div class="option-group">
+          <label class="option-label">{{ t('desktop.channel-label') }}</label>
+          <WinSelectorBar
+            class="channel-bar"
+            :Items="channelItems"
+            :SelectedItem="selectedChannelItem"
+            @SelectionChanged="onChannelChanged" />
+        </div>
+      </section>
+
+      <!-- ═══ D. 平台切换：与文档站同一节奏，放在下方作为版本入口 ═══ -->
+      <section class="platform-row">
+        <span class="option-label">{{ t('desktop.platform-label') }}</span>
+        <WinSelectorBar
+          class="platform-bar"
+          :Items="platformItems"
+          :SelectedItem="selectedPlatformItem"
+          @SelectionChanged="onPlatformChanged" />
+      </section>
+
+      <!-- 线路/系统要求说明 -->
+      <section v-if="!card.soon" class="meta-row">
+        <span class="requirement-text">{{ t(card.requirementKey) }}</span>
+      </section>
+
+      <p v-if="downloadFailed" class="hint-failed">{{ t('desktop.download-failed') }}</p>
+
+      <!-- ═══ E. Linux 占位 ═══ -->
       <WinInfoBar
-        v-else-if="allEmpty"
-        class="dl-error-bar"
+        v-if="card.soon"
+        class="soon-bar"
         :IsOpen="true"
         :IsClosable="false"
-        Severity="Warning"
-        :Title="t('desktop.load-failed-title')"
-        :Message="t('desktop.load-failed-desc')" />
+        Severity="Informational"
+        :Title="t('desktop.tab-linux')"
+        :Message="t('desktop.coming-soon')" />
 
-      <template v-else>
-        <!-- ── C. 当前平台：通道切换 ────────────────────────────── -->
-        <section v-if="!currentCard.soon" class="dl-channel-row">
-          <span class="dl-label">{{ t('desktop.channel-label') }}</span>
-          <div class="dl-channel-tabs" role="tablist">
-            <button
-              type="button"
-              role="tab"
-              class="dl-channel-tab"
-              :class="{ 'is-active': activeChannel === 'stable' }"
-              :aria-selected="activeChannel === 'stable'"
-              @click="activeChannel = 'stable'">
-              {{ t('desktop.channel-stable') }}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              class="dl-channel-tab"
-              :class="{ 'is-active': activeChannel === 'insider' }"
-              :aria-selected="activeChannel === 'insider'"
-              @click="activeChannel = 'insider'">
-              {{ t('desktop.channel-insider') }}
-            </button>
-          </div>
-        </section>
+      <!-- ═══ F. 更新日志（与文档站同款卡片）═══ -->
+      <section v-if="!card.soon && changelogHtml" class="changelog-section">
+        <div class="section-header">
+          <h2 class="changelog-heading">{{ t('desktop.changelog') }}</h2>
+          <span class="version-badge">{{ currentBuild?.tag }}</span>
+        </div>
+        <div class="changelog-body markdown-body" v-html="changelogHtml"></div>
+      </section>
 
-        <!-- ── D. 主下载按钮 + 其余产物下拉 ─────────────────────── -->
-        <section v-if="!currentCard.soon && currentRows.length" class="dl-main-section">
-          <div class="dl-split-btn">
-            <button
-              type="button"
-              class="dl-main-btn"
-              :disabled="busy"
-              @click="download(primaryRow.id)">
-              <span class="dl-btn-icon" aria-hidden="true">&#xE896;</span>
-              <span>{{ busy ? t('desktop.downloading') : t('desktop.download-now') }}</span>
-            </button>
+      <!-- ═══ G. 页脚：历史版本 / 文档 / 校验值 ═══ -->
+      <div class="history-link">
+        <a v-if="card.repoUrl" :href="card.repoUrl" target="_blank" rel="noopener noreferrer">
+          {{ t('desktop.history') }}
+        </a>
+        <a :href="DOCS_URL" target="_blank" rel="noopener noreferrer">{{ t('desktop.docs') }}</a>
+        <a v-if="currentBuild" :href="md5Of(currentBuild)" target="_blank" rel="noopener noreferrer">
+          {{ t('desktop.md5') }}
+        </a>
+      </div>
 
-            <div v-if="secondaryRows.length" class="dl-split-more">
-              <button
-                type="button"
-                class="dl-split-trigger"
-                :aria-expanded="assetMenuOpen"
-                :aria-label="t('desktop.more-builds')"
-                @click="assetMenuOpen = !assetMenuOpen">
-                <span class="dl-chevron" aria-hidden="true">&#xE70D;</span>
-              </button>
-              <div v-if="assetMenuOpen" class="dl-asset-menu">
-                <button
-                  v-for="row in secondaryRows"
-                  :key="row.id"
-                  type="button"
-                  class="dl-asset-item"
-                  :disabled="busy"
-                  @click="download(row.id)">
-                  <span class="dl-asset-name">{{ t(row.nameKey) }}</span>
-                  <span class="dl-asset-meta">
-                    <span class="dl-asset-tag">{{ row.build?.tag }}</span>
-                    <span class="dl-asset-size">{{ formatSize(row.build?.size) }}</span>
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="dl-main-meta">
-            <span class="dl-meta-tag">{{ primaryRow.build?.tag }}</span>
-            <span class="dl-meta-size">{{ formatSize(primaryRow.build?.size) }}</span>
-            <span v-if="primaryRow.build?.publishedAt" class="dl-meta-date">
-              {{ formatDate(primaryRow.build.publishedAt) }}
-            </span>
-          </div>
-          <p class="dl-main-note">{{ t(primaryRow.noteKey) }}</p>
-        </section>
-
-        <!-- 该平台在该通道下没有产物 -->
-        <p v-else-if="!currentCard.soon" class="dl-empty">{{ t('desktop.no-builds') }}</p>
-
-        <!-- ── E. 选项行：下载线路 ──────────────────────────────── -->
-        <section v-if="!currentCard.soon" class="dl-options">
-          <div class="dl-option-group">
-            <span class="dl-label">{{ t('desktop.source-label') }}</span>
-            <div class="dl-source-wrap">
-              <button
-                type="button"
-                class="dl-source-trigger"
-                :aria-expanded="sourceMenuOpen"
-                @click="sourceMenuOpen = !sourceMenuOpen">
-                <span class="dl-source-dot" :class="{ 'is-self': !selectedIsOfficial }" aria-hidden="true"></span>
-                <span class="dl-source-current">{{ selectedSourceName }}</span>
-                <span class="dl-chevron" aria-hidden="true">&#xE70D;</span>
-              </button>
-              <div v-if="sourceMenuOpen" class="dl-source-menu">
-                <button
-                  v-for="opt in sourceOptions"
-                  :key="opt.id"
-                  type="button"
-                  class="dl-source-item"
-                  :class="{ 'is-selected': opt.id === sourceChannelId }"
-                  @click="pickSource(opt.id)">
-                  <span class="dl-source-dot" :class="{ 'is-self': opt.id !== OFFICIAL_CHANNEL_ID }" aria-hidden="true"></span>
-                  <span class="dl-source-info">
-                    <span class="dl-source-name">{{ opt.name }}</span>
-                    <span class="dl-source-desc">{{ t(opt.descKey) }}</span>
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="dl-option-group">
-            <span class="dl-label">{{ t('desktop.requirements-label') }}</span>
-            <span class="dl-requirement">{{ t(currentCard.requirementKey) }}</span>
-          </div>
-        </section>
-
-        <!-- 全部线路都不行时的说明 -->
-        <p v-if="downloadFailed" class="dl-failed">{{ t('desktop.download-failed') }}</p>
-
-        <!-- ── F. Linux 占位 ────────────────────────────────────── -->
-        <section v-if="currentCard.soon" class="dl-soon">
-          <span class="dl-soon-icon" aria-hidden="true">&#xE7F8;</span>
-          <p class="dl-soon-text">{{ t('desktop.coming-soon') }}</p>
-        </section>
-
-        <!-- ── G. 更新日志 ──────────────────────────────────────── -->
-        <section v-if="!currentCard.soon && changelogHtml" class="dl-changelog">
-          <div class="dl-changelog-head">
-            <h2 class="dl-changelog-title">{{ t('desktop.changelog') }}</h2>
-            <span class="dl-changelog-tag">{{ currentBuild?.tag }}</span>
-          </div>
-          <!-- 内容来自 GitHub Release 正文（他人可写），必须经 DOMPurify 消毒 -->
-          <div class="dl-changelog-body" v-html="changelogHtml"></div>
-        </section>
-
-        <!-- ── H. 页脚：历史版本 + 文档 + 校验说明 ──────────────── -->
-        <footer class="dl-footer">
-          <div class="dl-footer-links">
-            <a
-              v-if="currentCard.repoUrl"
-              class="dl-footer-link"
-              :href="currentCard.repoUrl"
-              target="_blank"
-              rel="noopener noreferrer">{{ t('desktop.history') }}</a>
-            <a
-              class="dl-footer-link"
-              :href="DOCS_URL"
-              target="_blank"
-              rel="noopener noreferrer">{{ t('desktop.docs') }}</a>
-            <a
-              v-if="currentBuild"
-              class="dl-footer-link"
-              :href="md5Of(currentBuild)"
-              target="_blank"
-              rel="noopener noreferrer">{{ t('desktop.md5') }}</a>
-          </div>
-          <p class="dl-footer-note">{{ t('desktop.mirror-note') }}</p>
-        </footer>
-      </template>
+      <p class="mirror-note">{{ t('desktop.mirror-note') }}</p>
     </div>
   </WinScrollViewer>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import WinScrollViewer from '../../components/WinScrollViewer.vue';
+import WinButton from '../../components/WinButton.vue';
+import WinSplitButton from '../../components/WinSplitButton.vue';
+import WinComboBox from '../../components/WinComboBox.vue';
+import WinSelectorBar from '../../components/WinSelectorBar.vue';
 import WinInfoBar from '../../components/WinInfoBar.vue';
 import { useI18n } from '../../components/i18n/index';
 import {
@@ -222,49 +151,84 @@ import {
   resolveDownloadEntries
 } from '../desktopDownload';
 import type { DesktopBuild, DownloadEntries, DownloadId } from '../desktopDownload';
-// 站点自己的应用图标（512 px PNG）。走 import 而不是 public/，
-// 这样单文件构建（SINGLEFILE=1）会把它内联，离线版也能显示。
 import siteIconUrl from '../../assets/AppIcon-512.png';
 import '../styles/desktop-page.css';
 
 const { t } = useI18n();
-
-/** Hero 用的站点图标 */
 const siteIcon = siteIconUrl;
 
 type PlatformId = 'win10' | 'win7' | 'android' | 'linux';
 type ChannelId = 'stable' | 'insider';
 
-const activePlatform = ref<PlatformId>('win10');
-const activeChannel = ref<ChannelId>('stable');
-const assetMenuOpen = ref(false);
-const sourceMenuOpen = ref(false);
-const busy = ref(false);
-const downloadFailed = ref(false);
+/* ── 状态 ─────────────────────────────────────────────────────────── */
 
 const entries = ref<DownloadEntries | null>(null);
 const loading = ref(true);
+const busy = ref(false);
+const downloadFailed = ref(false);
 
-/** 线路清单（自建节点排最前）；不可用线路已由 githubMirror 过滤 */
+const activePlatform = ref<PlatformId>('win10');
+const activeChannel = ref<ChannelId>('stable');
+
+/* ── 平台 / 通道 / 线路 三组数据 ──────────────────────────────────── */
+
+interface PlatformDef {
+  id: PlatformId;
+  labelKey: string;
+  icon: string;
+  requirementKey: string;
+  repoUrl: string;
+  soon?: boolean;
+}
+
+const PLATFORMS: PlatformDef[] = [
+  { id: 'win10', labelKey: 'desktop.tab-win10', icon: '\uE977', requirementKey: 'desktop.win10-requirement', repoUrl: DESKTOP_RELEASES_URL },
+  { id: 'win7', labelKey: 'desktop.tab-win7', icon: '\uE7F8', requirementKey: 'desktop.win7-requirement', repoUrl: WIN7_RELEASES_URL },
+  { id: 'android', labelKey: 'desktop.tab-android', icon: '\uE8EA', requirementKey: 'desktop.android-requirement', repoUrl: ANDROID_RELEASES_URL },
+  { id: 'linux', labelKey: 'desktop.tab-linux', icon: '\uE7F8', requirementKey: 'desktop.linux-requirement', repoUrl: '', soon: true }
+];
+
+/** WinSelectorBar 的 Items：{ Text, Tag, Icon } */
+const platformItems = computed(() =>
+  PLATFORMS.map((p) => ({ Text: t(p.labelKey), Tag: p.id, Icon: p.icon }))
+);
+const selectedPlatformItem = computed(() => platformItems.value.find((i) => i.Tag === activePlatform.value));
+const onPlatformChanged = (sender: { SelectedItem?: { Tag?: string } } | null) => {
+  const tag = sender?.SelectedItem?.Tag as PlatformId | undefined;
+  if (tag) activePlatform.value = tag;
+};
+
+const channelItems = computed(() => [
+  { Text: t('desktop.channel-stable'), Tag: 'stable' },
+  { Text: t('desktop.channel-insider'), Tag: 'insider' }
+]);
+const selectedChannelItem = computed(() => channelItems.value.find((i) => i.Tag === activeChannel.value));
+const onChannelChanged = (sender: { SelectedItem?: { Tag?: string } } | null) => {
+  const tag = sender?.SelectedItem?.Tag as ChannelId | undefined;
+  if (tag) activeChannel.value = tag;
+};
+
+/** 下载线路：自建节点 + 公益镜像 + GitHub 官方 */
 const channels = mirrorChoices();
-const sourceChannelId = ref(channels[0]?.id ?? '');
-const selectedChannel = computed(() => channels.find((c) => c.id === sourceChannelId.value) ?? channels[0]);
-
-/** 下拉里的完整清单 = 全部镜像 + 末尾的「GitHub 官方」 */
-const sourceOptions = computed(() => [
+interface SourceOption {
+  name: string;
+  id: string;
+  descKey: string;
+}
+const sourceOptions = computed<SourceOption[]>(() => [
   ...channels.map((ch) => ({
-    id: ch.id,
     name: ch.name,
+    id: ch.id,
     descKey: ch.self ? 'desktop.source-self' : 'desktop.source-mirror'
   })),
-  { id: OFFICIAL_CHANNEL_ID, name: 'GitHub', descKey: 'desktop.source-official' }
+  { name: 'GitHub', id: OFFICIAL_CHANNEL_ID, descKey: 'desktop.source-official' }
 ]);
+const sourceIndex = ref(0);
+const selectedSourceId = computed(() => sourceOptions.value[sourceIndex.value]?.id ?? channels[0]?.id ?? '');
 
-/** 当前选中线路的显示名（官方那条不在 channels 里，要单独取） */
-const selectedSourceName = computed(
-  () => sourceOptions.value.find((o) => o.id === sourceChannelId.value)?.name ?? ''
-);
-const selectedIsOfficial = computed(() => sourceChannelId.value === OFFICIAL_CHANNEL_ID);
+/* ── 当前卡片 ─────────────────────────────────────────────────────── */
+
+const card = computed(() => PLATFORMS.find((p) => p.id === activePlatform.value) ?? PLATFORMS[0]);
 
 interface RowDef {
   id: DownloadId;
@@ -273,31 +237,6 @@ interface RowDef {
   build: DesktopBuild | null;
 }
 
-interface PlatformTab {
-  id: PlatformId;
-  icon: string;
-  nameKey: string;
-  soon?: boolean;
-}
-
-const platformTabs: PlatformTab[] = [
-  { id: 'win10', icon: '\uE977', nameKey: 'desktop.tab-win10' },
-  { id: 'win7', icon: '\uE7F8', nameKey: 'desktop.tab-win7' },
-  { id: 'android', icon: '\uE8EA', nameKey: 'desktop.tab-android' },
-  { id: 'linux', icon: '\uE7F8', nameKey: 'desktop.tab-linux', soon: true }
-];
-
-/** 当前平台的卡片配置（requirementKey / 仓库地址 / 各通道对应的行） */
-const CARD_CONFIG: Record<PlatformId, { requirementKey: string; repoUrl: string; soon?: boolean }> = {
-  win10: { requirementKey: 'desktop.win10-requirement', repoUrl: DESKTOP_RELEASES_URL },
-  win7: { requirementKey: 'desktop.win7-requirement', repoUrl: WIN7_RELEASES_URL },
-  android: { requirementKey: 'desktop.android-requirement', repoUrl: ANDROID_RELEASES_URL },
-  linux: { requirementKey: 'desktop.linux-requirement', repoUrl: '', soon: true }
-};
-
-const currentCard = computed(() => CARD_CONFIG[activePlatform.value]);
-
-/** 当前平台 + 当前通道下的行。安卓不区分预览通道，两档取同一份。 */
 const currentRows = computed<RowDef[]>(() => {
   const e = entries.value;
   if (!e) return [];
@@ -331,26 +270,36 @@ const currentRows = computed<RowDef[]>(() => {
   }
 });
 
-/** 主按钮那一行 = 第一条有 build 的；下拉里放其余的 */
-const primaryRow = computed(() => currentRows.value.find((r) => r.build) ?? currentRows.value[0]);
-const secondaryRows = computed(() =>
-  currentRows.value.filter((r) => r !== primaryRow.value && r.build)
-);
+const primaryRow = computed(() => currentRows.value.find((r) => r.build) ?? null);
 const currentBuild = computed(() => primaryRow.value?.build ?? null);
 
-/** 一条产物都没取到（接口全挂） */
+/** 下拉里的其余产物（WinSplitButton 的 Options 格式：{ Text, Tag }） */
+const assetOptions = computed(() =>
+  currentRows.value
+    .filter((r) => r !== primaryRow.value && r.build)
+    .map((r) => ({
+      Text: `${t(r.nameKey)} · ${r.build?.tag ?? ''}`,
+      Tag: r.id
+    }))
+);
+
+const onAssetSelect = (option: { Tag?: string } | null) => {
+  const id = option?.Tag as DownloadId | undefined;
+  if (id) void download(id);
+};
+
 const allEmpty = computed(() => {
   const e = entries.value;
   if (!e) return false;
   return !Object.values(e).some(Boolean);
 });
 
-/* ── 更新日志：GitHub Release 正文是他人可写内容，必须消毒 ──────────── */
+/* ── 更新日志 ─────────────────────────────────────────────────────── */
+
 const changelogHtml = computed(() => {
   const body = currentBuild.value?.changelog;
   if (!body || !body.trim()) return '';
   try {
-    // Release 正文里常带整图的 ![](url)，渲染出来会把版面撑破，先去掉
     const cleaned = body.replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/<img\s[^>]*\/?>/gi, '');
     const raw = marked.parse(cleaned, { async: false }) as string;
     return DOMPurify.sanitize(raw, {
@@ -369,25 +318,15 @@ const changelogHtml = computed(() => {
 
 /* ── 工具 ─────────────────────────────────────────────────────────── */
 
-/** 字节数 → 「83.0 MB」；取不到时返回空串（不显示） */
 const formatSize = (bytes?: number) => {
   if (!bytes) return '';
   const mb = bytes / 1024 / 1024;
-  if (mb >= 1) return `${mb.toFixed(1)} MB`;
-  return `${(bytes / 1024).toFixed(0)} KB`;
-};
-
-/** ISO 日期 → YYYY-MM-DD */
-const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '';
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  return mb >= 1 ? `${mb.toFixed(1)} MB` : `${(bytes / 1024).toFixed(0)} KB`;
 };
 
 const md5Of = (build: DesktopBuild) => `${build.url}.md5`;
 
-/* ── 交互 ─────────────────────────────────────────────────────────── */
+/* ── 下载 ─────────────────────────────────────────────────────────── */
 
 const download = async (id: DownloadId) => {
   if (busy.value || !entries.value) return;
@@ -395,13 +334,11 @@ const download = async (id: DownloadId) => {
   if (!build) return;
   busy.value = true;
   downloadFailed.value = false;
-  assetMenuOpen.value = false;
   try {
-    // 用用户明确选中的线路；选的是「GitHub 官方」就直接走官方
-    if (selectedIsOfficial.value) {
+    if (selectedSourceId.value === OFFICIAL_CHANNEL_ID) {
       downloadBuildDirect(build);
     } else {
-      const result = await downloadBuildVia(build, sourceChannelId.value);
+      const result = await downloadBuildVia(build, selectedSourceId.value);
       if (result === 'failed') downloadFailed.value = true;
     }
   } finally {
@@ -409,29 +346,11 @@ const download = async (id: DownloadId) => {
   }
 };
 
-const pickSource = (id: string) => {
-  sourceChannelId.value = id;
-  sourceMenuOpen.value = false;
-  downloadFailed.value = false;
-};
-
-/** 点空白处收起两个下拉（与文档站一致） */
-const closeMenus = (e: MouseEvent) => {
-  const target = e.target as HTMLElement | null;
-  if (!target?.closest('.dl-split-more')) assetMenuOpen.value = false;
-  if (!target?.closest('.dl-source-wrap')) sourceMenuOpen.value = false;
-};
-
 onMounted(async () => {
-  document.addEventListener('click', closeMenus);
   try {
     entries.value = await resolveDownloadEntries();
   } finally {
     loading.value = false;
   }
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', closeMenus);
 });
 </script>
