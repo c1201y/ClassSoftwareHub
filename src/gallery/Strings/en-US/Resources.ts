@@ -313,6 +313,53 @@ export default {
   // 两级结构：kind（report / suggestion），仅 "report" 含子类型。
   // 卡片与子类型由 src/gallery/feedback.ts 决定。
   "nav.feedback": "Feedback",
+  "nav.desktop": "Desktop app",
+
+  // ── Desktop download page (#/desktop) ──────────────────────────────
+  // Versions, sizes and download URLs are NOT here — they are resolved live
+  // from GitHub Releases by src/gallery/desktopDownload.ts.
+  "desktop.title": "Download the desktop app",
+  "desktop.subtitle": "Install the station locally: native window, tray residence, auto updates — no browser needed.",
+  "desktop.channel-title": "Stable vs. Insider",
+  "desktop.channel-desc": "Stable builds are fully tested and recommended for daily use; Insider builds let you try new features early but may be unstable. You can switch update channels in the app settings at any time.",
+  "desktop.loading": "Fetching the latest version…",
+  "desktop.load-failed-title": "Version information is unavailable",
+  "desktop.load-failed-desc": "The network or API may be temporarily unavailable. You can download directly from GitHub Releases, which always has the newest build.",
+  "desktop.row-unavailable": "Version information is unavailable for this entry — please download from the Releases page.",
+  "desktop.open-releases": "Open Releases",
+  "desktop.all-versions": "All releases",
+  "desktop.download": "Download",
+  "desktop.downloading": "Connecting…",
+  "desktop.md5": "Checksum",
+  "desktop.coming-soon": "The Linux build is still in preparation and has no published artifacts yet. Watch the docs site or the GitHub repository for updates.",
+  "desktop.mirror-note": "The Download button picks a working acceleration channel automatically; if none respond, you are taken to that version's GitHub Releases page. Every installer ships a matching .md5 file — verified before installing is recommended.",
+  "desktop.docs": "Installation & usage docs",
+
+  "desktop.win10-title": "Windows 10 / 11 desktop",
+  "desktop.win10-requirement": "Requires Windows 10 1809 (build 17763) or later · x64",
+  "desktop.win7-title": "Windows 7 compatible build",
+  "desktop.win7-requirement": "Requires Windows 7 SP1 or later · x64 · Avalonia UI, released independently",
+  "desktop.android-title": "Android",
+  "desktop.android-requirement": "Requires Android 8.0 or later · installs from APK",
+  "desktop.linux-title": "Linux",
+  "desktop.linux-requirement": "Not released yet — in preparation",
+
+  "desktop.row-stable": "Stable · installer",
+  "desktop.row-insider": "Insider · installer",
+  "desktop.row-win7-setup": "Stable · installer",
+  "desktop.row-win7-portable": "Stable · portable",
+  "desktop.row-win7-insider-setup": "Insider · installer",
+  "desktop.row-win7-insider-portable": "Insider · portable",
+  "desktop.row-android": "APK package",
+
+  "desktop.note-win10-setup": "Per-user install with Start menu / desktop shortcuts and an uninstall entry",
+  "desktop.note-win7-setup": "Installs to %LOCALAPPDATA%\\Programs\\ClassSoftwareHub-Win7 by default",
+  "desktop.note-win7-portable": "Unzip and run the launcher in the root folder — writes no uninstall entry",
+  "desktop.note-android": "Allow installing apps from unknown sources when prompted",
+
+  // Global search entry for the desktop download page
+  "search.page-desktop": "Download the desktop app",
+  "search.page-desktop-desc": "Installers for Windows 10/11, Windows 7 and Android",
   "search.page-feedback": "Feedback",
   "search.page-feedback-desc": "Report a problem or share an idea",
   "feedback.title": "Help improve ClassSoftwareHub",

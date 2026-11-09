@@ -28,9 +28,17 @@ import type { MirrorChannel } from './githubMirror';
 const REPO = 'c1201y/ClassSoftwareHub-Desktop';
 /** Win7 移植版仓库：Avalonia 重做 UI，独立发布、独立更新，安装包文件名带 win7 */
 const WIN7_REPO = 'c1201y/ClassSoftwareHub-windows7';
+/** 安卓客户端仓库：原生 Android，产物是 app-release.apk */
+const ANDROID_REPO = 'c1201y/ClassSoftwareHub-Android';
 
 /** 桌面版仓库的 Releases 页 —— 卡片「全部版本」链接及镜像全部不可用时的兜底跳转目标 */
 export const DESKTOP_RELEASES_URL = `https://github.com/${REPO}/releases`;
+/** Win7 移植版仓库的 Releases 页（下载页「全部版本」入口用） */
+export const WIN7_RELEASES_URL = `https://github.com/${WIN7_REPO}/releases`;
+/** 安卓客户端的 Releases 页 */
+export const ANDROID_RELEASES_URL = `https://github.com/${ANDROID_REPO}/releases`;
+/** 文档站：桌面版的使用说明、安装方式与常见问题都在那里 */
+export const DOCS_URL = 'https://docs.classsoftwarehub.cn/download';
 
 /**
  * 取某个仓库 Release 清单的接口入口，按顺序试，第一个成功的胜出。
@@ -60,6 +68,23 @@ const CACHE_TTL = 30 * 60 * 1000;
 /** 三个下载通道：稳定版 / Insider 版来自原版仓库，Win7 版来自独立的移植仓库 */
 export type DesktopChannel = 'stable' | 'insider' | 'win7';
 
+/**
+ * 下载页（#/desktop）用的通道。
+ *
+ * 比 HomePage 的三个通道更细：同一个仓库里「安装版」和「便携版」是两条独立产物，
+ * 用户需要按需选（便携版给没有安装权限的机器）。安卓单独一条。
+ * 与 DesktopChannel 分开，是因为首页那张卡只需要「一个平台一个按钮」的粗粒度，
+ * 混成一个联合类型会让首页的 switch 变得难读。
+ */
+export type DownloadId =
+  | 'stable'
+  | 'insider'
+  | 'win7-setup'
+  | 'win7-portable'
+  | 'win7-insider-setup'
+  | 'win7-insider-portable'
+  | 'android';
+
 /** 一条可下载的桌面版安装包 */
 export interface DesktopBuild {
   channel: DesktopChannel;
@@ -79,20 +104,37 @@ export interface DesktopBuilds {
   win7: DesktopBuild;
 }
 
+/**
+ * 下载页（#/desktop）需要的全部产物。
+ *
+ * 与 DesktopBuilds 的区别：那个是首页三按钮的粗粒度（一个平台一条），
+ * 这个按「安装版 / 便携版」拆开，并补上安卓。接口不可用时为 null ——
+ * 下载页会退化成「只显示『去 Releases 页』链接」，绝不显示一个点不动的按钮。
+ */
+export interface DownloadEntries {
+  stable: DesktopBuild | null;
+  insider: DesktopBuild | null;
+  win7Setup: DesktopBuild | null;
+  win7Portable: DesktopBuild | null;
+  win7InsiderSetup: DesktopBuild | null;
+  win7InsiderPortable: DesktopBuild | null;
+  android: DesktopBuild | null;
+}
+
 /** 通道对应的 GitHub 仓库 */
 function repoOf(channel: DesktopChannel): string {
   return channel === 'win7' ? WIN7_REPO : REPO;
 }
 
 /** 构造 DesktopBuild（tag 与文件名均由仓库约定决定） */
-function buildOf(channel: DesktopChannel, tag: string, name: string): DesktopBuild {
-  const repo = repoOf(channel);
+function buildOf(channel: DesktopChannel, tag: string, name: string, repo?: string): DesktopBuild {
+  const owner = repo ?? repoOf(channel);
   return {
     channel,
     tag,
     name,
-    url: `https://github.com/${repo}/releases/download/${tag}/${name}`,
-    releaseUrl: `https://github.com/${repo}/releases/tag/${tag}`
+    url: `https://github.com/${owner}/releases/download/${tag}/${name}`,
+    releaseUrl: `https://github.com/${owner}/releases/tag/${tag}`
   };
 }
 
@@ -142,6 +184,48 @@ function pickBuild(releases: RawRelease[], channel: DesktopChannel): DesktopBuil
   }
   return null;
 }
+
+/**
+ * 在 Release 列表里找到「满足条件的那个 asset」所在的那个 release。
+ *
+ * 与 pickBuild 的区别：这里不按通道（正式/预览）过滤，而是由调用方传进来两个判定 ——
+ * 一个决定「要不要看这个 release」，一个决定「要它的哪个 asset」。
+ * 下载页要在一份 Release 列表里同时取出安装版和便携版（同一 tag、不同文件），
+ * 所以不能沿用 pickBuild 那种「一个通道一个 exe」的写法。
+ */
+function pickAsset(
+  releases: RawRelease[],
+  allowRelease: (release: RawRelease) => boolean,
+  matchAsset: (name: string) => boolean,
+  channel: DesktopChannel,
+  repo: string
+): DesktopBuild | null {
+  for (const release of releases) {
+    if (release.draft || !release.tag_name || !allowRelease(release)) continue;
+    const asset = (release.assets ?? []).find((item) => matchAsset(item.name));
+    if (!asset) continue;
+    return {
+      channel,
+      tag: release.tag_name,
+      name: asset.name,
+      url: asset.browser_download_url,
+      releaseUrl: `https://github.com/${repo}/releases/tag/${release.tag_name}`
+    };
+  }
+  return null;
+}
+
+/** 只要正式版（GitHub 上未勾 Pre-release） */
+const isStable = (release: RawRelease) => !release.prerelease;
+/** 只要预览版（GitHub 上勾了 Pre-release） */
+const isInsider = (release: RawRelease) => release.prerelease;
+
+/** Win7 安装版：ClassSoftwareHub-Setup-win7-<tag>.exe */
+const isWin7Setup = (name: string) => /^ClassSoftwareHub-Setup-win7-.*\.exe$/i.test(name);
+/** Win7 便携版：ClassSoftwareHub-Portable-win7-<tag>.zip */
+const isWin7Portable = (name: string) => /^ClassSoftwareHub-Portable-win7-.*\.zip$/i.test(name);
+/** 安卓：CI 固定输出 app-release.apk */
+const isApk = (name: string) => /\.apk$/i.test(name);
 
 /** 依次尝试各接口入口，获取指定仓库的 Release 列表 */
 async function fetchReleases(repo: string): Promise<RawRelease[]> {
@@ -232,6 +316,134 @@ export async function resolveDesktopBuilds(): Promise<DesktopBuilds> {
   return Promise.race([inFlight, grace]);
 }
 
+/* ── 下载页（#/desktop）用的完整产物清单 ────────────────────────── */
+
+/** 下载页产物的缓存键与 TTL —— 与首页分开，避免互相把对方的缓存冲掉 */
+const ENTRIES_KEY = 'csh-download-entries';
+const ENTRIES_TTL = 30 * 60 * 1000;
+
+/**
+ * 取下载页需要的全部产物。
+ *
+ * 与 resolveDesktopBuilds 的关键差异：**失败就是 null，不回退到写死的旧版本**。
+ * 首页那张卡是「推广位」，显示个稍旧的版本号无伤大雅；下载页是用户专门来下东西的，
+ * 给他一个对不上号的文件名、点下去 404，比明确告诉他「暂时取不到，去 Releases 页」糟糕得多。
+ * 所以这里宁可空着，也不猜。
+ */
+let memoryEntries: DownloadEntries | null = null;
+let entriesInFlight: Promise<DownloadEntries> | null = null;
+
+const EMPTY_ENTRIES: DownloadEntries = {
+  stable: null,
+  insider: null,
+  win7Setup: null,
+  win7Portable: null,
+  win7InsiderSetup: null,
+  win7InsiderPortable: null,
+  android: null
+};
+
+async function loadEntries(): Promise<DownloadEntries> {
+  // 三个仓库并行取；任一失败只让它自己那几条留空，不牵连同行的其它平台
+  const [desktop, win7, android] = await Promise.all([
+    fetchReleases(REPO).catch(() => null),
+    fetchReleases(WIN7_REPO).catch(() => null),
+    fetchReleases(ANDROID_REPO).catch(() => null)
+  ]);
+
+  const entries: DownloadEntries = { ...EMPTY_ENTRIES };
+
+  if (desktop) {
+    entries.stable = pickAsset(desktop, isStable, (n) => /\.exe$/i.test(n), 'stable', REPO);
+    entries.insider = pickAsset(desktop, isInsider, (n) => /\.exe$/i.test(n), 'insider', REPO);
+  }
+  if (win7) {
+    entries.win7Setup = pickAsset(win7, isStable, isWin7Setup, 'win7', WIN7_REPO);
+    entries.win7Portable = pickAsset(win7, isStable, isWin7Portable, 'win7', WIN7_REPO);
+    entries.win7InsiderSetup = pickAsset(win7, isInsider, isWin7Setup, 'win7', WIN7_REPO);
+    entries.win7InsiderPortable = pickAsset(win7, isInsider, isWin7Portable, 'win7', WIN7_REPO);
+  }
+  if (android) {
+    entries.android = pickAsset(android, () => true, isApk, 'stable', ANDROID_REPO);
+    // 安卓仓库不区分预览通道，最新一条 release 就是它；改标签只为让类型对得上
+    if (entries.android) entries.android = { ...entries.android, channel: 'stable' };
+  }
+
+  // 一条都没取到就不写缓存：本次会话空着，刷新后会重试
+  const gotSomething = Object.values(entries).some(Boolean);
+  if (gotSomething) {
+    try {
+      localStorage.setItem(ENTRIES_KEY, JSON.stringify({ at: Date.now(), entries }));
+    } catch {
+      /* 无痕模式等读不到 localStorage，忽略即可 */
+    }
+  }
+  memoryEntries = entries;
+  return entries;
+}
+
+function readEntriesCache(): DownloadEntries | null {
+  try {
+    const raw = localStorage.getItem(ENTRIES_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { at?: number; entries?: DownloadEntries };
+    if (!parsed.entries) return null;
+    if (typeof parsed.at !== 'number' || Date.now() - parsed.at > ENTRIES_TTL) return null;
+    return parsed.entries;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 获取下载页的全部产物。
+ *
+ * 注意没有 RESOLVE_GRACE 竞速：这里不像首页那样「超时了就先用兜底版本」——
+ * 兜底版本对这个页面没有意义（见 loadEntries 的注释）。调用方应展示加载态。
+ */
+export async function resolveDownloadEntries(): Promise<DownloadEntries> {
+  if (memoryEntries) return memoryEntries;
+  const cached = readEntriesCache();
+  if (cached) {
+    memoryEntries = cached;
+    return cached;
+  }
+  entriesInFlight ??= loadEntries();
+  return entriesInFlight;
+}
+
+/** 下载页某一行对应的产物（id → DesktopBuild），取不到返回 null */
+export function entryOf(entries: DownloadEntries, id: DownloadId): DesktopBuild | null {
+  switch (id) {
+    case 'stable':
+      return entries.stable;
+    case 'insider':
+      return entries.insider;
+    case 'win7-setup':
+      return entries.win7Setup;
+    case 'win7-portable':
+      return entries.win7Portable;
+    case 'win7-insider-setup':
+      return entries.win7InsiderSetup;
+    case 'win7-insider-portable':
+      return entries.win7InsiderPortable;
+    case 'android':
+      return entries.android;
+    default:
+      return null;
+  }
+}
+
+/**
+ * 下载下载页的某一条产物（走镜像；镜像全不通则跳该版本的 Release 页）。
+ * 返回 'missing' 表示这条产物没取到 —— 调用方应提示用户去 Releases 页。
+ */
+export async function downloadEntry(entries: DownloadEntries, id: DownloadId): Promise<DesktopDownloadResult | 'missing'> {
+  const build = entryOf(entries, id);
+  if (!build) return 'missing';
+  return downloadBuild(build);
+}
+
 /* ── 镜像探测 + 触发下载 ─────────────────────────────────────────── */
 
 /**
@@ -318,14 +530,12 @@ function triggerDownload(url: string): void {
 export type DesktopDownloadResult = 'mirror' | 'release';
 
 /**
- * 下载指定通道的桌面版安装包。
+ * 下载一个已知的产物（走镜像；镜像全不通就跳该版本的 Release 页）。
  *
- * 优先走镜像；镜像一条都不通就跳到该版本的 Release 页。
- * 返回值只用于调用方判断走的是哪条路（不产出文案）。
+ * 抽出来是因为首页点和下载页点走的是同一条路 —— 镜像探测、签名、兜底跳转
+ * 这套逻辑只能有一份，否则两处的降级行为迟早会不一致。
  */
-export async function downloadDesktopBuild(channel: DesktopChannel): Promise<DesktopDownloadResult> {
-  const build = (await resolveDesktopBuilds())[channel];
-
+async function downloadBuild(build: DesktopBuild): Promise<DesktopDownloadResult> {
   const working = await pickWorkingMirror(build.url);
   if (working) {
     triggerDownload(working);
@@ -338,4 +548,14 @@ export async function downloadDesktopBuild(channel: DesktopChannel): Promise<Des
   if (opened) opened.opener = null;
   else window.location.href = build.releaseUrl;
   return 'release';
+}
+
+/**
+ * 下载指定通道的桌面版安装包（首页三个按钮用）。
+ *
+ * 优先走镜像；镜像一条都不通就跳到该版本的 Release 页。
+ * 返回值只用于调用方判断走的是哪条路（不产出文案）。
+ */
+export async function downloadDesktopBuild(channel: DesktopChannel): Promise<DesktopDownloadResult> {
+  return downloadBuild((await resolveDesktopBuilds())[channel]);
 }

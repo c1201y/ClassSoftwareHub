@@ -1,0 +1,221 @@
+/* ════════════════════════════════════════════════════════════════════
+   desktop-page.css —— 下载桌面版页面（#/desktop）
+   
+   与其它页面样式一致：只写页面专属规则，颜色/圆角/间距一律走主题变量，
+   深浅色主题各自生效，不写死色值。
+   ════════════════════════════════════════════════════════════════════ */
+
+.desktop-page {
+  padding-bottom: 48px;
+}
+
+/* ── 页头 ─────────────────────────────────────────────────────────── */
+
+.desktop-header {
+  margin-bottom: 20px;
+}
+
+.desktop-title {
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 52px;
+  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
+}
+
+.desktop-subtitle {
+  margin-top: 6px;
+  font-size: 18px;
+  line-height: 26px;
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+}
+
+/* 通道说明条与它下方的卡片之间留一点呼吸 */
+.desktop-channel-bar {
+  margin-bottom: 18px;
+}
+
+.desktop-error-bar {
+  margin-bottom: 18px;
+}
+
+.desktop-loading {
+  margin: 8px 0 20px;
+  font-size: 14px;
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+}
+
+/* ── 平台卡片 ─────────────────────────────────────────────────────── */
+
+.desktop-card {
+  margin-bottom: 16px;
+  padding: 20px 22px;
+  border-radius: 8px;
+  background: var(--card-bg, var(--CardBackgroundFillColorDefaultBrush));
+  border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
+}
+
+.desktop-card.is-coming-soon {
+  /* 还没有产物的平台整体压暗，视觉上表示「有这回事但还不能下」 */
+  opacity: 0.72;
+}
+
+.desktop-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.desktop-card-icon {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-family: 'WinUIOnWebIcons';
+  font-size: 20px;
+  color: var(--accent-text, var(--TextOnAccentFillColorPrimaryBrush));
+  background: var(--accent-fill-rest, var(--AccentFillColorDefaultBrush));
+}
+
+.desktop-card-heading {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.desktop-card-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
+}
+
+.desktop-card-requirement {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+}
+
+.desktop-card-all {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  text-decoration: none;
+  color: var(--accent, var(--AccentTextFillColorPrimaryBrush));
+  white-space: nowrap;
+}
+
+.desktop-card-all:hover {
+  text-decoration: underline;
+}
+
+.desktop-card-all-icon {
+  font-family: 'WinUIOnWebIcons';
+  font-size: 12px;
+}
+
+/* ── 卡片内的下载行 ───────────────────────────────────────────────── */
+
+.desktop-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.desktop-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--subtle-fill, var(--SubtleFillColorSecondaryBrush));
+}
+
+.desktop-row-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.desktop-row-name {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
+}
+
+.desktop-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.desktop-row-version {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 12px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--badge-bg, var(--ControlFillColorSecondaryBrush));
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+}
+
+.desktop-row-note {
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+}
+
+.desktop-row-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.desktop-download-button {
+  min-width: 96px;
+}
+
+.desktop-md5-link,
+.desktop-release-link {
+  white-space: nowrap;
+}
+
+/* ── Linux 待支持 ─────────────────────────────────────────────────── */
+
+.desktop-coming-soon {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+  background: var(--subtle-fill, var(--SubtleFillColorSecondaryBrush));
+}
+
+/* ── 页脚 ─────────────────────────────────────────────────────────── */
+
+.desktop-footer {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
+}
+
+.desktop-footer-note {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+}
+
+.desktop-docs-link {
+  white-space: nowrap;
+}

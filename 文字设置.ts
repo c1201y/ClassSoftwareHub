@@ -103,6 +103,53 @@ export default {
       "text.use-system-setting": "使用系统设置",
       "nav.home": "首页",
       "nav.feedback": "反馈中心",
+      "nav.desktop": "下载桌面版",
+
+      // ── 下载桌面版页面（#/desktop）──────────────────────────────
+      // 版本号、体积、下载地址不在这里 —— 那些由 src/gallery/desktopDownload.ts
+      // 从 GitHub Releases 实时获取，此处只放不会随发版变化的说明文字。
+      "desktop.title": "下载桌面版",
+      "desktop.subtitle": "把下载站装到本机：原生窗口、托盘常驻、自动更新，不用每次开浏览器。",
+      "desktop.channel-title": "正式版与预览版的区别",
+      "desktop.channel-desc": "正式版经过完整测试，推荐日常使用；预览版提前体验新功能，但可能不稳定。客户端可在设置页切换更新通道，装好之后随时能改。",
+      "desktop.loading": "正在获取最新版本…",
+      "desktop.load-failed-title": "暂时取不到版本信息",
+      "desktop.load-failed-desc": "可能是网络或接口临时不可用。可以直接去 GitHub Releases 下载，那里的版本永远是最新的。",
+      "desktop.row-unavailable": "这一条暂时取不到版本信息，请到 Releases 页下载。",
+      "desktop.open-releases": "打开 Releases",
+      "desktop.all-versions": "全部版本",
+      "desktop.download": "下载",
+      "desktop.downloading": "连接中…",
+      "desktop.md5": "校验值",
+      "desktop.coming-soon": "Linux 版本正在准备中，暂时还没有发布产物。想第一时间拿到的话，可以关注文档站或 GitHub 仓库的更新。",
+      "desktop.mirror-note": "「下载」按钮会自动选择可用的加速通道；所有通道都不通时，会把你送到对应版本的 GitHub Releases 页。每个安装包都附带同名 .md5 校验文件，装之前建议核对。",
+      "desktop.docs": "查看安装与使用文档",
+
+      "desktop.win10-title": "Windows 10 / 11 桌面版",
+      "desktop.win10-requirement": "需要 Windows 10 1809（build 17763）及以上 · x64",
+      "desktop.win7-title": "Windows 7 兼容版",
+      "desktop.win7-requirement": "需要 Windows 7 SP1 及以上 · x64 · Avalonia 重做界面，与原版独立更新",
+      "desktop.android-title": "Android 版",
+      "desktop.android-requirement": "需要 Android 8.0 及以上 · 可直接安装 APK",
+      "desktop.linux-title": "Linux 版",
+      "desktop.linux-requirement": "尚未发布，正在准备中",
+
+      "desktop.row-stable": "正式版 · 安装包",
+      "desktop.row-insider": "预览版 · 安装包",
+      "desktop.row-win7-setup": "正式版 · 安装包",
+      "desktop.row-win7-portable": "正式版 · 便携版",
+      "desktop.row-win7-insider-setup": "预览版 · 安装包",
+      "desktop.row-win7-insider-portable": "预览版 · 便携版",
+      "desktop.row-android": "APK 安装包",
+
+      "desktop.note-win10-setup": "当前用户安装，带开始菜单 / 桌面快捷方式与卸载项",
+      "desktop.note-win7-setup": "默认装入 %LOCALAPPDATA%\\Programs\\ClassSoftwareHub-Win7",
+      "desktop.note-win7-portable": "解压即用，双击根目录的启动器运行，不写卸载注册项",
+      "desktop.note-android": "浏览器打开后按提示允许安装未知来源应用",
+
+      // 全局搜索里的「下载桌面版」条目
+      "search.page-desktop": "下载桌面版",
+      "search.page-desktop-desc": "Windows 10/11、Windows 7 与安卓客户端安装包",
       "home.title": "ClassSoftwareHub",
       "home.subtitle": "欢迎使用下载站【v2.3.5 - Tangram】，欢迎各位添砖加瓦，感谢 @Bilibili 椰汁cyan 提供网站的搭建！",
       "home.download-template": "下载软件添加模板【开发者】",
