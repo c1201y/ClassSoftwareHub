@@ -413,6 +413,34 @@
   color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
 }
 
+.history-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: auto;
+  padding: 0.18rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  text-decoration: none;
+  color: var(--accent-text, var(--TextOnAccentFillColorPrimaryBrush));
+  background: var(--accent-fill-rest, var(--AccentFillColorDefaultBrush));
+}
+
+.history-download:hover {
+  filter: brightness(1.08);
+}
+
+.history-download.ghost {
+  margin-left: 0;
+  border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
+  background: none;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+}
+
+.history-download.ghost:hover {
+  color: var(--accent, var(--AccentTextFillColorPrimaryBrush));
+}
+
 .history-more {
   margin-top: 0.2rem;
   font-size: 0.78rem;
@@ -458,119 +486,6 @@
   line-height: 1.6;
   color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
 }
-
-/* ── 更新日志（卡片网格之外的独立区块）───────────────────────────────
-   刻意不放进 edition-card：
-     · 放在卡片里展开会把同一行另一张卡一起拉高（grid stretch）；
-     · 日志长短悬殊，卡片高度会被撑得参差不齐。
-   独立成块后，展开只影响它自己。 */
-
-.changelog-section {
-  margin-top: 2rem;
-}
-
-.changelog-item {
-  margin-bottom: 0.5rem;
-  padding: 0.55rem 0.8rem;
-  border-radius: 10px;
-  border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
-  background: var(--card-bg, var(--CardBackgroundFillColorDefaultBrush));
-}
-
-.changelog-item summary {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  list-style: none;
-}
-
-.changelog-item summary::-webkit-details-marker {
-  display: none;
-}
-
-/* 展开指示三角：用 CSS 画，避免依赖组件库字形 */
-.changelog-item summary::before {
-  content: '';
-  flex: none;
-  width: 0;
-  height: 0;
-  border-left: 4px solid var(--text-tertiary, var(--TextFillColorTertiaryBrush));
-  border-top: 3.5px solid transparent;
-  border-bottom: 3.5px solid transparent;
-  transition: transform 0.15s ease;
-}
-
-.changelog-item[open] > summary::before {
-  transform: rotate(90deg);
-}
-
-.changelog-item summary:hover .history-kind {
-  color: var(--accent, var(--AccentTextFillColorPrimaryBrush));
-}
-
-.changelog-body {
-  margin-top: 0.6rem;
-  padding-top: 0.6rem;
-  border-top: 1px dashed var(--card-border, var(--CardStrokeColorDefaultBrush));
-  font-size: 0.8rem;
-  line-height: 1.6;
-  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
-  word-break: break-word;
-  /* 超长日志在块内滚动，不无限撑高页面 */
-  max-height: 340px;
-  overflow-y: auto;
-}
-
-.changelog-body :deep(h1),
-.changelog-body :deep(h2),
-.changelog-body :deep(h3),
-.changelog-body :deep(h4) {
-  margin: 0.8em 0 0.4em;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
-}
-
-.changelog-body :deep(p) {
-  margin: 0.3em 0;
-}
-
-.changelog-body :deep(ul),
-.changelog-body :deep(ol) {
-  margin: 0.3em 0;
-  padding-left: 1.4em;
-}
-
-.changelog-body :deep(li) {
-  margin: 0.15em 0;
-}
-
-.changelog-body :deep(code) {
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-family: 'Consolas', ui-monospace, monospace;
-  font-size: 0.75rem;
-  background: var(--card-bg, var(--CardBackgroundFillColorDefaultBrush));
-}
-
-.changelog-body :deep(pre) {
-  padding: 8px 10px;
-  border-radius: 6px;
-  overflow-x: auto;
-  background: var(--card-bg, var(--CardBackgroundFillColorDefaultBrush));
-}
-
-.changelog-body :deep(pre code) {
-  padding: 0;
-  background: none;
-}
-
-.changelog-body :deep(a) {
-  color: var(--accent, var(--AccentTextFillColorPrimaryBrush));
-}
-
-/* ── 断点：文档站是 860px 塌成单列 ──────────────────────────────── */
 
 @media (max-width: 860px) {
   .dl-grid,

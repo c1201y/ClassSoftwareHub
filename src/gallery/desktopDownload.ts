@@ -265,6 +265,74 @@ async function fetchReleases(repo: string): Promise<RawRelease[]> {
   throw lastError ?? new Error('接口入口全部不可用');
 }
 
+/* ── 历史版本列表 ─────────────────────────────────────────────────── */
+
+/** 历史版本最多展示多少条（再多也没人翻，还拖慢首屏） */
+const HISTORY_LIMIT = 30;
+
+/** 一个历史版本的精简描述（只保留页面要显示的东西） */
+export interface ReleaseHistoryItem {
+  /** Release tag，如 dv1.2.1 */
+  tag: string;
+  /** 该 tag 下的文件名（用于判断是安装版还是便携版） */
+  assetNames: string[];
+  /** 该 release 里最大的那个包的体积（字节） */
+  size: number;
+  /** 发布时间 */
+  publishedAt: string;
+  /** Release 正文（Markdown） */
+  body: string;
+  /** 是否是预发布 */
+  prerelease: boolean;
+}
+
+/**
+ * 取某个仓库的历史版本（含正文）。
+ *
+ * 与 fetchReleases 的差别：那个只喂给「取最新一条」用，per_page=10；
+ * 这个要铺满历史列表，per_page 提到 HISTORY_LIMIT。
+ *
+ * 失败时返回空数组而不是抛错 —— 历史版本是页面的次要信息，
+ * 接口挂了不该把整页拖垮。
+ */
+export async function fetchReleaseHistory(repo: string): Promise<ReleaseHistoryItem[]> {
+  const bases = apiBases(repo);
+  for (const base of bases) {
+    const normalized = base.replace(/\/releases$/, '');
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+    try {
+      const response = await fetch(`${normalized}/releases?per_page=${HISTORY_LIMIT}`, {
+        cache: 'no-store',
+        signal: controller.signal
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data: unknown = await response.json();
+      if (!Array.isArray(data)) throw new Error('接口返回的不是列表');
+
+      return (data as RawRelease[])
+        .filter((r) => !r.draft && r.tag_name)
+        .map((r) => {
+          const assets = r.assets ?? [];
+          return {
+            tag: r.tag_name,
+            assetNames: assets.map((a) => a.name),
+            size: assets.reduce((max, a) => Math.max(max, a.size || 0), 0),
+            publishedAt: r.published_at || '',
+            body: r.body || '',
+            prerelease: Boolean(r.prerelease)
+          };
+        });
+    } catch (error) {
+      // 换下一个入口；全部失败时返回空
+      void error;
+    } finally {
+      window.clearTimeout(timer);
+    }
+  }
+  return [];
+}
+
 function readCache(): DesktopBuilds | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
