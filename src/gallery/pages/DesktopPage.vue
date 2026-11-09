@@ -117,25 +117,60 @@
           </article>
         </div>
 
-        <!-- ═══ 更新日志（独立区块，不放进卡片）═══
-             放在卡片里面会有两个问题，宽屏下尤其明显：
-               ① grid 默认 stretch，展开日志会把同一行另一张卡一起拉高；
-               ② 日志长短悬殊，卡片高度会被撑得参差不齐。
-             所以它必须是网格之外的独立折叠块。 -->
-        <section v-if="changelogEntries.length" class="changelog-section">
+        <!-- ═══ 历史版本（与文档站一致：按平台分两列，可展开看说明）═══
+             放在卡片网格之外，理由同更新日志：展开不能影响卡片高度。 -->
+        <section v-if="columns.length" class="history-section">
           <div class="section-head">
-            <h2>{{ t('desktop.changelog') }}</h2>
-            <p>{{ t('desktop.changelog-desc') }}</p>
+            <h2>{{ t('desktop.history-title') }}</h2>
+            <p>{{ t('desktop.history-desc') }}</p>
           </div>
-          <details v-for="entry in changelogEntries" :key="entry.id" class="changelog-item">
-            <summary>
-              <span class="history-tag">{{ entry.tag }}</span>
-              <span class="history-kind">{{ t(entry.titleKey) }}</span>
-              <span class="history-size">{{ formatSize(entry.size) }}</span>
-              <span class="history-date">{{ entry.date }}</span>
-            </summary>
-            <div class="changelog-body" v-html="entry.html"></div>
-          </details>
+          <div class="history-grid">
+            <div v-for="col in columns" :key="col.key" class="history-column">
+              <h3>{{ t(col.titleKey) }}</h3>
+
+              <details
+                v-for="(item, index) in col.items"
+                :key="col.key + item.tag"
+                class="history-item">
+                <summary>
+                  <span class="history-tag">{{ item.tag }}</span>
+                  <span v-if="index === 0" class="history-latest">{{ t('desktop.history-latest') }}</span>
+                  <span class="history-date">{{ shortDate(item.publishedAt) }}</span>
+                </summary>
+                <div class="history-links">
+                  <div v-for="kind in item.kinds" :key="kind.labelKey" class="history-link">
+                    <span class="history-kind">{{ t(kind.labelKey) }}</span>
+                    <span class="history-size">{{ formatSize(kind.size) }}</span>
+                    <a
+                      class="history-download"
+                      :href="kind.url"
+                      target="_blank"
+                      rel="noopener noreferrer">
+                      {{ t('desktop.history-download') }}
+                    </a>
+                  </div>
+                  <p v-if="!item.kinds.length" class="history-empty">{{ t('desktop.history-no-file') }}</p>
+                  <a
+                    class="history-download ghost"
+                    :href="item.releaseUrl"
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    {{ t('desktop.history-open-release') }}
+                  </a>
+                </div>
+              </details>
+
+              <button
+                v-if="col.total > col.items.length"
+                type="button"
+                class="history-more"
+                @click="showMore(col.key)">
+                {{ t('desktop.history-show-more') }}
+              </button>
+
+              <p v-if="!col.items.length" class="history-empty">{{ t('desktop.history-none') }}</p>
+            </div>
+          </div>
         </section>
 
         <!-- ═══ 网页端链接行（文档站 .web-links 同款）═══ -->
@@ -153,8 +188,6 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
 import WinScrollViewer from '../../components/WinScrollViewer.vue';
 import WinButton from '../../components/WinButton.vue';
 import WinHyperlinkButton from '../../components/WinHyperlinkButton.vue';
@@ -170,10 +203,11 @@ import {
   downloadBuildDirect,
   downloadBuildVia,
   entryOf,
+  fetchReleaseHistory,
   mirrorChoices,
   resolveDownloadEntries
 } from '../desktopDownload';
-import type { DesktopBuild, DownloadEntries, DownloadId } from '../desktopDownload';
+import type { DesktopBuild, DownloadEntries, DownloadId, ReleaseHistoryItem } from '../desktopDownload';
 import siteIconUrl from '../../assets/AppIcon-512.png';
 import '../styles/desktop-page.css';
 
@@ -189,6 +223,13 @@ const busy = ref('');
 const downloadFailed = ref(false);
 const entries = ref<DownloadEntries | null>(null);
 const activeChannel = ref<ChannelId>('stable');
+
+/** 两个仓库的历史版本（拿到才渲染，拿不到就空着） */
+const history = ref<{ desktop: ReleaseHistoryItem[]; win7: ReleaseHistoryItem[] } | null>(null);
+
+/** 仓库 slug（API 入口与 releaseUrl 都要用） */
+const DESKTOP_REPO = 'c1201y/ClassSoftwareHub-Desktop';
+const WIN7_REPO = 'c1201y/ClassSoftwareHub-windows7';
 
 /* ── 版本通道（文档站是两个按钮的 channel-switch）────────────────── */
 
@@ -314,42 +355,7 @@ const allEmpty = computed(() => {
   return !Object.values(e).some(Boolean);
 });
 
-/* ── 更新日志条目（卡片网格之外的独立区块）───────────────────────── */
-
-/**
- * Markdown → 安全 HTML。
- *
- * Release 正文是**他人可写**的内容（任何有 write 权限的人都能发 Release），
- * 因此必须经 DOMPurify 消毒；同时去掉正文里的整图（`![](url)`），
- * 否则一张大图就能把折叠区撑得很难看。
- */
-const toHtml = (body: string): string => {
-  if (!body || !body.trim()) return '';
-  try {
-    const cleaned = body.replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/<img\s[^>]*\/?>/gi, '');
-    const raw = marked.parse(cleaned, { async: false }) as string;
-    return DOMPurify.sanitize(raw, {
-      ALLOWED_TAGS: [
-        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'blockquote', 'pre', 'code',
-        'ul', 'ol', 'li', 'strong', 'em', 'del', 's', 'a', 'table', 'thead', 'tbody',
-        'tr', 'th', 'td', 'span', 'div'
-      ],
-      ALLOWED_ATTR: ['href', 'title', 'class', 'align'],
-      ALLOW_DATA_ATTR: false
-    });
-  } catch {
-    return '';
-  }
-};
-
-interface ChangelogEntry {
-  id: string;
-  tag: string;
-  titleKey: string;
-  size?: number;
-  date: string;
-  html: string;
-}
+/* ── 历史版本 ─────────────────────────────────────────────────────── */
 
 /** ISO → YYYY-MM-DD */
 const shortDate = (iso?: string) => {
@@ -360,39 +366,127 @@ const shortDate = (iso?: string) => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 };
 
+/** 历史版本里的一条下载项（同一 release 可能有安装版 + 便携版） */
+interface HistoryKind {
+  labelKey: string;
+  size: number;
+  url: string;
+}
+
+interface HistoryRow {
+  tag: string;
+  publishedAt: string;
+  kinds: HistoryKind[];
+  releaseUrl: string;
+}
+
+interface HistoryColumn {
+  key: string;
+  titleKey: string;
+  items: HistoryRow[];
+  /** 该通道下的版本总数（用于判断要不要显示「显示更多」） */
+  total: number;
+}
+
 /**
- * 当前通道下、每个平台主产物的更新日志。
+ * 从某个仓库的历史里，按通道筛出该平台的版本列表。
  *
- * 只收「有正文」的那些 —— 大多数 Release 的 body 是空的，
- * 列一条点开是空白比不列更糟。
+ * `kindsOf` 负责把「文件名数组」翻译成页面上的下载行 ——
+ * 桌面版只有一个 .exe，Win7 版有安装版 + 便携版两种，所以交给调用方决定。
  */
-const changelogEntries = computed<ChangelogEntry[]>(() => {
-  const e = entries.value;
-  if (!e) return [];
-  const ch = activeChannel.value;
+const buildColumn = (
+  history: ReleaseHistoryItem[],
+  repo: string,
+  titleKey: string,
+  kindsOf: (item: ReleaseHistoryItem) => HistoryKind[],
+  wantPrerelease: boolean,
+  limit: number
+): HistoryColumn => {
+  const all: HistoryRow[] = history
+    .filter((h) => h.prerelease === wantPrerelease)
+    .map((h) => ({
+      tag: h.tag,
+      publishedAt: h.publishedAt,
+      kinds: kindsOf(h),
+      releaseUrl: `https://github.com/${repo}/releases/tag/${h.tag}`
+    }))
+    .filter((h) => h.kinds.length > 0);
 
-  const defs: { id: DownloadId; titleKey: string }[] = [
-    { id: ch === 'stable' ? 'stable' : 'insider', titleKey: 'desktop.win10-title' },
-    { id: ch === 'stable' ? 'win7-setup' : 'win7-insider-setup', titleKey: 'desktop.win7-title' },
-    { id: 'android', titleKey: 'desktop.android-title' }
-  ];
+  return {
+    key: `${repo}-${wantPrerelease}`,
+    titleKey,
+    items: all.slice(0, limit),
+    total: all.length
+  };
+};
 
-  const out: ChangelogEntry[] = [];
-  for (const def of defs) {
-    const b = entryOf(e, def.id);
-    if (!b) continue;
-    const html = toHtml(b.changelog ?? '');
-    if (!html) continue;
-    out.push({
-      id: def.id,
-      tag: b.tag,
-      titleKey: def.titleKey,
-      size: b.size,
-      date: shortDate(b.publishedAt),
-      html
-    });
-  }
-  return out;
+/**
+ * 某个 release 里匹配正则的那个文件的直链。
+ *
+ * GitHub 的下载直链形态固定为
+ *   https://github.com/<owner>/<repo>/releases/download/<tag>/<file>
+ * 所以这里需要 repo 与 tag —— 两者都不在 ReleaseHistoryItem 上，
+ * 由调用方传进来，避免把 repo 字符串散落在各处。
+ */
+const assetUrl = (
+  item: ReleaseHistoryItem,
+  repo: string,
+  pattern: RegExp,
+  labelKey: string
+): HistoryKind | null => {
+  const name = item.assetNames.find((n) => pattern.test(n));
+  if (!name) return null;
+  return {
+    labelKey,
+    size: 0,
+    url: `https://github.com/${repo}/releases/download/${item.tag}/${name}`
+  };
+};
+
+/** 每列默认显示几条 */
+const HISTORY_SHOW = 5;
+
+/** 哪些列点了「显示更多」（列 key → 是否展开） */
+const historyExpanded = ref<Record<string, boolean>>({});
+
+const showMore = (key: string) => {
+  historyExpanded.value = { ...historyExpanded.value, [key]: true };
+};
+
+const columns = computed<HistoryColumn[]>(() => {
+  const h = history.value;
+  if (!h) return [];
+  const isPre = activeChannel.value === 'insider';
+
+  const desktop = buildColumn(
+    h.desktop,
+    DESKTOP_REPO,
+    'desktop.win10-title',
+    (item) => {
+      const hit = assetUrl(item, DESKTOP_REPO, /\.exe$/i, 'desktop.row-installer');
+      return hit ? [{ ...hit, size: item.size }] : [];
+    },
+    isPre,
+    historyExpanded.value[`${DESKTOP_REPO}-${isPre}`] ? 99 : HISTORY_SHOW
+  );
+
+  const win7 = buildColumn(
+    h.win7,
+    WIN7_REPO,
+    'desktop.win7-title',
+    (item) => {
+      const setup = assetUrl(item, WIN7_REPO, /^ClassSoftwareHub-Setup-win7-.*\.exe$/i, 'desktop.row-installer');
+      const portable = assetUrl(item, WIN7_REPO, /^ClassSoftwareHub-Portable-win7-.*\.zip$/i, 'desktop.row-portable');
+      const out: HistoryKind[] = [];
+      if (setup) out.push({ ...setup, size: item.size });
+      if (portable) out.push(portable);
+      return out;
+    },
+    isPre,
+    historyExpanded.value[`${WIN7_REPO}-${isPre}`] ? 99 : HISTORY_SHOW
+  );
+
+  return [desktop, win7].filter((c) => c.items.length > 0);
 });
 
 /* ── Markdown 渲染（Release 正文是他人可写，必须消毒）─────────────── */
@@ -433,5 +527,13 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
+
+  // 历史版本是次要信息：不参与上面的 loading 态，拿到再渲染。
+  // 接口挂了就返回空数组，页面底部那一段直接不显示，不影响下载。
+  const [desktopHist, win7Hist] = await Promise.all([
+    fetchReleaseHistory(DESKTOP_REPO),
+    fetchReleaseHistory(WIN7_REPO)
+  ]);
+  history.value = { desktop: desktopHist, win7: win7Hist };
 });
 </script>
