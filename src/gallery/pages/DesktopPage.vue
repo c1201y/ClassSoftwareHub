@@ -107,12 +107,6 @@
                 <p v-if="row.build && !row.build.size" class="row-hint">{{ t(row.noteKey) }}</p>
               </div>
 
-              <!-- 更新日志折叠（与文档站 history-item 同款 summary 结构） -->
-              <details v-if="ed.changelog" class="changelog-item">
-                <summary>{{ t('desktop.changelog') }}</summary>
-                <div class="changelog-body" v-html="ed.changelog"></div>
-              </details>
-
               <a v-if="ed.repoUrl" class="card-link" :href="ed.repoUrl" target="_blank" rel="noopener noreferrer">
                 {{ t('desktop.history') }}
                 <span aria-hidden="true">&#xE8A7;</span>
@@ -122,6 +116,27 @@
             <p v-else class="edition-empty">{{ t('desktop.no-builds') }}</p>
           </article>
         </div>
+
+        <!-- ═══ 更新日志（独立区块，不放进卡片）═══
+             放在卡片里面会有两个问题，宽屏下尤其明显：
+               ① grid 默认 stretch，展开日志会把同一行另一张卡一起拉高；
+               ② 日志长短悬殊，卡片高度会被撑得参差不齐。
+             所以它必须是网格之外的独立折叠块。 -->
+        <section v-if="changelogEntries.length" class="changelog-section">
+          <div class="section-head">
+            <h2>{{ t('desktop.changelog') }}</h2>
+            <p>{{ t('desktop.changelog-desc') }}</p>
+          </div>
+          <details v-for="entry in changelogEntries" :key="entry.id" class="changelog-item">
+            <summary>
+              <span class="history-tag">{{ entry.tag }}</span>
+              <span class="history-kind">{{ t(entry.titleKey) }}</span>
+              <span class="history-size">{{ formatSize(entry.size) }}</span>
+              <span class="history-date">{{ entry.date }}</span>
+            </summary>
+            <div class="changelog-body" v-html="entry.html"></div>
+          </details>
+        </section>
 
         <!-- ═══ 网页端链接行（文档站 .web-links 同款）═══ -->
         <div class="web-links">
@@ -215,7 +230,6 @@ interface EditionDef {
   repoUrl: string;
   rows: RowDef[];
   build: DesktopBuild | null;
-  changelog: string;
   soon?: boolean;
   badgeKey?: string;
 }
@@ -265,7 +279,6 @@ const editions = computed<EditionDef[]>(() => {
       repoUrl,
       rows: rows.filter((r) => r.build),
       build: b,
-      changelog: toHtml(b?.changelog ?? ''),
       ...extra
     };
   };
@@ -289,7 +302,6 @@ const editions = computed<EditionDef[]>(() => {
       repoUrl: '',
       rows: [],
       build: null,
-      changelog: '',
       soon: true
     }
   ];
@@ -302,8 +314,15 @@ const allEmpty = computed(() => {
   return !Object.values(e).some(Boolean);
 });
 
-/* ── Markdown 渲染（Release 正文是他人可写，必须消毒）─────────────── */
+/* ── 更新日志条目（卡片网格之外的独立区块）───────────────────────── */
 
+/**
+ * Markdown → 安全 HTML。
+ *
+ * Release 正文是**他人可写**的内容（任何有 write 权限的人都能发 Release），
+ * 因此必须经 DOMPurify 消毒；同时去掉正文里的整图（`![](url)`），
+ * 否则一张大图就能把折叠区撑得很难看。
+ */
 const toHtml = (body: string): string => {
   if (!body || !body.trim()) return '';
   try {
@@ -322,6 +341,61 @@ const toHtml = (body: string): string => {
     return '';
   }
 };
+
+interface ChangelogEntry {
+  id: string;
+  tag: string;
+  titleKey: string;
+  size?: number;
+  date: string;
+  html: string;
+}
+
+/** ISO → YYYY-MM-DD */
+const shortDate = (iso?: string) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+};
+
+/**
+ * 当前通道下、每个平台主产物的更新日志。
+ *
+ * 只收「有正文」的那些 —— 大多数 Release 的 body 是空的，
+ * 列一条点开是空白比不列更糟。
+ */
+const changelogEntries = computed<ChangelogEntry[]>(() => {
+  const e = entries.value;
+  if (!e) return [];
+  const ch = activeChannel.value;
+
+  const defs: { id: DownloadId; titleKey: string }[] = [
+    { id: ch === 'stable' ? 'stable' : 'insider', titleKey: 'desktop.win10-title' },
+    { id: ch === 'stable' ? 'win7-setup' : 'win7-insider-setup', titleKey: 'desktop.win7-title' },
+    { id: 'android', titleKey: 'desktop.android-title' }
+  ];
+
+  const out: ChangelogEntry[] = [];
+  for (const def of defs) {
+    const b = entryOf(e, def.id);
+    if (!b) continue;
+    const html = toHtml(b.changelog ?? '');
+    if (!html) continue;
+    out.push({
+      id: def.id,
+      tag: b.tag,
+      titleKey: def.titleKey,
+      size: b.size,
+      date: shortDate(b.publishedAt),
+      html
+    });
+  }
+  return out;
+});
+
+/* ── Markdown 渲染（Release 正文是他人可写，必须消毒）─────────────── */
 
 /* ── 工具 ─────────────────────────────────────────────────────────── */
 

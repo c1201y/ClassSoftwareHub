@@ -153,6 +153,11 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
+  /* ⚠️ 必须是 start，不能是默认的 stretch：
+     卡片内容长度天然不同（Win7 卡多一个便携版、Android 卡只有一行），
+     stretch 会把同一行较矮的那张强行拉到同高，宽屏下看起来像被拉长。
+     文档站那边卡片高度本来就接近，所以没暴露这个问题。 */
+  align-items: start;
 }
 
 .edition-card {
@@ -454,21 +459,29 @@
   color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
 }
 
-/* ── 更新日志（按需展开）─────────────────────────────────────────── */
+/* ── 更新日志（卡片网格之外的独立区块）───────────────────────────────
+   刻意不放进 edition-card：
+     · 放在卡片里展开会把同一行另一张卡一起拉高（grid stretch）；
+     · 日志长短悬殊，卡片高度会被撑得参差不齐。
+   独立成块后，展开只影响它自己。 */
+
+.changelog-section {
+  margin-top: 2rem;
+}
 
 .changelog-item {
-  margin-top: 0.75rem;
-  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.5rem;
+  padding: 0.55rem 0.8rem;
   border-radius: 10px;
   border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
-  background: var(--subtle-fill, var(--SubtleFillColorSecondaryBrush));
+  background: var(--card-bg, var(--CardBackgroundFillColorDefaultBrush));
 }
 
 .changelog-item summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
   list-style: none;
 }
 
@@ -476,13 +489,36 @@
   display: none;
 }
 
+/* 展开指示三角：用 CSS 画，避免依赖组件库字形 */
+.changelog-item summary::before {
+  content: '';
+  flex: none;
+  width: 0;
+  height: 0;
+  border-left: 4px solid var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+  border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent;
+  transition: transform 0.15s ease;
+}
+
+.changelog-item[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.changelog-item summary:hover .history-kind {
+  color: var(--accent, var(--AccentTextFillColorPrimaryBrush));
+}
+
 .changelog-body {
   margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--card-border, var(--CardStrokeColorDefaultBrush));
   font-size: 0.8rem;
   line-height: 1.6;
   color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
   word-break: break-word;
-  max-height: 320px;
+  /* 超长日志在块内滚动，不无限撑高页面 */
+  max-height: 340px;
   overflow-y: auto;
 }
 
