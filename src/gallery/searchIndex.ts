@@ -85,6 +85,15 @@ const SEARCH_PAGES: SearchPageDef[] = [
     keywords: 'ai 人工智能 大模型 导航 chatgpt deepseek'
   },
   {
+    key: 'desktop',
+    route: 'desktop',
+    // 图标 E896(Download)——与左侧导航栏「下载桌面版」用同一个字形
+    titleKey: 'search.page-desktop',
+    descKey: 'search.page-desktop-desc',
+    icon: '\uE896',
+    keywords: 'desktop 桌面版 下载 客户端 exe 安装包 win10 win11 win7 安卓 android apk linux 安装 便携版'
+  },
+  {
     key: 'submit',
     route: 'submit',
     titleKey: 'search.page-submit',

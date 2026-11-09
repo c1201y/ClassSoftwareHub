@@ -9,6 +9,7 @@ import { TOOLS } from './tools';
 //   #/submit            提交新软件页
 //   #/feedback          反馈中心（报告问题 / 提出建议 → 生成 GitHub Issue 预填链接）
 //   #/ai                AI 导航（国产 AI 网址，一行一个、整行可点）
+//   #/desktop           下载桌面版（Win10/11 · Win7 · 安卓，走镜像加速）
 //   #/tools             内置工具（工具集合入口，卡片式）
 //   #/tools/<工具id>     具体工具（路由由 tools/index.ts 注册表自动生成）
 // 说明：空地址（#/ 或没带 hash）→ 重定向首页；未知地址 → 回首页。
@@ -56,6 +57,13 @@ const routes: RouteRecordRaw[] = [
     path: '/ai',
     name: 'ai',
     component: () => import('./pages/AiNavPage.vue')
+  },
+  {
+    // 下载桌面版：Windows 10/11、Windows 7、安卓三个平台的安装包，
+    // 走 GitHub Releases + 本站镜像加速（见 src/gallery/desktopDownload.ts）。
+    path: '/desktop',
+    name: 'desktop',
+    component: () => import('./pages/DesktopPage.vue')
   },
   {
     path: '/tools',

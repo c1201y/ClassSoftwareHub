@@ -367,16 +367,19 @@ interface NavItem {
   MenuItems?: NavItem[];
 }
 
-const pageTags = new Set(['home', 'settings', 'submit', 'tools', 'ai', 'feedback']);
+const pageTags = new Set(['home', 'settings', 'submit', 'tools', 'ai', 'feedback', 'desktop']);
 
-// ── 底部导航：AI 导航 + 内置工具 + 提交软件 + 反馈中心 ──────────────
+// ── 底部导航：AI 导航 + 内置工具 + 下载桌面版 + 提交软件 + 反馈中心 ──────────
 // 反馈中心与「提交软件」同属用户操作类入口，不是浏览内容的入口；
 // 与分类菜单混排会被误认为又一个软件分类，因此归入 Footer。
+// 「下载桌面版」同理：它是「把这个站装到本机」的动作，不是内容分类。
 const footerMenuItems = computed<NavItem[]>(() => [
   // 图标 E99A(Robot)：AI 导航
   { Tag: 'ai', Icon: '\uE99A', Content: 'AI 导航' },
   // 图标用 EC7A(DeveloperTools)：E90F(Repair) 与左侧「系统工具」分类图标重复
   { Tag: 'tools', Icon: '\uEC7A', Content: '内置工具' },
+  // 图标 E896(Download)：下载桌面版
+  { Tag: 'desktop', Icon: '\uE896', Content: t('nav.desktop') },
   { Tag: 'submit', Icon: '\uE11C', Content: t('nav.submit') },
   // 图标 E7BA(警告三角)：反馈中心。SEGOEICONS.TTF 是重映射过的子集，
   // 码点与标准 Segoe MDL2 不同，E7BA 实测对应警告三角（见 src/gallery/feedback.ts）
@@ -417,6 +420,7 @@ const selectedNavigationItem = computed<NavItem | null>({
       return footerMenuItems.value.find((item) => item.Tag === 'tools') ?? null;
     }
     if (currentPage.value === 'ai') return footerMenuItems.value.find((item) => item.Tag === 'ai') ?? null;
+    if (currentPage.value === 'desktop') return footerMenuItems.value.find((item) => item.Tag === 'desktop') ?? null;
     if (currentPage.value === 'submit') return footerMenuItems.value.find((item) => item.Tag === 'submit') ?? null;
     if (currentPage.value === 'feedback') return footerMenuItems.value.find((item) => item.Tag === 'feedback') ?? null;
     return null;
