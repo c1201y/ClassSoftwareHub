@@ -1,439 +1,570 @@
 /* ════════════════════════════════════════════════════════════════════
    desktop-page.css —— 下载桌面版页面（#/desktop）
 
-   布局**照搬文档站** docs.classsoftwarehub.cn/download 的 Download.vue：
-     容器 max-width 800px / 居中 → Hero（180px logo）→ 主按钮区
-     → 选项行（下载源 + 版本通道）→ 历史链接 → 更新日志卡
-   尺寸、间距、字号都对到文档站那一份，只是把控件换成站内的 WinUI 组件
-   （WinSplitButton / WinComboBox / WinSelectorBar / WinInfoBar）。
+   ⚠️ 本文件的布局/尺寸/间距**逐条搬自文档站**
+   docs.classsoftwarehub.cn/download 的 Download.vue 编译产物
+   （style.css 中 data-v-258a1b98 那一组规则）。
 
-   颜色一律走主题变量，深浅色各自生效。
+   原文用的是 vuepress 的 --vp-c-* 变量，这里一对一做等价替换：
+     --vp-c-text-1  → var(--text-primary)
+     --vp-c-text-2  → var(--text-secondary)
+     --vp-c-text-3  → var(--text-tertiary)
+     --vp-c-divider → var(--card-border)
+     --vp-c-bg-soft → var(--subtle-fill)
+     --vp-c-brand-1 → var(--accent-fill-rest)
+     --vp-c-brand-soft → var(--accent-soft)
+   其余（字号、内边距、圆角、栅格、断点）原样保留，不要凭手感改。
    ════════════════════════════════════════════════════════════════════ */
 
 .desktop-page {
-  max-width: 800px;
+  max-width: 1060px;
   margin: 0 auto;
-  padding: 12px 12px 48px;
-}
-
-/* ── A. Hero ─────────────────────────────────────────────────────── */
-
-.hero-section {
-  text-align: center;
-  padding: 20px 0 32px;
-}
-
-.hero-logo {
-  width: 180px;
-  height: 180px;
-  display: block;
-  margin: 0 auto;
-  border-radius: 34px;
-}
-
-.hero-title {
-  margin: 24px 0 8px;
-  font-size: 29px;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  padding: 1.75rem 1.25rem 4rem;
   color: var(--text-primary, var(--TextFillColorPrimaryBrush));
 }
 
-.hero-subtitle {
+/* ── Hero ────────────────────────────────────────────────────────── */
+
+.dl-hero {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.dl-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+}
+
+.dl-hero h1 {
+  margin: 0.8rem 0 0.25rem;
+  font-size: 2rem;
+  letter-spacing: -0.01em;
+  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
+}
+
+.dl-hero p {
   margin: 0;
-  font-size: 15px;
-  line-height: 1.6;
+  font-size: 0.95rem;
   color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
 }
 
-/* ── B. 主下载按钮区 ─────────────────────────────────────────────── */
+/* ── 工具栏：通道切换 + 线路选择 ─────────────────────────────────── */
 
-.download-btn-section {
-  text-align: center;
-  padding: 8px 0 24px;
-}
-
-.loading-inline {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 20px 0;
-  font-size: 14px;
-  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
-}
-
-.error-bar {
-  text-align: left;
-  margin-bottom: 8px;
-}
-
-/* WinSplitButton 本身是 inline-flex，给它一点投影，和文档站那颗按钮一致 */
-.split-download-btn {
-  display: inline-flex;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  border-radius: 8px;
-}
-
-/* 主按钮：文档站是 14px 32px 的内边距、15px 字号 */
-.split-download-btn .main-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 13px 30px;
-  min-height: 0;
-  border-radius: 8px 0 0 8px;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.btn-icon {
-  font-family: 'WinUIOnWebIcons';
-  font-size: 16px;
-}
-
-.download-meta {
+.dl-toolbar {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 12px;
-  font-size: 14px;
-}
-
-.meta-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 13px;
-  font-weight: 600;
-  background: var(--subtle-fill, var(--SubtleFillColorSecondaryBrush));
-  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
-}
-
-.meta-size {
-  font-size: 13px;
-  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
-}
-
-.no-assets {
-  margin: 12px 0 0;
-  padding: 24px 20px;
-  border-radius: 12px;
-  border: 2px dashed var(--card-border, var(--CardStrokeColorDefaultBrush));
-  font-size: 14px;
-  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
-}
-
-/* ── C. 选项行（下载源 + 版本通道）───────────────────────────────── */
-
-.options-row {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
   flex-wrap: wrap;
-  gap: 32px;
-  padding: 8px 0 16px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
-.option-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
+.dl-channel-slot {
+  display: inline-flex;
 }
 
-.option-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
-  white-space: nowrap;
+.dl-source-picker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.source-combo {
+.dl-source-label {
+  font-size: 0.82rem;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+}
+
+.dl-source-combo {
   min-width: 200px;
 }
 
-/* ── D. 平台切换行 ───────────────────────────────────────────────── */
+/* ── 提示条（对应文档站的 .dl-notice）─────────────────────────────── */
 
-.platform-row {
+.dl-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  font-size: 0.83rem;
+  line-height: 1.5;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.38);
+}
+
+.dl-notice.is-info {
+  background: var(--accent-soft, var(--SubtleFillColorSecondaryBrush));
+  border-color: transparent;
+}
+
+.dl-notice-text {
+  flex: 1;
+}
+
+/* ── 状态区（加载中 / 错误）──────────────────────────────────────── */
+
+.dl-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 4px 0 16px;
+  gap: 0.6rem;
+  padding: 3rem 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
 }
 
-.meta-row {
-  display: flex;
-  justify-content: center;
-  padding: 0 0 12px;
+.dl-state-icon {
+  font-family: 'WinUIOnWebIcons';
+  font-size: 22px;
 }
 
-.requirement-text {
-  font-size: 13px;
-  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+.dl-spin {
+  animation: dl-spin 0.9s linear infinite;
 }
 
-.hint-failed {
-  margin: 0 auto 18px;
-  max-width: 560px;
-  padding: 10px 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  line-height: 20px;
+@keyframes dl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dl-error strong {
+  font-size: 1.05rem;
   color: var(--text-primary, var(--TextFillColorPrimaryBrush));
-  background: var(--subtle-fill, var(--SubtleFillColorSecondaryBrush));
-  border-left: 3px solid #d29922;
 }
 
-.soon-bar {
-  text-align: left;
-  margin: 4px 0 20px;
+.dl-error p {
+  margin: 0;
 }
 
-/* ── F. 更新日志（对齐文档站的 changelog-section）────────────────── */
+.dl-state-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
 
-.changelog-section {
-  margin: 24px 0;
+/* ── 版本卡片网格（两列）────────────────────────────────────────── */
+
+.dl-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.edition-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
   border-radius: 16px;
   border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
   background: var(--card-bg, var(--CardBackgroundFillColorDefaultBrush));
-  overflow: hidden;
 }
 
-.section-header {
+.edition-head {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
+  gap: 0.85rem;
 }
 
-.changelog-heading {
-  margin: 0;
-  font-size: 17px;
+.edition-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  font-family: 'WinUIOnWebIcons';
+  font-size: 21px;
+  color: var(--accent-text, var(--TextOnAccentFillColorPrimaryBrush));
+  background: var(--accent-fill-rest, var(--AccentFillColorDefaultBrush));
+}
+
+.edition-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.edition-title h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.2rem;
+  font-size: 1.12rem;
   font-weight: 700;
   color: var(--text-primary, var(--TextFillColorPrimaryBrush));
 }
 
-.version-badge {
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 12px;
-  font-weight: 600;
-  background: var(--subtle-fill, var(--SubtleFillColorSecondaryBrush));
+.edition-title p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
   color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+}
+
+.edition-badge {
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
+  background: var(--card-bg, var(--CardBackgroundFillColorDefaultBrush));
+  font-size: 0.67rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+}
+
+.edition-sys {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.7rem 0 0;
+  font-size: 0.76rem;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+}
+
+.edition-version {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.8rem 0 0.2rem;
+  font-size: 0.79rem;
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+}
+
+.version-tag {
+  padding: 0.1rem 0.42rem;
+  border-radius: 6px;
+  font-family: 'Consolas', ui-monospace, monospace;
+  font-weight: 600;
+  background: var(--accent-soft, var(--SubtleFillColorSecondaryBrush));
+  color: var(--accent, var(--AccentTextFillColorPrimaryBrush));
+}
+
+/* ── 卡片内下载行 ────────────────────────────────────────────────── */
+
+.download-rows {
+  margin-top: auto;
+}
+
+.download-row {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
+}
+
+.row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+
+.row-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
+}
+
+.row-size {
+  font-size: 0.75rem;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+}
+
+.row-hint {
+  font-size: 0.72rem;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.row-actions .row-primary {
+  flex: 1;
+}
+
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.9rem;
+  font-size: 0.76rem;
+  text-decoration: none;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+}
+
+.card-link:hover {
+  color: var(--accent, var(--AccentTextFillColorPrimaryBrush));
+}
+
+.edition-empty {
+  margin: 1rem 0 0;
+  font-size: 0.84rem;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+}
+
+/* ── 历史版本 ────────────────────────────────────────────────────── */
+
+.history-section {
+  margin-top: 2.75rem;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
+}
+
+.section-head p {
+  margin: 0.2rem 0 1rem;
+  font-size: 0.8rem;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+}
+
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.history-column h3 {
+  margin: 0 0 0.6rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+}
+
+.history-item {
+  margin-bottom: 0.5rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
+  background: var(--card-bg, var(--CardBackgroundFillColorDefaultBrush));
+}
+
+.history-item summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.history-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.history-tag {
+  font-family: 'Consolas', ui-monospace, monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
+}
+
+.history-latest {
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  background: var(--accent-soft, var(--SubtleFillColorSecondaryBrush));
+  color: var(--accent, var(--AccentTextFillColorPrimaryBrush));
+}
+
+.history-date {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+}
+
+.history-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--card-border, var(--CardStrokeColorDefaultBrush));
+}
+
+.history-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.77rem;
+}
+
+.history-kind {
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+}
+
+.history-size {
+  font-size: 0.71rem;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+}
+
+.history-more {
+  margin-top: 0.2rem;
+  font-size: 0.78rem;
+}
+
+.history-empty {
+  font-size: 0.8rem;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+}
+
+/* ── 网页端链接行 ────────────────────────────────────────────────── */
+
+.web-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
+  font-size: 0.83rem;
+}
+
+.web-links-label {
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+}
+
+.web-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  text-decoration: none;
+  color: var(--accent, var(--AccentTextFillColorPrimaryBrush));
+}
+
+.web-links a:hover {
+  text-decoration: underline;
+}
+
+.dl-footnote {
+  margin: 1rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+}
+
+/* ── 更新日志（按需展开）─────────────────────────────────────────── */
+
+.changelog-item {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
+  background: var(--subtle-fill, var(--SubtleFillColorSecondaryBrush));
+}
+
+.changelog-item summary {
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+  list-style: none;
+}
+
+.changelog-item summary::-webkit-details-marker {
+  display: none;
 }
 
 .changelog-body {
-  padding: 12px 16px;
-  font-size: 14px;
-  line-height: 1.5;
+  margin-top: 0.6rem;
+  font-size: 0.8rem;
+  line-height: 1.6;
   color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
   word-break: break-word;
+  max-height: 320px;
+  overflow-y: auto;
 }
 
-/* Release 正文是 Markdown，尺寸压到页面基准 */
-.markdown-body :deep(h1),
-.markdown-body :deep(h2) {
-  margin: 1.2em 0 0.6em;
-  padding-bottom: 0.3em;
-  font-size: 19px;
-  font-weight: 700;
-  border-bottom: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
-  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
-}
-
-.markdown-body :deep(h3) {
-  margin: 1em 0 0.5em;
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
-}
-
-.markdown-body :deep(h4) {
+.changelog-body :deep(h1),
+.changelog-body :deep(h2),
+.changelog-body :deep(h3),
+.changelog-body :deep(h4) {
   margin: 0.8em 0 0.4em;
-  font-size: 15px;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--text-primary, var(--TextFillColorPrimaryBrush));
 }
 
-.markdown-body :deep(h1:first-child),
-.markdown-body :deep(h2:first-child),
-.markdown-body :deep(p:first-child) {
-  margin-top: 0;
-}
-
-.markdown-body :deep(p) {
-  margin: 0.25em 0;
-  line-height: 1.5;
-}
-
-.markdown-body :deep(strong) {
-  font-weight: 600;
-  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
-}
-
-.markdown-body :deep(ul),
-.markdown-body :deep(ol) {
-  margin: 0.5em 0;
-  padding-left: 1.5em;
-}
-
-.markdown-body :deep(li) {
+.changelog-body :deep(p) {
   margin: 0.3em 0;
 }
 
-.markdown-body :deep(code) {
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 12px;
-  background: var(--subtle-fill, var(--SubtleFillColorSecondaryBrush));
-  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
+.changelog-body :deep(ul),
+.changelog-body :deep(ol) {
+  margin: 0.3em 0;
+  padding-left: 1.4em;
 }
 
-.markdown-body :deep(pre) {
-  padding: 10px 12px;
-  border-radius: 8px;
+.changelog-body :deep(li) {
+  margin: 0.15em 0;
+}
+
+.changelog-body :deep(code) {
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: 'Consolas', ui-monospace, monospace;
+  font-size: 0.75rem;
+  background: var(--card-bg, var(--CardBackgroundFillColorDefaultBrush));
+}
+
+.changelog-body :deep(pre) {
+  padding: 8px 10px;
+  border-radius: 6px;
   overflow-x: auto;
-  background: var(--subtle-fill, var(--SubtleFillColorSecondaryBrush));
+  background: var(--card-bg, var(--CardBackgroundFillColorDefaultBrush));
 }
 
-.markdown-body :deep(pre code) {
+.changelog-body :deep(pre code) {
   padding: 0;
   background: none;
 }
 
-.markdown-body :deep(a) {
+.changelog-body :deep(a) {
   color: var(--accent, var(--AccentTextFillColorPrimaryBrush));
-  text-decoration: none;
 }
 
-.markdown-body :deep(a:hover) {
-  text-decoration: underline;
+/* ── 断点：文档站是 860px 塌成单列 ──────────────────────────────── */
+
+@media (max-width: 860px) {
+  .dl-grid,
+  .history-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dl-hero h1 {
+    font-size: 1.65rem;
+  }
+
+  .dl-toolbar {
+    align-items: flex-start;
+  }
+
+  .dl-source-picker {
+    width: 100%;
+  }
+
+  .dl-source-combo {
+    margin-left: auto;
+  }
 }
 
-.markdown-body :deep(hr) {
-  border: none;
-  border-top: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
-  margin: 1.5em 0;
-}
-
-.markdown-body :deep(blockquote) {
-  margin: 0.8em 0;
-  padding: 0.6em 1em;
-  border-left: 4px solid var(--accent-fill-rest, var(--AccentFillColorDefaultBrush));
-  background: var(--subtle-fill, var(--SubtleFillColorSecondaryBrush));
-  border-radius: 0 8px 8px 0;
-}
-
-/* ── G. 页脚链接行（文档站的 history-link）────────────────────────── */
-
-.history-link {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 22px;
-  margin: 16px 0 10px;
-}
-
-.history-link a {
-  font-size: 14px;
-  color: var(--accent, var(--AccentTextFillColorPrimaryBrush));
-  text-decoration: none;
-}
-
-.history-link a:hover {
-  text-decoration: underline;
-}
-
-.mirror-note {
-  margin: 0;
-  text-align: center;
-  font-size: 11px;
-  line-height: 17px;
-  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
-}
-
-/* ── 移动端（对齐文档站的 640px 断点）────────────────────────────── */
-
-@media (max-width: 640px) {
+@media (max-width: 480px) {
   .desktop-page {
-    padding: 16px 16px 40px;
+    padding: 1.25rem 0.9rem 3rem;
   }
 
-  .hero-section {
-    padding: 8px 0 24px;
-  }
-
-  .hero-logo {
-    width: 120px;
-    height: 120px;
-    border-radius: 24px;
-  }
-
-  .hero-title {
-    margin-top: 18px;
-    font-size: 22px;
-  }
-
-  .hero-subtitle {
-    font-size: 13px;
-  }
-
-  /* 主按钮整宽：WinSplitButton 外层撑满，主按钮吃掉剩余宽度 */
-  .split-download-btn {
-    display: flex;
-    width: 100%;
-  }
-
-  .split-download-btn .main-btn {
-    flex: 1;
-    padding: 13px 20px;
-    font-size: 14px;
-    justify-content: center;
-  }
-
-  .options-row {
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .option-group {
-    width: 100%;
-    max-width: 300px;
-  }
-
-  .source-combo {
-    width: 100%;
-    min-width: 0;
-  }
-
-  /* 通道条与平台条在窄屏撑满 */
-  .channel-bar,
-  .platform-bar {
-    width: 100%;
-  }
-
-  .section-header {
-    padding: 13px 16px;
-  }
-
-  .changelog-heading {
-    font-size: 16px;
-  }
-
-  .changelog-body {
-    padding: 10px 14px;
-  }
-
-  .history-link {
-    gap: 16px;
+  .edition-card {
+    padding: 1rem;
   }
 }
