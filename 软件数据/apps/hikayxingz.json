@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-11-09T08:02:07.792Z",
-  "_原始ID冲突": false,
   "id": "hikayxingz",
   "name": "海康威视综合软件下载(运维)",
   "icon": "",
@@ -25,23 +23,5 @@
     "windows",
     "android",
     "web"
-  ],
-  "_提交指纹": "089868f0d876e039",
-  "_系统版本": {
-    "windows": [
-      "7",
-      "10",
-      "11"
-    ],
-    "android": [
-      "11",
-      "12",
-      "13",
-      "14",
-      "15",
-      "16",
-      "other"
-    ]
-  },
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBHbVorWVZvbHZZSFdPSUpz\nZjZVcE1PaUQyZVZ4OER0N2hneTFqaHlaZlNjCjVVelFvOWRnbi9zWDY0bzlabGJw\naHplT25yM0IvYm5SalY2NHV2VDQ1ckUKLS0tIHZMK0J6UUUzRUJyS0FabzYyMTFT\nK3hnVHpPd1F1RkJJNjVTcktwNU1kRWcKz7ytuLRwqlYiYYhrw7hOO0P0sh/EGFny\nGKLDQ7hlomwPUoD4uUQnU2x7bGTt\n-----END AGE ENCRYPTED FILE-----"
+  ]
 }
