@@ -123,6 +123,7 @@ export default {
       "desktop.docs": "使用文档",
       "desktop.md5": "校验值",
       "desktop.changelog": "更新日志",
+      "desktop.changelog-desc": "点开查看各版本这次改了什么。",
       "desktop.coming-soon-short": "即将支持",
       "desktop.mirror-note": "安装包由各仓库的 GitHub Releases 发布；镜像只做转发、不改动文件，线路不通时换一条即可。每个包都附带同名 .md5 校验文件。",
       "desktop.web-label": "网页端",

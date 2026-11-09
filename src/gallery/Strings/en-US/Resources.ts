@@ -333,6 +333,7 @@ export default {
   "desktop.docs": "Documentation",
   "desktop.md5": "Checksum",
   "desktop.changelog": "Changelog",
+  "desktop.changelog-desc": "Open a version to see what changed in it.",
   "desktop.coming-soon-short": "Coming soon",
   "desktop.mirror-note": "Installers are published to each repository's GitHub Releases; mirrors only relay the file unmodified \u2014 switch to another source if one does not work. Every package ships a matching .md5 file.",
   "desktop.web-label": "Web",
