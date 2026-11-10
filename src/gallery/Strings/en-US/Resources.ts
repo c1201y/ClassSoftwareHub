@@ -313,7 +313,6 @@ export default {
   // 两级结构：kind（report / suggestion），仅 "report" 含子类型。
   // 卡片与子类型由 src/gallery/feedback.ts 决定。
   "nav.feedback": "Feedback",
-  "nav.desktop": "Desktop app",
 
   // ── Desktop download page (#/desktop) ──────────────────────────────
   // Versions, sizes and download URLs are NOT here — they are resolved live

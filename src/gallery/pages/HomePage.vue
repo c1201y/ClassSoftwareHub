@@ -47,9 +47,10 @@
         </section>
 
         <!-- 桌面应用版推广卡：整页宽、矮高度，位于「内置工具 / AI 导航」上方。
-             两个按钮直接下载 exe（走 GitHub 镜像加速，镜像全部失效时自动跳转该版本 Release 页），
-             版本号由 desktopDownload.ts 动态获取；文案见下方 desktopPromo。 -->
-        <div class="home-desktop-promo">
+             ⚠️ 这里是「下载桌面版」的**唯一入口**（导航栏那个已移除，见 App.vue）。
+             点卡片 / 按钮都进 #/desktop 下载页 —— 那里能选线路、切正式/预览、
+             看历史版本，比在首页直接甩三个 exe 按钮清楚得多。 -->
+        <div class="home-desktop-promo" role="button" tabindex="0" @click="openDesktopPage" @keydown.enter="openDesktopPage">
           <span class="home-desktop-promo-icon" aria-hidden="true">&#xE977;</span>
           <span class="home-desktop-promo-text">
             <span class="home-desktop-promo-title">{{ desktopPromo.title }}</span>
@@ -59,33 +60,13 @@
             <button
               type="button"
               class="home-desktop-download-btn"
-              :disabled="desktopDownloading !== null"
-              @click="downloadDesktop('stable')">
-              {{ desktopDownloading === 'stable' ? desktopPromo.pending : desktopPromo.stable }}
+              @click.stop="openDesktopPage">
+              {{ desktopPromo.enter }}
             </button>
-            <button
-              type="button"
-              class="home-desktop-download-btn is-win7"
-              :disabled="desktopDownloading !== null"
-              :title="desktopPromo.win7Hint"
-              @click="downloadDesktop('win7')">
-              {{ desktopDownloading === 'win7' ? desktopPromo.pending : desktopPromo.win7 }}
-            </button>
-            <button
-              type="button"
-              class="home-desktop-download-btn is-insider"
-              :disabled="desktopDownloading !== null"
-              @click="downloadDesktop('insider')">
-              {{ desktopDownloading === 'insider' ? desktopPromo.pending : desktopPromo.insider }}
-            </button>
-            <a
-              class="home-desktop-promo-action"
-              :href="desktopPromo.releasePage"
-              target="_blank"
-              rel="noopener noreferrer">
+            <span class="home-desktop-promo-action">
               {{ desktopPromo.allVersions }}
               <span class="home-desktop-promo-link-icon" aria-hidden="true">&#xE8A7;</span>
-            </a>
+            </span>
           </span>
         </div>
 
@@ -194,7 +175,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onMounted, ref } from 'vue';
+import { computed, inject, ref } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { HolidayTheme } from '../holidayTheme';
@@ -206,13 +187,6 @@ import { useI18n } from '../../components/i18n/index';
 import { apps, categories, categoryName, platforms } from '../data';
 import type { SoftwareApp } from '../data';
 import { appIconUrlSafe, markIconBroken } from '../appIcons';
-// 桌面应用版的 exe 直接下载（取最新版本 + 镜像加速 + Release 页兜底）
-import {
-  DESKTOP_RELEASES_URL,
-  downloadDesktopBuild,
-  resolveDesktopBuilds
-} from '../desktopDownload';
-import type { DesktopChannel } from '../desktopDownload';
 import '../styles/home-page.css';
 // 软件清单模板：与根目录 软件数据/apps/_模板.json 保持同源（打包时内联进单文件）
 import softwareTemplateRaw from '../../../软件数据/apps/_模板.json?raw';
@@ -291,51 +265,31 @@ const openDetail = (app: SoftwareApp) => {
  * 文案直接写在此处（与 toolsCard 一样不进 文字设置.ts）；title 或 desc 留空即隐藏整张卡。
  */
 const desktopPromo = {
-  releasePage: DESKTOP_RELEASES_URL,
   ...(locale === 'zh-CN'
     ? {
         title: '体验桌面应用版',
         desc: '原生 WinUI 界面 · 内置工具 · 托盘常驻 · 自动更新，不用打开浏览器',
-        stable: '下载稳定版',
-        win7: '下载 Win7 版',
-        win7Hint: 'Windows 7 SP1 及以上 · Avalonia 移植版，与原版独立更新',
-        insider: '试用 Insider 版',
-        pending: '连接中…',
-        allVersions: '全部版本'
+        enter: '前往下载',
+        allVersions: '下载页'
       }
     : {
         title: 'Try the desktop app',
         desc: 'Native WinUI shell · built-in tools · tray · auto updates',
-        stable: 'Download stable',
-        win7: 'Download for Windows 7',
-        win7Hint: 'Windows 7 SP1+ · Avalonia port, updated separately',
-        insider: 'Try Insider build',
-        pending: 'Connecting…',
-        allVersions: 'All releases'
+        enter: 'Get it',
+        allVersions: 'Downloads'
       })
 };
 
-/** 正在下载的通道（null = 空闲）：用于禁用按钮，并将按钮文字切换为「连接中…」 */
-const desktopDownloading = ref<DesktopChannel | null>(null);
-
-const downloadDesktop = async (channel: DesktopChannel) => {
-  if (desktopDownloading.value) return;
-  desktopDownloading.value = channel;
-  try {
-    await downloadDesktopBuild(channel);
-  } catch {
-    // 下载流程本身抛出异常时的兜底：至少将用户引导至 Release 页
-    window.open(desktopPromo.releasePage, '_blank');
-  } finally {
-    desktopDownloading.value = null;
-  }
+/**
+ * 进入下载页（#/desktop）。
+ *
+ * 首页这张卡是「下载桌面版」的唯一入口 —— 导航栏那个已移除。
+ * 这里只负责跳转，具体下载（选线路、正式/预览、历史版本）都在下载页完成，
+ * 不再在首页直接甩 exe 按钮：那种做法没法选镜像、也没法看历史版本。
+ */
+const openDesktopPage = () => {
+  void router.push({ name: 'desktop' });
 };
-
-// 预热：进入首页即查询版本，点击按钮时无需等待接口。
-// 接口不可用时无影响 —— 模块内部会回退到内置版本号，按钮仍可用。
-onMounted(() => {
-  void resolveDesktopBuilds();
-});
 
 /** 首页「内置工具」入口卡片：文案直接写在这里（工具相关文案不进 文字设置.ts） */
 const toolsCard =

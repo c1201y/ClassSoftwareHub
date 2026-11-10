@@ -102,6 +102,9 @@
    和分类推荐卡同款外链卡片样式，只是压扁一点；文案在 HomePage.vue 的 desktopPromo。 */
 .home-desktop-promo {
   box-sizing: border-box;
+  /* 整张卡可点：点了进下载页（唯一入口，导航栏那个已移除） */
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
@@ -117,6 +120,16 @@
 }
 /* 卡片本身不再是链接（下载动作在右边按钮上），所以没有整卡 hover / focus 态。
    右侧一栏：三个下载按钮 + 「全部版本」链接；放不下就整体换行。 */
+.home-desktop-promo:hover {
+  background: color-mix(in srgb, var(--accent-base, #0067C0) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent-base, #0067C0) 52%, transparent);
+}
+
+.home-desktop-promo:focus-visible {
+  outline: 2px solid var(--accent-base, #0067C0);
+  outline-offset: 2px;
+}
+
 .home-desktop-promo-actions {
   display: flex;
   align-items: center;

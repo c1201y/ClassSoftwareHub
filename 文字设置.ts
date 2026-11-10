@@ -103,7 +103,6 @@ export default {
       "text.use-system-setting": "使用系统设置",
       "nav.home": "首页",
       "nav.feedback": "反馈中心",
-      "nav.desktop": "下载桌面版",
 
       // ── 下载桌面版页面（#/desktop）──────────────────────────────
       // 版本号、体积、下载地址不在这里 —— 那些由 src/gallery/desktopDownload.ts
