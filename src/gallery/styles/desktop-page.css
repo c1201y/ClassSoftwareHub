@@ -153,11 +153,32 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
-  /* ⚠️ 必须是 start，不能是默认的 stretch：
-     卡片内容长度天然不同（Win7 卡多一个便携版、Android 卡只有一行），
-     stretch 会把同一行较矮的那张强行拉到同高，宽屏下看起来像被拉长。
-     文档站那边卡片高度本来就接近，所以没暴露这个问题。 */
-  align-items: start;
+}
+
+/* ⚠️ 这里的 stretch 是**故意的**（2026-11-10 按需求改回）：
+   桌面版卡只有一行下载、Win7 卡有安装版 + 便携版两行，
+   不拉齐时左边会明显矮一截，看着像没加载完。
+   等高之后两张卡底部对齐，下载按钮落在同一水平线上。
+   卡片内部靠 .download-rows 的 margin-top:auto 把下载区顶到底部，
+   所以内容不会被拉伸变形，只是下方留白。 */
+.edition-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  border-radius: 16px;
+  border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
+  background: var(--card-bg, var(--CardBackgroundFillColorDefaultBrush));
+}
+
+/* 图标字形 —— 站内 SEGOEICONS.TTF 是重映射过的子集，
+   必须显式指定字体族，否则会掉回正文字体、显示成方框/空白。
+   模板里所有 `&#xE9xx;` 图标都必须带这个 class。 */
+.icon-glyph {
+  font-family: var(--SymbolThemeFontFamily, 'WinUIOnWebIcons');
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  display: inline-block;
 }
 
 .edition-card {

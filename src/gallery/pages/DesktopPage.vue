@@ -69,7 +69,7 @@
             </header>
 
             <p class="edition-sys">
-              <span aria-hidden="true">&#xE7F8;</span>
+              <span class="icon-glyph" aria-hidden="true">&#xE7F8;</span>
               {{ t(ed.sysKey) }}
             </p>
 
@@ -109,7 +109,7 @@
 
               <a v-if="ed.repoUrl" class="card-link" :href="ed.repoUrl" target="_blank" rel="noopener noreferrer">
                 {{ t('desktop.history') }}
-                <span aria-hidden="true">&#xE8A7;</span>
+                <span class="icon-glyph" aria-hidden="true">&#xE8A7;</span>
               </a>
             </div>
 
