@@ -1,0 +1,61 @@
+{
+  "_提交时间": "2026-11-13T10:40:17.665Z",
+  "_原始ID冲突": false,
+  "id": "winlauncher",
+  "name": "WinLauncher",
+  "icon": "https://api.classsoftwarehub.cn/api/icon?k=icon%2F2026%2F11%2Fmweu6r45-ku89g2-ico.ico",
+  "category": "system",
+  "tagline": "仿 Win10/Win8 动态磁贴的独立开始菜单工具",
+  "description": "仿 Win10/Win8 动态磁贴的独立开始菜单工具",
+  "version": "v3.0.0",
+  "size": "",
+  "system": "Windows 7+",
+  "website": "",
+  "github": "https://github.com/WiseWang1013/WinLauncher",
+  "downloads": [
+    {
+      "platform": "v3.0.0 压缩包 直连",
+      "note": "WinLauncher.zip",
+      "size": "362 KB",
+      "kind": "file",
+      "url": "oss://upload/2026/11/mweu916e-jr6p0b-WinLauncher.zip"
+    },
+    {
+      "platform": "v3.0.0 Windows 安装版 直连",
+      "note": "WinLauncher_Setup_3.0.0.exe",
+      "size": "2.5 MB",
+      "kind": "file",
+      "url": "oss://upload/2026/11/mweu9f1a-j5kdgw-WinLauncher_Setup_3.0.0.exe"
+    },
+    {
+      "platform": "v2.0.0 Windows 安装版 直连",
+      "note": "WinLauncher_Setup_2.0.0.exe",
+      "kind": "file",
+      "url": "oss://upload/2026/11/mweubmhk-sb9t41-WinLauncher_Setup.exe"
+    },
+    {
+      "platform": "v1.0.0 Windows 安装版 直连",
+      "note": "WinLauncher_Setup_1.0.0.exe",
+      "kind": "file",
+      "url": "oss://upload/2026/11/mweufnhu-opetg4-WinLauncher_Setup(1).exe"
+    },
+    {
+      "platform": "v3.0.0 github",
+      "note": "WinLauncher_Setup_3.0.0.exe",
+      "url": "https://github.com/WiseWang1013/WinLauncher/releases/download/v3.0.0/WinLauncher_Setup_3.0.0.exe"
+    }
+  ],
+  "sort": 99,
+  "platforms": [
+    "windows"
+  ],
+  "_提交指纹": "089868f0d876e039",
+  "_系统版本": {
+    "windows": [
+      "7",
+      "10",
+      "11"
+    ]
+  },
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBTa01NekNoenlodXhJWEk5\nQ3ZhSTQvMVI1bE1wQjJQSEx4WFVhODhWdUNZCnBTYVY0SmZZelNnVFRmRmhkcUFr\nZWxkUGhCNEpQWm5DdkNMbk1yWEsyWmcKLS0tIHdabzdKSENxK1pIZUdFdGExdE9n\nSTVMK0dNOGs3ajkzQ0RHcE5IVGxRb3cKsHQGHhHDvY03pS/jfJgAfoXRnl38Bbil\nSCTujcy/ds0QUi9v/L03mbfC8+FyUCGKDiF532rohIw=\n-----END AGE ENCRYPTED FILE-----"
+}
