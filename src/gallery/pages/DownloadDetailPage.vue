@@ -22,6 +22,48 @@
             <p class="detail-tagline">{{ app.tagline }}</p>
             <span class="detail-category-badge">{{ categoryName(app.category) }}</span>
           </div>
+          <!-- 分享：网页版相对桌面版最有价值的一处 —— 发出去是一条能直接
+               打开这个软件页的链接，而不是笼统的站名。桌面版做不到。 -->
+          <div class="detail-share">
+            <WinButton
+              class="detail-share-btn"
+              :Content="t('share.button')"
+              @Click="shareOpen = !shareOpen" />
+          </div>
+        </div>
+
+        <!-- 分享面板：文案 + 链接 + 二维码（投屏到教室大屏全班扫码） -->
+        <div v-if="shareOpen" class="detail-share-panel">
+          <div class="detail-share-main">
+            <div class="detail-share-block">
+              <span class="detail-share-label">{{ t('share.text-label') }}</span>
+              <textarea
+                class="detail-share-text"
+                :value="shareText"
+                readonly
+                rows="4"
+                @focus="selectAll" />
+              <div class="detail-share-actions">
+                <WinButton
+                  Style="AccentButtonStyle"
+                  :Content="shareCopied === 'text' ? t('share.copied') : t('share.copy-text')"
+                  @Click="copyShare('text')" />
+                <WinButton
+                  :Content="shareCopied === 'link' ? t('share.copied') : t('share.copy-link')"
+                  @Click="copyShare('link')" />
+                <WinButton
+                  :Content="t('share.open')"
+                  @Click="openSharePage" />
+              </div>
+            </div>
+            <div class="detail-share-qr">
+              <span class="detail-share-label">{{ t('share.qr-label') }}</span>
+              <!-- SVG 来自 qrcode-generator，内容是我们自己拼的纯文本，
+                   不含用户输入之外的 HTML，v-html 在此可控。 -->
+              <div class="detail-share-qr-img" v-html="shareQr"></div>
+              <span class="detail-share-qr-tip">{{ t('share.qr-tip') }}</span>
+            </div>
+          </div>
         </div>
 
         <h2 class="detail-section-title">{{ t('detail.intro') }}</h2>
@@ -223,6 +265,7 @@ import {
 } from '../githubMirror';
 import type { MirrorChannel } from '../githubMirror';
 import '../styles/download-detail-page.css';
+import { buildShareText, buildShareUrl, buildQrSvg, isShareableUrl } from '../share';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -472,4 +515,64 @@ const onMirrorClick = (download: DownloadItem, channel: MirrorChannel) => {
   rememberChannel(channel.id);
   mirrorOpenUrl.value = '';
 };
+
+/* ── 分享（逻辑在 src/gallery/share.ts，这里只管交互状态）────────── */
+
+const shareOpen = ref(false);
+/** 刚复制了哪一块（'text' | 'link' | ''），2 秒后复位 */
+const shareCopied = ref('');
+
+const shareTarget = computed(() => {
+  const value = app.value;
+  if (!value) return null;
+  return {
+    id: value.id,
+    name: value.name,
+    tagline: value.tagline,
+    version: value.version,
+    size: value.size,
+    system: value.system
+  };
+});
+
+const shareText = computed(() => (shareTarget.value ? buildShareText(shareTarget.value) : ''));
+const shareUrl = computed(() => (app.value ? buildShareUrl(app.value.id) : ''));
+const shareQr = computed(() => (shareUrl.value ? buildQrSvg(shareUrl.value) : ''));
+
+const copyShare = async (kind: 'text' | 'link') => {
+  const value = kind === 'text' ? shareText.value : shareUrl.value;
+  if (!value) return;
+  try {
+    await navigator.clipboard.writeText(value);
+    shareCopied.value = kind;
+    window.setTimeout(() => {
+      if (shareCopied.value === kind) shareCopied.value = '';
+    }, 2000);
+  } catch {
+    // 剪贴板不可用（http / 权限被拒）：textarea 只读但可选中，
+    // 用户仍能手动复制 —— 这里不误报成功。
+  }
+};
+
+/** 在新标签页打开分享地址（预览别人点开后的效果） */
+const openSharePage = () => {
+  if (shareUrl.value && isShareableUrl(shareUrl.value)) {
+    window.open(shareUrl.value, '_blank', 'noopener,noreferrer');
+  }
+};
+
+/** 点一下 textarea 全选，方便 Ctrl+C */
+const selectAll = (e: Event) => {
+  const el = e.target as HTMLTextAreaElement | null;
+  el?.select();
+};
+
+// 切换软件时收起面板（组件会被复用，状态不会自动重置）
+watch(
+  () => route.params.id,
+  () => {
+    shareOpen.value = false;
+    shareCopied.value = '';
+  }
+);
 </script>

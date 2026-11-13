@@ -16,7 +16,7 @@
         @pointerdown.stop>
         <!-- 结果列表：按组显示，最多 limitPerKind 条/组 -->
         <div ref="listRef" class="gs-list" role="list">
-          <template v-for="group in groups" :key="group.kind">
+          <template v-for="group in shownGroups" :key="group.kind">
             <div class="gs-group-title" role="presentation">
               <span>{{ groupTitle(group.kind) }}</span>
               <span class="gs-group-count">{{ group.hits.length }}</span>
@@ -43,11 +43,52 @@
             </button>
           </template>
 
-          <!-- 无结果时提供指引（更换关键词 / 前往提交页提出需求） -->
-          <div v-if="!groups.length" class="gs-empty">
-            <p class="gs-empty-title">{{ t('search.no-results', { query: query.trim() }) }}</p>
+          <!-- 空查询：展示搜索历史 + 「猜你想找」 -->
+          <div v-if="queryEmpty" class="gs-suggest">
+            <div v-if="historyTerms.length" class="gs-suggest-block">
+              <div class="gs-suggest-head">
+                <span class="gs-suggest-title">{{ t('search.history-title') }}</span>
+                <button type="button" class="gs-suggest-clear" @click="clearHistory">
+                  {{ t('search.history-clear') }}
+                </button>
+              </div>
+              <div class="gs-suggest-chips">
+                <span v-for="term in historyTerms" :key="term" class="gs-chip-wrap">
+                  <button type="button" class="gs-chip" @click="useTerm(term)">{{ term }}</button>
+                  <button
+                    type="button"
+                    class="gs-chip-x"
+                    :aria-label="t('search.history-remove')"
+                    @click="dropTerm(term)">×</button>
+                </span>
+              </div>
+            </div>
+
+            <div class="gs-suggest-block">
+              <div class="gs-suggest-head">
+                <span class="gs-suggest-title">{{ t('search.suggest-title') }}</span>
+              </div>
+              <div class="gs-suggest-chips">
+                <button
+                  v-for="term in suggestions"
+                  :key="term"
+                  type="button"
+                  class="gs-chip is-suggest"
+                  @click="useTerm(term)">{{ term }}</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 有查询但无结果时提供指引（更换关键词 / 前往提交页提出需求） -->
+          <div v-else-if="!shownGroups.length" class="gs-empty">
+            <p class="gs-empty-title">{{ t('search.no-results', { query: effectiveQuery.trim() }) }}</p>
             <p class="gs-empty-desc">{{ t('search.empty-hint') }}</p>
           </div>
+
+          <!-- 拼音兜底命中时给一行说明，免得用户以为搜错了 -->
+          <p v-if="!queryEmpty && !groups.length && shownGroups.length" class="gs-fallback-note">
+            {{ t('search.initials-matched', { query: effectiveQuery.trim() }) }}
+          </p>
         </div>
 
         <!-- 底部：快捷键提示 -->
@@ -69,6 +110,14 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from '../components/i18n/index';
 import { searchGlobal, type GlobalHit, type GlobalHitKind } from './searchIndex';
+import {
+  clearSearchHistory,
+  matchesInitials,
+  pushSearchHistory,
+  readSearchHistory,
+  removeSearchHistory,
+  uniqueSuggestions
+} from './searchHistory';
 
 const props = defineProps<{
   /** 是否显示结果下拉 */
@@ -92,7 +141,83 @@ const activeHit = ref<GlobalHit | null>(null);
 /** 下拉的内联定位样式（贴在标题栏输入框下方） */
 const panelStyle = ref<Record<string, string>>({});
 
-const groups = computed(() => searchGlobal(props.query, t, LIMIT_PER_KIND));
+const groups = computed(() => searchGlobal(effectiveQuery.value, t, LIMIT_PER_KIND));
+/** 搜索历史（最近在前）；空查询时展示 */
+const historyTerms = ref<string[]>(readSearchHistory());
+/** 固定的「猜你想找」推荐词 */
+const suggestions = uniqueSuggestions();
+/** 查询词是否为空（空时展示历史 / 推荐，而不是「无结果」） */
+const queryEmpty = computed(() => !effectiveQuery.value.trim());
+
+/**
+ * 拼音首字母兜底：中文搜不到时，试着把查询当作拼音首字母再搜一次。
+ *
+ * 只在「常规搜索完全没结果 + 查询是纯字母」时触发 —— 正常中文查询
+ * 不会走这条路，避免把结果搅乱。
+ */
+const initialsFallback = computed(() => {
+  if (groups.value.length) return null;
+  const q = effectiveQuery.value.trim();
+  if (!q || !/^[a-z]+$/i.test(q)) return null;
+  // 找几个能匹配首字母的候选词，交给常规搜索再跑一遍
+  for (const term of suggestions) {
+    if (matchesInitials(term, q)) return searchGlobal(term, t, LIMIT_PER_KIND);
+  }
+  return null;
+});
+
+/** 实际展示的结果：常规结果，或拼音兜底结果 */
+const shownGroups = computed(() => (groups.value.length ? groups.value : (initialsFallback.value ?? [])));
+
+/**
+ * 查询「生效」时记历史。
+ *
+ * 放在这里而不是每次输入都记：输入过程中每敲一个字都会变，
+ * 只有「出现了结果」才说明这是一次有意义的查询。
+ */
+watch(
+  () => effectiveQuery.value,
+  (value) => {
+    const q = value.trim();
+    if (q.length < 2) return;
+    if (groups.value.length) historyTerms.value = pushSearchHistory(q, true);
+  }
+);
+
+/**
+ * 本地覆盖的查询词。
+ *
+ * query 是父组件的单向 prop（由搜索框 input 驱动），本组件不能直接改它。
+ * 点历史/推荐词时不需要回写输入框 —— 只要**本面板**按这个词出结果即可，
+ * 所以这里用一个本地 ref 覆盖；用户一旦重新敲键盘，父组件更新 query，
+ * 这个覆盖值就自动让位（见下方 effectiveQuery）。
+ */
+const localQuery = ref('');
+
+/** 实际用于搜索的词：本地覆盖优先，否则用父组件的 query */
+const effectiveQuery = computed(() => localQuery.value || props.query);
+
+/** 用户重新输入时清掉本地覆盖，回到跟随输入框 */
+watch(
+  () => props.query,
+  (value) => {
+    // 父组件的 query 变化说明用户在输入框里改了内容
+    if (value !== localQuery.value) localQuery.value = '';
+  }
+);
+
+const useTerm = (term: string) => {
+  localQuery.value = term;
+  historyTerms.value = pushSearchHistory(term, true);
+};
+
+const dropTerm = (term: string) => {
+  historyTerms.value = removeSearchHistory(term);
+};
+
+const clearHistory = () => {
+  historyTerms.value = clearSearchHistory();
+};
 /** 拍平为一维列表，便于 ↑↓ 跨组连续移动 */
 const flatHits = computed(() => groups.value.flatMap((group) => group.hits));
 
@@ -404,6 +529,101 @@ onBeforeUnmount(unbindWindowListeners);
 }
 
 /* ── 空结果 ───────────────────────────────────────────────── */
+/* 空查询时的历史 / 推荐 */
+.gs-suggest {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 14px 16px 16px;
+}
+
+.gs-suggest-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gs-suggest-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.gs-suggest-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+}
+
+.gs-suggest-clear {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+  cursor: pointer;
+}
+
+.gs-suggest-clear:hover {
+  color: var(--accent, var(--AccentTextFillColorPrimaryBrush));
+}
+
+.gs-suggest-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gs-chip-wrap {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+  border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
+  overflow: hidden;
+}
+
+.gs-chip {
+  border: none;
+  background: none;
+  padding: 5px 10px;
+  font-size: 13px;
+  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
+  cursor: pointer;
+}
+
+.gs-chip:hover {
+  background: var(--subtle-fill, var(--SubtleFillColorSecondaryBrush));
+}
+
+.gs-chip.is-suggest {
+  border-radius: 6px;
+  border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+}
+
+.gs-chip-x {
+  border: none;
+  border-left: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
+  background: none;
+  padding: 5px 8px;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+  cursor: pointer;
+}
+
+.gs-chip-x:hover {
+  color: #d13438;
+}
+
+.gs-fallback-note {
+  margin: 0;
+  padding: 0 16px 12px;
+  font-size: 12px;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+}
+
 .gs-empty {
   padding: 28px 16px 24px;
   text-align: center;

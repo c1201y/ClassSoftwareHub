@@ -72,6 +72,22 @@ export const TOOLS: ToolDef[] = [
     load: () => import('./ClockTool.vue')
   },
   {
+    id: 'word-writing',
+    name: '单词书写练习',
+    desc: '老师粘贴汉语词表，学生在右边横线上用触控笔或手指写英语。支持四线三格、显示答案、撤销、打印空白练习页，全部本地运行。',
+    icon: '\uE929',
+    group: '课堂',
+    load: () => import('./WordWritingTool.vue')
+  },
+  {
+    id: 'chemistry',
+    name: '化学式配平',
+    desc: '输入未配平的化学方程式，自动算出系数并列出各元素守恒情况。支持括号与原子团，全部本地计算。',
+    icon: '\uE9D9',
+    group: '课堂',
+    load: () => import('./ChemistryTool.vue')
+  },
+  {
     id: 'text',
     name: '文本处理',
     desc: '去重复行、去空行、大小写、中英标点互转、字数统计……写通知 / 名单 / 文案时常用。',
