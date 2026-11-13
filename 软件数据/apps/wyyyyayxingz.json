@@ -1,31 +1,19 @@
 {
   "id": "wyyyyayxingz",
   "name": "网易云音乐",
-  "icon": "",
+  "icon": "https://images-eds-ssl.xboxlive.com/image?url=4rt9.lXDC4H_93laV1_eHHFT949fUipzkiFOBH3fAiZZUCdYojwUyX2aTonS1aIwMrx6NUIsHfUHSLzjGJFxxmJ1fOmu4McDOQ5s.KQKHr9FvkoEcPa0laJJa8jHWv1oY61Yzqch0gdGQXiaFKscg.h0ujDBJc5MDExEDuVskz0-&format=webp&h=134",
   "category": "media",
   "tagline": "常用听歌软件",
   "description": "听歌软件，不必过多介绍",
-  "version": "",
-  "size": "",
   "system": "Windows XP+ / 其他 / macOS 10.15+ / 其他 / Linux（Ubuntu / Debian / Arch / Red Hat / SUSE / 其他） / Android 8+ / 其他 / iOS 12+ / 其他 / 网页版",
   "website": "https://music.163.com/",
-  "github": "https://github",
+  "notice": "该软件为商业软件，故引导至官网下载",
+  "store": "https://apps.microsoft.com/detail/9nblggh6g0jf?hl=zh-CN&gl=CN",
   "downloads": [
     {
       "platform": "官方网页",
-      "kind": "netdisk",
       "url": "https://music.163.com/#/download"
     }
   ],
-  "sort": 20,
-  "notice": "该软件为商业软件，故引导至官网下载",
-  "platforms": [
-    "windows",
-    "macos",
-    "linux",
-    "android",
-    "ios",
-    "web"
-  ],
-  "store": "https://apps.microsoft.com/detail/9nblggh6g0jf?hl=zh-CN&gl=CN"
+  "sort": 20
 }
