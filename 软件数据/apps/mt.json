@@ -1,23 +1,21 @@
 {
   "id": "mt",
   "name": "MT管理器",
-  "icon": "",
+  "icon": "https://ts4.tc.mm.bing.net/th/id/OIP-C.5X07gsWBz-LNSBwPIgNOSwHaHa?w=108&h=108&c=1&bgcl=cfac03&r=0&o=7&dpr=2&pid=ImgRC&rm=3",
   "category": "system",
   "tagline": "一个好用的Android 平台文件管理 & 逆向修改神器",
-  "description": "双窗口操作\n独创的双窗口操作模式，两个目录同时显示，结合前进/后退/同步等功能，熟悉之后相比传统操作方式更加高效。\n多功能\n内置了许多既强大又好用的功能，并且还在持续不断地更新中，您只需要装一个 MT 就可以满足许多的功能需求。\n玩机必备\n经过十余年的更新迭代与积累，MT 获得众多好评，如今已成为许多玩机爱好者、技术极客装机必备的 APP 之一。",
+  "description": "独创的双窗口操作模式，两个目录同时显示，结合前进/后退/同步等功能，熟悉之后相比传统操作方式更加高效。\n内置了许多既强大又好用的功能，并且还在持续不断地更新中，您只需要装一个 MT 就可以满足许多的功能需求。\n经过十余年的更新迭代与积累，MT 获得众多好评，如今已成为许多玩机爱好者、技术极客装机必备的 APP 之一。",
   "version": "v2.26.11",
-  "size": "",
   "system": "Android5+",
+  "platforms": [
+    "android"
+  ],
   "website": "https://mt.cc/",
-  "github": "",
   "downloads": [
     {
       "platform": "安卓",
       "url": "oss://releases/2026/11/mw1eey2q-rs152f-MT2.26.11.apk"
     }
   ],
-  "sort": 99,
-  "platforms": [
-    "android"
-  ]
+  "sort": 99
 }
