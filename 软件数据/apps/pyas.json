@@ -6,19 +6,14 @@
   "tagline": "一款开源的强大杀毒软件，体积小，占用低",
   "description": "一款开源的强大杀毒软件，体积小，占用低（较激进，易误杀）",
   "version": "v3.7.1",
-  "size": "",
   "system": "Windows",
-  "platforms": ["windows"],
   "website": "https://pyas-security.com",
   "github": "https://github.com/87owo/PYAS",
-  "author": "87owo",
-  "license": "Source Available（非开源）",
+  "notice": "因为软件方的非开源协议，本站不提供该软件的直接下载。",
   "downloads": [
     {
-      "platform": "Windows 安装版",
-      "note": "PYAS_Setup.exe",
-      "size": "75.5 MB",
-      "url": "https://github.com/87owo/PYAS/releases/download/v3.7.1/PYAS_Setup.exe"
+      "platform": "官方链接",
+      "url": "https://github.com/87owo/PYAS"
     }
   ],
   "sort": 92
