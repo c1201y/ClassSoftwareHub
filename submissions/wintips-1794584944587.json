@@ -1,0 +1,36 @@
+{
+  "_提交时间": "2026-11-13T15:49:04.587Z",
+  "_原始ID冲突": false,
+  "id": "wintips",
+  "name": "WinTips",
+  "icon": "https://github.com/DoYouNatureQ/WinTips/blob/main/Resources/app-icon-512.png",
+  "category": "system",
+  "tagline": "简洁的 Win 10/11 键盘状态提示工具",
+  "description": "一个简洁的 Windows 键盘状态提示工具。按下 Caps Lock、Num Lock、Scroll Lock、Insert，或执行复制、粘贴、剪切时，WinTips 在屏幕边缘滑出一个亚克力质感的浮窗，报告当前按键状态或操作，随后自动淡出。程序常驻托盘，无主窗口、不联网、无第三方依赖。",
+  "version": "V0.61",
+  "size": "",
+  "system": "Windows 10 1809 ~ 11（64位）",
+  "website": "",
+  "github": "https://github.com/DoYouNatureQ/WinTips",
+  "downloads": [
+    {
+      "platform": "Windows 64 位便携版",
+      "note": "WinTips.exe",
+      "size": "173 MB",
+      "url": "https://github.com/DoYouNatureQ/WinTips/releases/download/V0.61/WinTips.exe"
+    },
+    {
+      "platform": "Windows 64 位安装版",
+      "note": "WinTipsSetup-0.61.exe",
+      "size": "58.8 MB",
+      "url": "https://github.com/DoYouNatureQ/WinTips/releases/download/V0.61/WinTipsSetup-0.61.exe"
+    }
+  ],
+  "sort": 99,
+  "platforms": [
+    "windows"
+  ],
+  "store": "https://apps.microsoft.com/detail/9nj5xdw5pd79",
+  "_提交指纹": "089868f0d876e039",
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBvUmJON0dvSTVybzN4RXpn\nQjJyYWR2dGhQMC8zK1grS2ZPamQ0RCtReG1FClliRGtQNS9XTjJZeDNxbnp1TUNU\neDhma1FITW1VYXQ4ZDQxTnJZdmlzc28KLS0tIDJ6L3RjRis1NGZjNHdjcWQ3NnZ0\nbGZjbS94N2xDWkNkRGE4T2hIMkJ1TTQKYPAiGgngIjCJwA6lxJaW4uYwnzuNrD2C\nkGlh0EWAUjRszzwDG993MZdo\n-----END AGE ENCRYPTED FILE-----"
+}
