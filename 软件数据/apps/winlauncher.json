@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-11-13T10:40:38.906Z",
-  "_原始ID冲突": false,
   "id": "winlauncher",
   "name": "WinLauncher",
   "icon": "https://api.classsoftwarehub.cn/api/icon?k=icon%2F2026%2F11%2Fmweu6r45-ku89g2-ico.ico",
@@ -18,26 +16,26 @@
       "note": "WinLauncher.zip",
       "size": "362 KB",
       "kind": "file",
-      "url": "oss://upload/2026/11/mweu916e-jr6p0b-WinLauncher.zip"
+      "url": "oss://releases/2026/11/mweu916e-jr6p0b-WinLauncher.zip"
     },
     {
       "platform": "v3.0.0 Windows 安装版 直连",
       "note": "WinLauncher_Setup_3.0.0.exe",
       "size": "2.5 MB",
       "kind": "file",
-      "url": "oss://upload/2026/11/mweu9f1a-j5kdgw-WinLauncher_Setup_3.0.0.exe"
+      "url": "oss://releases/2026/11/mweu9f1a-j5kdgw-WinLauncher_Setup_3.0.0.exe"
     },
     {
       "platform": "v2.0.0 Windows 安装版 直连",
       "note": "WinLauncher_Setup_2.0.0.exe",
       "kind": "file",
-      "url": "oss://upload/2026/11/mweubmhk-sb9t41-WinLauncher_Setup.exe"
+      "url": "oss://releases/2026/11/mweubmhk-sb9t41-WinLauncher_Setup.exe"
     },
     {
       "platform": "v1.0.0 Windows 安装版 直连",
       "note": "WinLauncher_Setup_1.0.0.exe",
       "kind": "file",
-      "url": "oss://upload/2026/11/mweufnhu-opetg4-WinLauncher_Setup(1).exe"
+      "url": "oss://releases/2026/11/mweufnhu-opetg4-WinLauncher_Setup(1).exe"
     },
     {
       "platform": "v3.0.0 github",
@@ -48,14 +46,5 @@
   "sort": 99,
   "platforms": [
     "windows"
-  ],
-  "_提交指纹": "089868f0d876e039",
-  "_系统版本": {
-    "windows": [
-      "7",
-      "10",
-      "11"
-    ]
-  },
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBzTDVOYTQxTU81WWxQV3ov\nNlp1dVBCUndROUt4WHUzSXZRaE5heDNpVjNJCmcxWUEzbGJ6OFN2WDhyMXZFZ2tL\nckk0Rjhtd1dXU2NwRklMVWxBSksyYVkKLS0tIG5ZZHJZMVZNWWhCckZudERMZmp2\nalIyelVKb3YxVkV4aGFhSEs1U2VXREUKlImlDMxbTDWp/UWE6/faJjRIkHrD/h2g\nKij6RTTgJsjTMezM04lXvPNP1ylmbWdce1UEV477rQA=\n-----END AGE ENCRYPTED FILE-----"
+  ]
 }
