@@ -488,8 +488,19 @@ const RECIPIENT_PUBLIC_KEY = 'age1l9axcy0sxu6eeanapg0maughsv380fh8nhd4unf9p8d7x2
 
 const { t } = useI18n();
 
-/** 下载方式索引 → 写入数据的 kind 值；-1 自动 / 0 file / 1 netdisk / 2 store（对应 DOWNLOAD_KINDS） */
-const DOWNLOAD_KINDS = ['', 'file', 'netdisk', 'store'] as const;
+/**
+ * 下载方式索引 → 写入数据的 kind 值。
+ *
+ * 顺序必须与 downloadKindItems 一一对应：
+ *   -1 自动 / 0 file / 1 page / 2 netdisk / 3 store
+ *
+ * ⚠️ 2026-11-12 新增 'page'（网页跳转）：
+ *   商业软件常常既没有 GitHub 仓库、也没有可上传的安装包，只能给官网下载页
+ *   （网易云音乐、QQ、WPS 都是这类）。原先没有这个选项，用户只能误选「网盘」，
+ *   详情页于是把官网链接渲染成「前往网盘」——文案与实际不符。
+ *   'page' 与 downloadLink.ts 的 DownloadKind 对得上，详情页会显示「打开下载页」。
+ */
+const DOWNLOAD_KINDS = ['', 'file', 'page', 'netdisk', 'store'] as const;
 
 interface DownloadDraft {
   platform: string;
@@ -498,7 +509,7 @@ interface DownloadDraft {
   url: string;
   /** 校验值：纯十六进制（算法按位数识别，见 HASH_LENGTHS），选填 */
   hash: string;
-  /** 下载方式索引：-1 自动 / 0 file / 1 netdisk / 2 store（对应 DOWNLOAD_KINDS） */
+  /** 下载方式索引：-1 自动 / 0 file / 1 page / 2 netdisk / 3 store（对应 DOWNLOAD_KINDS） */
   kindIndex: number;
 }
 
@@ -727,6 +738,7 @@ const ossReady = computed(() => hasOssUpload());
 const downloadKindItems = [
   { label: t('submit.download-kind-auto') },
   { label: t('submit.download-kind-file') },
+  { label: t('submit.download-kind-page') },
   { label: t('submit.download-kind-netdisk') },
   { label: t('submit.download-kind-store') }
 ];
