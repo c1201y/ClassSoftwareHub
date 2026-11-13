@@ -1,17 +1,19 @@
 {
   "id": "crystaldiskinfo",
   "name": "CrystalDiskInfo",
-  "icon": "https://api.classsoftwarehub.cn/api/icon?k=icon%2F2026%2F10%2Fmvv0aw2d-g959n7-image.png",
+  "icon": "https://raw.githubusercontent.com/WangGithubUser/FastGitHub/refs/heads/main/FastGithub.UI/app.ico",
   "category": "system",
   "tagline": "显示机械硬盘/固态硬盘的健康状态",
   "description": "显示硬盘/固态硬盘的健康状态，提供多种详细信息",
-  "version": "",
-  "size": "",
   "system": "Windows 10+",
+  "platforms": [
+    "windows"
+  ],
   "website": "https://crystalmark.info/en/download/",
   "github": "https://github.com/hiyohiyo/CrystalDiskInfo",
   "author": "hiyohiyo",
   "license": "MIT",
+  "store": "https://apps.microsoft.com/detail/xp8k4rgx25g3gm?hl=zh-CN&gl=CN",
   "downloads": [
     {
       "platform": "Windows",
@@ -19,9 +21,5 @@
       "url": "https://apps.microsoft.com/detail/xp8k4rgx25g3gm?hl=zh-CN&gl=CN"
     }
   ],
-  "sort": 99,
-  "platforms": [
-    "windows"
-  ],
-  "store": "https://apps.microsoft.com/detail/xp8k4rgx25g3gm?hl=zh-CN&gl=CN"
+  "sort": 99
 }
