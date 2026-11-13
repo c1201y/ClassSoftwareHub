@@ -1,0 +1,1178 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>单词书写练习 · 看汉语写英语</title>
+<style>
+/* ============ 基础 ============ */
+:root{
+  --bg:#eef1f6;
+  --paper:#ffffff;
+  --line:#e3e8f0;
+  --line-strong:#c3cddc;
+  --ink:#1f2430;
+  --muted:#6b7484;
+  --accent:#2563eb;
+  --accent-dark:#1d4fd8;
+  --accent-weak:#e8efff;
+  --radius:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+  height:100dvh;
+  overflow:hidden;
+  background:var(--bg);
+  color:var(--ink);
+  font:15px/1.5 "Segoe UI","Microsoft YaHei",system-ui,-apple-system,"PingFang SC",sans-serif;
+  -webkit-text-size-adjust:100%;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+button{font:inherit;color:inherit}
+input,select,textarea{font:inherit}
+
+/* ============ 顶部工具栏 ============ */
+.appbar{
+  flex:none;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  padding:8px 12px;
+  background:#fff;
+  border-bottom:1px solid var(--line);
+  box-shadow:0 1px 4px rgba(16,24,40,.06);
+  position:relative;
+  z-index:5;
+}
+.brand{
+  font-size:15px;
+  font-weight:600;
+  letter-spacing:.5px;
+  white-space:nowrap;
+  margin-right:4px;
+}
+.brand b{color:var(--accent);font-weight:700}
+.sep{width:1px;height:24px;background:var(--line);flex:none}
+
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  height:36px;
+  padding:0 12px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#fff;
+  cursor:pointer;
+  white-space:nowrap;
+  font-size:14px;
+  transition:background .12s,border-color .12s;
+}
+.btn:hover{background:#f5f7fb}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent-dark)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:#f0f3f9}
+.btn[disabled]{opacity:.4;cursor:default;pointer-events:none}
+.btn.ico{width:36px;padding:0;font-size:17px}
+
+select,.num{
+  height:36px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#fff;
+  padding:0 8px;
+  color:var(--ink);
+}
+.pager{display:flex;align-items:center;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff}
+.pager button{width:36px;height:34px;border:0;background:#fff;cursor:pointer;font-size:19px;line-height:1;color:#3a4354}
+.pager button:hover{background:#f2f5fa}
+.pager span{min-width:66px;text-align:center;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+.pens{display:flex;align-items:center;gap:5px;padding:0 2px}
+.pen{
+  width:26px;height:26px;padding:0;border-radius:50%;
+  border:2px solid #fff;box-shadow:0 0 0 1px #d4dbe7;cursor:pointer;
+}
+.pen.on{box-shadow:0 0 0 2px var(--accent)}
+
+.chk{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap;
+  padding:0 4px;height:36px;
+}
+.chk input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
+
+.grow{flex:1}
+
+/* ============ 纸张区域 ============ */
+main{flex:1;position:relative;min-height:0}
+.pages{
+  position:absolute;left:0;right:0;top:0;bottom:0;
+  padding:12px 14px 14px;
+}
+.sheet{
+  display:none;
+  flex-direction:column;
+  height:100%;
+  padding:6px 16px 4px;
+  background:var(--paper);
+  border-radius:12px;
+  box-shadow:0 2px 12px rgba(16,24,40,.09);
+  min-height:0;
+  --rowh:40px;
+}
+.sheet.active{display:flex}
+
+.sheet-body{flex:1;display:flex;flex-direction:column;min-height:0;justify-content:center;}
+
+.row{
+  flex:1;
+  min-height:0;
+  max-height:var(--rowmax,96px);
+  display:grid;
+  grid-template-columns:34px minmax(84px,24%) 1fr;
+  align-items:center;
+  gap:12px;
+  border-bottom:1px dashed #e7ebf3;
+  padding:2px 0;
+}
+.row:last-child{border-bottom:0}
+.idx{
+  font-size:12px;color:#aab3c2;text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+.cn{
+  font-size:22px;
+  font-size:clamp(13px, calc(var(--rowh) * .38), 34px);
+  line-height:1.1;
+  font-weight:600;
+  letter-spacing:.5px;
+  color:#212836;
+  word-break:break-word;
+  padding-left:2px;
+}
+.cn .dim{color:#c2c9d6;font-weight:400;font-size:.8em}
+
+/* 书写区 */
+.write{
+  position:relative;
+  height:100%;
+  min-height:0;
+  border-radius:6px;
+  --bl:76%;
+}
+.write.single{
+  background-image:linear-gradient(#c3cddc,#c3cddc);
+  background-size:100% 2px;
+  background-position:0 var(--bl);
+  background-repeat:no-repeat;
+}
+.write.grid{
+  --bl:64%;
+  background-image:
+    repeating-linear-gradient(to right,#c3cddc 0 7px,transparent 7px 13px),
+    repeating-linear-gradient(to right,#c3cddc 0 7px,transparent 7px 13px),
+    linear-gradient(#b7c2d5,#b7c2d5),
+    linear-gradient(#b7c2d5,#b7c2d5);
+  background-size:100% 1px,100% 1px,100% 2px,100% 2px;
+  background-position:0 36%,0 64%,0 92%,0 8%;
+  background-repeat:no-repeat;
+}
+.write canvas{
+  position:absolute;left:0;top:0;width:100%;height:100%;
+  display:block;border-radius:6px;
+  touch-action:none;
+  cursor:crosshair;
+}
+.write.erasing canvas{cursor:cell}
+
+/* 空状态 */.empty{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;text-align:center;color:var(--muted);padding:20px;
+}
+.empty-title{font-size:20px;font-weight:700;color:#39424f}
+.empty-desc{max-width:520px;line-height:1.7;font-size:14px}
+
+/* ============ 导入对话框 ============ */
+.dlg-mask{
+  position:fixed;left:0;top:0;right:0;bottom:0;
+  background:rgba(20,26,38,.42);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;z-index:50;
+}
+.dlg-mask[hidden]{display:none}
+.dlg{
+  width:min(720px,100%);
+  max-height:100%;
+  background:#fff;border-radius:14px;
+  box-shadow:0 24px 60px rgba(16,24,40,.28);
+  display:flex;flex-direction:column;
+  padding:16px 18px 14px;
+  gap:10px;
+}
+.dlg-head{display:flex;align-items:center;gap:10px}
+.dlg-head b{font-size:16px}
+.dlg-head .btn{margin-left:auto}
+.dlg-tip{font-size:13px;color:var(--muted);line-height:1.7}
+.dlg-tip code{
+  background:#f2f5fa;border-radius:5px;padding:1px 5px;
+  font-family:Consolas,"Courier New",monospace;font-size:12px;color:#39424f;
+}
+#dlgText{
+  width:100%;height:220px;min-height:120px;resize:vertical;
+  border:1px solid var(--line);border-radius:10px;
+  padding:10px 12px;line-height:1.7;
+  font-family:Consolas,"Microsoft YaHei",monospace;
+  font-size:14px;color:var(--ink);outline:none;
+  user-select:text;
+}
+#dlgText:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
+.dlg-preview{
+  font-size:13px;color:var(--muted);
+  min-height:44px;max-height:120px;overflow:auto;
+  background:#f8fafd;border-radius:8px;padding:8px 10px;line-height:1.7;
+}
+.dlg-preview .ok{color:#1a7f45}
+.dlg-preview .warn{color:#b26a00}
+.dlg-preview .bad{color:#c0271f}
+.dlg-preview table{border-collapse:collapse}
+.dlg-preview td{padding:1px 10px 1px 0;white-space:nowrap}
+.dlg-preview td.h{color:var(--ink)}
+.dlg-foot{display:flex;align-items:center;gap:8px}
+
+/* ============ 提示条 ============ */
+.toast{
+  position:fixed;left:50%;bottom:28px;transform:translate(-50%,12px);
+  background:rgba(28,36,52,.92);color:#fff;
+  padding:9px 16px;border-radius:10px;font-size:14px;
+  opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;
+  z-index:60;max-width:80vw;text-align:center;
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="brand">单词书写<b>练习</b></div>
+
+  <button class="btn primary" id="btnImport" title="粘贴汉语词表 (Ctrl+Enter)">导入词表</button>
+
+  <div class="sep"></div>
+
+  <label class="chk" for="selPerPage">每页</label>
+  <select id="selPerPage" title="每页显示多少个词">
+    <option value="1">1 个</option>
+    <option value="2">2 个</option>
+    <option value="3">3 个</option>
+    <option value="4">4 个</option>
+    <option value="5">5 个</option>
+    <option value="6">6 个</option>
+    <option value="7">7 个</option>
+    <option value="8">8 个</option>
+    <option value="9">9 个</option>
+    <option value="10">10 个</option>
+    <option value="12">12 个</option>
+    <option value="15">15 个</option>
+    <option value="20">20 个</option>
+    <option value="25">25 个</option>
+    <option value="30">30 个</option>
+    <option value="40">40 个</option>
+    <option value="50">50 个</option>
+  </select>
+
+  <div class="pager">
+    <button id="btnPrev" title="上一页 (←)">‹</button>
+    <span id="pageInfo">0 / 0</span>
+    <button id="btnNext" title="下一页 (→)">›</button>
+  </div>
+
+  <div class="sep"></div>
+
+  <button class="btn" id="btnUndo" title="撤销最后一笔 (Ctrl+Z)">撤销</button>
+  <button class="btn" id="btnClear" title="清空本页笔迹">清空本页</button>
+
+  <div class="pens" id="pens" title="笔色">
+    <button class="pen on" data-pen="#1a1a1a" style="background:#1a1a1a" title="黑色"></button>
+    <button class="pen" data-pen="#1d4ed8" style="background:#1d4ed8" title="蓝色"></button>
+    <button class="pen" data-pen="#d92b2b" style="background:#d92b2b" title="红色"></button>
+  </div>
+
+  <button class="btn" id="btnEraser" title="橡皮擦（也可以用手掌直接擦）">橡皮擦</button>
+
+  <label class="chk" id="lblPalm" title="用手掌压住屏幕拖动即可擦除">
+    <input type="checkbox" id="chkPalm" checked>手掌擦除
+  </label>
+  <label class="chk" id="lblLine"><input type="checkbox" id="chkGrid">四线三格</label>
+
+  <div class="grow"></div>
+
+  <button class="btn ico" id="btnFull" title="全屏">⛶</button>
+</header>
+
+<main>
+  <div class="pages" id="pages"></div>
+</main>
+
+<div class="dlg-mask" id="dlg" hidden>
+  <div class="dlg">
+    <div class="dlg-head">
+      <b>导入词表</b>
+      <button class="btn ghost ico" id="dlgClose" title="关闭">✕</button>
+    </div>
+    <div class="dlg-tip">
+      一行一个词。支持这几种写法：<code>苹果 apple</code> · <code>苹果, apple</code> ·
+      <code>苹果　apple</code> · <code>apple 苹果</code>；也可以只写汉语（<code>苹果</code>），学生自己写英文。
+      序号（<code>1.</code> <code>2、</code>）会自动去掉。
+    </div>
+    <textarea id="dlgText" spellcheck="false" placeholder="苹果 apple&#10;香蕉 banana&#10;橙子 orange&#10;葡萄 grape&#10;西瓜 watermelon"></textarea>
+    <div class="dlg-preview" id="dlgPreview">在这里粘贴词表，下面会显示解析结果。</div>
+    <div class="dlg-foot">
+      <button class="btn" id="dlgSample">填入示例</button>
+      <span class="grow"></span>
+      <button class="btn" id="dlgCancel">取消</button>
+      <button class="btn primary" id="dlgOk">导入</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ================= 常量 / 工具 ================= */
+  var LS_KEY = 'word-writing.v1';
+  var CN_RE = /[\u3400-\u9fff\uf900-\ufaff]/;
+  var DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+
+  var $ = function (sel, root) { return (root || document).querySelector(sel); };
+  var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  var toastTimer = 0;
+  function toast(msg) {
+    var el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove('on'); }, 1800);
+  }
+
+  /* ================= 词表解析 ================= */
+  function cleanCn(s) {
+    return String(s || '')
+      .replace(/^[\s"'“”‘’（(]+/, '')
+      .replace(/[\s"'“”‘’）)]+$/, '')
+      .replace(/[\s,，;；:：.。!！?？]+$/, '')
+      .trim();
+  }
+  function cleanEn(s) {
+    var t = String(s || '').trim();
+    t = t.replace(/^[\s"'“”‘’(\[]+/, '')
+         .replace(/[\s"'“”‘’)\]]+$/, '')
+         .replace(/[\s,，;；:：.。!！?？、]+$/, '')
+         .replace(/[。，、；：！？]/g, ' ')
+         .replace(/\s+/g, ' ')
+         .trim();
+    return t;
+  }
+
+  /** 明确分隔符 / 中英交界 切一刀，返回 [左, 右]；靠 CN_RE 判断谁是汉语 */
+  function splitOnce(line) {
+    var seps = ['\t', '|', '｜', '＝', '=', '：', ':', '，', ',', '；', ';', '／', '/', '——', '—', '–', '～', '~'];
+    var i, s, a, b, at;
+    for (i = 0; i < seps.length; i++) {
+      s = seps[i];
+      at = line.indexOf(s);
+      if (at > 0 && at + s.length <= line.length) {
+        a = line.slice(0, at).trim();
+        b = line.slice(at + s.length).trim();
+        if (a && b) return [a, b];
+      }
+    }
+    // 两个及以上空格
+    var m = /[ \u00a0]{2,}/.exec(line);
+    if (m && m.index > 0) {
+      a = line.slice(0, m.index).trim();
+      b = line.slice(m.index).trim();
+      if (a && b) return [a, b];
+    }
+    // 中英交界
+    var iA = line.search(/[A-Za-z]/);
+    var iC = line.search(CN_RE);
+    if (iA >= 0 && iC >= 0 && iA !== iC) {
+      if (iC < iA) return [line.slice(0, iA).trim(), line.slice(iA).trim()];
+      return [line.slice(0, iC).trim(), line.slice(iC).trim()];
+    }
+    return null;
+  }
+
+  function parseList(text) {
+    var out = [];
+    var lines = String(text || '').replace(/\r\n?/g, '\n').split('\n');
+    for (var n = 0; n < lines.length; n++) {
+      var line = lines[n].replace(/\u3000/g, ' ').trim();
+      if (!line) continue;
+      if (/^(#|\/\/)/.test(line)) continue;
+      // 去掉序号：1. / 2、/ (3) / 【4】
+      line = line
+        .replace(/^[（(]\s*\d+\s*[)）]\s*/, '')
+        .replace(/^[【\[]\s*\d+\s*[】\]]\s*/, '')
+        .replace(/^\d+\s*[.、:：)）]\s*/, '')
+        .replace(/^\d+\s+(?=[\u3400-\u9fff])/, '')
+        .replace(/^[•·\-—*]\s+/, '')
+        .trim();
+      if (!line) continue;
+
+      var pair = splitOnce(line);
+      var cn = '', en = '';
+
+      if (pair) {
+        var L = pair[0], R = pair[1];
+        var lCn = CN_RE.test(L), rCn = CN_RE.test(R);
+        if (lCn && !rCn) { cn = L; en = R; }
+        else if (rCn && !lCn) { cn = R; en = L; }
+        else { cn = L; en = R; }
+      } else {
+        cn = line;
+      }
+
+      cn = cleanCn(cn);
+      en = cleanEn(en);
+
+      // 只有英文、没汉语：仍然保留（可作答案页），但标记出来
+      if (!cn && !en) continue;
+      out.push({ cn: cn, en: en, raw: line });
+    }
+    return out;
+  }
+
+  /* ================= 状态 ================= */
+  var state = {
+    text: '',
+    perPage: 10,
+    page: 0,
+    tool: 'pen',          // pen | eraser
+    palm: true,           // 手掌擦除开关
+    line: 'single',       // single | grid
+    pen: '#1a1a1a',
+    ink: {}               // key -> [ {c:颜色, p:[[x,y,w],...]} , ... ]
+  };
+
+  var words = [];   // [{cn,en,k}]
+  var pages = [];   // [[word,...], ...]
+  var undoStack = []; // 最近笔画顺序: key
+
+  /* ================= 存取 ================= */
+  var saveTimer = 0;
+  function flushSave() {
+    clearTimeout(saveTimer);
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) { /* 容量超了就算了 */ }
+  }
+  function save() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(flushSave, 400);
+  }
+  // 刷新/关闭前必须把防抖中的写入落盘，否则最后一次笔画会丢
+  window.addEventListener('pagehide', flushSave);
+  window.addEventListener('beforeunload', flushSave);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') flushSave();
+  });
+  function load() {
+    try {
+      var raw = localStorage.getItem(LS_KEY);
+      if (!raw) return false;
+      var s = JSON.parse(raw);
+      if (!s || typeof s !== 'object') return false;
+      if (typeof s.text === 'string') state.text = s.text;
+      if (+s.perPage > 0) state.perPage = clamp(+s.perPage, 1, 100);
+      if (+s.page >= 0) state.page = +s.page;
+      state.line = s.line === 'grid' ? 'grid' : 'single';
+      state.pen = typeof s.pen === 'string' ? s.pen : '#1a1a1a';
+      state.palm = s.palm !== false;
+      state.ink = (s.ink && typeof s.ink === 'object') ? s.ink : {};
+      return true;
+    } catch (e) { return false; }
+  }
+
+  /* ================= 画笔 ================= */
+  function sizeCanvas(cv) {
+    var r = cv.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2) return false;
+    var w = Math.round(r.width * DPR);
+    var h = Math.round(r.height * DPR);
+    if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+    return true;
+  }
+
+  /**
+   * 一笔的存储格式：{ c: 颜色, p: [[x,y,w], ...] }（x/y 均为 0~1 的比例坐标，缩放/换屏不丢）
+   * 兼容旧存档里的纯数组 [[x,y,w], ...] —— 那样的一律按当前笔色绘制。
+   */
+  function strokeColor(s) {
+    return (s && s.c) ? s.c : state.pen;
+  }
+  function strokePoints(s) {
+    if (!s) return [];
+    return Array.isArray(s) ? s : (s.p || []);
+  }
+
+  function drawStroke(ctx, s, W, H) {
+    var pts = strokePoints(s);
+    if (!pts.length) return;
+    var color = strokeColor(s);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    if (pts.length === 1) {
+      var p0 = pts[0];
+      ctx.beginPath();
+      ctx.arc(p0[0] * W, p0[1] * H, Math.max(0.7, p0[2]) / 2, 0, Math.PI * 2);
+      ctx.fill();
+      return;
+    }
+    for (var i = 1; i < pts.length; i++) {
+      var a = pts[i - 1], b = pts[i];
+      ctx.lineWidth = Math.max(0.7, (a[2] + b[2]) / 2);
+      ctx.beginPath();
+      ctx.moveTo(a[0] * W, a[1] * H);
+      ctx.lineTo(b[0] * W, b[1] * H);
+      ctx.stroke();
+    }
+  }
+
+  function paintRow(cv) {
+    var k = cv.dataset.k;
+    var W = cv.clientWidth, H = cv.clientHeight;
+    if (W < 2 || H < 2) return;
+    var ctx = cv.getContext('2d');
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    var strokes = state.ink[k];
+    if (!strokes) return;
+    for (var i = 0; i < strokes.length; i++) drawStroke(ctx, strokes[i], W, H);
+  }
+
+  /* ================= 擦除 =================
+   * 按「整笔命中」擦：只要擦头扫到某笔的任意一段，就把那一整笔删掉。
+   * 比像素级擦更适合小学生——不会把字擦成半截，也不会出现碎点。
+   */
+  var ERASE_R = 0.022;   // 擦头半径（相对画布宽度）
+
+  function distToSeg(px, py, ax, ay, bx, by) {
+    var vx = bx - ax, vy = by - ay;
+    var wx = px - ax, wy = py - ay;
+    var len2 = vx * vx + vy * vy;
+    var t = len2 > 0 ? clamp((wx * vx + wy * vy) / len2, 0, 1) : 0;
+    var dx = px - (ax + t * vx), dy = py - (ay + t * vy);
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  /** 判断一笔是否被擦到（x/y 都是 0~1 比例坐标） */
+  function strokeHit(s, x, y, r) {
+    var pts = strokePoints(s);
+    if (!pts.length) return false;
+    if (pts.length === 1) {
+      var dx = pts[0][0] - x, dy = pts[0][1] - y;
+      return Math.sqrt(dx * dx + dy * dy) <= r;
+    }
+    for (var i = 1; i < pts.length; i++) {
+      if (distToSeg(x, y, pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]) <= r) return true;
+    }
+    return false;
+  }
+
+  function eraseAt(cv, x, y, last) {
+    var k = cv.dataset.k;
+    var strokes = state.ink[k];
+    if (!strokes || !strokes.length) return;
+    var before = strokes.length;
+    // 沿拖动路径连续采样，快速擦也不漏
+    var pts = [[x, y]];
+    if (last) {
+      var steps = Math.max(1, Math.ceil(Math.hypot(x - last[0], y - last[1]) / (ERASE_R * 0.8)));
+      for (var s = 1; s < steps; s++) {
+        var t = s / steps;
+        pts.push([last[0] + (x - last[0]) * t, last[1] + (y - last[1]) * t]);
+      }
+    }
+    var keep = [];
+    for (var i = 0; i < strokes.length; i++) {
+      var hit = false;
+      for (var j = 0; j < pts.length && !hit; j++) {
+        hit = strokeHit(strokes[i], pts[j][0], pts[j][1], ERASE_R);
+      }
+      if (!hit) keep.push(strokes[i]);
+    }
+    if (keep.length !== before) {
+      if (keep.length) state.ink[k] = keep; else delete state.ink[k];
+      paintRow(cv);
+      save();
+      updateChrome();
+    }
+  }
+
+  function penWidth(e, cv) {
+    var h = cv.clientHeight || 40;
+    var base = clamp(h * 0.055, 1.8, 4.6);
+    var f = 1;
+    if (e.pointerType === 'pen') {
+      var p = (e.pressure > 0 && e.pressure <= 1) ? e.pressure : 0.5;
+      f = 0.55 + 1.15 * p;
+    }
+    return +(base * f).toFixed(2);
+  }
+
+  /* ================= 手掌擦除 =================
+   * 触屏上浏览器把「手掌压屏」也报成 pointerType=pen/touch，跟笔尖几乎无法从类型区分，
+   * 所以同时用三条判据（命中任意一条就当成手掌）：
+   *   1. 接触面积 width×height 明显大（手掌整个压在屏上，笔尖只有几个像素）
+   *   2. 一次落下去同时出现多个接触点（多指 = 手在借力）
+   *   3. 同一次接触里手指/笔同时在屏（混合接触）
+   * 另外：笔悬停（hover）期间手会自然搭在屏上，这时候落下的触摸一律当手掌。
+   */
+  var PALM_AREA = 40 * 40;     // 接触面积阈值（CSS 像素²）
+  var PALM_DIM = 44;           // 单边像素阈值
+  var palmState = {
+    pointers: {},              // 当前按在屏上的所有指针
+    penDown: false,
+    penHover: false
+  };
+
+  function isPalmLike(e) {
+    if (!state.palm) return false;
+    var w = e.width || 0, h = e.height || 0;
+    // 浏览器没提供接触面积时（很多触屏都报 0），退回其它判据
+    if (w > 0 && h > 0) {
+      if (w * h >= PALM_AREA || w >= PALM_DIM || h >= PALM_DIM) return true;
+    }
+    var ids = Object.keys(palmState.pointers);
+    if (ids.length >= 2) return true;                       // 多指同时按
+    if (palmState.penDown && e.pointerType !== 'pen') return true;  // 笔在写，手搭上来
+    if (palmState.penHover && e.pointerType !== 'pen') return true; // 笔悬停，手搭上来
+    return false;
+  }
+
+  function attachCanvas(cv) {
+    var ro = new ResizeObserver(function () {
+      if (sizeCanvas(cv)) paintRow(cv);
+    });
+    ro.observe(cv);
+    requestAnimationFrame(function () { if (sizeCanvas(cv)) paintRow(cv); });
+
+    var cur = null;   // { stroke, id, lastClient:{x,y}, color }
+
+    cv.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      e.preventDefault();
+
+      // 先登记这个指针，isPalmLike 才能看到「同时按着几个」
+      palmState.pointers[e.pointerId] = e.pointerType;
+      var wasPalm = isPalmLike(e);
+      if (e.pointerType === 'pen') palmState.penDown = true;
+
+      try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+
+      var r = cv.getBoundingClientRect();
+      var nx = +((e.clientX - r.left) / r.width).toFixed(4);
+      var ny = +((e.clientY - r.top) / r.height).toFixed(4);
+
+      // 橡皮擦模式 / 手掌：走擦除路径，不落笔
+      if (state.tool === 'eraser' || wasPalm) {
+        cur = { id: e.pointerId, erase: true, last: [nx, ny], prev: null };
+        eraseAt(cv, nx, ny, palmState.prevPt);
+        return;
+      }
+
+      var stroke = [[nx, ny, penWidth(e, cv)]];
+      cur = { stroke: stroke, id: e.pointerId, x: e.clientX, y: e.clientY, color: state.pen };
+
+      var ctx = cv.getContext('2d');
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.strokeStyle = cur.color; ctx.fillStyle = cur.color;
+      ctx.beginPath();
+      ctx.arc(nx * cv.clientWidth, ny * cv.clientHeight,
+              Math.max(0.7, stroke[0][2]) / 2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    cv.addEventListener('pointermove', function (e) {
+      if (!cur || cur.id !== e.pointerId) return;
+      e.preventDefault();
+      var evs = (e.getCoalescedEvents && e.getCoalescedEvents().length) ? e.getCoalescedEvents() : [e];
+      var r = cv.getBoundingClientRect();
+      var W = cv.clientWidth, H = cv.clientHeight;
+      var ctx = cv.getContext('2d');
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+      if (cur.erase) {
+        for (var j = 0; j < evs.length; j++) {
+          var ex = (evs[j].clientX - r.left) / r.width;
+          var ey = (evs[j].clientY - r.top) / r.height;
+          eraseAt(cv, ex, ey, cur.last);
+          cur.last = [ex, ey];
+        }
+        return;
+      }
+
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.strokeStyle = cur.color;
+
+      for (var i = 0; i < evs.length; i++) {
+        var ev = evs[i];
+        var nx = (ev.clientX - r.left) / r.width;
+        var ny = (ev.clientY - r.top) / r.height;
+        var last = cur.stroke[cur.stroke.length - 1];
+        var dx = (nx - last[0]) * W, dy = (ny - last[1]) * H;
+        if (dx * dx + dy * dy < 1.1) continue;
+        var w = penWidth(ev, cv);
+        var pt = [+nx.toFixed(4), +ny.toFixed(4), w];
+        ctx.lineWidth = Math.max(0.7, (last[2] + w) / 2);
+        ctx.beginPath();
+        ctx.moveTo(last[0] * W, last[1] * H);
+        ctx.lineTo(pt[0] * W, pt[1] * H);
+        ctx.stroke();
+        cur.stroke.push(pt);
+        cur.x = ev.clientX; cur.y = ev.clientY;
+      }
+    });
+
+    function endStroke(e) {
+      // ⚠️ 只有真正结束的那个指针才提交笔画。
+      // pointerleave / pointercancel 可能先于 pointerup 到达（鼠标快速抖动、触控笔抬起前一瞬），
+      // 早期版本在这里无条件提交，导致「画完 ink 没进存档、点撤销反而把画布内容补进存档」——
+      // 表现就是撤销不干净、甚至越撤销越多。现在：
+      //   - 同一笔画只提交一次（cur 置空后其它事件直接 return）
+      //   - leave/cancel 不提交，只有 up 才落盘，真的是 cancel 才丢弃
+      if (!cur || cur.id !== e.pointerId) return;
+      var k = cv.dataset.k;
+      var cancelled = e.type === 'pointercancel' ||
+        (e.type === 'pointerleave' && e.buttons === 0 && e.pointerType === 'pen');
+
+      if (!cancelled && !cur.erase && cur.stroke.length) {
+        if (!state.ink[k]) state.ink[k] = [];
+        state.ink[k].push({ c: cur.color, p: cur.stroke });
+        undoStack.push(k);
+        if (undoStack.length > 400) undoStack.shift();
+        flushSave();      // 笔画结束立即落盘：刷新、关窗口都不丢
+      }
+      // 擦除结束时也要落盘（擦除改的是 ink 数据）
+      if (cur.erase) { flushSave(); }
+      if (e.pointerType === 'pen') palmState.penDown = false;
+      cur = null;
+      try { cv.releasePointerCapture(e.pointerId); } catch (err) {}
+      delete palmState.pointers[e.pointerId];
+      updateChrome();     // 撤销按钮立刻变可用 / 失活
+    }
+    cv.addEventListener('pointerup', endStroke);
+    cv.addEventListener('pointercancel', endStroke);
+    cv.addEventListener('pointerleave', function (e) {
+      // 鼠标左键已经松开却还留在画布上：说明 up 丢了，这里补一次提交
+      // （有 pointer capture 时通常收不到 leave，属于兜底）
+      if (e.pointerType === 'mouse' && e.buttons === 0 && cur && cur.id === e.pointerId) {
+        // 鼠标「按着拖出画布」时 buttons 仍为 1，不会误判
+        if (cur.erase || cur.stroke.length > 1) endStroke(e); else { cur = null; }
+      }
+    });
+    // 笔悬停：笔尖靠近屏幕但没落下，此时手下压 → 一定是手
+    cv.addEventListener('pointerenter', function (e) {
+      if (e.pointerType === 'pen') palmState.penHover = true;
+    });
+    cv.addEventListener('pointerleave', function (e) {
+      if (e.pointerType === 'pen') palmState.penHover = false;
+    });
+    cv.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  }
+
+  /* ================= 渲染 ================= */
+  var sheetRO = null;
+  /** 单行最高高度：词少的时候不要让行被拉到整页那么高（字会变得巨大、笔画也粗） */
+  var ROW_MAX = 96;
+
+  function applySettingsToDom() {
+    $('#selPerPage').value = String(state.perPage);
+    $('#chkGrid').checked = state.line === 'grid';
+    $('#chkPalm').checked = state.palm !== false;
+    $('#btnEraser').classList.toggle('primary', state.tool === 'eraser');
+    $$('#pages .write').forEach(function (wr) {
+      wr.classList.toggle('erasing', state.tool === 'eraser');
+    });
+    $$('#pens .pen').forEach(function (b) {
+      b.classList.toggle('on', state.tool === 'pen' && b.dataset.pen.toLowerCase() === String(state.pen).toLowerCase());
+    });
+  }
+
+  function updateChrome() {
+    // pages 里有一个占位的空页（无词表时用来挂空状态），页码不能把它算成 1 页
+    var total = words.length ? pages.length : 0;
+    $('#pageInfo').textContent = total ? (state.page + 1) + ' / ' + total : '0 / 0';
+    $('#btnPrev').disabled = state.page <= 0;
+    $('#btnNext').disabled = !total || state.page >= total - 1;
+    $('#btnUndo').disabled = undoStack.length === 0;
+  }
+
+  function render() {
+    var host = $('#pages');
+    // 释放旧观察者
+    if (sheetRO) { sheetRO.disconnect(); sheetRO = null; }
+    host.innerHTML = '';
+
+    words = parseList(state.text);
+    words.forEach(function (w, i) { w.k = String(i); });
+
+    pages = [];
+    for (var i = 0; i < words.length; i += state.perPage) {
+      pages.push(words.slice(i, i + state.perPage));
+    }
+    if (!pages.length) pages.push([]);
+    state.page = clamp(state.page, 0, pages.length - 1);
+
+    sheetRO = new ResizeObserver(function (entries) {
+      for (var n = 0; n < entries.length; n++) {
+        var sheet = entries[n].target;
+        var rows = +sheet.dataset.rows || 1;
+        // 行高按“可用高度 / 行数”算，但不超过 ROW_MAX；
+        // 字号、笔宽都用这个值，所以必须和 .row 的 max-height 保持一致
+        var h = (sheet.clientHeight - 16) / rows;
+        sheet.style.setProperty('--rowh', Math.max(18, Math.min(h, ROW_MAX)).toFixed(1) + 'px');
+      }
+    });
+
+    pages.forEach(function (group, pi) {
+      var sheet = document.createElement('section');
+      sheet.className = 'sheet' + (pi === state.page ? ' active' : '');
+      sheet.dataset.page = String(pi);
+      sheet.dataset.rows = String(Math.max(group.length, 1));
+
+      var body = document.createElement('div');
+      body.className = 'sheet-body';
+
+      if (!group.length) {
+        body.innerHTML =
+          '<div class="empty">' +
+          '<div class="empty-title">还没有词表</div>' +
+          '<div class="empty-desc">点左上角「导入词表」，把汉语词表粘贴进来。<br>' +
+          '一行一个词，左列是汉语，学生在右边横线上写英语。<br>' +
+          '写错了用手掌直接擦，或者点「橡皮擦」。</div>' +
+          '<button class="btn primary" data-act="import" style="height:40px;padding:0 20px">导入词表</button>' +
+          '</div>';
+      }
+
+      group.forEach(function (w, ri) {
+        var row = document.createElement('div');
+        row.className = 'row';
+
+        var idx = document.createElement('div');
+        idx.className = 'idx';
+        idx.textContent = String(pi * state.perPage + ri + 1);
+
+        var cn = document.createElement('div');
+        cn.className = 'cn';
+        cn.innerHTML = w.cn ? esc(w.cn) : '<span class="dim">（无汉语）</span>';
+
+        var wr = document.createElement('div');
+        wr.className = 'write ' + (state.line === 'grid' ? 'grid' : 'single') +
+          (state.tool === 'eraser' ? ' erasing' : '');
+        wr.innerHTML = '<canvas data-k="' + w.k + '"></canvas>';
+
+        row.appendChild(idx);
+        row.appendChild(cn);
+        row.appendChild(wr);
+        body.appendChild(row);
+      });
+
+      sheet.appendChild(body);
+      host.appendChild(sheet);
+      sheetRO.observe(sheet);
+    });
+
+    // 只挂当前页的画布；其余页等切过去时再挂（避免重复绑定事件）
+    $$('#pages .sheet.active canvas').forEach(function (cv) {
+      cv.dataset.mounted = '1';
+      attachCanvas(cv);
+    });
+    host.dataset.built = '1';
+
+    applySettingsToDom();
+    updateChrome();
+  }
+
+  /** 当前页的画布挂载（切页时补挂） */
+  function mountActive() {
+    var host = $('#pages');
+    $$('.sheet', host).forEach(function (s, i) {
+      s.classList.toggle('active', i === state.page);
+    });
+    $$('#pages .sheet.active canvas').forEach(function (cv) {
+      if (cv.dataset.mounted) { if (sizeCanvas(cv)) paintRow(cv); return; }
+      cv.dataset.mounted = '1';
+      attachCanvas(cv);
+    });
+    updateChrome();
+  }
+
+  function goPage(p) {
+    var total = pages.length;
+    state.page = clamp(p, 0, total - 1);
+    mountActive();
+    save();
+  }
+
+  /** 切换 笔 / 橡皮擦 */
+  function setTool(tool) {
+    state.tool = tool === 'eraser' ? 'eraser' : 'pen';
+    applySettingsToDom();
+    save();
+    toast(state.tool === 'eraser' ? '橡皮擦：点或划掉不要的笔画（也可以用手掌擦）' : '回到书写');
+  }
+
+  /* ================= 撤销 / 清空 ================= */
+  function undo() {
+    while (undoStack.length) {
+      var k = undoStack.pop();
+      var arr = state.ink[k];
+      if (arr && arr.length) {
+        arr.pop();
+        if (!arr.length) delete state.ink[k];
+        var cv = $('#pages canvas[data-k="' + k + '"]');
+        if (cv) paintRow(cv);
+        save();
+        updateChrome();
+        return;
+      }
+    }
+    updateChrome();
+    toast('没有可撤销的笔画了');
+  }
+
+  function clearPage() {
+    var group = pages[state.page] || [];
+    var n = 0;
+    group.forEach(function (w) {
+      if (state.ink[w.k]) { delete state.ink[w.k]; n++; }
+    });
+    undoStack = undoStack.filter(function (k) { return !!state.ink[k]; });
+    $$('#pages .sheet.active canvas').forEach(paintRow);
+    save();
+    updateChrome();
+    toast(n ? '已清空本页笔迹' : '本页还没有笔迹');
+  }
+
+  /* ================= 导入对话框 ================= */
+  var dlgPreviewTimer = 0;
+
+  function openDialog() {
+    $('#dlg').hidden = false;
+    var ta = $('#dlgText');
+    ta.value = state.text;
+    updatePreview();
+    setTimeout(function () { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }, 30);
+  }
+  function closeDialog() { $('#dlg').hidden = true; }
+
+  function updatePreview() {
+    var txt = $('#dlgText').value;
+    var list = parseList(txt);
+    var el = $('#dlgPreview');
+    if (!list.length) {
+      el.innerHTML = '还没有内容。把词表粘贴进来，下面会显示解析结果。';
+      return;
+    }
+    var noEn = 0;
+    list.forEach(function (w) { if (!w.en) noEn++; });
+    var rows = list.slice(0, 6).map(function (w, i) {
+      return '<tr><td>' + (i + 1) + '.</td><td class="h">' + (esc(w.cn) || '<i>（空）</i>') +
+        '</td><td>' + (w.en ? esc(w.en) : '<span class="warn">（无英文）</span>') + '</td></tr>';
+    }).join('');
+    var pagesN = Math.ceil(list.length / state.perPage);
+    var extra = list.length > 6 ? '… 还有 ' + (list.length - 6) + ' 个' : '';
+    el.innerHTML =
+      '<div><span class="ok">共 ' + list.length + ' 个词</span>，按每页 ' + state.perPage +
+      ' 个排 <b>' + pagesN + '</b> 页' +
+      (noEn ? '，<span class="warn">其中 ' + noEn + ' 个没有英文答案</span>' : '') +
+      '</div><table>' + rows + '</table>' + (extra ? '<div>' + extra + '</div>' : '');
+  }
+
+  function applyText(text) {
+    var next = parseList(text);
+    var sigNew = next.map(function (w) { return w.cn + '\u0001' + w.en; }).join('\u0002');
+    var sigOld = words.map(function (w) { return w.cn + '\u0001' + w.en; }).join('\u0002');
+    state.text = text;
+    if (sigNew !== sigOld) {
+      state.ink = {};
+      undoStack = [];
+      state.page = 0;
+    }
+    render();
+    save();
+  }
+
+  /* ================= 事件绑定 ================= */
+  function bind() {
+    $('#btnImport').addEventListener('click', openDialog);
+    $('#dlgClose').addEventListener('click', closeDialog);
+    $('#dlgCancel').addEventListener('click', closeDialog);
+    $('#dlg').addEventListener('click', function (e) { if (e.target === $('#dlg')) closeDialog(); });
+
+    $('#dlgText').addEventListener('input', function () {
+      clearTimeout(dlgPreviewTimer);
+      dlgPreviewTimer = setTimeout(updatePreview, 120);
+    });
+
+    $('#dlgSample').addEventListener('click', function () {
+      $('#dlgText').value = [
+        '1. 苹果 apple', '2. 香蕉 banana', '3. 橙子 orange', '4. 葡萄 grape',
+        '5. 西瓜 watermelon', '6. 草莓 strawberry', '7. 桃子 peach', '8. 梨 pear',
+        '9. 芒果 mango', '10. 柠檬 lemon', '11. 樱桃 cherry', '12. 菠萝 pineapple'
+      ].join('\n');
+      updatePreview();
+    });
+
+    $('#dlgOk').addEventListener('click', function () {
+      var txt = $('#dlgText').value;
+      var list = parseList(txt);
+      if (!list.length) { toast('没有解析到任何词，检查一下内容'); return; }
+      var oldCount = words.length;
+      var sigNew = list.map(function (w) { return w.cn + '\u0001' + w.en; }).join('\u0002');
+      var sigOld = words.map(function (w) { return w.cn + '\u0001' + w.en; }).join('\u0002');
+      if (oldCount && sigNew !== sigOld &&
+          Object.keys(state.ink).length &&
+          !window.confirm('导入新词表会清空已有笔迹，继续吗？')) {
+        return;
+      }
+      applyText(txt);
+      closeDialog();
+      toast('已导入 ' + list.length + ' 个词，共 ' + pages.length + ' 页');
+    });
+
+    $('#selPerPage').addEventListener('change', function (e) {
+      // 换每页数量时按“当前页第一个词的序号”重新定位，避免跳到无关的页
+      var anchorIdx = pages.length ? state.page * state.perPage : 0;
+      state.perPage = clamp(+e.target.value || 10, 1, 100);
+      state.page = Math.max(0, Math.floor(anchorIdx / state.perPage));
+      render();
+      save();
+    });
+
+    $('#btnPrev').addEventListener('click', function () { goPage(state.page - 1); });
+    $('#btnNext').addEventListener('click', function () { goPage(state.page + 1); });
+
+    $('#btnUndo').addEventListener('click', undo);
+    $('#btnClear').addEventListener('click', clearPage);
+
+    $('#pens').addEventListener('click', function (e) {
+      var b = e.target.closest('.pen');
+      if (!b) return;
+      setTool('pen');
+      state.pen = b.dataset.pen;
+      applySettingsToDom();
+      // 换笔色后，已写的内容保持原色（数据里存了各自颜色，不重绘）
+      save();
+    });
+
+    $('#chkGrid').addEventListener('change', function (e) {
+      state.line = e.target.checked ? 'grid' : 'single';
+      $$('#pages .write').forEach(function (wr) {
+        wr.classList.toggle('grid', state.line === 'grid');
+        wr.classList.toggle('single', state.line !== 'grid');
+      });
+      save();
+    });
+
+    $('#chkPalm').addEventListener('change', function (e) {
+      state.palm = e.target.checked;
+      save();
+      toast(state.palm ? '手掌擦除已开启' : '手掌擦除已关闭（误擦时可关掉）');
+    });
+
+    $('#btnEraser').addEventListener('click', function () {
+      setTool(state.tool === 'eraser' ? 'pen' : 'eraser');
+    });
+
+    $('#btnFull').addEventListener('click', function () {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+      else toast('这个浏览器不支持全屏');
+    });
+
+    // 点击空状态里的按钮
+    $('#pages').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-act="import"]');
+      if (b) openDialog();
+    });
+
+    // 键盘
+    document.addEventListener('keydown', function (e) {
+      var inField = /^(INPUT|TEXTAREA|SELECT)$/.test((e.target && e.target.tagName) || '');
+      if (e.key === 'Escape') { if (!$('#dlg').hidden) { closeDialog(); return; } }
+
+      var ctrl = e.ctrlKey || e.metaKey;
+      if (ctrl && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); return; }
+      if (ctrl && e.key === 'Enter') { e.preventDefault(); openDialog(); return; }
+      if (inField) return;
+
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); goPage(state.page - 1); }
+      else if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); goPage(state.page + 1); }
+      else if (e.key.toLowerCase() === 'e') { setTool(state.tool === 'eraser' ? 'pen' : 'eraser'); }
+    });
+
+    // 尺寸变化时重排
+    var rt = 0;
+    window.addEventListener('resize', function () {
+      clearTimeout(rt);
+      rt = setTimeout(function () {
+        $$('#pages .sheet').forEach(function (s) {
+          var rows = +s.dataset.rows || 1;
+          s.style.setProperty('--rowh', Math.max(18, Math.min((s.clientHeight - 16) / rows, ROW_MAX)).toFixed(1) + 'px');
+        });
+        $$('#pages canvas').forEach(function (cv) { if (sizeCanvas(cv)) paintRow(cv); });
+      }, 120);
+    });
+  }
+
+  /* ================= 启动 ================= */
+  function boot() {
+    load();
+    state.perPage = clamp(state.perPage || 10, 1, 100);
+    // 下拉里没有的自定义值补一个选项
+    var sel = $('#selPerPage');
+    if (!sel.querySelector('option[value="' + state.perPage + '"]')) {
+      var o = document.createElement('option');
+      o.value = String(state.perPage);
+      o.textContent = state.perPage + ' 个';
+      sel.appendChild(o);
+    }
+    bind();
+    render();
+    // 恢复后把当前页画布挂上
+    mountActive();
+    if (!state.text) setTimeout(openDialog, 260);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
+</body>
+</html>

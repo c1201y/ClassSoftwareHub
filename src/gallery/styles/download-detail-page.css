@@ -412,3 +412,114 @@ html.theme-dark .detail-category-badge {
     width: 100%;
   }
 }
+
+/* ── 分享面板（详情页右上「分享」）──────────────────────────────────
+   网页版独有能力：发出去的是一条能直接打开这个软件的链接。
+   窄屏时二维码列会落到文案下方（见文件末尾的媒体查询）。 */
+
+.detail-share {
+  flex: none;
+  margin-left: auto;
+  align-self: flex-start;
+}
+
+.detail-share-panel {
+  margin: 14px 0 6px;
+  padding: 16px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
+  background: var(--card-bg, var(--CardBackgroundFillColorDefaultBrush));
+}
+
+.detail-share-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: start;
+}
+
+.detail-share-block {
+  min-width: 0;
+}
+
+.detail-share-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+}
+
+.detail-share-text {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 9px 11px;
+  border-radius: 6px;
+  border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
+  background: var(--subtle-fill, var(--SubtleFillColorSecondaryBrush));
+  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.detail-share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.detail-share-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.detail-share-qr-img {
+  width: 148px;
+  height: 148px;
+  padding: 6px;
+  border-radius: 8px;
+  background: #fff;
+  line-height: 0;
+}
+
+.detail-share-qr-img svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.detail-share-qr-tip {
+  font-size: 11px;
+  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
+  text-align: center;
+  max-width: 150px;
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .detail-share-main {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-share-qr {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .detail-share-qr-img {
+    width: 108px;
+    height: 108px;
+    flex: none;
+  }
+
+  .detail-share-qr-tip {
+    text-align: left;
+    max-width: none;
+  }
+}
