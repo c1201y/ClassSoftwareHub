@@ -1,0 +1,35 @@
+{
+  "_提交时间": "2026-11-13T15:38:08.725Z",
+  "_原始ID冲突": false,
+  "id": "chromium-for-windows-7-rework",
+  "name": "Chromium-for-windows-7-REWORK",
+  "icon": "https://github.com/e3kskoy7wqk/Chromium-for-windows-7-REWORK/blob/main/product_logo_256.png",
+  "category": "office",
+  "tagline": "让老系统也能用上新版 Chromium 内核的浏览器",
+  "description": "一款基于 Chromium 内核的浏览器，专门针对旧版 Windows（如 Win 7/8.x）做了兼容优化，让老系统也能跑上较新的 Chromium 内核。",
+  "version": "156.0.8071.0",
+  "size": "",
+  "system": "Windows",
+  "website": "",
+  "github": "https://github.com/e3kskoy7wqk/Chromium-for-windows-7-REWORK",
+  "downloads": [
+    {
+      "platform": "Windows 32 位",
+      "note": "mini_installer.exe",
+      "size": "113 MB",
+      "url": "https://github.com/e3kskoy7wqk/Chromium-for-windows-7-REWORK/releases/download/156.0.8071.0/mini_installer.exe"
+    },
+    {
+      "platform": "Windows 64 位",
+      "note": "mini_installer_x64.exe",
+      "size": "123 MB",
+      "url": "https://github.com/e3kskoy7wqk/Chromium-for-windows-7-REWORK/releases/download/156.0.8071.0/mini_installer_x64.exe"
+    }
+  ],
+  "sort": 99,
+  "platforms": [
+    "windows"
+  ],
+  "_提交指纹": "089868f0d876e039",
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBucFk4b21oQ0U2WFBuSDBz\nRng0REdqRXU1YkV2aDYyVi8wd0VRUGs1aG5ZCi9Td0NGSy9tRXNma2RsVmJtMTFB\ndUdZeWt0RW9CTHZOQUhwdmQvRUtEczQKLS0tIENFQUNuZVJTVmRzdC80bit3Q3VC\nNkJHYnFWciszOGNWblZRSnd1QnpxWDgKfwCBLswY7lCHrJ5A+e0jRd4xSzJVk9QE\n+HJ5L4/v9SOp60V70gBipQWH\n-----END AGE ENCRYPTED FILE-----"
+}
