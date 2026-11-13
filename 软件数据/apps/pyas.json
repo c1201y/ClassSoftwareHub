@@ -5,7 +5,7 @@
   "category": "system",
   "tagline": "一款开源的强大杀毒软件，体积小，占用低",
   "description": "一款开源的强大杀毒软件，体积小，占用低（较激进，易误杀）",
-  "version": "v3.7.1",
+  "version": "v3.7.2",
   "system": "Windows",
   "website": "https://pyas-security.com",
   "github": "https://github.com/87owo/PYAS",

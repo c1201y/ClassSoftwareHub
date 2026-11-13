@@ -5,7 +5,7 @@
   "category": "utility",
   "tagline": "为 Windows 打造的现代文件管理器，让浏览、搜索和整理文件更顺手。 | QQ Group 1043250162",
   "description": "为 Windows 打造的现代文件管理器，让浏览、搜索和整理文件更顺手。  |   QQ Group  1043250162",
-  "version": "v1.0.58",
+  "version": "v1.0.60",
   "size": "",
   "system": "Windows 10+",
   "website": "",
@@ -16,8 +16,8 @@
     {
       "platform": "其他 LZMS",
       "note": "ai-win81-Pulse.AI.exe.lzms",
-      "size": "149 KB",
-      "url": "https://github.com/jimmgreen/pulse/releases/download/v1.0.58/ai-win81-Pulse.AI.exe.lzms"
+      "size": "155 KB",
+      "url": "https://github.com/jimmgreen/pulse/releases/download/v1.0.60/ai-win81-Pulse.AI.exe.lzms"
     }
   ],
   "sort": 99,
