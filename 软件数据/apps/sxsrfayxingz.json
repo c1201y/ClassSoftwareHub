@@ -1,16 +1,12 @@
 {
   "id": "sxsrfayxingz",
   "name": "手心输入法",
-  "icon": "https://api.classsoftwarehub.cn/api/icon?k=icon%2F2026%2F10%2Fmv0mnn67-n53sh0-u%3D2950400544%2C491275127%26fm%3D253%26fmt%3Dauto%26app%3D138%26f%3DJPEG_edit_840040946579632.jpg",
+  "icon": "https://images-eds-ssl.xboxlive.com/image?url=4rt9.lXDC4H_93laV1_eHM0OYfiFeMI2p9MWie0CvL99U4GA1gf6_kayTt_kBblFwHwo8BW8JXlqfnYxKPmmBYq1fHxXhqEWuIJH37nPg.8FwshR70oacXWWUHr4z4AFvojMrAs5fNvj99FI.fQYsKI7ZAimdUqvCPk.JBxi2bk-&format=source&h=134",
   "category": "utility",
   "tagline": "无广告纯净输入法",
   "description": "该输入法没有广告，纯净输入，适合安心不打扰",
-  "version": "",
-  "size": "",
   "system": "WindowsXP及以上，Android，iOS，MacOS",
-  "platforms": ["windows", "macos", "android", "ios"],
-  "website": "",
-  "github": "",
+  "notice": "该软件为商业软件，且更新频繁，故引导至官网下载",
   "downloads": [
     {
       "platform": "官网下载",
@@ -18,6 +14,5 @@
       "url": "http://www.xinshuru.com/index.html?p=win"
     }
   ],
-  "sort": 82,
-  "notice": "该软件为商业软件，且更新频繁，故引导至官网下载"
+  "sort": 82
 }
