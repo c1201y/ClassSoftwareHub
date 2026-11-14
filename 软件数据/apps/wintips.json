@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-11-13T15:49:04.587Z",
-  "_原始ID冲突": false,
   "id": "wintips",
   "name": "WinTips",
   "icon": "https://github.com/DoYouNatureQ/WinTips/blob/main/Resources/app-icon-512.png",
@@ -30,7 +28,5 @@
   "platforms": [
     "windows"
   ],
-  "store": "https://apps.microsoft.com/detail/9nj5xdw5pd79",
-  "_提交指纹": "089868f0d876e039",
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBvUmJON0dvSTVybzN4RXpn\nQjJyYWR2dGhQMC8zK1grS2ZPamQ0RCtReG1FClliRGtQNS9XTjJZeDNxbnp1TUNU\neDhma1FITW1VYXQ4ZDQxTnJZdmlzc28KLS0tIDJ6L3RjRis1NGZjNHdjcWQ3NnZ0\nbGZjbS94N2xDWkNkRGE4T2hIMkJ1TTQKYPAiGgngIjCJwA6lxJaW4uYwnzuNrD2C\nkGlh0EWAUjRszzwDG993MZdo\n-----END AGE ENCRYPTED FILE-----"
+  "store": "https://apps.microsoft.com/detail/9nj5xdw5pd79"
 }
