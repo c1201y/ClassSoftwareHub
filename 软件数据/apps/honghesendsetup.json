@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-11-14T03:44:48.095Z",
-  "_原始ID冲突": false,
   "id": "honghesendsetup",
   "name": "鸿合投屏发送端",
   "icon": "https://submit.132614.xyz/api/icon?k=icon%2F2026%2F11%2Fmwfuuq2m-dq3niu-csh-icon-1c60086f19b44528b18523a119209aa9.png",
@@ -15,9 +13,11 @@
   "downloads": [
     {
       "platform": "",
-      "url": "oss://upload/2026/11/mwfuy6ny-0iinbx-鸿合投屏_发送端_windows_316-20261030013709979.exe"
+      "url": "oss://releases/2026/11/mwfuy6ny-0iinbx-鸿合投屏_发送端_windows_316-20261030013709979.exe"
     }
   ],
   "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAvV0d0OEtHdERleTg0QnZJ\nRXQwNjV0aktGalJXcnBxWE9mSjZneGQ2dkM4CnNqMUJqcjBuUWJqanp3cXNid3lw\naUlRVjYvekdEbTlXZ3dpZ1ZBZjdTa3cKLS0tIDNhbnY2azBkOWhGZE5NeFpTM1NF\nQmo5SkRpWWxVTVhKbFVORmQxLzhtUWMKqivbLXLbaziy73W4HQd6CyFZSJ+rQVZJ\nK75gbVJlUPiLGorUtw7buuCM\n-----END AGE ENCRYPTED FILE-----"
+  "platforms": [
+    "windows"
+  ]
 }
