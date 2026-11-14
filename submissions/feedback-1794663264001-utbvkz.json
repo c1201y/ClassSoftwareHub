@@ -1,0 +1,10 @@
+{
+  "_类型": "反馈",
+  "kind": "report",
+  "subKind": "other",
+  "appId": "memreduct",
+  "title": "错误地将Mem Reduct与Mem Reduct WinUI3标记为相同软件",
+  "detail": "在本机核实页面会推荐应用更新，其中Mem Reduct WinUI3也会被标记为Mem Reduct，并在点击更新后下载原版Mem Reduct\n\n——\n\n本机信息：客户端版本 dv1.2.2 · 系统版本 Windows 11 专业版 26H2 · OS内部版本号 26300.9711 · CPU型号 Intel(R) Core(TM) i5-10400 · 更新通道 正式版 · 主题颜色 深色",
+  "contact": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBUT1pQRG5CUmx6dWdqcVlW\nRTBQMjRNRnZVcm85Rmw0NDhDbXpYSEJQdDJ3ClRoL2hSMnh6ZUxvNythSjJMQ2sy\nTkRjS2N6ajdGMTY0by9TbDd3dFM3bDgKLS0tIFZEaDRQSjVRUHhXMlcwaE0xa1cr\najNobmg5RTRtaCtHUTc5MUsrUm16TXMK9ZpU6VIxW/hRwDKuhfyZjxsnRJTlZ3uk\nSvzGSZ71I07Y6GLFeV6n6IDvH5B47LH+\n-----END AGE ENCRYPTED FILE-----",
+  "_提交时间": "2026-11-14T13:34:24.001Z"
+}
