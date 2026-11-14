@@ -1,0 +1,10 @@
+{
+  "_类型": "反馈",
+  "kind": "report",
+  "subKind": "interaction",
+  "appId": "",
+  "title": "文本输入框右键菜单多次出现以及报告问题页面部分问题",
+  "detail": "在任意输入框下进行右键，弹出的右键菜单在点击其中一项后（能够点击的）右键菜单短暂消失，相关触发器正常触发，随后右键菜单再次出现，如果再次点击右键菜单中的内容则不会第三次出现\r报告问题页面出现轻微排版错位，标题、详细描述、联系方式等输入框在输入信息后，整体UI会向左轻微偏移\n\n——\n\n本机信息：客户端版本 dv1.2.2 · 系统版本 Windows 11 专业版 26H2 · OS内部版本号 26300.9711 · CPU型号 Intel(R) Core(TM) i5-10400 · 更新通道 正式版 · 主题颜色 深色",
+  "contact": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBZTDV1c01DVnZ5YjVtSGhm\nM1BwRVdxNWVHUEIrWm9nRGExZlZDeVQ3b2p3Cmd5enlIem1oVFkydm9uVkk0emZD\neERUamZsZkZMdGFhaE9wbENiWjNKcW8KLS0tIE52QkU1ZW9aTEhySVlXQkd2VzZX\nTnE5cytSSDFSRzROWC9lcFB4V1dyQzAKUkn5yKXGGsGvTcRurT5alwCO6192gbN/\nkviny9BIMwuyuo/AosMFn6H4odJCuHZs\n-----END AGE ENCRYPTED FILE-----",
+  "_提交时间": "2026-11-14T13:38:15.953Z"
+}
