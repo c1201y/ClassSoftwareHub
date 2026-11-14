@@ -1,0 +1,10 @@
+{
+  "_类型": "反馈",
+  "kind": "suggestion",
+  "subKind": "",
+  "appId": "classisland",
+  "title": "问题报告、提出建议的“涉及的软件”的一些建议",
+  "detail": "随着软件库不断扩大，列表中的软件正在不断增多，现在单列表形式杂乱无章，毫无排序规律，同时可以加一个搜索框来快速定位软件可能会更好，而且目前如果误触软件则无法取消选中（就像我这样，ci就是被迫选择）可以在列表最上方留一个空选项\n\n——\n\n本机信息：客户端版本 dv1.2.2 · 系统版本 Windows 11 专业版 26H2 · OS内部版本号 26300.9711 · CPU型号 Intel(R) Core(TM) i5-10400 · 更新通道 正式版 · 主题颜色 深色",
+  "contact": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAvNDNBbkNxT1VaRWkwdFdr\naG1tcHBZVWttblB6c1pxZFF6YXdZc21zblFFCmlMM2NzS3E1MTBiQjJ2dkVxcjlm\nN0hSTmVOQllUaXJuRWRqbkRBRTVaaVUKLS0tIC83R2pjVnAzRXNpMnZWSytCWnRs\nT29LbFhLUG1uclVWYzlRaHVwcEhwcVEK7CPSx07Pu7MYXIFu8Et5hTMSohyVbiPA\nyqa5fN9JrLSmNW1h8kYtSD+FkBcE+NT+\n-----END AGE ENCRYPTED FILE-----",
+  "_提交时间": "2026-11-14T13:42:41.567Z"
+}
