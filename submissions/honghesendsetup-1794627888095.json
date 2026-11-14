@@ -1,0 +1,23 @@
+{
+  "_提交时间": "2026-11-14T03:44:48.095Z",
+  "_原始ID冲突": false,
+  "id": "honghesendsetup",
+  "name": "鸿合投屏发送端",
+  "icon": "https://submit.132614.xyz/api/icon?k=icon%2F2026%2F11%2Fmwfuuq2m-dq3niu-csh-icon-1c60086f19b44528b18523a119209aa9.png",
+  "category": "system",
+  "tagline": "鸿合设备专用投屏软件",
+  "description": "鸿合投屏发送端是大屏端投屏软件的发送工具，为跨平台无线投屏解决方案，面向教育、会议、协作展示等场景。支持手机、平板、笔记本电脑等多种终端向安卓大屏（一体机）进行无线画面投射、反向控制、文件共享与多人协作。",
+  "version": "3.1.6",
+  "size": "138MB",
+  "system": "Windows10.1709 X64专业版 以上",
+  "website": "",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "",
+      "url": "oss://upload/2026/11/mwfuy6ny-0iinbx-鸿合投屏_发送端_windows_316-20261030013709979.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAvV0d0OEtHdERleTg0QnZJ\nRXQwNjV0aktGalJXcnBxWE9mSjZneGQ2dkM4CnNqMUJqcjBuUWJqanp3cXNid3lw\naUlRVjYvekdEbTlXZ3dpZ1ZBZjdTa3cKLS0tIDNhbnY2azBkOWhGZE5NeFpTM1NF\nQmo5SkRpWWxVTVhKbFVORmQxLzhtUWMKqivbLXLbaziy73W4HQd6CyFZSJ+rQVZJ\nK75gbVJlUPiLGorUtw7buuCM\n-----END AGE ENCRYPTED FILE-----"
+}
