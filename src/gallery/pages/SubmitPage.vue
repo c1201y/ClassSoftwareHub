@@ -24,6 +24,39 @@
             TextWrapping="Wrap"
             :Text="t('submit.subtitle')" />
 
+          <!-- ── 投稿类型向导 ──────────────────────────────────────
+               三类投稿要填的字段差别很大，先选类型再展示对应字段，
+               比把所有字段一次摊开清楚得多。切换类型不会清空已填内容。 -->
+          <section class="submit-section submit-kind-wiz">
+            <WinTextBlock
+              class="submit-section-title is-in-card"
+              FontSize="20"
+              FontWeight="600"
+              Margin="0,0,0,6"
+              :Text="t('submit.kind-title')" />
+            <WinTextBlock
+              class="submit-import-desc"
+              FontSize="14"
+              Foreground="var(--TextFillColorSecondaryBrush, var(--text-secondary))"
+              TextWrapping="Wrap"
+              :Text="t('submit.kind-desc')" />
+            <div class="submit-kind-row">
+              <button
+                v-for="item in KIND_ITEMS"
+                :key="item.key"
+                type="button"
+                class="submit-kind-card"
+                :class="{ 'is-active': submitKind === item.key }"
+                @click="submitKind = item.key">
+                <span class="submit-kind-icon" aria-hidden="true">{{ item.icon }}</span>
+                <span class="submit-kind-text">
+                  <span class="submit-kind-name">{{ t('submit.kind-' + item.key) }}</span>
+                  <span class="submit-kind-hint">{{ t('submit.kind-' + item.key + '-hint') }}</span>
+                </span>
+              </button>
+            </div>
+          </section>
+
           <!-- ── 从 GitHub 一键读取（省去手抄安装包直链）────────────── -->
           <section class="submit-section submit-import">
             <WinTextBlock
@@ -112,19 +145,27 @@
               Margin="0,0,0,18"
               :Text="t('submit.section-basic')" />
             <div class="submit-fields">
-            <WinTextBox
-              :Header="t('submit.id')"
-              :PlaceholderText="t('submit.id-placeholder')"
-              :Description="t('submit.id-desc')"
-              v-model:Text="form.id">
-              <template #header>{{ t('submit.id') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
-            </WinTextBox>
-            <WinTextBox
-              :Header="t('submit.name')"
-              :PlaceholderText="t('submit.name-placeholder')"
-              v-model:Text="form.name">
-              <template #header>{{ t('submit.name') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
-            </WinTextBox>
+            <div class="submit-field-wrap">
+              <WinTextBox
+                :Header="t('submit.id')"
+                :PlaceholderText="t('submit.id-placeholder')"
+                :Description="t('submit.id-desc')"
+                v-model:Text="form.id"
+                @LostFocus="markTouched('id')">
+                <template #header>{{ t('submit.id') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
+              </WinTextBox>
+              <p v-if="idError" class="submit-field-error">{{ t(idError) }}</p>
+            </div>
+            <div class="submit-field-wrap">
+              <WinTextBox
+                :Header="t('submit.name')"
+                :PlaceholderText="t('submit.name-placeholder')"
+                v-model:Text="form.name"
+                @LostFocus="markTouched('name')">
+                <template #header>{{ t('submit.name') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
+              </WinTextBox>
+              <p v-if="fieldError('name')" class="submit-field-error">{{ t(fieldError('name')) }}</p>
+            </div>
             <div class="submit-field-row">
               <div class="submit-icon-field">
                 <WinTextBox
@@ -159,7 +200,7 @@
             <WinTextBox
               :Header="t('submit.tagline')"
               :PlaceholderText="t('submit.tagline-placeholder')"
-              v-model:Text="form.tagline">
+              v-model:Text="form.tagline" @LostFocus="markTouched('tagline')">
               <template #header>{{ t('submit.tagline') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
             </WinTextBox>
             <WinTextBox
@@ -167,7 +208,7 @@
               :PlaceholderText="t('submit.description-placeholder')"
               AcceptsReturn
               MinHeight="120"
-              v-model:Text="form.description">
+              v-model:Text="form.description" @LostFocus="markTouched('description')">
               <template #header>{{ t('submit.description') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
             </WinTextBox>
             <!-- 联系方式：本地加密成 age 密文后只进审核工单，不随软件数据发布（见 buildPayload 里的 _联系方式） -->
@@ -175,7 +216,7 @@
               :Header="t('submit.contact')"
               :PlaceholderText="t('submit.contact-placeholder')"
               :Description="t('submit.contact-desc')"
-              v-model:Text="form.contact">
+              v-model:Text="form.contact" @LostFocus="markTouched('contact')">
               <template #header>{{ t('submit.contact') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
             </WinTextBox>
             </div>
@@ -271,10 +312,16 @@
               :Header="t('submit.website')"
               :PlaceholderText="t('submit.website-placeholder')"
               v-model:Text="form.website" />
-            <WinTextBox
-              :Header="t('submit.github')"
-              :PlaceholderText="t('submit.github-placeholder')"
-              v-model:Text="form.github" />
+            <div class="submit-field-wrap">
+              <WinTextBox
+                :Header="t('submit.github')"
+                :PlaceholderText="t('submit.github-placeholder')"
+                v-model:Text="form.github"
+                @LostFocus="onGithubBlur" />
+              <p v-if="fieldError('github')" class="submit-field-error">{{ t(fieldError('github')) }}</p>
+              <!-- 自动读取的状态：读取中 / 已读取（省得用户不知道发生了什么） -->
+              <p v-if="autoImportNote" class="submit-field-note">{{ autoImportNote }}</p>
+            </div>
             <!-- 开发者与开源协议：都选填。详情页只在有值时显示这两行，
                  所以「查不到作者」的商业软件留空即可，不用硬编一个「未知」。 -->
             <WinTextBox
@@ -311,6 +358,13 @@
             FontWeight="600"
             Margin="0,32,0,0"
             :Text="t('submit.section-downloads')" />
+          <!-- 按投稿类型给出针对性的填写提示（开源项目可留空，链接能从仓库生成） -->
+          <WinTextBlock
+            class="submit-kind-tip"
+            FontSize="13"
+            Foreground="var(--TextFillColorSecondaryBrush, var(--text-secondary))"
+            TextWrapping="Wrap"
+            :Text="t('submit.downloads-tip-' + submitKind)" />
           <div v-if="ossReady" class="submit-upload-hint">{{ t('submit.upload-limit-note', { limit: humanSize(UPLOAD_MAX_BYTES) }) }}</div>
           <div class="submit-download-list">
             <div v-for="(dl, i) in form.downloads" :key="i" class="submit-download-card">
@@ -386,8 +440,12 @@
             <WinButton
               Style="AccentButtonStyle"
               :Content="loading ? t('submit.submitting') : t('submit.submit')"
-              :IsEnabled="!loading"
+              :IsEnabled="canSubmit"
               @Click="submit" />
+            <!-- 按钮置灰时说明还差什么，避免用户点不动又不知道原因 -->
+            <span v-if="!loading && missing > 0" class="submit-missing">
+              {{ t('submit.missing-hint', { count: missing }) }}
+            </span>
             <WinButton
               v-if="hasDraft"
               Style="SubtleButtonStyle"
@@ -486,6 +544,15 @@ const REPO_NEW_FILE_URL = 'https://github.com/c1201y/ClassSoftwareHub/new/main/s
  */
 const RECIPIENT_PUBLIC_KEY = 'age1l9axcy0sxu6eeanapg0maughsv380fh8nhd4unf9p8d7x20rjqfsgz4dxa';
 
+import {
+  collectProblems,
+  guessKind,
+  validateDownloadUrl,
+  validateId,
+  missingCount
+} from '../submitValidation';
+import type { SubmitKind } from '../submitValidation';
+
 const { t } = useI18n();
 
 /**
@@ -541,6 +608,71 @@ const form = reactive({
 });
 
 /** 排序值单独用字符串接（WinTextBox 只收字符串），提交时再转数字 */
+/**
+ * 投稿类型向导（2026-11-14）。
+ *
+ * 三类投稿要填的字段差别很大：开源项目只要仓库地址，商业软件必须给
+ * 官网/商店，本站上传则要传安装包。以前不分类型、所有字段一次摊开，
+ * 用户不知道哪些该填、填完才发现缺东西。
+ */
+const submitKind = ref<SubmitKind>('commercial');
+
+/** 类型选项（图标取自 SEGOEICONS 子集） */
+/**
+ * 类型选项。
+ *
+ * ⚠️ 图标码点**必须实测过形状**再填 —— SEGOEICONS.TTF 是重映射过的子集，
+ * 码点与标准 Segoe MDL2 不一致：E825 在标准里是「商店」，这个子集里画的
+ * 却是「银行建筑」；E9D5 也不是代码图标。下面三个码点都用 .shot/icons.html
+ * 实际渲染确认过形状对应的语义。
+ */
+const KIND_ITEMS = [
+  { key: 'commercial' as SubmitKind, icon: '\uE7BF' },  // 购物车 → 商业软件
+  { key: 'opensource' as SubmitKind, icon: '\uEC7A' },  // 扳手/工具 → 开源项目
+  { key: 'upload' as SubmitKind, icon: '\uE898' }       // 向上箭头 → 本站上传
+];
+
+/** 校验模块需要的表单快照 */
+const formForCheck = computed(() => ({
+  id: form.id,
+  name: form.name,
+  category: form.category,
+  tagline: form.tagline,
+  description: form.description,
+  contact: form.contact,
+  website: form.website,
+  github: form.github,
+  platforms: form.platforms,
+  downloads: form.downloads.map((d) => ({ url: d.url, platform: d.platform }))
+}));
+
+/** 全部问题（驱动按钮可用性与「还差 N 项」） */
+const problems = computed(() => collectProblems(formForCheck.value, submitKind.value));
+
+/** 还差几项（同一字段只算一次） */
+const missing = computed(() => missingCount(formForCheck.value, submitKind.value));
+
+/** 提交按钮是否可点 */
+const canSubmit = computed(() => !loading.value && missing.value === 0);
+
+/**
+ * 只在「用户碰过这个字段」之后才标红 —— 一进页面就满屏红框很劝退。
+ */
+const touched = reactive<Record<string, boolean>>({});
+const markTouched = (field: string) => {
+  touched[field] = true;
+};
+
+/** 某字段的错误 key（没碰过或没错误则为空） */
+const fieldError = (field: string): string => {
+  if (!touched[field]) return '';
+  const hit = problems.value.find((p) => p.field === field);
+  return hit ? hit.key : '';
+};
+
+/** ID 有格式要求，单独处理 */
+const idError = computed(() => (touched.id ? validateId(form.id)?.key ?? '' : ''));
+
 const sortText = ref('');
 
 const loading = ref(false);
@@ -1174,6 +1306,52 @@ function applyImport(result: GithubImportResult) {
 }
 
 /**
+ * GitHub 仓库填写后自动读取（2026-11-14 新增）。
+ *
+ * 以前「一键读取」是个可选按钮，用户常常想不起来点，于是手抄版本号、
+ * 体积、下载直链 —— 既费事又容易抄错。现在失焦时只要仓库地址看起来
+ * 像 GitHub、且还没读过这个仓库，就自动读一次。
+ *
+ * 约束：
+ *   · 用户已经手填了下载项时**不自动覆盖**，只提示可以手动读取；
+ *   · 同一个仓库只自动读一次（GitHub 匿名限额 60 次/小时）。
+ */
+const autoImportNote = ref('');
+const lastAutoRepo = ref('');
+
+const looksLikeGithubRepo = (value: string) => {
+  const v = value.trim();
+  if (!v) return false;
+  // 接受 owner/repo 简写与完整 URL 两种写法（与 importFromGithub 的口径一致）
+  return /^(https?:\/\/)?(www\.)?github\.com\/[\w.-]+\/[\w.-]+/i.test(v) || /^[\w.-]+\/[\w.-]+$/.test(v);
+};
+
+/** 是否已有非空下载项（用于判断能不能自动覆盖） */
+const hasFilledDownload = () => form.downloads.some((d) => d.url.trim().length > 0);
+
+async function onGithubBlur() {
+  markTouched('github');
+
+  const repo = form.github.trim();
+  if (!repo || !looksLikeGithubRepo(repo)) return;
+  if (lastAutoRepo.value === repo) return;
+  if (reading.value) return;
+
+  if (hasFilledDownload()) {
+    autoImportNote.value = t('submit.auto-import-skipped');
+    return;
+  }
+
+  lastAutoRepo.value = repo;
+  repoInput.value = repo;
+  autoImportNote.value = t('submit.auto-import-reading');
+  await runImport();
+  autoImportNote.value = importError.value
+    ? t('submit.auto-import-failed')
+    : t('submit.auto-import-done');
+}
+
+/**
  * 校验值输入的写法多样：可能带「MD5:」「sha256 =」前缀、0x 前缀、按字节以冒号或空格分隔。
  * 站点只接受纯十六进制（算法按位数识别），此处统一清洗。
  */
@@ -1633,6 +1811,104 @@ async function submit() {
 .submit-subtitle {
   margin-bottom: 4px;
 }
+
+/* ── 投稿类型向导 ──────────────────────────────────────────────────
+   三张并排的卡片，选中态用强调色描边。窄屏时自动落到单列。 */
+.submit-kind-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+  /* 三张卡等高：提示文案长短不一时底边仍然对齐 */
+  align-items: stretch;
+}
+
+.submit-kind-card {
+  /* 基准 260px：三张卡在 1400 宽下各约 320px，提示文案不会折成三行 */
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
+  background: var(--card-bg, var(--CardBackgroundFillColorDefaultBrush));
+  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.submit-kind-card:hover {
+  border-color: var(--accent-fill-rest, var(--AccentFillColorDefaultBrush));
+}
+
+.submit-kind-card.is-active {
+  border-color: var(--accent-fill-rest, var(--AccentFillColorDefaultBrush));
+  background: var(--accent-soft, var(--SubtleFillColorSecondaryBrush));
+  box-shadow: inset 0 0 0 1px var(--accent-fill-rest, var(--AccentFillColorDefaultBrush));
+}
+
+.submit-kind-icon {
+  font-family: 'WinUIOnWebIcons';
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--accent, var(--AccentTextFillColorPrimaryBrush));
+  flex: none;
+}
+
+.submit-kind-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.submit-kind-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.submit-kind-hint {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+  display: block;
+}
+
+/* ── 字段级错误提示与「还差 N 项」────────────────────────────────── */
+.submit-field-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.submit-kind-tip {
+  margin: 6px 0 14px;
+  line-height: 1.6;
+}
+
+.submit-field-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+}
+
+.submit-field-error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #d13438;
+}
+
+.submit-missing {
+  align-self: center;
+  font-size: 12px;
+  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
+}
+
 
 /* 分区标题（基本信息 / 补充信息 / 下载项）：字号、字重、间距一律走 WinTextBlock
    的 FontSize / FontWeight / Margin 参数——它的内联样式优先级高于外部 CSS，
