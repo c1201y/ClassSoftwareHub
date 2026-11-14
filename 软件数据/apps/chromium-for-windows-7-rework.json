@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-11-13T15:38:08.725Z",
-  "_原始ID冲突": false,
   "id": "chromium-for-windows-7-rework",
   "name": "Chromium-for-windows-7-REWORK",
   "icon": "https://github.com/e3kskoy7wqk/Chromium-for-windows-7-REWORK/blob/main/product_logo_256.png",
@@ -29,7 +27,5 @@
   "sort": 99,
   "platforms": [
     "windows"
-  ],
-  "_提交指纹": "089868f0d876e039",
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBucFk4b21oQ0U2WFBuSDBz\nRng0REdqRXU1YkV2aDYyVi8wd0VRUGs1aG5ZCi9Td0NGSy9tRXNma2RsVmJtMTFB\ndUdZeWt0RW9CTHZOQUhwdmQvRUtEczQKLS0tIENFQUNuZVJTVmRzdC80bit3Q3VC\nNkJHYnFWciszOGNWblZRSnd1QnpxWDgKfwCBLswY7lCHrJ5A+e0jRd4xSzJVk9QE\n+HJ5L4/v9SOp60V70gBipQWH\n-----END AGE ENCRYPTED FILE-----"
+  ]
 }
