@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-11-15T00:41:34.031Z",
-  "_原始ID冲突": false,
   "id": "honghetoupingjieshouduan",
   "name": "鸿合投屏接收端",
   "icon": "https://submit.132614.xyz/api/icon?k=icon%2F2026%2F11%2Fmwh3tfhd-halmm7-csh-icon-d36dc4d178d2455ab46471562e673f92.png",
@@ -20,5 +18,7 @@
   ],
   "sort": 99,
   "notice": "请根据自己的系统下载对应客户端",
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBuT0pOYitNNWFiR1pwaE50\nN3FzbHVZMS9CbUxxYWxlT0dFazRpNjBORXhFCmtVdmZ2RnhnMFdkbW4wTXBkTXdC\nSzUraXBKMDhzR21BK05UVHMrVVFaVDQKLS0tIHJpRVFjMzdobEZ1dE5zUlRSZU5Y\nRlFKOVVqRXIxU2pYUlBNWDM4Q0hlcHcKiaLpvY2ChjlHuKoIvv+U0YNghgK69oSi\nCgKhYhGdiqHFyAkzhvUwR0iT\n-----END AGE ENCRYPTED FILE-----"
+  "platforms": [
+    "windows"
+  ]
 }
