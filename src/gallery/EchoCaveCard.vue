@@ -164,7 +164,9 @@ const next = async () => {
 // ══════════ 投稿 ══════════
 
 // 提交入口与「提交软件」页同一套（SubmitPage.vue）：记忆入口也共用同一个 localStorage key
-const SUBMIT_ENDPOINTS = ['https://api.classsoftwarehub.cn'];
+const SUBMIT_ENDPOINTS = [
+  import.meta.env.VITE_CSH_API_BASE ?? 'https://api.classsoftwarehub.cn'
+];
 const SUBMIT_TIMEOUT_MS = 10000;
 const ENDPOINT_CACHE_KEY = 'csh-submit-endpoint';
 
@@ -174,7 +176,7 @@ const ENDPOINT_CACHE_KEY = 'csh-submit-endpoint';
 // 通过 GitHub 新建文件页的 ?filename=&value= 预填，草稿内容（含 `_类型` 标记）自动携带。
 const fallbackUrl = () => {
   const payload = JSON.stringify(
-    { _类型: '回声洞', text: draftText.value.trim() || '在这里写要投稿的话' },
+    { _类型: '回声洞', text: draftText.value.trim() || t('echo-cave.submit-placeholder') },
     null,
     2
   );

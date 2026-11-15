@@ -13,6 +13,7 @@
 // ════════════════════════════════════════════════════════════════════
 
 import qrcode from 'qrcode-generator';
+import type { Locale } from '../components/i18n/index';
 
 /** 主域名：分享链接一律用它（镜像域名靠 canonical 归并，不作为分享目标） */
 export const SHARE_ORIGIN = 'https://classsoftwarehub.cn';
@@ -51,9 +52,9 @@ export function buildShareUrl(id: string): string {
  * 所以名称 + 简介 + 关键信息（版本/体积/系统）都要有；
  * 但整体控制在 4 行以内，太长的文案在手机上会被折成一屏。
  */
-export function buildShareText(target: ShareTarget): string {
+export function buildShareText(target: ShareTarget, locale: Locale = 'zh-CN'): string {
   const lines: string[] = [];
-  lines.push(`【${target.name}】`);
+  lines.push(locale === 'en-US' ? `[${target.name}]` : `【${target.name}】`);
 
   const tagline = (target.tagline || '').trim();
   if (tagline) lines.push(tagline);
@@ -64,7 +65,7 @@ export function buildShareText(target: ShareTarget): string {
     .filter(Boolean);
   if (facts.length) lines.push(facts.join(' · '));
 
-  lines.push(`下载：${buildShareUrl(target.id)}`);
+  lines.push(`${locale === 'en-US' ? 'Download: ' : '下载：'}${buildShareUrl(target.id)}`);
   return lines.join('\n');
 }
 

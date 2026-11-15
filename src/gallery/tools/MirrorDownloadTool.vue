@@ -1,12 +1,12 @@
 <template>
-  <ToolShell :title="mirror.title" :subtitle="mirror.subtitle">
+  <ToolShell :title="pick(mirror.title, mirror.titleEn)" :subtitle="pick(mirror.subtitle, mirror.subtitleEn)">
     <!-- 免责声明：本站仅提供跳转，不存储镜像、不代为下载 -->
     <WinInfoBar
       class="mirror-disclaimer"
       :IsOpen="true"
       :IsClosable="false"
       Severity="Warning"
-      :Message="mirror.disclaimer" />
+      :Message="pick(mirror.disclaimer, mirror.disclaimerEn)" />
 
     <!-- 站点列表：每行一个、整行铺满宽度，点击在新标签页打开，样式与「AI 导航」一致 -->
     <a
@@ -23,26 +23,32 @@
           class="mirror-row-icon-img"
           :src="site.icon"
           alt="" />
-        <span v-else class="mirror-row-icon-fallback">{{ badgeOf(site.name) }}</span>
+        <span v-else class="mirror-row-icon-fallback">{{ badgeOf(pick(site.name, site.nameEn)) }}</span>
       </span>
       <span class="mirror-row-text">
-        <span class="mirror-row-name">{{ site.name }}</span>
-        <span class="mirror-row-desc">{{ site.desc }}</span>
+        <span class="mirror-row-name">{{ pick(site.name, site.nameEn) }}</span>
+        <span class="mirror-row-desc">{{ pick(site.desc, site.descEn) }}</span>
       </span>
       <span class="mirror-row-host">{{ hostOf(site.url) }}</span>
       <span class="mirror-row-arrow" aria-hidden="true">&#xE8A7;</span>
     </a>
 
-    <p class="mirror-note">{{ mirror.note }}</p>
+    <p class="mirror-note">{{ pick(mirror.note, mirror.noteEn) }}</p>
   </ToolShell>
 </template>
 
 <script setup lang="ts">
 import ToolShell from './ToolShell.vue';
 import WinInfoBar from '../../components/WinInfoBar.vue';
+import { useI18n } from '../../components/i18n/index';
 // 站点清单与页面文字位于同目录「系统镜像网站.ts」，增删站点需修改该文件
 import mirror from './系统镜像网站';
 import type { MirrorSite } from './系统镜像网站';
+
+const { locale } = useI18n();
+
+/** 中文原文 / 英文译文：英文界面优先取英文，缺译文回退中文 */
+const pick = (zh: string, en?: string) => (locale === 'en-US' && en ? en : zh);
 
 /** 显示域名（去掉 https:// 和路径） */
 const hostOf = (url: string) => {

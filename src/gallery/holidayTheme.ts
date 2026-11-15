@@ -23,8 +23,8 @@ export type HolidayKey = 'midautumn' | 'nationalday';
 
 export interface HolidayTheme {
   key: HolidayKey;
-  /** 节日名（图片 alt、调试用） */
-  label: string;
+  /** 节日名的文案 key（图片 alt、调试用） */
+  labelKey: 'holiday.midautumn' | 'holiday.nationalday';
   /** 对应哪套配色：dark = 深色模式下显示；light = 亮色模式下显示 */
   mode: 'light' | 'dark';
   /** 节日主题色（实际覆盖见 src/styles/holiday.css） */
@@ -36,11 +36,11 @@ export interface HolidayTheme {
 /** 深色模式 → 中秋；亮色模式 → 国庆 */
 export const HOLIDAY_THEMES: Record<'dark' | 'light', HolidayTheme> = {
   dark: {
-    key: 'midautumn', label: '中秋节', mode: 'dark', accent: '#0F566C',
+    key: 'midautumn', labelKey: 'holiday.midautumn', mode: 'dark', accent: '#0F566C',
     banner: midautumnBanner
   },
   light: {
-    key: 'nationalday', label: '国庆节', mode: 'light', accent: '#C31D1D',
+    key: 'nationalday', labelKey: 'holiday.nationalday', mode: 'light', accent: '#C31D1D',
     banner: nationaldayBanner
   }
 };

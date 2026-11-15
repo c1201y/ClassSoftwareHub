@@ -1,13 +1,11 @@
 <template>
-  <ToolShell
-    title="颜色转换 / 配色"
-    subtitle="HEX、RGB、HSL 三种格式互转，并基于当前颜色一键生成互补色、类似色、三色等和谐配色。点色块即可复制。">
+  <ToolShell :title="t('tool.color-convert.name')" :subtitle="t('tool.color-convert.subtitle')">
     <div class="tool-grid-2 cc-top">
       <div class="tool-panel">
-        <span class="tool-section-title">颜色</span>
+        <span class="tool-section-title">{{ t('color-convert.color') }}</span>
 
         <div class="cc-hex-row">
-          <input type="color" class="cc-picker" :value="hex" @input="onPicker" aria-label="取色板" />
+          <input type="color" class="cc-picker" :value="hex" @input="onPicker" :aria-label="t('color-convert.picker')" />
           <WinTextBox
             class="cc-hex"
             :Text="hexText"
@@ -43,15 +41,15 @@
       </div>
 
       <div class="tool-panel cc-preview-panel">
-        <span class="tool-section-title">预览</span>
+        <span class="tool-section-title">{{ t('color-convert.preview') }}</span>
         <div class="cc-preview" :style="{ background: hex }"></div>
-        <div class="cc-preview-meta tool-hint">点击右侧色块可复制对应色值</div>
+        <div class="cc-preview-meta tool-hint">{{ t('color-convert.preview-hint') }}</div>
       </div>
     </div>
 
     <!-- 配色方案 -->
     <div class="tool-panel cc-harmony">
-      <span class="tool-section-title">和谐配色</span>
+      <span class="tool-section-title">{{ t('color-convert.harmony') }}</span>
       <div v-for="group in harmonies" :key="group.name" class="cc-harmony-row">
         <span class="cc-harmony-name">{{ group.name }}</span>
         <div class="cc-harmony-swatches">
@@ -61,7 +59,7 @@
             type="button"
             class="cc-chip"
             :style="{ background: item.hex }"
-            :title="`${item.hex}（点击复制）`"
+            :title="t('color-convert.copy-title', { hex: item.hex })"
             @click="copy(item.hex)">
             <span class="cc-chip-label">{{ item.hex }}</span>
           </button>
@@ -80,7 +78,9 @@ import { useCopy } from './useCopy';
 import { rgbToHsl, hslToRgb, rgbToHex } from '../imageColors';
 import WinTextBox from '../../components/WinTextBox.vue';
 import WinNumberBox from '../../components/WinNumberBox.vue';
+import { useI18n } from '../../components/i18n/index';
 
+const { t } = useI18n();
 const { toast, copy } = useCopy();
 
 type Rgb = [number, number, number];
@@ -153,11 +153,11 @@ const shift = (deltaH: number) => {
 };
 
 const harmonies = computed(() => [
-  { name: '类似色', colors: [shift(-30), shift(30)] },
-  { name: '互补色', colors: [shift(180)] },
-  { name: '分裂互补', colors: [shift(150), shift(210)] },
-  { name: '三色', colors: [shift(120), shift(240)] },
-  { name: '四色', colors: [shift(90), shift(180), shift(270)] }
+  { name: t('color-convert.harmony.analogous'), colors: [shift(-30), shift(30)] },
+  { name: t('color-convert.harmony.complementary'), colors: [shift(180)] },
+  { name: t('color-convert.harmony.split'), colors: [shift(150), shift(210)] },
+  { name: t('color-convert.harmony.triadic'), colors: [shift(120), shift(240)] },
+  { name: t('color-convert.harmony.tetradic'), colors: [shift(90), shift(180), shift(270)] }
 ]);
 </script>
 

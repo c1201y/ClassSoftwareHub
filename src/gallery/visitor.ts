@@ -4,7 +4,8 @@ import { reactive } from 'vue';
 // 三个域名共用同一 Worker 地址，后台 KV 自动把各域名的访问累加成一个总数，
 // 解决不蒜子(busuanzi)按域名分别统计、各域名数字对不上的问题。
 // 国内 .workers.dev 被墙，故使用自定义域名 service.132614.xyz。
-const API_BASE = 'https://service.132614.xyz';
+const API_BASE =
+  import.meta.env.VITE_CSH_STATS_BASE ?? 'https://service.132614.xyz';
 
 /** 全站共享的访问量状态：由 trackVisit() 写入，设置页的 VisitorCounter 只负责读它显示。 */
 export const visitorState = reactive<{

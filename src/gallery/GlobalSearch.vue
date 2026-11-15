@@ -116,7 +116,7 @@ import {
   pushSearchHistory,
   readSearchHistory,
   removeSearchHistory,
-  uniqueSuggestions
+  suggestedTerms
 } from './searchHistory';
 
 const props = defineProps<{
@@ -129,7 +129,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ 'update:open': [value: boolean] }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const router = useRouter();
 
 /** 每组最多显示条数（超出时依靠继续输入缩小范围） */
@@ -141,11 +141,11 @@ const activeHit = ref<GlobalHit | null>(null);
 /** 下拉的内联定位样式（贴在标题栏输入框下方） */
 const panelStyle = ref<Record<string, string>>({});
 
-const groups = computed(() => searchGlobal(effectiveQuery.value, t, LIMIT_PER_KIND));
+const groups = computed(() => searchGlobal(effectiveQuery.value, t, locale, LIMIT_PER_KIND));
 /** 搜索历史（最近在前）；空查询时展示 */
 const historyTerms = ref<string[]>(readSearchHistory());
 /** 固定的「猜你想找」推荐词 */
-const suggestions = uniqueSuggestions();
+const suggestions = suggestedTerms(locale);
 /** 查询词是否为空（空时展示历史 / 推荐，而不是「无结果」） */
 const queryEmpty = computed(() => !effectiveQuery.value.trim());
 
@@ -161,7 +161,7 @@ const initialsFallback = computed(() => {
   if (!q || !/^[a-z]+$/i.test(q)) return null;
   // 找几个能匹配首字母的候选词，交给常规搜索再跑一遍
   for (const term of suggestions) {
-    if (matchesInitials(term, q)) return searchGlobal(term, t, LIMIT_PER_KIND);
+    if (matchesInitials(term, q)) return searchGlobal(term, t, locale, LIMIT_PER_KIND);
   }
   return null;
 });

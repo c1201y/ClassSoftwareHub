@@ -1,4 +1,5 @@
 import { onBeforeUnmount, ref } from 'vue';
+import { useI18n } from '../../components/i18n/index';
 
 /**
  * 复制到剪贴板 + 底部轻提示，各工具通用。
@@ -10,6 +11,7 @@ import { onBeforeUnmount, ref } from 'vue';
  * （此前 Base64 解码失败的提示曾因直接赋值而无法消失，易被误认为程序卡死）。
  */
 export function useCopy() {
+  const { t } = useI18n();
   const toast = ref('');
   let timer: number | null = null;
 
@@ -21,7 +23,7 @@ export function useCopy() {
   };
 
   const copy = async (value: string, label?: string) => {
-    const done = () => flash(`已复制 ${label ?? value}`);
+    const done = () => flash(label ? t('common.copied-label', { label }) : t('common.copied'));
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(value);
@@ -41,7 +43,7 @@ export function useCopy() {
       try { ok = document.execCommand('copy'); } catch { ok = false; }
       area.remove();
       if (ok) done();
-      else flash('复制失败，请手动选择复制', 2600);
+      else flash(t('common.copy-failed'), 2600);
     }
   };
 

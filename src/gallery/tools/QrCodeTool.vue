@@ -1,12 +1,12 @@
 <template>
   <ToolShell
-    title="二维码生成"
-    subtitle="把网址、文字、WLAN 配置等生成二维码，可下载 PNG，也能直接复制图片。全部本地生成，不经过任何服务器。">
+    :title="t('tool.qrcode.name')"
+    :subtitle="t('tool.qrcode.subtitle')">
     <div class="tool-grid-2">
       <div class="tool-panel">
-        <span class="tool-section-title">内容</span>
+        <span class="tool-section-title">{{ t('qrcode.section') }}</span>
         <WinTextBox
-          PlaceholderText="输入网址或任意文字，例如 https://classsoftwarehub.cn"
+          :PlaceholderText="t('qrcode.placeholder')"
           AcceptsReturn
           TextWrapping="Wrap"
           :IsSpellCheckEnabled="false"
@@ -15,14 +15,14 @@
         <div class="tool-row qr-opts">
           <WinComboBox
             class="qr-sel"
-            Header="容错级别"
+            :Header="t('qrcode.ec')"
             Width="180"
             :ItemsSource="EC_ITEMS"
             DisplayMemberPath="label"
             v-model:SelectedIndex="ecIndex" />
           <WinNumberBox
             class="qr-num"
-            Header="尺寸"
+            :Header="t('qrcode.size')"
             Width="150"
             :Minimum="128"
             :Maximum="1024"
@@ -33,12 +33,12 @@
       </div>
 
       <div class="tool-panel qr-stage">
-        <span class="tool-section-title">预览</span>
+        <span class="tool-section-title">{{ t('qrcode.preview') }}</span>
         <div v-if="error" class="tool-hint qr-error">{{ error }}</div>
         <canvas v-show="!error" ref="canvas" class="qr-canvas"></canvas>
         <div class="tool-row qr-actions">
-          <WinButton Style="AccentButtonStyle" Content="下载 PNG" :IsEnabled="!error" @Click="download" />
-          <WinButton Content="复制图片" :IsEnabled="!error" @Click="copyImage" />
+          <WinButton Style="AccentButtonStyle" :Content="t('qrcode.download')" :IsEnabled="!error" @Click="download" />
+          <WinButton :Content="t('qrcode.copy')" :IsEnabled="!error" @Click="copyImage" />
         </div>
       </div>
     </div>
@@ -56,7 +56,9 @@ import WinButton from '../../components/WinButton.vue';
 import WinComboBox from '../../components/WinComboBox.vue';
 import WinNumberBox from '../../components/WinNumberBox.vue';
 import WinTextBox from '../../components/WinTextBox.vue';
+import { useI18n } from '../../components/i18n/index';
 
+const { t } = useI18n();
 const { toast, copy, flash } = useCopy();
 
 const text = ref('https://classsoftwarehub.cn');
@@ -65,16 +67,16 @@ const size = ref(320);
 const error = ref('');
 const canvas = ref<HTMLCanvasElement | null>(null);
 
-const EC_ITEMS: { value: 'L' | 'M' | 'Q' | 'H'; label: string }[] = [
-  { value: 'L', label: 'L（7%）' },
-  { value: 'M', label: 'M（15%）' },
-  { value: 'Q', label: 'Q（25%）' },
-  { value: 'H', label: 'H（30%）' }
-];
+const EC_ITEMS = computed<{ value: 'L' | 'M' | 'Q' | 'H'; label: string }[]>(() => [
+  { value: 'L', label: t('qrcode.ec.L') },
+  { value: 'M', label: t('qrcode.ec.M') },
+  { value: 'Q', label: t('qrcode.ec.Q') },
+  { value: 'H', label: t('qrcode.ec.H') }
+]);
 const ecIndex = computed({
-  get: () => Math.max(0, EC_ITEMS.findIndex((i) => i.value === ec.value)),
+  get: () => Math.max(0, EC_ITEMS.value.findIndex((i) => i.value === ec.value)),
   set: (i: number) => {
-    const o = EC_ITEMS[i];
+    const o = EC_ITEMS.value[i];
     if (o) ec.value = o.value;
   }
 });
@@ -86,7 +88,7 @@ const render = () => {
   const cv = canvas.value;
   if (!cv) return;
   if (!value) {
-    error.value = '请输入要生成二维码的内容。';
+    error.value = t('qrcode.error.empty');
     return;
   }
   try {
@@ -101,7 +103,7 @@ const render = () => {
     cv.width = px;
     cv.height = px;
     const ctx = cv.getContext('2d');
-    if (!ctx) throw new Error('canvas 不可用');
+    if (!ctx) throw new Error(t('qrcode.error.canvas'));
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, px, px);
     ctx.fillStyle = '#000000';
@@ -114,7 +116,9 @@ const render = () => {
     }
     error.value = '';
   } catch (err) {
-    error.value = err instanceof Error ? `生成失败：${err.message}` : '生成失败，内容可能过长。';
+    error.value = err instanceof Error
+      ? t('qrcode.error.failed', { message: err.message })
+      : t('qrcode.error.too-long');
   }
 };
 
@@ -136,14 +140,14 @@ const copyImage = () => {
   const cv = canvas.value;
   if (!cv) return;
   if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
-    copy(text.value, '内容（当前浏览器不支持复制图片）');
+    copy(text.value, t('qrcode.copy-label'));
     return;
   }
   cv.toBlob((blob) => {
     if (!blob) return;
     navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-      .then(() => flash('已复制二维码图片'))
-      .catch(() => flash('复制图片失败', 2600));
+      .then(() => flash(t('qrcode.copied')))
+      .catch(() => flash(t('qrcode.copy-failed'), 2600));
   }, 'image/png');
 };
 

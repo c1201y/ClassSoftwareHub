@@ -39,10 +39,19 @@ for (const [path, url] of Object.entries(localIconFiles)) {
 }
 
 /**
+ * 本站图标接口的绝对地址 → 同源相对路径。
+ * 走同源可复用同一条连接、命中 nginx 与 Service Worker 缓存，少一次跨域握手。
+ */
+const API_ICON_ORIGIN = 'https://api.classsoftwarehub.cn';
+const normalizeIconUrl = (url: string): string =>
+  url.startsWith(`${API_ICON_ORIGIN}/api/icon`) ? url.slice(API_ICON_ORIGIN.length) : url;
+
+/**
  * 返回软件应使用的图标地址：本地图标优先（更稳定、更快），无本地图标时回退数据中的外链。
  * 返回空字符串时，页面显示「名字首字」的色块兜底。
  */
-export const appIconUrl = (app: { id: string; icon?: string }): string => localIcons[app.id] ?? app.icon ?? '';
+export const appIconUrl = (app: { id: string; icon?: string }): string =>
+  localIcons[app.id] ?? normalizeIconUrl(app.icon ?? '');
 
 /** 记录本次会话中加载失败的图标（外链失效时不再反复显示破损图，直接走首字兜底） */
 const brokenIcons = reactive(new Set<string>());

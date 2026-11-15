@@ -8,7 +8,7 @@
 // EdgeOne Pages（api.classsoftwarehub.cn）。新后端单入口即可用，选路与记忆逻辑保留：
 // 若将来需要备用入口，直接往数组里加即可，调用方无需改动。
 const SUBMIT_ENDPOINTS = [
-  'https://api.classsoftwarehub.cn'
+  import.meta.env.VITE_CSH_API_BASE ?? 'https://api.classsoftwarehub.cn'
 ];
 
 /** 单个入口的超时时间：超时后尽快切换下一个入口，避免用户长时间等待（两个入口最坏 20 秒） */

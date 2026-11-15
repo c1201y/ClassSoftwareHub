@@ -17,6 +17,7 @@
 //       本文件只管匹配逻辑，日常维护【不要】改这里。
 // ════════════════════════════════════════════════════════════════════
 import { apps, categoryName } from './data';
+import type { Locale } from '../components/i18n/index';
 import { TOOLS } from './tools';
 import aiNav from '../../AI导航文本';
 
@@ -273,7 +274,7 @@ const clip = (value: string, max = 90) => {
 };
 
 /** ① 软件：名称命中的排前面，简介/介绍命中排后面；组内按相关度打分排序 */
-export const searchApps = (query: string, limit = 5): GlobalHit[] => {
+export const searchApps = (query: string, locale: Locale = 'zh-CN', limit = 5): GlobalHit[] => {
   const groups = expandTokens(tokenize(query));
   if (!groups.length) return [];
   const nameHits: { hit: GlobalHit; score: number }[] = [];
@@ -283,7 +284,7 @@ export const searchApps = (query: string, limit = 5): GlobalHit[] => {
     key: app.id,
     title: app.name,
     subtitle: clip(app.tagline ?? app.description ?? ''),
-    badge: categoryName(app.category),
+    badge: categoryName(app.category, locale),
     icon: '',
     route: { name: 'download-detail', params: { id: app.id } },
     source
@@ -307,24 +308,31 @@ export const searchApps = (query: string, limit = 5): GlobalHit[] => {
 };
 
 /** ② 内置工具：工具名 / 说明 / 分组名（名称命中优先，组内按相关度排序） */
-export const searchTools = (query: string, limit = 5): GlobalHit[] => {
+export const searchTools = (
+  query: string,
+  t: (key: string) => string,
+  limit = 5
+): GlobalHit[] => {
   const groups = expandTokens(tokenize(query));
   if (!groups.length) return [];
   const nameHits: { hit: GlobalHit; score: number }[] = [];
   const otherHits: { hit: GlobalHit; score: number }[] = [];
   for (const tool of TOOLS) {
+    const name = t(tool.nameKey);
+    const desc = t(tool.descKey);
+    const groupName = t(tool.groupKey);
     const hit: GlobalHit = {
       kind: 'tool',
       key: tool.id,
-      title: tool.name,
-      subtitle: clip(tool.desc),
-      badge: tool.group,
+      title: name,
+      subtitle: clip(desc),
+      badge: groupName,
       icon: tool.icon,
       route: { name: `tool-${tool.id}` }
     };
-    const nameScore = scoreMatch(tool.name, groups);
+    const nameScore = scoreMatch(name, groups);
     if (nameScore > 0) nameHits.push({ hit, score: nameScore });
-    else if (introMatches(`${tool.desc} ${tool.group}`, groups)) {
+    else if (introMatches(`${desc} ${groupName}`, groups)) {
       otherHits.push({ hit, score: groups.length });
     }
   }
@@ -335,7 +343,7 @@ export const searchTools = (query: string, limit = 5): GlobalHit[] => {
 };
 
 /** ③ AI 导航：站点名 / 说明 / 域名（名称命中优先，组内按相关度排序） */
-export const searchAiSites = (query: string, limit = 5): GlobalHit[] => {
+export const searchAiSites = (query: string, locale: Locale = 'zh-CN', limit = 5): GlobalHit[] => {
   const groups = expandTokens(tokenize(query));
   if (!groups.length) return [];
   const nameHits: { hit: GlobalHit; score: number }[] = [];
@@ -347,19 +355,23 @@ export const searchAiSites = (query: string, limit = 5): GlobalHit[] => {
     } catch {
       host = site.url;
     }
+    const name = locale === 'en-US' ? (site.nameEn ?? site.name) : site.name;
+    const desc = locale === 'en-US' ? (site.descEn ?? site.desc) : site.desc;
+    // 匹配时中英都看：英文界面搜中文名、中文界面搜英文名都能命中
+    const haystack = `${site.name} ${site.nameEn ?? ''} ${site.desc} ${site.descEn ?? ''} ${host}`;
     const hit: GlobalHit = {
       kind: 'ai',
       key: site.url,
-      title: site.name,
-      subtitle: clip(site.desc),
+      title: name,
+      subtitle: clip(desc),
       badge: host,
-      icon: site.name.trim().slice(0, 1).toUpperCase(),
+      icon: name.trim().slice(0, 1).toUpperCase(),
       url: site.url,
       color: site.color
     };
-    const nameScore = scoreMatch(site.name, groups);
+    const nameScore = scoreMatch(`${site.name} ${site.nameEn ?? ''}`, groups);
     if (nameScore > 0) nameHits.push({ hit, score: nameScore });
-    else if (introMatches(`${site.desc} ${host}`, groups)) {
+    else if (introMatches(haystack, groups)) {
       otherHits.push({ hit, score: groups.length });
     }
   }
@@ -404,6 +416,7 @@ export const searchPages = (
 export const searchGlobal = (
   query: string,
   t: (key: string) => string,
+  locale: Locale = 'zh-CN',
   limitPerKind = 5
 ): GlobalGroup[] => {
   if (!tokenize(query).length) {
@@ -411,9 +424,9 @@ export const searchGlobal = (
     return pages.length ? [{ kind: 'page', hits: pages }] : [];
   }
   const groups: GlobalGroup[] = [
-    { kind: 'app', hits: searchApps(query, limitPerKind) },
-    { kind: 'tool', hits: searchTools(query, limitPerKind) },
-    { kind: 'ai', hits: searchAiSites(query, limitPerKind) },
+    { kind: 'app', hits: searchApps(query, locale, limitPerKind) },
+    { kind: 'tool', hits: searchTools(query, t, limitPerKind) },
+    { kind: 'ai', hits: searchAiSites(query, locale, limitPerKind) },
     { kind: 'page', hits: searchPages(query, t, limitPerKind) }
   ];
   return groups.filter((group) => group.hits.length > 0);

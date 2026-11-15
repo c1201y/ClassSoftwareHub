@@ -3,8 +3,8 @@
        教室机桌面端（AnnounceService 轮询）收到后弹全屏大字。
        外壳（返回按钮 + 标题 + 滚动区）由 ToolShell 统一提供。 -->
   <ToolShell
-    title="教室喊话"
-    subtitle="在网页上输入教室机的 6 位配对码，文字就会在对方屏幕上全屏大字展示——点名、通知、找人都行，无需安装任何东西。">
+    :title="t('tool.announce.name')"
+    :subtitle="t('tool.announce.desc')">
     <div class="announce-root">
       <!-- ── 发送表单 ─────────────────────────────────────────── -->
       <section class="an-card">
@@ -12,33 +12,33 @@
           <WinTextBox
             class="an-code"
             :MaxLength="6"
-            :PlaceholderText="'6 位数字'"
+            :PlaceholderText="t('announce.code-placeholder')"
             :Text="pairCode"
             @update:Text="onCodeInput">
-            <template #header>配对码<span class="an-required-star" aria-hidden="true">*</span></template>
+            <template #header>{{ t('announce.code-label') }}<span class="an-required-star" aria-hidden="true">*</span></template>
           </WinTextBox>
-          <p class="an-hint">配对码显示于目标电脑「内置工具 → 教室喊话」页；每台电脑唯一，请勿对外公开。</p>
+          <p class="an-hint">{{ t('announce.code-hint') }}</p>
 
           <WinTextBox
-            Header="内容"
+            :Header="t('announce.content-label')"
             AcceptsReturn
             MinHeight="96"
             :MaxLength="100"
-            :PlaceholderText="'要展示的文字，例如：请李明同学到办公室拿东西'"
+            :PlaceholderText="t('announce.content-placeholder')"
             v-model:Text="text">
-            <template #header>内容<span class="an-required-star" aria-hidden="true">*</span></template>
+            <template #header>{{ t('announce.content-label') }}<span class="an-required-star" aria-hidden="true">*</span></template>
           </WinTextBox>
           <p class="an-char-count" :class="{ 'is-full': text.length >= 100 }">{{ text.length }} / 100</p>
 
           <WinTextBox
-            Header="署名（可选）"
+            :Header="t('announce.signer-label')"
             :MaxLength="20"
-            :PlaceholderText="'例如：教务处'"
+            :PlaceholderText="t('announce.signer-placeholder')"
             v-model:Text="from" />
 
           <div class="an-field">
-            <span class="an-label">展示时长</span>
-            <div class="an-duration-row" role="radiogroup" aria-label="展示时长">
+            <span class="an-label">{{ t('announce.duration-label') }}</span>
+            <div class="an-duration-row" role="radiogroup" :aria-label="t('announce.duration-label')">
               <button
                 v-for="opt in DURATIONS"
                 :key="opt"
@@ -46,7 +46,7 @@
                 class="an-duration-btn"
                 :class="{ 'is-active': duration === opt }"
                 @click="duration = opt">
-                {{ opt }} 秒
+                {{ t('announce.seconds', { count: opt }) }}
               </button>
             </div>
           </div>
@@ -62,7 +62,7 @@
               class="an-send-ring"
               :Width="16" :Height="16"
               IsActive IsIndeterminate />
-            <span>{{ sending ? '发送中…' : '发送喊话' }}</span>
+            <span>{{ sending ? t('announce.sending') : t('announce.send') }}</span>
             <span class="an-send-glyph" aria-hidden="true">&#xE724;</span>
           </WinButton>
         </div>
@@ -77,12 +77,12 @@
 
       <!-- ── 开启说明 ─────────────────────────────────────────── -->
       <section class="an-howto">
-        <WinTextBlock class="an-howto-title" FontSize="15" FontWeight="600" Text="教室机如何开启" />
+        <WinTextBlock class="an-howto-title" FontSize="15" FontWeight="600" :Text="t('announce.howto-title')" />
         <ol class="an-howto-list">
-          <li>教室机上打开 ClassSoftwareHub 桌面端（dv1.1.1-insider1.0 及以上）；</li>
-          <li>进入「内置工具 → 教室喊话」，打开「接收喊话」开关；</li>
-          <li>记下页面上显示的「本机配对码」（每台电脑唯一，重装不变）；</li>
-          <li>教室机保持联网与程序运行即可；收到喊话后全屏展示，倒计时结束自动消失，Esc 可提前关闭。</li>
+          <li>{{ t('announce.howto-1') }}</li>
+          <li>{{ t('announce.howto-2') }}</li>
+          <li>{{ t('announce.howto-3') }}</li>
+          <li>{{ t('announce.howto-4') }}</li>
         </ol>
       </section>
     </div>
@@ -96,8 +96,11 @@ import WinInfoBar from '../../components/WinInfoBar.vue';
 import WinProgressRing from '../../components/WinProgressRing.vue';
 import WinTextBox from '../../components/WinTextBox.vue';
 import WinTextBlock from '../../components/WinTextBlock.vue';
+import { useI18n } from '../../components/i18n/index';
 import ToolShell from '../tools/ToolShell.vue';
 import { SUBMIT_TIMEOUT_MS, orderedEndpoints, rememberEndpoint } from '../submitEndpoints';
+
+const { t } = useI18n();
 
 // ── 常量 ────────────────────────────────────────────────────────
 const DURATIONS = [15, 30, 60] as const;
@@ -145,11 +148,11 @@ async function send() {
   const signer = from.value.trim();
 
   if (!/^\d{6}$/.test(code)) {
-    showResult('请先输入教室机上的 6 位配对码。', 'error');
+    showResult(t('announce.error-code'), 'error');
     return;
   }
   if (!content) {
-    showResult('请输入要展示的内容。', 'error');
+    showResult(t('announce.error-content'), 'error');
     return;
   }
 
@@ -162,8 +165,8 @@ async function send() {
       const n = reply.devices ?? 0;
       showResult(
         n > 0
-          ? `已发送 ✓ ${n} 台在线教室机将收到，最长一个轮询间隔内弹出。`
-          : '已发送 ✓ 但目前没有教室机登记在册（确认教室机已打开「接收喊话」开关）。',
+          ? t('announce.sent-devices', { count: n })
+          : t('announce.sent-none'),
         'ok'
       );
       text.value = '';           // 成功后清内容，署名与配对码保留（连续喊话常见）
@@ -171,7 +174,7 @@ async function send() {
       showResult(reply.message, 'error');
     }
   } catch {
-    showResult('发送失败：网络不可用或服务暂时不可达，请稍后再试。', 'error');
+    showResult(t('announce.error-network'), 'error');
   } finally {
     sending.value = false;
   }
@@ -200,15 +203,15 @@ async function postAnnounce(
       if (res.status === 403) {
         const body = (await res.json().catch(() => null)) as { error?: string } | null;
         if (body?.error === 'no_device') {
-          return { ok: false, message: '该配对码下无在线设备：请确认配对码正确，且对方已开启「接收喊话」并保持联网。' };
+          return { ok: false, message: t('announce.error-no-device') };
         }
-        return { ok: false, message: '配对码不正确：请核对目标电脑「内置工具 → 教室喊话」页显示的码。' };
+        return { ok: false, message: t('announce.error-bad-code') };
       }
       if (res.status === 429) {
-        return { ok: false, message: '发送太频繁：同一配对码 10 秒内只能发一条，稍等几秒再发。' };
+        return { ok: false, message: t('announce.error-rate-limit') };
       }
       if (res.status === 400) {
-        return { ok: false, message: '内容格式不对（码须 6 位数字、内容不超过 100 字、署名不超过 20 字）。' };
+        return { ok: false, message: t('announce.error-format') };
       }
 
       const data = (await res.json().catch(() => null)) as
@@ -218,14 +221,14 @@ async function postAnnounce(
         rememberEndpoint(base);
         return { ok: true, message: '', devices: data.devices ?? 0 };
       }
-      lastError = '服务返回异常';
+      lastError = t('announce.error-service');
     } catch {
-      lastError = '入口不可达';
+      lastError = t('announce.error-endpoint');
     } finally {
       window.clearTimeout(timer);
     }
   }
-  return { ok: false, message: '发送失败：所有服务入口均不可达，请稍后再试。' + (lastError ? `（${lastError}）` : '') };
+  return { ok: false, message: t('announce.error-all', { detail: lastError || '—' }) };
 }
 
 function showResult(message: string, kind: 'ok' | 'error') {

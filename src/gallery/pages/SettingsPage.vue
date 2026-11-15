@@ -1,14 +1,20 @@
 <template>
   <WinGrid class="settings-page-root" RowDefinitions="Auto,*">
-    <WinTextBlock
-      class="settings-page-header"
-      AutomationProperties.HeadingLevel="Level1"
-      FontSize="28"
-      FontWeight="600"
-      LineHeight="36"
-      Margin="36,24,36,30"
-      TextWrapping="NoWrap"
-      :Text="$t('text.settings')" />
+    <div class="settings-page-head">
+      <WinTextBlock
+        class="settings-page-header"
+        AutomationProperties.HeadingLevel="Level1"
+        FontSize="28"
+        FontWeight="600"
+        LineHeight="36"
+        Margin="0"
+        TextWrapping="NoWrap"
+        :Text="$t('text.settings')" />
+      <span class="settings-connection">
+        <span class="settings-connection-label">{{ $t('text.connection') }}</span>
+        <span class="settings-connection-value">{{ connectionText }}</span>
+      </span>
+    </div>
     <WinScrollViewer
       class="settings-page-scroll"
       VerticalScrollBarVisibility="Auto"
@@ -184,6 +190,14 @@ import EchoCaveCard from '../EchoCaveCard.vue';
 
 const { t, locale } = useI18n();
 
+// 连接方式：由同源 /api/conn 按服务端看到的远端地址判定，只显示 IPv6/IPv4。
+const connectionFamily = ref<'ipv6' | 'ipv4' | 'unknown'>('unknown');
+const connectionText = computed(() => {
+  if (connectionFamily.value === 'ipv6') return t('text.connection-ipv6');
+  if (connectionFamily.value === 'ipv4') return t('text.connection-ipv4');
+  return t('text.connection-unknown');
+});
+
 // 鸣谢分组：按「鸣谢文本.ts」的 groupOrder / groupTitles 渲染（开发团队 / 赞助人员）
 const creditGroups = computed(() =>
   credits.groupOrder
@@ -267,6 +281,13 @@ onMounted(() => {
   uptimeTimer = window.setInterval(() => {
     nowTick.value = Date.now();
   }, 1000);
+  fetch('/api/conn', { cache: 'no-store' })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((d) => {
+      const f = d && d.family;
+      if (f === 'ipv6' || f === 'ipv4') connectionFamily.value = f;
+    })
+    .catch(() => {});
 });
 
 onBeforeUnmount(() => {
@@ -284,6 +305,42 @@ onBeforeUnmount(() => {
 
 .settings-page-header {
   max-width: 1064px;
+  margin: 0;
+}
+
+.settings-page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 36px 30px;
+}
+
+.settings-connection {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+  color: var(--TextFillColorSecondaryBrush, var(--text-secondary));
+  background: var(--ControlFillColorSecondaryBrush, rgba(128, 128, 128, 0.1));
+}
+
+.settings-connection-value {
+  font-weight: 600;
+  color: var(--TextFillColorPrimaryBrush, var(--text-primary));
+}
+
+@media (max-width: 640px) {
+  .settings-page-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 20px 20px 24px;
+  }
 }
 
 .settings-page-scroll {

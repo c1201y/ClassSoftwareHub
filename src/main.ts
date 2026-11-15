@@ -11,6 +11,7 @@ import appIcon512Url from './assets/AppIcon-512.png?url'
 import { createI18n, i18nKey } from './components/i18n/index'
 import galleryEnUS from './gallery/Strings/en-US/Resources'
 import galleryZhCN from '../文字设置'
+import { initBrowserCache } from './gallery/browserCache'
 
 const i18n = createI18n(navigator.language, {
   'en-US': galleryEnUS,
@@ -67,6 +68,13 @@ app.use(router)
 app.provide(i18nKey, i18n)
 app.config.globalProperties.$t = i18n.t
 app.mount('#app')
+
+// 可选浏览器缓存：首屏渲染完成后再注册，避免与关键资源抢带宽
+if (typeof window.requestIdleCallback === 'function') {
+  window.requestIdleCallback(() => initBrowserCache(), { timeout: 3000 })
+} else {
+  setTimeout(() => initBrowserCache(), 1500)
+}
 
 document.addEventListener('contextmenu', (e) => {
   e.preventDefault();

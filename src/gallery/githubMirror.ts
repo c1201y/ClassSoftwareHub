@@ -27,6 +27,7 @@
 // ════════════════════════════════════════════════════════════════════
 
 import { orderedEndpoints } from './submitEndpoints';
+import { gt } from './localize';
 
 /** 一条加速通道 */
 export interface MirrorChannel {
@@ -73,7 +74,7 @@ export interface MirrorChannel {
 export const MIRROR_CHANNELS: MirrorChannel[] = [
   {
     id: 'self',
-    name: '本站加速节点',
+    name: gt('mirror.channel-self'),
     prefix: 'https://download.classsoftwarehub.cn/',
     self: true
   },

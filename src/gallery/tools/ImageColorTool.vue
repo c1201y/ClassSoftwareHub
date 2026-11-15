@@ -1,7 +1,7 @@
 <template>
   <ToolShell
-    title="图片取色"
-    subtitle="上传一张图片，自动提取出一组柔和的配色（类似 Win11 壁纸主题色的取法）。点击色块复制 hex。图片只在你的浏览器里处理，不会上传。">
+    :title="t('tool.image-color.name')"
+    :subtitle="t('tool.image-color.subtitle')">
     <!-- ── 上传区 ─────────────────────────────────────────── -->
     <div
       class="color-drop"
@@ -15,17 +15,17 @@
       @dragleave.prevent="dragging = false"
       @drop.prevent="onDrop">
       <template v-if="previewUrl">
-        <img :src="previewUrl" class="color-preview" alt="预览" />
+        <img :src="previewUrl" class="color-preview" :alt="t('image-color.preview-alt')" />
         <div class="color-drop-text">
-          <span class="color-drop-title">换一张图片</span>
-          <span class="tool-hint">点击这里，或把新图片拖进来</span>
+          <span class="color-drop-title">{{ t('image-color.drop-replace') }}</span>
+          <span class="tool-hint">{{ t('image-color.drop-replace-hint') }}</span>
         </div>
       </template>
       <template v-else>
         <span class="color-drop-icon" aria-hidden="true">&#xEB9F;</span>
         <div class="color-drop-text">
-          <span class="color-drop-title">点击选择图片</span>
-          <span class="tool-hint">或把图片拖进来 · 支持 PNG / JPG / WebP / GIF</span>
+          <span class="color-drop-title">{{ t('image-color.drop-choose') }}</span>
+          <span class="tool-hint">{{ t('image-color.drop-hint') }}</span>
         </div>
       </template>
     </div>
@@ -38,14 +38,14 @@
       <div class="color-seed tool-panel">
         <span class="color-seed-chip" :style="{ background: palette.seedHex }"></span>
         <div class="color-seed-text">
-          <span class="tool-hint">提取到的种子色</span>
+          <span class="tool-hint">{{ t('image-color.seed') }}</span>
           <span class="color-seed-value">{{ palette.seedHex }} · {{ hslText(palette.seedHsl) }}</span>
         </div>
       </div>
 
       <div class="color-result-head">
-        <span class="tool-section-title">配色方案</span>
-        <span class="tool-hint">点击色块复制 hex</span>
+        <span class="tool-section-title">{{ t('image-color.palette') }}</span>
+        <span class="tool-hint">{{ t('image-color.copy-hint') }}</span>
       </div>
 
       <div class="color-swatches">
@@ -54,32 +54,32 @@
           :key="variant.key"
           type="button"
           class="color-swatch"
-          :title="`点击复制 ${variant.hex}`"
+          :title="t('image-color.copy-title', { hex: variant.hex })"
           @click="copy(variant.hex)">
           <span class="color-swatch-block" :style="{ background: variant.hex }">
             <span v-if="copied === variant.hex" class="color-swatch-check" aria-hidden="true">&#xE73E;</span>
           </span>
-          <span class="color-swatch-name">{{ variant.label }}</span>
+          <span class="color-swatch-name">{{ t(`image-color.variant.${variant.key}`) }}</span>
           <span class="color-swatch-hex">{{ variant.hex }}</span>
         </button>
       </div>
 
       <div class="color-hsl-block">
-        <span class="tool-label">HSL（点击复制）</span>
+        <span class="tool-label">{{ t('image-color.hsl-copy') }}</span>
         <div class="color-hsl-chips">
           <button
             v-for="variant in palette.variants"
             :key="variant.key"
             type="button"
             class="color-hsl-copy"
-            :title="`点击复制 ${hslText(variant.hsl)}`"
+            :title="t('image-color.hsl-copy-title', { value: hslText(variant.hsl) })"
             @click="copy(hslText(variant.hsl))">{{ hslShort(variant.hsl) }}</button>
         </div>
       </div>
 
       <div class="color-actions">
-        <WinButton Content="换一张" @Click="pickFile" />
-        <WinButton Content="清空" @Click="reset" />
+        <WinButton :Content="t('image-color.change')" @Click="pickFile" />
+        <WinButton :Content="t('common.clear')" @Click="reset" />
       </div>
     </template>
 
@@ -94,10 +94,12 @@ import { useCopy } from './useCopy';
 import { extractPalette } from '../imageColors';
 import type { Hsl, PaletteResult } from '../imageColors';
 import WinButton from '../../components/WinButton.vue';
+import { useI18n } from '../../components/i18n/index';
 
 /** 图片缩放目标最长边（像素）：尺寸过大会显著拖慢取色 */
 const MAX_SIDE = 120;
 
+const { t } = useI18n();
 const { toast, copy: copyRaw } = useCopy();
 const copied = ref('');
 
@@ -150,7 +152,7 @@ const reset = () => {
 const process = async (file: File) => {
   error.value = '';
   if (!file.type.startsWith('image/')) {
-    error.value = '这不是图片文件，请选择 PNG / JPG / WebP 等图片。';
+    error.value = t('image-color.error.not-image');
     return;
   }
   clearObjectUrl();
@@ -161,7 +163,7 @@ const process = async (file: File) => {
     const result = readPalette(image);
     if (!result) {
       palette.value = null;
-      error.value = '这张图里没有可用的不透明像素（可能是全透明图片），换一张试试。';
+      error.value = t('image-color.error.no-pixels');
       return;
     }
     palette.value = result;
@@ -174,14 +176,14 @@ const process = async (file: File) => {
 const loadImage = (src: string) => new Promise<HTMLImageElement>((resolve, reject) => {
   const img = new Image();
   img.onload = () => resolve(img);
-  img.onerror = () => reject(new Error('图片解码失败，可能是格式不支持或文件已损坏。'));
+  img.onerror = () => reject(new Error(t('image-color.error.decode')));
   img.src = src;
 });
 
 const readPalette = (image: HTMLImageElement): PaletteResult | null => {
   const naturalW = image.naturalWidth || image.width;
   const naturalH = image.naturalHeight || image.height;
-  if (!naturalW || !naturalH) throw new Error('读不到图片尺寸。');
+  if (!naturalW || !naturalH) throw new Error(t('image-color.error.no-size'));
 
   const scale = Math.min(1, MAX_SIDE / Math.max(naturalW, naturalH));
   const w = Math.max(1, Math.round(naturalW * scale));
@@ -191,7 +193,7 @@ const readPalette = (image: HTMLImageElement): PaletteResult | null => {
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  if (!ctx) throw new Error('当前浏览器不支持 canvas 取色。');
+  if (!ctx) throw new Error(t('image-color.error.no-canvas'));
 
   ctx.clearRect(0, 0, w, h);
   ctx.imageSmoothingEnabled = true;

@@ -10,14 +10,14 @@ import type { Component } from 'vue';
 export interface ToolDef {
   /** 路由段：/tools/<id> */
   id: string;
-  /** 卡片标题 & 页面标题 */
-  name: string;
-  /** 卡片说明 */
-  desc: string;
+  /** 卡片标题 & 页面标题的文案 key（tool.<id>.name） */
+  nameKey: string;
+  /** 卡片说明的文案 key（tool.<id>.desc） */
+  descKey: string;
   /** 图标（SEGOEICONS 字符） */
   icon: string;
-  /** 分组名（用于索引页分栏） */
-  group: string;
+  /** 分组名的文案 key（tool.group.*） */
+  groupKey: string;
   /** 懒加载的工具页面组件 */
   load: () => Promise<{ default: Component }>;
 }
@@ -25,125 +25,125 @@ export interface ToolDef {
 export const TOOLS: ToolDef[] = [
   {
     id: 'announce',
-    name: '教室喊话',
-    desc: '在网页上输入教室机的 6 位配对码，文字就会在对方屏幕上全屏大字展示——点名、通知、找人都行，无需安装任何东西。',
+    nameKey: 'tool.announce.name',
+    descKey: 'tool.announce.desc',
     icon: '\uE720',
-    group: '课堂',
+    groupKey: 'tool.group.classroom',
     load: () => import('../pages/AnnouncePage.vue')
   },
   {
     id: 'image-color',
-    name: '图片取色',
-    desc: '上传一张图片，在浏览器本地提取出一组柔和的配色方案（像 Win11 提取壁纸主题色那样），点击色块即可复制色值。',
+    nameKey: 'tool.image-color.name',
+    descKey: 'tool.image-color.desc',
     icon: '\uE790',
-    group: '图片与颜色',
+    groupKey: 'tool.group.image-color',
     load: () => import('./ImageColorTool.vue')
   },
   {
     id: 'color-convert',
-    name: '颜色转换 / 配色',
-    desc: 'HEX、RGB、HSL 三种格式互转，并基于当前颜色一键生成互补色、类似色、三色等和谐配色。',
+    nameKey: 'tool.color-convert.name',
+    descKey: 'tool.color-convert.desc',
     icon: '\uEC4A',
-    group: '图片与颜色',
+    groupKey: 'tool.group.image-color',
     load: () => import('./ColorConvertTool.vue')
   },
   {
     id: 'pick-number',
-    name: '随机抽号',
-    desc: '输入号码范围（比如学号 1~50）就能抽号，不用一个个敲名字。支持一次抽多个、抽过不重复，还能按号码随机分组。',
+    nameKey: 'tool.pick-number.name',
+    descKey: 'tool.pick-number.desc',
     icon: '\uE716',
-    group: '课堂',
+    groupKey: 'tool.group.classroom',
     load: () => import('./PickNumberTool.vue')
   },
   {
     id: 'timer',
-    name: '课堂计时器',
-    desc: '倒计时 / 秒表，大字号方便投影，到点响铃。纯本地运行。',
+    nameKey: 'tool.timer.name',
+    descKey: 'tool.timer.desc',
     icon: '\uE916',
-    group: '课堂',
+    groupKey: 'tool.group.classroom',
     load: () => import('./TimerTool.vue')
   },
   {
     id: 'clock',
-    name: '全屏时钟',
-    desc: '把屏幕变成一面大钟：网页全屏 / 屏幕全屏两种放大方式，可换背景图片并叠白色、黑色蒙版或亚克力、云母材质。',
+    nameKey: 'tool.clock.name',
+    descKey: 'tool.clock.desc',
     icon: '\uE740',
-    group: '课堂',
+    groupKey: 'tool.group.classroom',
     load: () => import('./ClockTool.vue')
   },
   {
     id: 'word-writing',
-    name: '单词书写练习',
-    desc: '老师粘贴汉语词表，学生在右边横线上用触控笔或手指写英语。支持四线三格、显示答案、撤销、打印空白练习页，全部本地运行。',
+    nameKey: 'tool.word-writing.name',
+    descKey: 'tool.word-writing.desc',
     icon: '\uE929',
-    group: '课堂',
+    groupKey: 'tool.group.classroom',
     load: () => import('./WordWritingTool.vue')
   },
   {
     id: 'chemistry',
-    name: '化学式配平',
-    desc: '输入未配平的化学方程式，自动算出系数并列出各元素守恒情况。支持括号与原子团，全部本地计算。',
+    nameKey: 'tool.chemistry.name',
+    descKey: 'tool.chemistry.desc',
     icon: '\uE9D9',
-    group: '课堂',
+    groupKey: 'tool.group.classroom',
     load: () => import('./ChemistryTool.vue')
   },
   {
     id: 'text',
-    name: '文本处理',
-    desc: '去重复行、去空行、大小写、中英标点互转、字数统计……写通知 / 名单 / 文案时常用。',
+    nameKey: 'tool.text.name',
+    descKey: 'tool.text.desc',
     icon: '\uE8A5',
-    group: '文本与编码',
+    groupKey: 'tool.group.text',
     load: () => import('./TextTool.vue')
   },
   {
     id: 'encoding',
-    name: '编码 / 哈希工具',
-    desc: 'Base64、URL 编解码，以及 MD5 / SHA-1 / SHA-256 / SHA-512 哈希，全部本地计算。',
+    nameKey: 'tool.encoding.name',
+    descKey: 'tool.encoding.desc',
     icon: '\uE943',
-    group: '文本与编码',
+    groupKey: 'tool.group.text',
     load: () => import('./EncodingTool.vue')
   },
   {
     id: 'markdown',
-    name: 'Markdown 预览',
-    desc: '左边写 Markdown，右边实时预览，可复制源码或 HTML。写说明文档 / README 很方便。',
+    nameKey: 'tool.markdown.name',
+    descKey: 'tool.markdown.desc',
     icon: '\uE70F',
-    group: '文本与编码',
+    groupKey: 'tool.group.text',
     load: () => import('./MarkdownTool.vue')
   },
   {
     id: 'qrcode',
-    name: '二维码生成',
-    desc: '把网址 / 文字生成二维码，可下载 PNG 或直接复制图片，全部本地生成。',
+    nameKey: 'tool.qrcode.name',
+    descKey: 'tool.qrcode.desc',
     icon: '\uE8B0',
-    group: '实用工具',
+    groupKey: 'tool.group.utility',
     load: () => import('./QrCodeTool.vue')
   },
   {
     id: 'timestamp',
-    name: '时间戳转换',
-    desc: 'Unix 时间戳与日期时间互转，支持秒 / 毫秒自动识别，附带当前时间戳。',
+    nameKey: 'tool.timestamp.name',
+    descKey: 'tool.timestamp.desc',
     icon: '\uE823',
-    group: '实用工具',
+    groupKey: 'tool.group.utility',
     load: () => import('./TimestampTool.vue')
   },
   {
     id: 'mirror-download',
-    name: '系统镜像下载',
-    desc: 'Windows 等系统镜像的官方 / 可信第三方下载入口，点一行直接跳转。本站不存储镜像，只做跳转。',
+    nameKey: 'tool.mirror-download.name',
+    descKey: 'tool.mirror-download.desc',
     icon: '\uE896',
-    group: '实用工具',
+    groupKey: 'tool.group.utility',
     load: () => import('./MirrorDownloadTool.vue')
   }
 ];
 
-/** 按 group 分组，保持 TOOLS 中的原有顺序 */
+/** 按 groupKey 分组，保持 TOOLS 中的原有顺序 */
 export function toolGroups() {
-  const groups: { name: string; items: ToolDef[] }[] = [];
+  const groups: { key: string; items: ToolDef[] }[] = [];
   for (const tool of TOOLS) {
-    let group = groups.find((g) => g.name === tool.group);
+    let group = groups.find((g) => g.key === tool.groupKey);
     if (!group) {
-      group = { name: tool.group, items: [] };
+      group = { key: tool.groupKey, items: [] };
       groups.push(group);
     }
     group.items.push(tool);
