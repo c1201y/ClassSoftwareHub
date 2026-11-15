@@ -90,17 +90,17 @@
   <div v-if="showDataIssueBanner && dataLoadIssues.length > 0" class="data-issue-banner" role="alert">
     <div class="data-issue-banner-body">
       <span class="data-issue-banner-title">
-        ⚠️ 有 {{ dataLoadIssues.length }} 个数据文件没读进来（已自动跳过，其余软件不受影响）：
+        {{ t('app.data-issue-title', { count: dataLoadIssues.length }) }}
       </span>
       <ul class="data-issue-banner-list">
         <li v-for="issue in dataLoadIssues" :key="issue.file + issue.message" :title="issue.detail ?? ''">
           <span class="data-issue-file">{{ issue.file }}</span>
-          <template v-if="issue.line">第 {{ issue.line }} 行附近：</template>
+          <template v-if="issue.line">{{ t('app.data-issue-line', { line: issue.line }) }}</template>
           {{ issue.message }}
         </li>
       </ul>
     </div>
-    <button type="button" class="data-issue-banner-close" aria-label="关闭提示" @click="showDataIssueBanner = false">✕</button>
+    <button type="button" class="data-issue-banner-close" :aria-label="t('app.data-issue-close')" @click="showDataIssueBanner = false">✕</button>
   </div>
 </template>
 
@@ -119,7 +119,7 @@ import { rememberScroll, restoreScroll } from './scrollMemory';
 import appIcon from '../assets/AppIcon.ico';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from '../components/i18n/index';
-import { apps, categories, dataLoadIssues } from './data';
+import { apps, categories, categoryName, dataLoadIssues } from './data';
 import {
   DefaultNavigationTransitionInfo,
   NavigationTrigger_NavigatingAway,
@@ -127,7 +127,7 @@ import {
   getNavigationTransitionInfoClassName
 } from '../utils/navigationTransitionInfo';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 // 数据文件出错提示条：默认显示，可点 ✕ 关闭
 const showDataIssueBanner = ref(true);
 
@@ -280,6 +280,9 @@ watch(holidaySkinEnabled, (enabled) => {
 refreshActiveHoliday();
 provide('holidaySkinEnabled', holidaySkinEnabled);
 provide('activeHoliday', activeHoliday);
+
+// ── 浏览器缓存（常开，见 ./browserCache.ts）────────────────────────
+// 启动后注册 Service Worker：静态资源与图标缓存在本地，重复访问更快、更省流量。
 // ── 界面动画 ─────────────────────────────────────────────────────
 // 按需求约定：动画常驻开启，不提供开关。组件 CSS 不编写 prefers-reduced-motion
 // 降级分支，即使系统开启“减少动态效果”，本站动画仍照常播放。
@@ -377,9 +380,9 @@ const pageTags = new Set(['home', 'settings', 'submit', 'tools', 'ai', 'feedback
 //    而且它本质是「首页推广位」，不是平级的内容分类。
 const footerMenuItems = computed<NavItem[]>(() => [
   // 图标 E99A(Robot)：AI 导航
-  { Tag: 'ai', Icon: '\uE99A', Content: 'AI 导航' },
+  { Tag: 'ai', Icon: '\uE99A', Content: t('nav.ai') },
   // 图标用 EC7A(DeveloperTools)：E90F(Repair) 与左侧「系统工具」分类图标重复
-  { Tag: 'tools', Icon: '\uEC7A', Content: '内置工具' },
+  { Tag: 'tools', Icon: '\uEC7A', Content: t('nav.tools') },
   { Tag: 'submit', Icon: '\uE11C', Content: t('nav.submit') },
   // 图标 E7BA(警告三角)：反馈中心。SEGOEICONS.TTF 是重映射过的子集，
   // 码点与标准 Segoe MDL2 不同，E7BA 实测对应警告三角（见 src/gallery/feedback.ts）
@@ -391,7 +394,7 @@ const navMenuItems = computed<NavItem[]>(() => [
   ...categories.map((category) => ({
     Tag: `category:${category.key}`,
     Icon: category.icon,
-    Content: category.name,
+    Content: categoryName(category.key, locale),
     SelectsOnInvoked: false,
     MenuItems: apps
       .filter((app) => app.category === category.key)

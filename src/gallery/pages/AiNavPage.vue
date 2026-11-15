@@ -12,13 +12,13 @@
         FontWeight="600"
         LineHeight="36"
         TextWrapping="NoWrap"
-        :Text="aiNav.title" />
+        :Text="pick(aiNav.title, aiNav.titleEn)" />
       <WinTextBlock
         class="ai-header-subtitle"
         FontSize="14"
         Foreground="var(--TextFillColorSecondaryBrush, var(--text-secondary))"
         TextWrapping="Wrap"
-        :Text="aiNav.subtitle" />
+        :Text="pick(aiNav.subtitle, aiNav.subtitleEn)" />
     </div>
 
     <WinScrollViewer
@@ -42,17 +42,17 @@
                 class="ai-row-icon-img"
                 :src="iconOf(site.url)"
                 alt="" />
-              <span v-else class="ai-row-icon-fallback">{{ badgeOf(site.name) }}</span>
+              <span v-else class="ai-row-icon-fallback">{{ badgeOf(pick(site.name, site.nameEn)) }}</span>
             </span>
             <span class="ai-row-text">
-              <span class="ai-row-name">{{ site.name }}</span>
-              <span class="ai-row-desc">{{ site.desc }}</span>
+              <span class="ai-row-name">{{ pick(site.name, site.nameEn) }}</span>
+              <span class="ai-row-desc">{{ pick(site.desc, site.descEn) }}</span>
             </span>
             <span class="ai-row-host">{{ hostOf(site.url) }}</span>
             <span class="ai-row-arrow" aria-hidden="true">&#xE8A7;</span>
           </a>
 
-          <p class="ai-page-note">{{ aiNav.note }}</p>
+          <p class="ai-page-note">{{ pick(aiNav.note, aiNav.noteEn) }}</p>
         </div>
       </div>
     </WinScrollViewer>
@@ -63,10 +63,16 @@
 import WinGrid from '../../components/WinGrid.vue';
 import WinScrollViewer from '../../components/WinScrollViewer.vue';
 import WinTextBlock from '../../components/WinTextBlock.vue';
+import { useI18n } from '../../components/i18n/index';
 import { AI_SITE_ICONS } from '../aiSiteIcons';
 // 站点清单 + 页面文字：根目录「AI导航文本.ts」（新增/删除站点在该文件中维护）
 import aiNav from '../../../AI导航文本';
 import type { AiNavSite } from '../../../AI导航文本';
+
+const { locale } = useI18n();
+
+/** 中文原文 / 英文译文：英文界面优先取英文，缺译文回退中文 */
+const pick = (zh: string, en?: string) => (locale === 'en-US' && en ? en : zh);
 
 /** 显示域名（去掉 https:// 和路径） */
 const hostOf = (url: string) => {

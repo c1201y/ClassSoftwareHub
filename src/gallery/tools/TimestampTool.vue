@@ -1,59 +1,59 @@
 <template>
   <ToolShell
-    title="时间戳转换"
-    subtitle="Unix 时间戳与日期时间互转，支持秒 / 毫秒自动识别，附带当前时间戳与常见日期格式。">
+    :title="t('tool.timestamp.name')"
+    :subtitle="t('tool.timestamp.subtitle')">
     <div class="tool-grid-2">
       <!-- 当前 -->
       <div class="tool-panel ts-now">
-        <span class="tool-section-title">当前时间</span>
+        <span class="tool-section-title">{{ t('timestamp.now') }}</span>
         <div class="ts-now-row">
           <span class="ts-now-num mono">{{ nowSec }}</span>
-          <span class="tool-hint">秒</span>
-          <WinButton FontSize="13" Padding="10,0,10,0" Content="复制" @Click="copy(String(nowSec), '秒级时间戳')" />
+          <span class="tool-hint">{{ t('common.second-unit') }}</span>
+          <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('common.copy')" @Click="copy(String(nowSec), t('timestamp.copy-seconds'))" />
         </div>
         <div class="ts-now-row">
           <span class="ts-now-num mono">{{ nowMs }}</span>
-          <span class="tool-hint">毫秒</span>
-          <WinButton FontSize="13" Padding="10,0,10,0" Content="复制" @Click="copy(String(nowMs), '毫秒时间戳')" />
+          <span class="tool-hint">ms</span>
+          <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('common.copy')" @Click="copy(String(nowMs), t('timestamp.copy-ms'))" />
         </div>
-        <div class="tool-hint ts-now-local">本地时间：{{ nowLocal }}</div>
+        <div class="tool-hint ts-now-local">{{ t('timestamp.local-time', { value: nowLocal }) }}</div>
       </div>
 
       <!-- 时间戳 -> 时间 -->
       <div class="tool-panel">
-        <span class="tool-section-title">时间戳 → 时间</span>
+        <span class="tool-section-title">{{ t('timestamp.ts-to-time') }}</span>
         <WinTextBox
           v-model:Text="tsInput"
-          PlaceholderText="输入时间戳，如 1757952000"
+          :PlaceholderText="t('timestamp.ts-placeholder')"
           FontFamily="Consolas, 'Courier New', monospace" />
         <div class="ts-out">
           <template v-if="tsOut">
-            <div class="ts-out-row"><span class="tool-hint">本地</span><span class="mono">{{ tsOut.local }}</span><WinButton FontSize="13" Padding="10,0,10,0" Content="复制" @Click="copy(tsOut.local, '本地时间')" /></div>
-            <div class="ts-out-row"><span class="tool-hint">UTC</span><span class="mono">{{ tsOut.utc }}</span><WinButton FontSize="13" Padding="10,0,10,0" Content="复制" @Click="copy(tsOut.utc, 'UTC 时间')" /></div>
-            <div class="ts-out-row"><span class="tool-hint">ISO</span><span class="mono">{{ tsOut.iso }}</span><WinButton FontSize="13" Padding="10,0,10,0" Content="复制" @Click="copy(tsOut.iso, 'ISO')" /></div>
-            <div class="ts-out-row"><span class="tool-hint">距今</span><span>{{ tsOut.relative }}</span></div>
+            <div class="ts-out-row"><span class="tool-hint">{{ t('timestamp.local') }}</span><span class="mono">{{ tsOut.local }}</span><WinButton FontSize="13" Padding="10,0,10,0" :Content="t('common.copy')" @Click="copy(tsOut.local, t('timestamp.copy-local'))" /></div>
+            <div class="ts-out-row"><span class="tool-hint">{{ t('timestamp.utc') }}</span><span class="mono">{{ tsOut.utc }}</span><WinButton FontSize="13" Padding="10,0,10,0" :Content="t('common.copy')" @Click="copy(tsOut.utc, t('timestamp.copy-utc'))" /></div>
+            <div class="ts-out-row"><span class="tool-hint">{{ t('timestamp.iso') }}</span><span class="mono">{{ tsOut.iso }}</span><WinButton FontSize="13" Padding="10,0,10,0" :Content="t('common.copy')" @Click="copy(tsOut.iso, t('timestamp.iso'))" /></div>
+            <div class="ts-out-row"><span class="tool-hint">{{ t('timestamp.ago') }}</span><span>{{ tsOut.relative }}</span></div>
           </template>
-          <div v-else class="tool-hint">输入数字后自动识别（≤10 位按秒，否则按毫秒）</div>
+          <div v-else class="tool-hint">{{ t('timestamp.ts-hint') }}</div>
         </div>
       </div>
 
       <!-- 时间 -> 时间戳 -->
       <div class="tool-panel">
-        <span class="tool-section-title">时间 → 时间戳</span>
+        <span class="tool-section-title">{{ t('timestamp.time-to-ts') }}</span>
         <div class="ts-dt-row">
-          <WinDatePicker class="ts-dt-date" Header="日期" v-model:Date="dtDate" />
-          <WinTimePicker class="ts-dt-time" Header="时间" ClockIdentifier="24HourClock" v-model:Time="dtTime" />
+          <WinDatePicker class="ts-dt-date" :Header="t('timestamp.date')" v-model:Date="dtDate" />
+          <WinTimePicker class="ts-dt-time" :Header="t('timestamp.time')" ClockIdentifier="24HourClock" v-model:Time="dtTime" />
         </div>
         <div class="ts-out">
           <template v-if="dtOut">
-            <div class="ts-out-row"><span class="tool-hint">秒</span><span class="mono">{{ dtOut.sec }}</span><WinButton FontSize="13" Padding="10,0,10,0" Content="复制" @Click="copy(String(dtOut.sec), '秒级')" /></div>
-            <div class="ts-out-row"><span class="tool-hint">毫秒</span><span class="mono">{{ dtOut.ms }}</span><WinButton FontSize="13" Padding="10,0,10,0" Content="复制" @Click="copy(String(dtOut.ms), '毫秒级')" /></div>
-            <div class="ts-out-row"><span class="tool-hint">相对现在</span><span>{{ dtOut.relative }}</span></div>
+            <div class="ts-out-row"><span class="tool-hint">{{ t('common.second-unit') }}</span><span class="mono">{{ dtOut.sec }}</span><WinButton FontSize="13" Padding="10,0,10,0" :Content="t('common.copy')" @Click="copy(String(dtOut.sec), t('timestamp.copy-sec'))" /></div>
+            <div class="ts-out-row"><span class="tool-hint">ms</span><span class="mono">{{ dtOut.ms }}</span><WinButton FontSize="13" Padding="10,0,10,0" :Content="t('common.copy')" @Click="copy(String(dtOut.ms), t('timestamp.copy-ms-level'))" /></div>
+            <div class="ts-out-row"><span class="tool-hint">{{ t('timestamp.relative-now') }}</span><span>{{ dtOut.relative }}</span></div>
           </template>
-          <div v-else class="tool-hint">选择一个日期时间</div>
+          <div v-else class="tool-hint">{{ t('timestamp.pick-date') }}</div>
         </div>
         <div class="ts-fill">
-          <WinButton Content="填入当前时间" @Click="fillNow" />
+          <WinButton :Content="t('timestamp.fill-now')" @Click="fillNow" />
         </div>
       </div>
     </div>
@@ -70,7 +70,9 @@ import WinButton from '../../components/WinButton.vue';
 import WinTextBox from '../../components/WinTextBox.vue';
 import WinDatePicker from '../../components/WinDatePicker.vue';
 import WinTimePicker from '../../components/WinTimePicker.vue';
+import { useI18n } from '../../components/i18n/index';
 
+const { t, locale } = useI18n();
 const { toast, copy } = useCopy();
 
 const now = ref(Date.now());
@@ -84,13 +86,17 @@ const fmtLocal = (d: Date) =>
 const fmtUtc = (d: Date) =>
   `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())} UTC`;
 
+/** 相对时间交给原生 Intl 处理：单位与「前/后」的措辞按语言自动变化 */
+const relFmt = new Intl.RelativeTimeFormat(locale, { numeric: 'always' });
 const relative = (ms: number) => {
   const diff = ms - now.value;
   const abs = Math.abs(diff);
-  const unit = abs < 60_000 ? '秒' : abs < 3_600_000 ? '分钟' : abs < 86_400_000 ? '小时' : '天';
-  const value = abs < 60_000 ? abs / 1000 : abs < 3_600_000 ? abs / 60_000 : abs < 86_400_000 ? abs / 3_600_000 : abs / 86_400_000;
-  const rounded = Math.round(value);
-  return diff >= 0 ? `${rounded} ${unit}后` : `${rounded} ${unit}前`;
+  const [unit, div]: [Intl.RelativeTimeFormatUnit, number] =
+    abs < 60_000 ? ['second', 1000]
+      : abs < 3_600_000 ? ['minute', 60_000]
+        : abs < 86_400_000 ? ['hour', 3_600_000]
+          : ['day', 86_400_000];
+  return relFmt.format(Math.round(diff / div), unit);
 };
 
 const nowSec = computed(() => Math.floor(now.value / 1000));

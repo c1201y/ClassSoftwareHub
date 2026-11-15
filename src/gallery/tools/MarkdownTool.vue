@@ -1,15 +1,15 @@
 <template>
   <ToolShell
-    title="Markdown 预览"
-    subtitle="左边写 Markdown，右边实时预览。写通知、说明文档、README 时很方便。">
+    :title="t('tool.markdown.name')"
+    :subtitle="t('tool.markdown.subtitle')">
     <div class="md-split">
       <div class="tool-panel md-pane">
         <div class="md-pane-head">
           <span class="tool-section-title">Markdown</span>
           <div class="tool-row">
-            <WinButton FontSize="13" Padding="10,0,10,0" Content="示例" @Click="insertSample" />
-            <WinButton FontSize="13" Padding="10,0,10,0" Content="复制源码" :IsEnabled="!!input" @Click="copy(input, 'Markdown')" />
-            <WinButton FontSize="13" Padding="10,0,10,0" Content="复制 HTML" :IsEnabled="!!html" @Click="copy(html, 'HTML')" />
+            <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('markdown.sample')" @Click="insertSample" />
+            <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('markdown.copy-source')" :IsEnabled="!!input" @Click="copy(input, 'Markdown')" />
+            <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('markdown.copy-html')" :IsEnabled="!!html" @Click="copy(html, 'HTML')" />
           </div>
         </div>
         <WinTextBox
@@ -18,13 +18,13 @@
           :AcceptsReturn="true"
           TextWrapping="Wrap"
           :IsSpellCheckEnabled="false"
-          PlaceholderText="# 标题&#10;&#10;正文…"
+          :PlaceholderText="t('markdown.placeholder')"
           FontFamily="Consolas, 'Courier New', monospace"
           :FontSize="13" />
       </div>
 
       <div class="tool-panel md-pane">
-        <span class="tool-section-title">预览</span>
+        <span class="tool-section-title">{{ t('markdown.preview') }}</span>
         <div class="md-body" v-html="html"></div>
       </div>
     </div>
@@ -41,10 +41,12 @@ import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
 import WinTextBox from '../../components/WinTextBox.vue';
 import WinButton from '../../components/WinButton.vue';
+import { useI18n } from '../../components/i18n/index';
 
+const { t } = useI18n();
 const { toast, copy } = useCopy();
 
-const input = ref('# 你好，Markdown\n\n这是一个**实时预览**的编辑器。\n\n- 支持列表\n- 支持 `行内代码`\n\n> 引用也可以\n\n```js\nconsole.log("代码块");\n```');
+const input = ref(t('markdown.default-content'));
 
 /**
  * 渲染 + 消毒。
@@ -73,12 +75,12 @@ const html = computed(() => {
       ALLOW_DATA_ATTR: false,
     });
   } catch (err) {
-    return `<p>渲染出错：${err instanceof Error ? err.message : String(err)}</p>`;
+    return `<p>${t('markdown.error', { message: err instanceof Error ? err.message : String(err) })}</p>`;
   }
 });
 
 const insertSample = () => {
-  input.value = '# 标题\n\n正文段落，支持 **加粗**、*斜体*、`代码`。\n\n## 二级标题\n\n1. 第一项\n2. 第二项\n\n- [x] 已完成\n- [ ] 待办\n\n| 列 A | 列 B |\n| --- | --- |\n| 1 | 2 |\n\n[链接](https://example.com)\n';
+  input.value = t('markdown.sample-content');
 };
 </script>
 

@@ -1,10 +1,10 @@
 <template>
   <ToolShell
-    title="课堂计时器"
-    subtitle="倒计时 / 秒表，大字号方便投影到教室大屏，到点会响铃。纯本地运行。">
+    :title="t('tool.timer.name')"
+    :subtitle="t('tool.timer.subtitle')">
     <div class="tool-row timer-modes">
-      <WinButton :Style="mode === 'countdown' ? 'AccentButtonStyle' : ''" Content="倒计时" @Click="setMode('countdown')" />
-      <WinButton :Style="mode === 'stopwatch' ? 'AccentButtonStyle' : ''" Content="秒表" @Click="setMode('stopwatch')" />
+      <WinButton :Style="mode === 'countdown' ? 'AccentButtonStyle' : ''" :Content="t('timer.countdown')" @Click="setMode('countdown')" />
+      <WinButton :Style="mode === 'stopwatch' ? 'AccentButtonStyle' : ''" :Content="t('timer.stopwatch')" @Click="setMode('stopwatch')" />
     </div>
 
     <div class="tool-panel timer-stage">
@@ -17,23 +17,23 @@
           Height="40"
           MinWidth="96"
           FontSize="15"
-          :Content="running ? '暂停' : (finished ? '重新开始' : '开始')"
+          :Content="running ? t('timer.pause') : (finished ? t('timer.restart') : t('timer.start'))"
           @Click="toggle" />
-        <WinButton Height="40" MinWidth="96" FontSize="15" Content="重置" @Click="reset" />
+        <WinButton Height="40" MinWidth="96" FontSize="15" :Content="t('timer.reset')" @Click="reset" />
       </div>
     </div>
 
     <template v-if="mode === 'countdown'">
       <div class="tool-panel timer-set">
-        <span class="tool-section-title">设定时长</span>
+        <span class="tool-section-title">{{ t('timer.set-duration') }}</span>
         <div class="tool-row">
           <WinNumberBox class="timer-num" :Minimum="0" :Maximum="999" :IsEnabled="!running" v-model:Value="min" />
-          <span class="tool-hint">分</span>
+          <span class="tool-hint">{{ t('timer.minutes-unit') }}</span>
           <WinNumberBox class="timer-num" :Minimum="0" :Maximum="59" :IsEnabled="!running" v-model:Value="sec" />
-          <span class="tool-hint">秒</span>
+          <span class="tool-hint">{{ t('timer.seconds-unit') }}</span>
         </div>
         <div class="tool-row timer-presets">
-          <WinButton v-for="p in presets" :key="p" :Content="`${p} 分钟`" :IsEnabled="!running" @Click="applyPreset(p)" />
+          <WinButton v-for="p in presets" :key="p" :Content="t('timer.minutes', { count: p })" :IsEnabled="!running" @Click="applyPreset(p)" />
         </div>
       </div>
     </template>
@@ -48,7 +48,9 @@ import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
 import WinButton from '../../components/WinButton.vue';
 import WinNumberBox from '../../components/WinNumberBox.vue';
+import { useI18n } from '../../components/i18n/index';
 
+const { t } = useI18n();
 const { toast } = useCopy();
 
 const mode = ref<'countdown' | 'stopwatch'>('countdown');

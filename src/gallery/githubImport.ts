@@ -1,3 +1,5 @@
+import { gt, messageLocale } from './localize';
+
 // ════════════════════════════════════════════════════════════════════
 // GitHub 一键读取（供「提交软件」页使用）
 //
@@ -19,13 +21,15 @@
 
 /** GitHub 接口入口：按顺序尝试，第一个成功的胜出。
  *  carriesToken: true 表示该入口可以安全携带令牌（仅 GitHub 官方域名，镜像一律不发送） */
+const STATS_BASE =
+  import.meta.env.VITE_CSH_STATS_BASE ?? '';
+
 const API_BASES = [
-  // 本站统计 Worker 的反向代理（service.132614.xyz 国内可达、Cloudflare 服务端代调、
-  // 服务端内置令牌），固定排在最前；不可用时才落到直连和公共镜像
-  { label: '本站代理', prefix: 'https://service.132614.xyz/api/gh', carriesToken: false },
+  // 同源 /api/gh 反代（ECS 服务端携带令牌、国内直连），固定排在最前；不可用时才落到直连和公共镜像
+  { label: gt('import.proxy-self'), prefix: STATS_BASE + '/api/gh', carriesToken: false },
   { label: 'api.github.com', prefix: 'https://api.github.com', carriesToken: true },
-  { label: 'gh-proxy.com 镜像', prefix: 'https://gh-proxy.com/https://api.github.com', carriesToken: false },
-  { label: 'ghfast.top 镜像', prefix: 'https://ghfast.top/https://api.github.com', carriesToken: false }
+  { label: gt('import.proxy-ghproxy'), prefix: 'https://gh-proxy.com/https://api.github.com', carriesToken: false },
+  { label: gt('import.proxy-ghfast'), prefix: 'https://ghfast.top/https://api.github.com', carriesToken: false }
 ];
 
 /** 记录上次成功的入口：国内直连 api.github.com 常不可达，不记录则每次请求都需等待一次超时 */
@@ -248,13 +252,16 @@ function detectOs(fileName: string): string {
 export function guessPlatform(fileName: string): string {
   const n = (fileName || '').toLowerCase();
   const os = detectOs(n);
+  const en = messageLocale() === 'en-US';
+  const universal = gt('import.universal');
+  const archive = gt('import.archive');
 
   const arch =
-    /(arm64|aarch64|apple[-_]?silicon)/.test(n) ? (os === 'macOS' ? 'Apple 芯片' : 'ARM64')
+    /(arm64|aarch64|apple[-_]?silicon)/.test(n) ? (os === 'macOS' ? gt('import.apple-silicon') : 'ARM64')
       : /(^|[-_.])arm(v7|hf|32)?([-_.]|$)/.test(n) ? 'ARM32'
         : /(x64|amd64|x86[-_]64)/.test(n) ? (os === 'macOS' ? 'Intel' : 'x64')
           : /(x86|ia32|i386|i686)/.test(n) ? 'x86'
-            : /universal/.test(n) ? '通用' : '';
+            : /universal/.test(n) ? universal : '';
 
   const portable = /(portable|green|no[-_]?install)/.test(n);
   const kind =
@@ -262,28 +269,29 @@ export function guessPlatform(fileName: string): string {
       : /\.rpm$/.test(n) ? '.rpm'
         : /\.appimage$/.test(n) ? 'AppImage'
           : /\.snap$/.test(n) ? 'Snap'
-            : /\.dmg$/.test(n) ? '磁盘映像'
-              : /\.pkg$/.test(n) ? '安装包'
+            : /\.dmg$/.test(n) ? gt('import.disk-image')
+              : /\.pkg$/.test(n) ? gt('import.package')
                 : /\.apk$/.test(n) ? 'APK'
                   : /\.ipa$/.test(n) ? 'IPA'
-                    : /\.msi$/.test(n) ? 'MSI 安装版'
-                      : /\.exe$/.test(n) ? (portable ? '便携版' : '安装版')
-                        : /\.(zip|7z|rar|tar\.gz|tgz)$/.test(n) ? (portable ? '便携版' : '压缩包')
+                    : /\.msi$/.test(n) ? gt('import.msi')
+                      : /\.exe$/.test(n) ? (portable ? gt('import.portable') : gt('import.installer'))
+                        : /\.(zip|7z|rar|tar\.gz|tgz)$/.test(n) ? (portable ? gt('import.portable') : archive)
                           : (n.match(/\.([a-z0-9]+)$/)?.[1] || '').toUpperCase();
 
   // 括号里带类型的（.deb / APK / 磁盘映像…），与站内既有数据的写法保持一致
-  const parenKind = ['.deb', '.rpm', 'AppImage', 'Snap', 'APK', 'IPA', '磁盘映像', '安装包', 'MSI 安装版'].includes(kind);
+  const parenKind = ['.deb', '.rpm', 'AppImage', 'Snap', 'APK', 'IPA', gt('import.disk-image'), gt('import.package'), gt('import.msi')].includes(kind);
+  const wrap = (value: string) => (en ? ` (${value})` : `（${value}）`);
 
   if (os === 'macOS') {
     // 通用包（universal）无需标注架构，直接显示「macOS」
-    const macArch = arch === '通用' ? '' : arch;
-    let label = macArch ? `macOS（${macArch}）` : 'macOS';
-    if (kind && kind !== '压缩包') label += parenKind ? `（${kind}）` : ` ${kind}`;
+    const macArch = arch === universal ? '' : arch;
+    let label = macArch ? (en ? `macOS (${macArch})` : `macOS（${macArch}）`) : 'macOS';
+    if (kind && kind !== archive) label += parenKind ? wrap(kind) : ` ${kind}`;
     return label;
   }
 
-  let label = [os || '其他', arch].filter(Boolean).join(' ');
-  if (kind) label += parenKind ? `（${kind}）` : ` ${kind}`;
+  let label = [os || gt('import.other'), arch].filter(Boolean).join(' ');
+  if (kind) label += parenKind ? wrap(kind) : ` ${kind}`;
   return label;
 }
 
@@ -464,7 +472,7 @@ export async function importFromGithub(
   const rawAssets: GithubAsset[] = (chosen?.assets ?? [])
     .filter((asset) => typeof asset.browser_download_url === 'string' && asset.browser_download_url)
     .map((asset) => ({
-      name: (asset.name || '').trim() || '未命名文件',
+      name: (asset.name || '').trim() || gt('import.untitled'),
       size: typeof asset.size === 'number' ? asset.size : 0,
       url: asset.browser_download_url as string
     }));

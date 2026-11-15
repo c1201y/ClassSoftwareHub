@@ -16,6 +16,8 @@
 // 本文件不产出界面文字 —— 文案在 文字设置.ts 的 search.* 中。
 // ════════════════════════════════════════════════════════════════════
 
+import type { Locale } from '../components/i18n/index';
+
 const STORAGE_KEY = 'csh-search-history';
 
 /** 最多保留多少条（再多也没人翻，且会挤占空态展示） */
@@ -93,26 +95,48 @@ export function clearSearchHistory(): string[] {
  * 不写死成「热门搜索」这种空话。这些词都能真的搜到东西
  * （搜索索引里有对应的同义词组），点了不会出现空结果。
  */
-export const SUGGESTED_TERMS = [
+const SUGGESTED_ZH = [
   '白板',
   '投屏',
   '清理',
   '截图',
-  '投屏',
   '压缩',
   '课表',
   '输入法',
   '浏览器',
   '播放器',
   '卸载',
-  '计时'
+  '计时',
+  '二维码'
 ];
 
-/** 去重后的推荐词（上面的表里「投屏」重复了，这里兜底去掉） */
-export const uniqueSuggestions = (): string[] => {
+/**
+ * 英文界面的推荐词。
+ *
+ * 英文查询在这份搜索索引里主要命中内置工具与页面（软件描述是中文数据），
+ * 所以这里挑的是工具/页面里确实存在的英文说法，点了不会落到空结果。
+ */
+const SUGGESTED_EN = [
+  'whiteboard',
+  'screen mirroring',
+  'cleanup',
+  'screenshot',
+  'compress',
+  'timetable',
+  'input method',
+  'browser',
+  'player',
+  'uninstall',
+  'timer',
+  'QR code'
+];
+
+/** 按语言返回去重后的推荐词（同一组里重复项也一并去掉） */
+export const suggestedTerms = (locale: Locale = 'zh-CN'): string[] => {
+  const source = locale === 'en-US' ? SUGGESTED_EN : SUGGESTED_ZH;
   const seen = new Set<string>();
   const out: string[] = [];
-  for (const term of SUGGESTED_TERMS) {
+  for (const term of source) {
     const key = norm(term);
     if (seen.has(key)) continue;
     seen.add(key);

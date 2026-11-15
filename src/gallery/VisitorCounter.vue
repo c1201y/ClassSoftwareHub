@@ -1,11 +1,11 @@
 <template>
-  <span class="visitor-counter" :class="{ 'vc-offline': visitorState.offline }" aria-label="网站访问量统计">
+  <span class="visitor-counter" :class="{ 'vc-offline': visitorState.offline }" :aria-label="t('visitor.aria-label')">
     <span class="vc-item">
-      <span class="vc-label">总访问量</span>
+      <span class="vc-label">{{ t('visitor.total-views') }}</span>
       <span class="vc-value vc-number">{{ fmt(visitorState.pv) }}</span>
     </span>
     <span class="vc-item">
-      <span class="vc-label">访客数</span>
+      <span class="vc-label">{{ t('visitor.unique-visitors') }}</span>
       <span class="vc-value vc-number">{{ fmt(visitorState.uv) }}</span>
     </span>
   </span>
@@ -14,7 +14,10 @@
 <script setup lang="ts">
 // 纯展示组件：数字来自全站共享的 visitorState（由 App.vue 的 trackVisit 上报并写入）。
 // 计数动作在应用根组件完成，因此全站所有页面访问都会计入，而非仅在设置页计入。
+import { useI18n } from '../components/i18n/index';
 import { visitorState } from './visitor';
+
+const { t } = useI18n();
 
 function fmt(n: number | null): string {
   return n === null ? '—' : n.toLocaleString('en-US');

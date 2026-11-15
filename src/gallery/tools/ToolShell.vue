@@ -6,7 +6,7 @@
       <WinButton class="tool-shell-back" Style="SubtleButtonStyle" @Click="goBack">
         <span class="tool-shell-back-content">
           <span class="icon" aria-hidden="true">&#xE72B;</span>
-          <span>内置工具</span>
+          <span>{{ t('tool.shell.back') }}</span>
         </span>
       </WinButton>
       <WinTextBlock
@@ -43,10 +43,12 @@ import WinGrid from '../../components/WinGrid.vue';
 import WinScrollViewer from '../../components/WinScrollViewer.vue';
 import WinTextBlock from '../../components/WinTextBlock.vue';
 import WinButton from '../../components/WinButton.vue';
+import { useI18n } from '../../components/i18n/index';
 import './tool.css';
 
 defineProps<{ title: string; subtitle?: string }>();
 
+const { t } = useI18n();
 const router = useRouter();
 const goBack = () => {
   void router.push({ name: 'tools' });

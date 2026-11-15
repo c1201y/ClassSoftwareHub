@@ -42,12 +42,15 @@ export const DOCS_URL = 'https://docs.classsoftwarehub.cn/download';
 
 /**
  * 取某个仓库 Release 清单的接口入口，按顺序试，第一个成功的胜出。
- * 两个入口都带 CORS 头，浏览器能直接读 JSON。
+ * 默认走同源 /api/gh（ECS 反代 GitHub，服务端带令牌），比跨域访问统计域名更快。
  */
+const STATS_BASE =
+  import.meta.env.VITE_CSH_STATS_BASE ?? '';
+
 function apiBases(repo: string): string[] {
   return [
     // 本站统计 Worker 的反代：国内可达、Cloudflare 服务端代调，固定排最前
-    `https://service.132614.xyz/api/gh/repos/${repo}/releases`,
+    `${STATS_BASE}/api/gh/repos/${repo}/releases`,
     `https://gh-proxy.com/https://api.github.com/repos/${repo}/releases`
   ];
 }

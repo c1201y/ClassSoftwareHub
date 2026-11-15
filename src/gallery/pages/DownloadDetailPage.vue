@@ -20,7 +20,7 @@
           <div class="detail-heading-text">
             <h1 class="detail-title">{{ app.name }}</h1>
             <p class="detail-tagline">{{ app.tagline }}</p>
-            <span class="detail-category-badge">{{ categoryName(app.category) }}</span>
+            <span class="detail-category-badge">{{ categoryName(app.category, locale) }}</span>
           </div>
           <!-- 分享：网页版相对桌面版最有价值的一处 —— 发出去是一条能直接
                打开这个软件页的链接，而不是笼统的站名。桌面版做不到。 -->
@@ -267,7 +267,7 @@ import type { MirrorChannel } from '../githubMirror';
 import '../styles/download-detail-page.css';
 import { buildShareText, buildShareUrl, buildQrSvg, isShareableUrl } from '../share';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const route = useRoute();
 
 /** 网址 #/download/<id> 里的 id 对应的软件 */
@@ -535,7 +535,7 @@ const shareTarget = computed(() => {
   };
 });
 
-const shareText = computed(() => (shareTarget.value ? buildShareText(shareTarget.value) : ''));
+const shareText = computed(() => (shareTarget.value ? buildShareText(shareTarget.value, locale) : ''));
 const shareUrl = computed(() => (app.value ? buildShareUrl(app.value.id) : ''));
 const shareQr = computed(() => (shareUrl.value ? buildQrSvg(shareUrl.value) : ''));
 

@@ -1,19 +1,17 @@
 <template>
-  <ToolShell
-    title="化学式配平"
-    subtitle="输入未配平的化学方程式，自动算出各物质前的系数。支持常见元素与原子团，全部本地计算、不上传数据。">
+  <ToolShell :title="t('tool.chemistry.name')" :subtitle="t('tool.chemistry.subtitle')">
     <div class="chem-input-row tool-row">
       <WinTextBox
         class="chem-input"
         :Text="equation"
-        PlaceholderText="例如：H2 + O2 = H2O"
+        :PlaceholderText="t('chem.placeholder')"
         @Update:Text="onInput" />
-      <WinButton Content="配平" Style="AccentButtonStyle" @Click="balance" />
-      <WinButton Content="清空" @Click="clear" />
+      <WinButton :Content="t('chem.balance')" Style="AccentButtonStyle" @Click="balance" />
+      <WinButton :Content="t('chem.clear')" @Click="clear" />
     </div>
 
     <div class="chem-samples tool-row">
-      <span class="tool-hint">试试：</span>
+      <span class="tool-hint">{{ t('chem.samples') }}</span>
       <button
         v-for="s in SAMPLES"
         :key="s.eq"
@@ -75,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import ToolShell from './ToolShell.vue';
 import WinButton from '../../components/WinButton.vue';
 import WinTextBox from '../../components/WinTextBox.vue';
@@ -106,14 +104,14 @@ interface BalanceResult {
   elements: { symbol: string; left: number; right: number }[];
 }
 
-const SAMPLES = [
-  { label: '氢气燃烧', eq: 'H2 + O2 = H2O' },
-  { label: '铁生锈', eq: 'Fe + O2 = Fe2O3' },
-  { label: '甲烷燃烧', eq: 'CH4 + O2 = CO2 + H2O' },
-  { label: '高锰酸钾分解', eq: 'KMnO4 = K2MnO4 + MnO2 + O2' },
-  { label: '盐酸中和', eq: 'HCl + NaOH = NaCl + H2O' },
-  { label: '光合作用', eq: 'CO2 + H2O = C6H12O6 + O2' }
-];
+const SAMPLES = computed(() => [
+  { label: t('chem.sample.hydrogen'), eq: 'H2 + O2 = H2O' },
+  { label: t('chem.sample.rust'), eq: 'Fe + O2 = Fe2O3' },
+  { label: t('chem.sample.methane'), eq: 'CH4 + O2 = CO2 + H2O' },
+  { label: t('chem.sample.kmno4'), eq: 'KMnO4 = K2MnO4 + MnO2 + O2' },
+  { label: t('chem.sample.neutralize'), eq: 'HCl + NaOH = NaCl + H2O' },
+  { label: t('chem.sample.photosynthesis'), eq: 'CO2 + H2O = C6H12O6 + O2' }
+]);
 
 const onInput = (value: string) => {
   equation.value = value;

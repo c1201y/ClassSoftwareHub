@@ -1,74 +1,74 @@
 <template>
   <ToolShell
-    title="文本处理"
-    subtitle="去重、去空行、大小写、中英标点互转、字数统计……写通知/名单/文案时常用的小工具。">
+    :title="t('tool.text.name')"
+    :subtitle="t('tool.text.subtitle')">
     <div class="tool-grid-2">
       <div class="tool-panel">
-        <span class="tool-section-title">输入</span>
+        <span class="tool-section-title">{{ t('common.input') }}</span>
         <WinTextBox
           class="tt-box"
           v-model:Text="input"
           :AcceptsReturn="true"
           TextWrapping="Wrap"
           :IsSpellCheckEnabled="false"
-          PlaceholderText="把文本粘进来"
+          :PlaceholderText="t('text-tool.input-placeholder')"
           FontFamily="Consolas, 'Courier New', monospace"
           :FontSize="13" />
         <div class="tt-stats tool-hint">
-          <span>{{ stats.chars }} 字</span>
-          <span>{{ stats.noSpace }} 不含空格</span>
-          <span>{{ stats.cjk }} 汉字</span>
-          <span>{{ stats.words }} 英文词</span>
-          <span>{{ stats.lines }} 行</span>
+          <span>{{ t('text-tool.stats.chars', { n: stats.chars }) }}</span>
+          <span>{{ t('text-tool.stats.no-space', { n: stats.noSpace }) }}</span>
+          <span>{{ t('text-tool.stats.cjk', { n: stats.cjk }) }}</span>
+          <span>{{ t('text-tool.stats.words', { n: stats.words }) }}</span>
+          <span>{{ t('text-tool.stats.lines', { n: stats.lines }) }}</span>
         </div>
       </div>
 
       <div class="tool-panel">
-        <span class="tool-section-title">结果</span>
+        <span class="tool-section-title">{{ t('common.result') }}</span>
         <WinTextBox
           class="tt-box"
           v-model:Text="output"
           :AcceptsReturn="true"
           TextWrapping="Wrap"
           :IsSpellCheckEnabled="false"
-          PlaceholderText="处理结果出现在这里"
+          :PlaceholderText="t('text-tool.output-placeholder')"
           FontFamily="Consolas, 'Courier New', monospace"
           :FontSize="13" />
         <div class="tool-row tt-actions">
-          <WinButton FontSize="13" Padding="10,0,10,0" Content="复制结果" :IsEnabled="!!output" @Click="copy(output, '结果')" />
-          <WinButton FontSize="13" Padding="10,0,10,0" Content="用结果替换输入" :IsEnabled="!!output" @Click="input = output" />
-          <WinButton FontSize="13" Padding="10,0,10,0" Content="清空" :IsEnabled="!!input || !!output" @Click="clearAll" />
+          <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('common.copy-result')" :IsEnabled="!!output" @Click="copy(output, t('common.result'))" />
+          <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('common.replace-input')" :IsEnabled="!!output" @Click="input = output" />
+          <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('common.clear')" :IsEnabled="!!input || !!output" @Click="clearAll" />
         </div>
       </div>
     </div>
 
     <div class="tool-panel tt-ops">
-      <span class="tool-section-title">一键处理</span>
+      <span class="tool-section-title">{{ t('text-tool.ops') }}</span>
       <div class="tt-op-groups">
         <div class="tt-op-group">
-          <span class="tool-label">行处理</span>
+          <span class="tool-label">{{ t('text-tool.group.lines') }}</span>
           <div class="tool-row">
-            <WinButton FontSize="13" Padding="10,0,10,0" Content="去重复行" @Click="apply(dedupeLines)" />
-            <WinButton FontSize="13" Padding="10,0,10,0" Content="去空行" @Click="apply(removeEmptyLines)" />
-            <WinButton FontSize="13" Padding="10,0,10,0" Content="去首尾空格" @Click="apply(trimLines)" />
-            <WinButton FontSize="13" Padding="10,0,10,0" Content="反转行序" @Click="apply(reverseLines)" />
-            <WinButton FontSize="13" Padding="10,0,10,0" Content="按行排序" @Click="apply(sortLines)" />
+            <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('text-tool.dedupe')" @Click="apply(dedupeLines)" />
+            <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('text-tool.remove-empty')" @Click="apply(removeEmptyLines)" />
+            <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('text-tool.trim-lines')" @Click="apply(trimLines)" />
+            <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('text-tool.reverse')" @Click="apply(reverseLines)" />
+            <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('text-tool.sort')" @Click="apply(sortLines)" />
           </div>
         </div>
         <div class="tt-op-group">
-          <span class="tool-label">大小写</span>
+          <span class="tool-label">{{ t('text-tool.group.case') }}</span>
           <div class="tool-row">
-            <WinButton FontSize="13" Padding="10,0,10,0" Content="全部大写" @Click="apply((t) => t.toUpperCase())" />
-            <WinButton FontSize="13" Padding="10,0,10,0" Content="全部小写" @Click="apply((t) => t.toLowerCase())" />
+            <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('text-tool.upper')" @Click="apply((x) => x.toUpperCase())" />
+            <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('text-tool.lower')" @Click="apply((x) => x.toLowerCase())" />
           </div>
         </div>
         <div class="tt-op-group">
-          <span class="tool-label">标点 / 空白</span>
+          <span class="tool-label">{{ t('text-tool.group.punct') }}</span>
           <div class="tool-row">
-            <WinButton FontSize="13" Padding="10,0,10,0" Content="中文标点→英文" @Click="apply(cnToEn)" />
-            <WinButton FontSize="13" Padding="10,0,10,0" Content="英文标点→中文" @Click="apply(enToCn)" />
-            <WinButton FontSize="13" Padding="10,0,10,0" Content="合并连续空格" @Click="apply(collapseSpaces)" />
-            <WinButton FontSize="13" Padding="10,0,10,0" Content="去全文首尾空白" @Click="apply(trimAll)" />
+            <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('text-tool.cn-to-en')" @Click="apply(cnToEn)" />
+            <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('text-tool.en-to-cn')" @Click="apply(enToCn)" />
+            <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('text-tool.collapse')" @Click="apply(collapseSpaces)" />
+            <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('text-tool.trim-all')" @Click="apply(trimAll)" />
           </div>
         </div>
       </div>
@@ -84,7 +84,9 @@ import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
 import WinTextBox from '../../components/WinTextBox.vue';
 import WinButton from '../../components/WinButton.vue';
+import { useI18n } from '../../components/i18n/index';
 
+const { t, locale } = useI18n();
 const { toast, copy } = useCopy();
 const input = ref('');
 const output = ref('');
@@ -109,7 +111,7 @@ const dedupeLines = (t: string) => [...new Set(lines(t))].join('\n');
 const removeEmptyLines = (t: string) => lines(t).filter((l) => l.trim() !== '').join('\n');
 const trimLines = (t: string) => lines(t).map((l) => l.trim()).join('\n');
 const reverseLines = (t: string) => lines(t).reverse().join('\n');
-const sortLines = (t: string) => lines(t).sort((a, b) => a.localeCompare(b, 'zh')).join('\n');
+const sortLines = (t: string) => lines(t).sort((a, b) => a.localeCompare(b, locale)).join('\n');
 const collapseSpaces = (t: string) => t.replace(/[ \t]+/g, ' ');
 const trimAll = (t: string) => t.trim();
 

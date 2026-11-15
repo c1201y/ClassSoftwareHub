@@ -1,56 +1,56 @@
 <template>
   <ToolShell
-    title="编码 / 哈希工具"
-    subtitle="Base64、URL 编解码，以及 MD5 / SHA-1 / SHA-256 / SHA-512 哈希。全部在本地计算。">
+    :title="t('tool.encoding.name')"
+    :subtitle="t('tool.encoding.subtitle')">
     <div class="tool-grid-2">
       <div class="tool-panel">
-        <span class="tool-section-title">输入</span>
+        <span class="tool-section-title">{{ t('common.input') }}</span>
         <WinTextBox
           class="enc-box"
           v-model:Text="input"
           :AcceptsReturn="true"
           TextWrapping="Wrap"
           :IsSpellCheckEnabled="false"
-          PlaceholderText="在这里输入文字（支持中文）"
+          :PlaceholderText="t('encoding.input-placeholder')"
           FontFamily="Consolas, 'Courier New', monospace"
           :FontSize="13" />
 
         <div class="tool-row enc-actions">
-          <WinButton FontSize="13" Padding="10,0,10,0" Content="Base64 编码" @Click="b64enc" />
-          <WinButton FontSize="13" Padding="10,0,10,0" Content="Base64 解码" @Click="b64dec" />
-          <WinButton FontSize="13" Padding="10,0,10,0" Content="URL 编码" @Click="urlenc" />
-          <WinButton FontSize="13" Padding="10,0,10,0" Content="URL 解码" @Click="urldec" />
+          <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('encoding.b64-encode')" @Click="b64enc" />
+          <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('encoding.b64-decode')" @Click="b64dec" />
+          <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('encoding.url-encode')" @Click="urlenc" />
+          <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('encoding.url-decode')" @Click="urldec" />
         </div>
       </div>
 
       <div class="tool-panel">
-        <span class="tool-section-title">输出</span>
+        <span class="tool-section-title">{{ t('common.output') }}</span>
         <WinTextBox
           class="enc-box"
           v-model:Text="output"
           :AcceptsReturn="true"
           TextWrapping="Wrap"
           :IsSpellCheckEnabled="false"
-          PlaceholderText="转换结果"
+          :PlaceholderText="t('encoding.output-placeholder')"
           FontFamily="Consolas, 'Courier New', monospace"
           :FontSize="13" />
         <div class="tool-row enc-actions">
-          <WinButton FontSize="13" Padding="10,0,10,0" Content="复制结果" :IsEnabled="!!output" @Click="copy(output, '结果')" />
-          <WinButton FontSize="13" Padding="10,0,10,0" Content="用结果替换输入" :IsEnabled="!!output" @Click="useOutputAsInput" />
+          <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('common.copy-result')" :IsEnabled="!!output" @Click="copy(output, t('common.result'))" />
+          <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('common.replace-input')" :IsEnabled="!!output" @Click="useOutputAsInput" />
         </div>
       </div>
     </div>
 
     <div class="tool-panel enc-hash">
-      <span class="tool-section-title">哈希（对左侧输入实时计算）</span>
+      <span class="tool-section-title">{{ t('encoding.hash-title') }}</span>
       <div v-for="row in hashes" :key="row.name" class="enc-hash-row">
         <div class="enc-hash-head">
           <span class="enc-hash-name">{{ row.name }}</span>
-          <WinButton FontSize="13" Padding="10,0,10,0" Content="复制" :IsEnabled="!!row.value" @Click="copy(row.value, row.name)" />
+          <WinButton FontSize="13" Padding="10,0,10,0" :Content="t('common.copy')" :IsEnabled="!!row.value" @Click="copy(row.value, row.name)" />
         </div>
         <div class="enc-hash-value mono">{{ row.value || '—' }}</div>
       </div>
-      <div v-if="hashUnsupported" class="tool-hint">当前环境不支持 SHA 哈希（需要 https 或 localhost）。</div>
+      <div v-if="hashUnsupported" class="tool-hint">{{ t('encoding.hash-unsupported') }}</div>
     </div>
 
     <div v-if="toast" class="tool-toast" role="status">{{ toast }}</div>
@@ -64,7 +64,9 @@ import { useCopy } from './useCopy';
 import { md5 } from './md5';
 import WinTextBox from '../../components/WinTextBox.vue';
 import WinButton from '../../components/WinButton.vue';
+import { useI18n } from '../../components/i18n/index';
 
+const { t } = useI18n();
 const { toast, copy, flash } = useCopy();
 
 const input = ref('');
@@ -88,10 +90,10 @@ const fromBase64 = (text: string) => {
   return dec.decode(bytes);
 };
 
-const b64enc = () => { try { output.value = toBase64(input.value); } catch { flash('编码失败', 2600); } };
-const b64dec = () => { try { output.value = fromBase64(input.value); } catch { flash('解码失败，请检查 Base64 内容', 2600); } };
+const b64enc = () => { try { output.value = toBase64(input.value); } catch { flash(t('encoding.error.encode'), 2600); } };
+const b64dec = () => { try { output.value = fromBase64(input.value); } catch { flash(t('encoding.error.decode-b64'), 2600); } };
 const urlenc = () => { output.value = encodeURIComponent(input.value); };
-const urldec = () => { try { output.value = decodeURIComponent(input.value); } catch { flash('解码失败，请检查内容', 2600); } };
+const urldec = () => { try { output.value = decodeURIComponent(input.value); } catch { flash(t('encoding.error.decode'), 2600); } };
 
 const useOutputAsInput = () => { input.value = output.value; };
 

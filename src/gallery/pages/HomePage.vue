@@ -7,7 +7,7 @@
       <!-- 节日皮肤：首页顶部海报（补丁模块，见 src/gallery/holidayTheme.ts）
            图片顶部 = 网页顶部，高度按原比例自动，底部柔和渐隐进页面，不遮挡下方文字 -->
       <div v-if="activeHoliday" class="holiday-hero" aria-hidden="true">
-        <img class="holiday-hero-image" :src="activeHoliday.banner" :alt="activeHoliday.label" />
+        <img class="holiday-hero-image" :src="activeHoliday.banner" :alt="t(activeHoliday.labelKey)" />
       </div>
       <div class="home-page">
         <!-- 页头：站名 + 副标题 + 软件清单模板按钮 -->
@@ -89,8 +89,8 @@
             @click="openAiNav">
             <span class="home-jump-icon" aria-hidden="true">&#xE99A;</span>
             <span class="home-jump-text">
-              <span class="home-jump-title">{{ aiNav.homeTitle }}</span>
-              <span class="home-jump-desc">{{ aiNav.homeDesc }}</span>
+              <span class="home-jump-title">{{ locale === 'en-US' ? (aiNav.homeTitleEn ?? aiNav.homeTitle) : aiNav.homeTitle }}</span>
+              <span class="home-jump-desc">{{ locale === 'en-US' ? (aiNav.homeDescEn ?? aiNav.homeDesc) : aiNav.homeDesc }}</span>
             </span>
             <span class="home-jump-arrow" aria-hidden="true">&#xE76C;</span>
           </button>
@@ -164,7 +164,7 @@
                     :Text="app.tagline ?? ''"
                     TextWrapping="NoWrap" />
                 </span>
-                <span class="category-badge">{{ categoryName(app.category) }}</span>
+                <span class="category-badge">{{ categoryName(app.category, locale) }}</span>
               </span>
             </button>
           </div>
@@ -184,7 +184,7 @@ import WinTextBlock from '../../components/WinTextBlock.vue';
 import WinSelectorBar from '../../components/WinSelectorBar.vue';
 import WinComboBox from '../../components/WinComboBox.vue';
 import { useI18n } from '../../components/i18n/index';
-import { apps, categories, categoryName, platforms } from '../data';
+import { apps, categories, categoryName, platformName, platforms } from '../data';
 import type { SoftwareApp } from '../data';
 import { appIconUrlSafe, markIconBroken } from '../appIcons';
 import '../styles/home-page.css';
@@ -202,7 +202,7 @@ const activeHoliday = inject<Ref<HolidayTheme | null>>('activeHoliday', ref(null
 /** 筛选条项目：第一个是“全部”，后面按分类顺序排 */
 const filterItems = computed(() => [
   { Text: t('filter.all'), Tag: 'all' },
-  ...categories.map((category) => ({ Text: category.name, Tag: category.key }))
+  ...categories.map((category) => ({ Text: categoryName(category.key, locale), Tag: category.key }))
 ]);
 
 const selectedIndex = ref(0);
@@ -213,7 +213,7 @@ const selectedItem = computed(() => filterItems.value[selectedIndex.value]);
 /** 系统下拉：第一项是“全部系统”，后面取自 软件数据/platforms.json */
 const platformItems = computed(() => [
   { key: 'all', name: t('filter.platform-all') },
-  ...platforms.map((platform) => ({ key: platform.key, name: platform.name }))
+  ...platforms.map((platform) => ({ key: platform.key, name: platformName(platform, locale) }))
 ]);
 
 const platformIndex = ref(0);
@@ -327,7 +327,7 @@ const downloadSoftwareTemplate = () => {
     document.body.removeChild(anchor);
     window.setTimeout(() => URL.revokeObjectURL(anchor.href), 1000);
   } catch (error) {
-    window.alert('下载失败：' + String(error));
+    window.alert(t('home.download-template-failed', { error: String(error) }));
   }
 };
 </script>

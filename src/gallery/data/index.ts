@@ -13,21 +13,29 @@
 // ════════════════════════════════════════════════════════════════════
 import categoriesRaw from '../../../软件数据/categories.json?raw';
 import platformsRaw from '../../../软件数据/platforms.json?raw';
+import type { Locale } from '../../components/i18n/index';
+import { gt } from '../localize';
 
 export interface DownloadCategory {
   key: string;
   name: string;
+  /** 英文显示名（英文界面用；省略时回退 name） */
+  nameEn?: string;
   icon: string;
 }
 
 export interface SoftwarePlatformVersion {
   key: string;
   name: string;
+  /** 英文显示名（省略时回退 name） */
+  nameEn?: string;
 }
 
 export interface SoftwarePlatform {
   key: string;
   name: string;
+  /** 英文显示名（英文界面用；省略时回退 name） */
+  nameEn?: string;
   /** 投稿页二级菜单里的版本选项（老到新排序）；首页筛选不使用 */
   versions?: SoftwarePlatformVersion[];
   /** true = 版本是数字区间（可显示「Windows 10+」）；false/省略 = 发行版清单，逐一列出 */
@@ -127,13 +135,13 @@ function parseJson(text: string): { ok: true; value: unknown } | { ok: false; li
 
 /** 把浏览器报错翻译成人话 */
 function friendlyHint(raw: string): string {
-  if (raw.includes('Unexpected end of JSON input')) return '文件不完整：可能漏了结尾的 } 或 ]，或末尾多了逗号';
-  if (raw.includes('Unterminated string')) return '引号没闭合：字符串少了一个英文双引号 "';
+  if (raw.includes('Unexpected end of JSON input')) return gt('data.issue.json-incomplete');
+  if (raw.includes('Unterminated string')) return gt('data.issue.unterminated-string');
   if (raw.includes('non-whitespace') || raw.includes('Expected') || raw.includes('Unexpected token') || raw.includes('Unexpected string'))
-    return '标点/引号有误：常见是字段之间漏了英文逗号，或引号、冒号没配对';
-  if (raw.includes('Bad control character')) return '内容里混入了非法控制字符（换行请写在引号外）';
-  if (raw.includes('number')) return '数字写法不对';
-  return 'JSON 语法错误';
+    return gt('data.issue.syntax');
+  if (raw.includes('Bad control character')) return gt('data.issue.control-char');
+  if (raw.includes('number')) return gt('data.issue.number');
+  return gt('data.issue.json');
 }
 
 const PICK = [
@@ -187,7 +195,7 @@ for (const [filePath, text] of Object.entries(appModules)) {
   }
   const value = result.value;
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    dataLoadIssues.push({ file, message: '文件最外层不是 { } 对象（可能整体被方括号或引号包住了）' });
+    dataLoadIssues.push({ file, message: gt('data.issue.not-object') });
     continue;
   }
   const obj = value as RawApp;
@@ -196,15 +204,18 @@ for (const [filePath, text] of Object.entries(appModules)) {
   if (!id || !name) {
     dataLoadIssues.push({
       file,
-      message: '缺少必填字段：id（英文小写标识）或 name（软件名称）',
-      detail: `当前 id=${JSON.stringify(obj.id)} name=${JSON.stringify(obj.name)}`,
+      message: gt('data.issue.missing-fields'),
+      detail: gt('data.issue.missing-fields-detail', {
+        id: JSON.stringify(obj.id),
+        name: JSON.stringify(obj.name)
+      }),
     });
     continue;
   }
   if (seenIds.has(id)) {
     dataLoadIssues.push({
       file,
-      message: `id 重复：与 ${seenIds.get(id)} 里的 id 相同（id 必须全站唯一），本文件已跳过`,
+      message: gt('data.issue.duplicate-id', { file: seenIds.get(id) ?? '' }),
     });
     continue;
   }
@@ -233,7 +244,9 @@ function parseCategories(): DownloadCategory[] | null {
     if (typeof item !== 'object' || item === null) return null;
     const o = item as Record<string, unknown>;
     if (typeof o.key !== 'string' || typeof o.name !== 'string') return null;
-    list.push({ key: o.key, name: o.name, icon: typeof o.icon === 'string' ? o.icon : '' });
+    const entry: DownloadCategory = { key: o.key, name: o.name, icon: typeof o.icon === 'string' ? o.icon : '' };
+    if (typeof o.nameEn === 'string' && o.nameEn.trim()) entry.nameEn = o.nameEn.trim();
+    list.push(entry);
   }
   return list.length > 0 ? list : null;
 }
@@ -249,7 +262,7 @@ if (!categoriesData) {
   }
   dataLoadIssues.push({
     file: 'categories.json',
-    message: '分类文件没读进来，已用软件里出现的分类临时顶替（名称显示为英文 key），请检查 软件数据/categories.json 语法',
+    message: gt('data.issue.categories'),
   });
 }
 
@@ -262,7 +275,7 @@ function parsePlatforms(): SoftwarePlatform[] {
   if (!result.ok || !Array.isArray(result.value)) {
     dataLoadIssues.push({
       file: 'platforms.json',
-      message: '平台文件没读进来，首页暂时不显示「系统」筛选，请检查 软件数据/platforms.json 语法',
+      message: gt('data.issue.platforms'),
     });
     return [];
   }
@@ -272,13 +285,16 @@ function parsePlatforms(): SoftwarePlatform[] {
     const o = item as Record<string, unknown>;
     if (typeof o.key !== 'string' || typeof o.name !== 'string') continue;
     const platform: SoftwarePlatform = { key: o.key, name: o.name };
+    if (typeof o.nameEn === 'string' && o.nameEn.trim()) platform.nameEn = o.nameEn.trim();
     if (Array.isArray(o.versions)) {
       const versions: SoftwarePlatformVersion[] = [];
       for (const raw of o.versions) {
         if (typeof raw !== 'object' || raw === null) continue;
         const v = raw as Record<string, unknown>;
         if (typeof v.key === 'string' && typeof v.name === 'string') {
-          versions.push({ key: v.key, name: v.name });
+          const version: SoftwarePlatformVersion = { key: v.key, name: v.name };
+          if (typeof v.nameEn === 'string' && v.nameEn.trim()) version.nameEn = v.nameEn.trim();
+          versions.push(version);
         }
       }
       if (versions.length) platform.versions = versions;
@@ -296,6 +312,17 @@ export const platforms: SoftwarePlatform[] = parsePlatforms();
 export const findAppById = (id: string): SoftwareApp | undefined =>
   apps.find((app) => app.id === id);
 
-/** 分类 key → 分类显示名 */
-export const categoryName = (key: string): string =>
-  categories.find((category) => category.key === key)?.name ?? key;
+/** 分类 key → 分类显示名（英文界面优先用 nameEn） */
+export const categoryName = (key: string, locale: Locale = 'zh-CN'): string => {
+  const category = categories.find((item) => item.key === key);
+  if (!category) return key;
+  return locale === 'en-US' ? (category.nameEn ?? category.name) : category.name;
+};
+
+/** 系统显示名（英文界面优先用 nameEn） */
+export const platformName = (platform: SoftwarePlatform, locale: Locale = 'zh-CN'): string =>
+  locale === 'en-US' ? (platform.nameEn ?? platform.name) : platform.name;
+
+/** 系统版本显示名（英文界面优先用 nameEn） */
+export const platformVersionName = (version: SoftwarePlatformVersion, locale: Locale = 'zh-CN'): string =>
+  locale === 'en-US' ? (version.nameEn ?? version.name) : version.name;

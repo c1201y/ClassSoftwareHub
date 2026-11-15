@@ -1,13 +1,9 @@
 <template>
-  <ToolShell
-    title="单词书写练习"
-    subtitle="老师粘贴汉语词表，学生在右边横线上用触控笔或手指写英语。支持四线三格、显示答案、撤销、打印空白练习页。全部本地运行，不联网、不上传。">
+  <ToolShell :title="t('tool.word-writing.name')" :subtitle="t('tool.word-writing.subtitle')">
     <div class="ww-toolbar tool-row">
-      <WinButton Content="在新窗口打开" @Click="openInNewWindow" />
-      <WinButton Content="重新载入" @Click="reload" />
-      <span class="tool-hint ww-hint">
-        提示：在下面的页面里按 Ctrl+P 可打印 / 导出 PDF；按 Ctrl+Enter 可导入词表。
-      </span>
+      <WinButton :Content="t('word-writing.open-new')" @Click="openInNewWindow" />
+      <WinButton :Content="t('word-writing.reload')" @Click="reload" />
+      <span class="tool-hint ww-hint">{{ t('word-writing.hint') }}</span>
     </div>
 
     <div class="tool-panel ww-frame-panel">
@@ -15,14 +11,13 @@
         :key="frameKey"
         class="ww-frame"
         :src="FRAME_SRC"
-        title="单词书写练习"
+        :title="t('word-writing.frame-title')"
         allow="fullscreen; clipboard-write"
         allowfullscreen />
     </div>
 
     <div class="tool-hint ww-note">
-      词表和笔迹保存在当前浏览器的本地存储里（key：<code>word-writing.v1</code>），
-      换浏览器或清理缓存就会丢失。与直接双击打开离线 HTML 的存档<b>互不相通</b>。
+      {{ t('word-writing.note-1') }}<code>word-writing.v1</code>{{ t('word-writing.note-2') }}<b>{{ t('word-writing.note-3') }}</b>{{ t('word-writing.note-4') }}
     </div>
   </ToolShell>
 </template>
@@ -31,6 +26,9 @@
 import { ref } from 'vue';
 import ToolShell from './ToolShell.vue';
 import WinButton from '../../components/WinButton.vue';
+import { useI18n } from '../../components/i18n/index';
+
+const { t } = useI18n();
 
 /**
  * iframe 地址用**相对路径**：vite.config.ts 里 base 是 './'，

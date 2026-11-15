@@ -8,13 +8,13 @@
         FontWeight="600"
         LineHeight="36"
         TextWrapping="NoWrap"
-        Text="内置工具" />
+        :Text="t('tools.title')" />
       <WinTextBlock
         class="tools-header-subtitle"
         FontSize="14"
         Foreground="var(--TextFillColorSecondaryBrush, var(--text-secondary))"
         TextWrapping="Wrap"
-        Text="把这些小工具直接做进网站，打开就能用，不用下载、也不上传 —— 省得为一个小功能单独装个软件。" />
+        :Text="t('tools.subtitle')" />
       <!-- 页内搜索已并入全站搜索（Ctrl + K）：这里只提示入口 + 显示工具总数 -->
       <div class="tools-meta-row">
         <span class="tools-meta-hint">{{ t('search.tools-hint') }}</span>
@@ -27,8 +27,8 @@
       VerticalScrollMode="Auto">
       <div class="gallery-item-page tools-page-body">
         <div class="gallery-page-content">
-          <section v-for="group in allGroups" :key="group.name" class="tools-group">
-            <span class="tools-group-title">{{ group.name }}</span>
+          <section v-for="group in allGroups" :key="group.key" class="tools-group">
+            <span class="tools-group-title">{{ t(group.key) }}</span>
             <div class="tools-grid">
               <button
                 v-for="tool in group.items"
@@ -38,8 +38,8 @@
                 @click="openTool(tool)">
                 <span class="tools-card-icon" aria-hidden="true">{{ tool.icon }}</span>
                 <span class="tools-card-text">
-                  <span class="tools-card-title">{{ tool.name }}</span>
-                  <span class="tools-card-desc">{{ tool.desc }}</span>
+                  <span class="tools-card-title">{{ t(tool.nameKey) }}</span>
+                  <span class="tools-card-desc">{{ t(tool.descKey) }}</span>
                 </span>
                 <span class="tools-card-arrow" aria-hidden="true">&#xE76C;</span>
               </button>

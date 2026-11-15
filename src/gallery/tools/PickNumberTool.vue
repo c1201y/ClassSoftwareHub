@@ -1,65 +1,65 @@
 <template>
   <ToolShell
-    title="随机抽号"
-    subtitle="输入号码范围，一键抽号（比如学号 1~50）。号码用系统加密随机数抽取，绝对公平；也可用来随机分组。">
+    :title="t('tool.pick-number.name')"
+    :subtitle="t('tool.pick-number.subtitle')">
     <div class="tool-grid-2">
       <!-- ── 抽号 ───────────────────────────────────────────── -->
       <div class="tool-panel">
-        <span class="tool-section-title">抽号设置</span>
+        <span class="tool-section-title">{{ t('pick.section') }}</span>
         <div class="pick-range">
           <WinNumberBox class="pick-numbox" :Minimum="0" :SmallChange="1" v-model:Value="from" />
           <span class="pick-tilde">~</span>
           <WinNumberBox class="pick-numbox" :Minimum="0" :SmallChange="1" v-model:Value="to" />
         </div>
         <div class="tool-row pick-opt">
-          <WinNumberBox class="pick-count" Header="抽几个" :Minimum="1" :SmallChange="1" v-model:Value="count" />
-          <WinCheckBox Content="不重复（抽过的不再出现）" v-model:IsChecked="noRepeat" />
+          <WinNumberBox class="pick-count" :Header="t('pick.count')" :Minimum="1" :SmallChange="1" v-model:Value="count" />
+          <WinCheckBox :Content="t('pick.no-repeat')" v-model:IsChecked="noRepeat" />
         </div>
 
         <div class="pick-start">
           <WinButton
             Style="AccentButtonStyle"
             Width="100%"
-            :Content="rolling ? '抽号中…' : '开始抽号'"
+            :Content="rolling ? t('pick.rolling') : t('pick.start')"
             :IsEnabled="!rolling"
             @Click="start" />
         </div>
 
         <!-- 显示当前设置的摘要，便于发现范围填写错误 -->
         <div class="tool-hint pick-summary">
-          本次设置：在 <b>{{ lo }}</b> ~ <b>{{ hi }}</b> 里抽 <b>{{ pickCount }}</b> 个号<span v-if="noRepeat">，抽过的不再出现</span>
+          {{ t('pick.summary', { lo, hi, count: pickCount }) }}<span v-if="noRepeat">{{ t('pick.summary-repeat') }}</span>
         </div>
 
         <!-- 不重复模式下显示剩余可抽号数，避免号码所剩无几时结果看似分布集中 -->
         <div v-if="noRepeat" class="tool-hint pick-remain">
-          范围内还剩 <b>{{ remain }}</b> 个号没抽过<template v-if="usedInRange">（已抽 {{ usedInRange }} 个）</template>
-          <template v-if="remain === 0"> —— 想再来一轮请点下面的「重置记录」</template>
+          {{ t('pick.remain', { remain }) }}<template v-if="usedInRange">{{ t('pick.remain-used', { used: usedInRange }) }}</template>
+          <template v-if="remain === 0">{{ t('pick.remain-empty') }}</template>
         </div>
 
         <div class="pick-result-box">
           <div v-if="result.length" class="pick-result" :class="{ rolling }">
             <span v-for="(n, i) in result" :key="i" class="pick-num">{{ n }}</span>
           </div>
-          <div v-else class="tool-hint">结果会显示在这里</div>
+          <div v-else class="tool-hint">{{ t('pick.result-empty') }}</div>
         </div>
 
         <div v-if="error" class="pick-error">{{ error }}</div>
 
         <div v-if="used.length" class="pick-used">
           <div class="pick-used-head">
-            <span class="tool-hint">已抽 {{ used.length }} 个：{{ used.join('、') }}</span>
-            <WinButton Content="重置记录" @Click="resetUsed" />
+            <span class="tool-hint">{{ t('pick.used', { count: used.length, list: used.join(listSep) }) }}</span>
+            <WinButton :Content="t('pick.reset-used')" @Click="resetUsed" />
           </div>
         </div>
 
         <!-- 公平性自检：本机实抽两万次并统计分布，用于验证随机性是否均匀 -->
         <div class="pick-checkbar">
-          <WinButton Content="公平性自检" @Click="runFairCheck" />
-          <span class="tool-hint">在本机实抽 2 万次，看分布平不平</span>
+          <WinButton :Content="t('pick.fair-check')" @Click="runFairCheck" />
+          <span class="tool-hint">{{ t('pick.fair-check-hint') }}</span>
         </div>
         <div v-if="fairCheck" class="pick-hist">
           <div class="pick-hist-chart">
-            <div v-for="b in fairCheck.bars" :key="b.label" class="pick-hist-col" :title="`${b.label}：${b.count} 次`">
+            <div v-for="b in fairCheck.bars" :key="b.label" class="pick-hist-col" :title="t('pick.fair-title', { label: b.label, count: b.count })">
               <div class="pick-hist-bar" :style="{ height: b.pct + '%' }" />
               <span class="pick-hist-label">{{ b.label }}</span>
             </div>
@@ -70,7 +70,7 @@
 
       <!-- ── 分组 ───────────────────────────────────────────── -->
       <div class="tool-panel">
-        <span class="tool-section-title">随机分组</span>
+        <span class="tool-section-title">{{ t('pick.group-section') }}</span>
         <div class="tool-row">
           <WinComboBox
             class="pick-gmode"
@@ -80,20 +80,20 @@
             v-model:SelectedIndex="groupModeIndex" />
           <WinNumberBox class="pick-count" :Minimum="1" :SmallChange="1" v-model:Value="groupValue" />
         </div>
-        <div class="tool-hint pick-ghint">范围沿用上面的 {{ from }} ~ {{ to }}</div>
+        <div class="tool-hint pick-ghint">{{ t('pick.group-hint', { from, to }) }}</div>
         <div class="pick-start">
-          <WinButton Width="100%" Content="开始分组" @Click="doGroup" />
+          <WinButton Width="100%" :Content="t('pick.group-start')" @Click="doGroup" />
         </div>
 
         <div v-if="groups.length" class="pick-groups">
           <div v-for="(g, i) in groups" :key="i" class="pick-group">
-            <span class="pick-group-title">第 {{ i + 1 }} 组 · {{ g.length }} 人</span>
+            <span class="pick-group-title">{{ t('pick.group-title', { index: i + 1, count: g.length }) }}</span>
             <span class="pick-group-nums">
               <span v-for="n in g" :key="n" class="pick-chip">{{ n }}</span>
             </span>
           </div>
         </div>
-        <div v-else class="tool-hint">分组结果会显示在这里</div>
+        <div v-else class="tool-hint">{{ t('pick.group-empty') }}</div>
       </div>
     </div>
 
@@ -109,7 +109,10 @@ import WinButton from '../../components/WinButton.vue';
 import WinCheckBox from '../../components/WinCheckBox.vue';
 import WinComboBox from '../../components/WinComboBox.vue';
 import WinNumberBox from '../../components/WinNumberBox.vue';
+import { useI18n } from '../../components/i18n/index';
 
+const { t, locale } = useI18n();
+const listSep = locale === 'en-US' ? ', ' : '、';
 const { toast, flash } = useCopy();
 
 const CFG_KEY = 'tool.pick.cfg';
@@ -227,25 +230,25 @@ const start = () => {
   const k = Math.min(MAX_COUNT, Math.max(1, Math.floor(count.value || 1)));
   const size = poolSize.value;
   if (size <= 1) {
-    error.value = '请填写有效的号码范围（如 1 ~ 50）';
+    error.value = t('pick.error.range');
     return;
   }
   if (poolTooBig()) {
-    error.value = `号码范围太大了（最多 ${MAX_POOL.toLocaleString()} 个），请缩小范围`;
+    error.value = t('pick.error.too-big', { max: MAX_POOL.toLocaleString(locale) });
     return;
   }
   if (k > size) {
-    error.value = `一次最多抽 ${size} 个号`;
+    error.value = t('pick.error.count-over', { size });
     return;
   }
   if (noRepeat.value && used.value.filter((n) => n >= lo.value && n <= hi.value).length + k > size) {
-    error.value = '范围内号码不够了，点「重置记录」再来一轮';
+    error.value = t('pick.error.not-enough');
     return;
   }
 
   const final = pickOnce(k);
   if (!final) {
-    error.value = '抽号失败，请检查范围与数量';
+    error.value = t('pick.error.failed');
     return;
   }
 
@@ -267,7 +270,7 @@ const start = () => {
 
 const resetUsed = () => {
   used.value = [];
-  flash('已重置抽号记录');
+  flash(t('pick.flash.reset'));
 };
 
 /** 本次抽取个数（与 start 中的逻辑保持一致，供界面显示） */
@@ -295,11 +298,11 @@ const fairCheck = ref<{ bars: FairBar[]; note: string } | null>(null);
 const runFairCheck = () => {
   const size = poolSize.value;
   if (size <= 1) {
-    flash('请先填有效的号码范围', 2600);
+    flash(t('pick.flash.range'), 2600);
     return;
   }
   if (poolTooBig()) {
-    flash(`号码范围太大了（最多 ${MAX_POOL.toLocaleString()} 个）`, 2600);
+    flash(t('pick.flash.too-big', { max: MAX_POOL.toLocaleString(locale) }), 2600);
     return;
   }
   const buckets = Math.min(10, size);
@@ -323,23 +326,29 @@ const runFairCheck = () => {
   const normal = chi < 27.9;
   fairCheck.value = {
     bars,
-    note:
-      `实抽 ${total.toLocaleString()} 次，分成 ${buckets} 格，每格理论约 ${Math.round(expect)} 次；` +
-      `实际 ${Math.min(...counts)} ~ ${Math.max(...counts)} 次（卡方 ${chi.toFixed(1)}，${normal ? '分布正常' : '这次偏了一点，再点一次看看'}）`
+    note: t('pick.fair.note', {
+      total: total.toLocaleString(locale),
+      buckets,
+      expect: Math.round(expect),
+      min: Math.min(...counts),
+      max: Math.max(...counts),
+      chi: chi.toFixed(1),
+      verdict: normal ? t('pick.fair.normal') : t('pick.fair.off')
+    })
   };
 };
 
 /* ── 分组 ─────────────────────────────────────────────────────── */
 const groupMode = ref<'byGroups' | 'perGroup'>('byGroups');
 const groupValue = ref(4);
-const GROUP_ITEMS: { value: 'byGroups' | 'perGroup'; label: string }[] = [
-  { value: 'byGroups', label: '按组数（分成 N 组）' },
-  { value: 'perGroup', label: '按人数（每组 N 人）' }
-];
+const GROUP_ITEMS = computed<{ value: 'byGroups' | 'perGroup'; label: string }[]>(() => [
+  { value: 'byGroups', label: t('pick.group-mode.byGroups') },
+  { value: 'perGroup', label: t('pick.group-mode.perGroup') }
+]);
 const groupModeIndex = computed({
-  get: () => Math.max(0, GROUP_ITEMS.findIndex((i) => i.value === groupMode.value)),
+  get: () => Math.max(0, GROUP_ITEMS.value.findIndex((i) => i.value === groupMode.value)),
   set: (i: number) => {
-    const o = GROUP_ITEMS[i];
+    const o = GROUP_ITEMS.value[i];
     if (o) groupMode.value = o.value;
   }
 });
@@ -349,11 +358,11 @@ const doGroup = () => {
   const size = poolSize.value;
   const v = Math.max(1, Math.floor(groupValue.value || 1));
   if (size <= 1) {
-    flash('请填写有效的号码范围', 2600);
+    flash(t('pick.flash.range'), 2600);
     return;
   }
   if (poolTooBig()) {
-    flash(`号码范围太大了（最多 ${MAX_POOL.toLocaleString()} 个）`, 2600);
+    flash(t('pick.flash.too-big', { max: MAX_POOL.toLocaleString(locale) }), 2600);
     return;
   }
   const nums: number[] = [];
