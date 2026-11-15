@@ -8,7 +8,7 @@
       { "key": "7", "name": "7" },
       { "key": "10", "name": "10" },
       { "key": "11", "name": "11" },
-      { "key": "other", "name": "其他" }
+      { "key": "other", "name": "其他", "nameEn": "Other" }
     ]
   },
   {
@@ -23,7 +23,7 @@
       { "key": "14", "name": "14" },
       { "key": "15", "name": "15" },
       { "key": "26", "name": "26" },
-      { "key": "other", "name": "其他" }
+      { "key": "other", "name": "其他", "nameEn": "Other" }
     ]
   },
   {
@@ -36,7 +36,7 @@
       { "key": "arch", "name": "Arch" },
       { "key": "redhat", "name": "Red Hat" },
       { "key": "suse", "name": "SUSE" },
-      { "key": "other", "name": "其他" }
+      { "key": "other", "name": "其他", "nameEn": "Other" }
     ]
   },
   {
@@ -53,7 +53,7 @@
       { "key": "14", "name": "14" },
       { "key": "15", "name": "15" },
       { "key": "16", "name": "16" },
-      { "key": "other", "name": "其他" }
+      { "key": "other", "name": "其他", "nameEn": "Other" }
     ]
   },
   {
@@ -69,11 +69,12 @@
       { "key": "17", "name": "17" },
       { "key": "18", "name": "18" },
       { "key": "26", "name": "26" },
-      { "key": "other", "name": "其他" }
+      { "key": "other", "name": "其他", "nameEn": "Other" }
     ]
   },
   {
     "key": "web",
-    "name": "网页版"
+    "name": "网页版",
+    "nameEn": "Web"
   }
 ]

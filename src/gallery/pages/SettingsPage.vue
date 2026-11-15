@@ -56,6 +56,25 @@
                 :OffContent="$t('text.off')"
                 @Toggled="onHolidaySkinToggled" />
             </WinExpander>
+            <WinExpander
+              :Header="$t('text.browser-cache')"
+              :Description="$t('text.browser-cache-desc')"
+              Height="70">
+              <div class="cache-actions">
+                <WinButton
+                  :IsEnabled="!clearingCache"
+                  :Content="$t('text.clear-cache')"
+                  @Click="clearCacheNow" />
+                <WinTextBlock
+                  v-if="cacheClearState === 'ok'"
+                  class="cache-result cache-result-ok"
+                  :Text="$t('text.cache-cleared')" />
+                <WinTextBlock
+                  v-else-if="cacheClearState === 'fail'"
+                  class="cache-result cache-result-fail"
+                  :Text="$t('text.cache-clear-failed')" />
+              </div>
+            </WinExpander>
           </div>
 
           <WinTextBlock class="about-section-title" :Text="$t('text.about')" />
@@ -187,6 +206,7 @@ import credits from '../../../鸣谢文本';
 import legalDocs from '../../../法律文本';
 import { useRouter } from 'vue-router';
 import EchoCaveCard from '../EchoCaveCard.vue';
+import { clearBrowserCaches } from '../browserCache';
 
 const { t, locale } = useI18n();
 
@@ -217,6 +237,23 @@ const isHostedInUwpWebView = inject('isHostedInUwpWebView') as Ref<boolean>;
 const holidaySkinEnabled = inject('holidaySkinEnabled') as Ref<boolean>;
 const onHolidaySkinToggled = ({ IsOn }: { IsOn: boolean }) => {
   holidaySkinEnabled.value = IsOn;
+};
+
+// 浏览器缓存（常开）：只保留「清除缓存」，见 ../browserCache.ts
+const clearingCache = ref(false);
+const cacheClearState = ref<'idle' | 'ok' | 'fail'>('idle');
+let cacheClearTimer = 0;
+const clearCacheNow = async () => {
+  if (clearingCache.value) return;
+  clearingCache.value = true;
+  cacheClearState.value = 'idle';
+  const cleared = await clearBrowserCaches();
+  clearingCache.value = false;
+  cacheClearState.value = cleared ? 'ok' : 'fail';
+  window.clearTimeout(cacheClearTimer);
+  cacheClearTimer = window.setTimeout(() => {
+    cacheClearState.value = 'idle';
+  }, 4000);
 };
 
 const themeOptions = ['system', 'light', 'dark'];
@@ -292,6 +329,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (uptimeTimer !== undefined) window.clearInterval(uptimeTimer);
+  window.clearTimeout(cacheClearTimer);
 });
 </script>
 
@@ -370,6 +408,29 @@ onBeforeUnmount(() => {
 .settings-controls :deep(.win-expander),
 .settings-controls :deep(.win-settings-card) {
   margin-bottom: 4px;
+}
+
+.cache-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.cache-result {
+  font-size: 13px;
+}
+
+.cache-result-ok {
+  color: #0f7b0f;
+}
+
+.cache-result-fail {
+  color: #c42b1c;
+}
+
+:global(html.theme-dark) .cache-result-ok {
+  color: #6ccb5f;
 }
 
 .about-section-title {
