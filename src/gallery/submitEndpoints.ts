@@ -7,8 +7,14 @@
 // 2026-10-24：后端由 Cloudflare Worker（cshapi / submit.132614.xyz 双域）整体迁移至
 // EdgeOne Pages（api.classsoftwarehub.cn）。新后端单入口即可用，选路与记忆逻辑保留：
 // 若将来需要备用入口，直接往数组里加即可，调用方无需改动。
+//
+// 2026-11-16：ECS 后端（api.classsoftwarehub.cn）与旧 EdgeOne/Worker 后端
+// （submit.132614.xyz）接口契约一致（/api/mirror-sign、/api/submit、/api/dl-ticket 等），
+// 这里把旧后端保留为兜底：ECS 超时/不可用时自动切换，回退只需调整数组顺序。
+// 注意：后端只做签名/票据，文件数据仍走日本下载节点，不在国内中转。
 const SUBMIT_ENDPOINTS = [
-  import.meta.env.VITE_CSH_API_BASE ?? 'https://api.classsoftwarehub.cn'
+  import.meta.env.VITE_CSH_API_BASE ?? 'https://api.classsoftwarehub.cn',
+  'https://submit.132614.xyz'
 ];
 
 /** 单个入口的超时时间：超时后尽快切换下一个入口，避免用户长时间等待（两个入口最坏 20 秒） */
