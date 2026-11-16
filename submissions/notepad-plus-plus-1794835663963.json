@@ -1,0 +1,25 @@
+{
+  "_提交时间": "2026-11-16T13:27:43.963Z",
+  "_原始ID冲突": false,
+  "id": "notepad-plus-plus",
+  "name": "Notepad",
+  "icon": "https://avatars.githubusercontent.com/u/12589084?s=60&v=4",
+  "category": "system",
+  "tagline": "比系统自带更好用的记事本",
+  "description": "Notepad++ 是一款免费的源代码编辑器和记事本替代品，支持多种编程语言。\n它运行于微软 Windows 环境中，其使用遵循 GNU 通用公共许可证。\n\n基于强大的编辑组件 Scintilla，Notepad++ 使用 C++ 编写，并采用纯 Win32 API 和 STL，从而确保更高的执行速度和更小的程序体积。通过在不失用户友好性的前提下尽可能优化更多例程，Notepad++ 正努力减少全球二氧化碳排放。当使用更少的 CPU 功耗时，PC 可以降频并降低功耗，从而带来更环保的环境。",
+  "version": "8.9.9.1",
+  "size": "6.72 MB",
+  "system": "Windows 7+",
+  "website": "https://notepad-plus-plus.org",
+  "github": "https://github.com/notepad-plus-plus/notepad-plus-plus",
+  "downloads": [
+    {
+      "platform": "Windows x64 安装版 (exe)",
+      "size": "6.72 MB",
+      "hash": "ce3267f5c4e7e42f847e00f4b20234da6150647203033cdde34a69593efc3152",
+      "url": "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.9.9.1/npp.8.9.9.1.Installer.x64.exe"
+    }
+  ],
+  "sort": 99,
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBvcmtvWDJPTExBb2RwZGF5\nTHRFcVV3a2twZ1JpcWZ0Mi81dm5FbXZXOUE4CitJOTBqMDQ1dllwLzFxOUpRL0lt\ndzYxa3dDVEttNzJLc0xOV3prWGsweDQKLS0tIHBKbnR0cXByN2NOSGpJOGhTQlRL\nVnBaeGZ1am5GNGtIbGljSUxLWHppV28KB/nUZw5vJyMgFV/O02mXQoxClQQtN9M9\nzx9hWmoy8WO1xaUcXaZc5faJ45Hz9fNIWwyjgfhNLA==\n-----END AGE ENCRYPTED FILE-----"
+}
