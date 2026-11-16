@@ -336,3 +336,16 @@ export async function copyText(text: string): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * 联系方式的接收方公钥（age1…）。
+ *
+ * 「提交软件」页和「反馈中心」页都要用它加密用户填写的联系方式，
+ * 以前两个页面各自硬编码了一份 —— 换密钥时漏改一处就会出现
+ * 「一处加密成功、另一处解不开」，而且不会有任何报错提示。
+ * 现在只在这里维护一份。
+ *
+ * 私钥仅维护者本地持有，绝不出现在任何客户端 / 网页 / 版本库代码里；
+ * 这里只做公钥加密，不做任何解密。
+ */
+export const CONTACT_PUBLIC_KEY = 'age1l9axcy0sxu6eeanapg0maughsv380fh8nhd4unf9p8d7x20rjqfsgz4dxa';

@@ -292,6 +292,8 @@ import { apps } from '../data';
 import reportIcon from '../../assets/feedback/report.png';
 import suggestIcon from '../../assets/feedback/suggest.png';
 import {
+  CONTACT_PUBLIC_KEY,
+
   FEEDBACK_KINDS,
   REPORT_SUBKINDS,
   REPO_URL,
@@ -306,16 +308,12 @@ import {
   validateFeedback
 } from '../feedback';
 import type { FeedbackDraft, FeedbackKind } from '../feedback';
+import { orderedEndpoints, rememberEndpoint, SUBMIT_TIMEOUT_MS } from '../submitEndpoints';
 
 const { t } = useI18n();
 const route = useRoute();
 
-/**
- * 联系方式的接收方公钥（age1...）：与「提交软件」页、桌面端硬编码同一把。
- * 私钥仅维护者本地持有，绝不出现在任何客户端 / 网页 / 版本库代码里；
- * 这里只做公钥加密，不做任何解密。
- */
-const RECIPIENT_PUBLIC_KEY = 'age1l9axcy0sxu6eeanapg0maughsv380fh8nhd4unf9p8d7x20rjqfsgz4dxa';
+// 联系方式公钥统一由 feedback.ts 的 CONTACT_PUBLIC_KEY 提供
 
 /** 大类 -> 图标。键名与 FEEDBACK_KINDS 里各项的 icon 字段一致 */
 const kindIcons: Record<FeedbackKind, string> = {
@@ -333,15 +331,7 @@ const FLOW_STEPS = [
 /** 议题列表直链。复用 feedback.ts 的 REPO_URL，避免仓库地址两处维护 */
 const ISSUE_LIST_URL = `${REPO_URL}/issues`;
 
-// 提交入口与「提交软件」（SubmitPage.vue）、「回声洞」（EchoCaveCard.vue）**同一套**：
-// 同一个后端域名、同样的超时、同样把上次成功的那个记在 localStorage（key 也共用）。
-// 三处刻意保持一致 —— 入口出问题时，用户的体验应该完全一样。
-// 2026-10-24：后端迁移至 EdgeOne Pages，详见 submitEndpoints.ts 头部注释。
-const SUBMIT_ENDPOINTS = [
-  import.meta.env.VITE_CSH_API_BASE ?? 'https://api.classsoftwarehub.cn'
-];
-const SUBMIT_TIMEOUT_MS = 10000;
-const ENDPOINT_CACHE_KEY = 'csh-submit-endpoint';
+// 提交入口统一由 submitEndpoints.ts 维护（原先这里复制了一份，改一处会漏另一处）
 
 /** 打开公开议题列表（先查重，再决定要不要提交） */
 const openIssueList = () => {
@@ -447,7 +437,7 @@ async function encryptContact(): Promise<{ cipher: string; failed: boolean }> {
   try {
     const age = await import('age-encryption');
     const encrypter = new age.Encrypter();
-    encrypter.addRecipient(RECIPIENT_PUBLIC_KEY);
+    encrypter.addRecipient(CONTACT_PUBLIC_KEY);
     return { cipher: age.armor.encode(await encrypter.encrypt(contact)), failed: false };
   } catch {
     // 动态 chunk 加载失败等异常：宁可拦下来让用户重试，也绝不把明文发出去
@@ -491,29 +481,6 @@ const prepareOutgoing = async () => {
   };
 };
 
-/**
- * 按顺序返回要试的入口，上次成功过的排最前。
- * 与「提交软件」「回声洞」共用同一个 localStorage key：用户在本站任意一处提交成功过，
- * 另外两处也就不必再先白等一次失败。
- */
-function orderedEndpoints(): string[] {
-  let remembered = '';
-  try {
-    remembered = window.localStorage.getItem(ENDPOINT_CACHE_KEY) ?? '';
-  } catch {
-    remembered = '';
-  }
-  if (!remembered || !SUBMIT_ENDPOINTS.includes(remembered)) return SUBMIT_ENDPOINTS;
-  return [remembered, ...SUBMIT_ENDPOINTS.filter((item) => item !== remembered)];
-}
-
-function rememberEndpoint(base: string) {
-  try {
-    window.localStorage.setItem(ENDPOINT_CACHE_KEY, base);
-  } catch {
-    // 隐私模式等场景写不进去，忽略
-  }
-}
 
 /** 服务端明确应答（拿到 JSON 且给了 error）就算定局，不再换入口重试 */
 class DefinitiveError extends Error {}

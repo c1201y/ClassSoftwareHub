@@ -155,6 +155,7 @@ const localQuery = ref('');
 const effectiveQuery = computed(() => localQuery.value || props.query);
 
 const groups = computed(() => searchGlobal(effectiveQuery.value, t, locale, LIMIT_PER_KIND));
+
 /** 搜索历史（最近在前）；空查询时展示 */
 const historyTerms = ref<string[]>(readSearchHistory());
 /** 固定的「猜你想找」推荐词 */

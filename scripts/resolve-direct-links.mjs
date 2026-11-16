@@ -475,7 +475,7 @@ export const RESOLVERS = {
   dingtalk: { kind: 'winget', pkg: 'Alibaba.DingTalk' },
   'tencent-meeting': { kind: 'winget', pkg: 'Tencent.TencentMeeting' },
   qq: { kind: 'winget', pkg: 'Tencent.QQ.NT' },
-  WPS: { kind: 'winget', pkg: 'Kingsoft.WPSOffice' },
+  wps: { kind: 'winget', pkg: 'Kingsoft.WPSOffice' },
 
   // ── winget 官方清单：只借版本号，站内那条「始终最新」直链不动 ─────────────
   //    这些软件的官方直链都是「固定文件名 + 永远指向最新版」，换成带版本号的地址反而

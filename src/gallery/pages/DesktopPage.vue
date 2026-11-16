@@ -208,6 +208,7 @@ import {
   resolveDownloadEntries
 } from '../desktopDownload';
 import type { DesktopBuild, DownloadEntries, DownloadId, ReleaseHistoryItem } from '../desktopDownload';
+import { WIN7_REPO } from '../desktopDownload';
 import siteIconUrl from '../../assets/AppIcon-512.png';
 import '../styles/desktop-page.css';
 
@@ -229,7 +230,6 @@ const history = ref<{ desktop: ReleaseHistoryItem[]; win7: ReleaseHistoryItem[] 
 
 /** 仓库 slug（API 入口与 releaseUrl 都要用） */
 const DESKTOP_REPO = 'c1201y/ClassSoftwareHub-Desktop';
-const WIN7_REPO = 'c1201y/ClassSoftwareHub-windows7';
 
 /* ── 版本通道（文档站是两个按钮的 channel-switch）────────────────── */
 
