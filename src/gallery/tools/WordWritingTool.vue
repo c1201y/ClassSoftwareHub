@@ -96,8 +96,8 @@
               class="ww-pen"
               :class="{ 'is-active': tool === 'pen' && penId === p.id }"
               :style="{ '--pen-color': p.color }"
-              :title="p.name"
-              :aria-label="p.name"
+              :title="t(p.nameKey)"
+              :aria-label="t(p.nameKey)"
               @click="pickPen(p.id)"><span class="ww-pen-dot" /></button>
             <button
               type="button"
@@ -255,10 +255,10 @@ const PER_PAGE_OPTIONS = [6, 8, 10, 12, 16];
 
 /** 笔色：取站内强调色系，避免花花绿绿 */
 const PENS = [
-  { id: 'blue', name: '蓝色', color: '#0067C0' },
-  { id: 'black', name: '黑色', color: '#1a1a1a' },
-  { id: 'red', name: '红色', color: '#C42B1C' },
-  { id: 'green', name: '绿色', color: '#107C10' }
+  { id: 'blue', nameKey: 'word-writing.pen-blue', color: '#0067C0' },
+  { id: 'black', nameKey: 'word-writing.pen-black', color: '#1a1a1a' },
+  { id: 'red', nameKey: 'word-writing.pen-red', color: '#C42B1C' },
+  { id: 'green', nameKey: 'word-writing.pen-green', color: '#107C10' }
 ];
 
 const SAMPLE_TEXT = ['苹果', '香蕉', '橙子', '葡萄', '西瓜', '草莓', '菠萝', '芒果'].join('\n');
@@ -286,7 +286,8 @@ interface WordList {
 
 /* ── 状态 ─────────────────────────────────────────────────────────── */
 
-const lists = reactive<WordList[]>([{ name: '词表 1', text: '' }]);
+// 初始词表名跟随界面语言；改名 / 新建时同样走 i18n（见 newList / renameList）
+const lists = reactive<WordList[]>([{ name: t('word-writing.list-default', { n: 1 }), text: '' }]);
 const activeIndex = ref(0);
 const perPageIndex = ref(2); // 默认 10 个
 const page = ref(0);
@@ -347,10 +348,11 @@ const currentStrokes = computed<Stroke[]>(() => ink[inkKey.value] ?? []);
 const canUndo = computed(() => currentStrokes.value.length > 0);
 const pageHasInk = computed(() => currentStrokes.value.length > 0);
 
-const statusText = computed(() => {
-  if (!words.value.length) return '还没有词，先导入一份词表';
-  return `共 ${words.value.length} 个词，每页 ${perPage.value} 个`;
-});
+const statusText = computed(() =>
+  words.value.length
+    ? t('word-writing.status-count', { count: words.value.length, perPage: perPage.value })
+    : t('word-writing.status-empty')
+);
 
 /* ── 持久化 ───────────────────────────────────────────────────────── */
 
@@ -382,7 +384,7 @@ const restore = () => {
     const data = JSON.parse(raw) as Partial<Saved>;
     if (Array.isArray(data.lists) && data.lists.length) {
       lists.splice(0, lists.length, ...data.lists.map((l) => ({
-        name: String(l.name ?? '词表'),
+        name: String(l.name ?? t('word-writing.list-default', { n: 1 })),
         text: String(l.text ?? '')
       })));
     }
@@ -393,7 +395,19 @@ const restore = () => {
       perPageIndex.value = Math.min(Math.max(0, data.perPage), PER_PAGE_OPTIONS.length - 1);
     }
     if (data.ink && typeof data.ink === 'object') {
-      Object.assign(ink, data.ink);
+      // 只接受形状正确的笔迹：localStorage 被改坏时不能让整个画布崩掉
+      for (const [key, strokes] of Object.entries(data.ink)) {
+        if (!Array.isArray(strokes)) continue;
+        const safe = strokes.filter((stroke): stroke is Stroke =>
+          !!stroke &&
+          typeof stroke.color === 'string' &&
+          typeof stroke.width === 'number' &&
+          Array.isArray(stroke.points) &&
+          stroke.points.length > 0 &&
+          stroke.points.every((p) => Array.isArray(p) && p.length === 2 && p.every((n) => Number.isFinite(n)))
+        );
+        if (safe.length) ink[key] = safe;
+      }
     }
   } catch {
     /* 数据损坏：当作全新开始，不弹错 */
@@ -410,7 +424,15 @@ const onListPicked = (index: number) => {
 };
 
 const newList = () => {
-  lists.push({ name: `词表 ${lists.length + 1}`, text: '' });
+  // 名字不能重复：笔迹按「词表名:页码」索引，重名会让两套词表共用一块画布
+  const used = new Set(lists.map((l) => l.name));
+  let n = lists.length + 1;
+  let name = t('word-writing.list-default', { n });
+  while (used.has(name)) {
+    n += 1;
+    name = t('word-writing.list-default', { n });
+  }
+  lists.push({ name, text: '' });
   activeIndex.value = lists.length - 1;
   page.value = 0;
   persist();
@@ -420,16 +442,32 @@ const newList = () => {
 const renameList = () => {
   const current = activeList.value;
   if (!current) return;
-  const next = window.prompt('重命名词表', current.name);
+  const next = window.prompt(t('word-writing.rename-prompt'), current.name);
   const name = (next ?? '').trim();
   if (!name || name === current.name) return;
+  if (lists.some((l) => l !== current && l.name === name)) {
+    window.alert(t('word-writing.rename-duplicate'));
+    return;
+  }
+  // 笔迹按「词表名:页码」存：改名时必须同步搬过去，否则整本词表的批注会“消失”
+  const oldPrefix = `${current.name}:`;
+  const newPrefix = `${name}:`;
+  for (const key of Object.keys(ink)) {
+    if (!key.startsWith(oldPrefix)) continue;
+    ink[newPrefix + key.slice(oldPrefix.length)] = ink[key];
+    delete ink[key];
+  }
   current.name = name;
   persist();
 };
 
 const deleteList = () => {
   if (lists.length <= 1) return;
-  if (!window.confirm(`删除「${activeList.value?.name ?? ''}」？`)) return;
+  const current = activeList.value;
+  if (!current) return;
+  if (!window.confirm(t('word-writing.delete-confirm', { name: current.name }))) return;
+  const prefix = `${current.name}:`;
+  for (const key of Object.keys(ink)) if (key.startsWith(prefix)) delete ink[key];
   lists.splice(activeIndex.value, 1);
   activeIndex.value = Math.max(0, activeIndex.value - 1);
   page.value = 0;
@@ -754,25 +792,13 @@ watch(() => [inkKey.value, pageWords.value.length], () => {
 // 窗口缩放时笔迹要跟着重画
 watch(boardWidth, () => redraw());
 
-// 打印前把 canvas 隐藏，打印样式只留四线三格
+// 全屏状态以浏览器为准：Esc 退出时也要同步回来
 onMounted(() => {
-  window.addEventListener('beforeprint', hideInkForPrint);
-  window.addEventListener('afterprint', showInkForPrint);
-  // 全屏状态以浏览器为准：Esc 退出时也要同步回来
   document.addEventListener('fullscreenchange', syncFullscreenState);
 });
 onBeforeUnmount(() => {
-  window.removeEventListener('beforeprint', hideInkForPrint);
-  window.removeEventListener('afterprint', showInkForPrint);
   document.removeEventListener('fullscreenchange', syncFullscreenState);
 });
-
-const hideInkForPrint = () => {
-  document.body.classList.add('ww-printing');
-};
-const showInkForPrint = () => {
-  document.body.classList.remove('ww-printing');
-};
 </script>
 
 <style scoped>
@@ -1189,6 +1215,21 @@ const showInkForPrint = () => {
 
   .ww-canvas {
     display: none; /* 笔迹不打印：等于输出空白练习纸 */
+  }
+}
+/* 打印：只留四线三格和词；工具栏、左侧词表与屏幕笔迹都不印 */
+@media print {
+  .ww-toolbar,
+  .ww-board-head,
+  .ww-board-hint,
+  .ww-panel:not(.ww-board-panel) {
+    display: none !important;
+  }
+  .ww-layout {
+    display: block;
+  }
+  .ww-canvas {
+    display: none !important;
   }
 }
 </style>

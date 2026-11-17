@@ -230,20 +230,20 @@
                       :class="{ 'is-active': detailPlatform?.key === platform.key }">
                       <WinCheckBox
                         :IsChecked="form.platforms.includes(platform.key)"
-                        :aria-label="platform.name"
+                        :aria-label="platformName(platform, locale)"
                         @update:IsChecked="togglePlatform(platform.key, $event)" />
                       <button
                         type="button"
                         class="submit-platform-name"
                         :aria-current="detailPlatform?.key === platform.key ? 'true' : undefined"
                         @click="focusPlatform(platform.key)">
-                        {{ platform.name }}
+                        {{ platformName(platform, locale) }}
                       </button>
                     </div>
                   </div>
                   <div v-if="detailPlatform" class="submit-platform-detail">
                     <div class="submit-platform-detail-head">
-                      <span class="submit-platform-detail-title">{{ detailPlatform.name }}</span>
+                      <span class="submit-platform-detail-title">{{ platformName(detailPlatform, locale) }}</span>
                       <span v-if="detailPlatform.versions?.length" class="submit-platform-detail-hint">
                         {{ t('submit.system-versions') }}
                       </span>
@@ -252,7 +252,7 @@
                       v-if="detailPlatform.versions?.length"
                       class="submit-platform-versions"
                       role="group"
-                      :aria-label="`${detailPlatform.name} ${t('submit.system-versions')}`">
+                      :aria-label="`${platformName(detailPlatform, locale)} ${t('submit.system-versions')}`">
                       <WinCheckBox
                         v-for="version in detailPlatform.versions"
                         :key="version.key"
@@ -451,7 +451,7 @@ import WinInfoBar from '../../components/WinInfoBar.vue';
 import WinCheckBox from '../../components/WinCheckBox.vue';
 import WinFlyout from '../../components/WinFlyout.vue';
 import { useI18n } from '../../components/i18n/index';
-import { apps, categories, platforms } from '../data';
+import { apps, categories, platformName, platformVersionName, platforms } from '../data';
 import type { SoftwarePlatform, SoftwarePlatformVersion } from '../data';
 import { GithubImportError, importFromGithub, repoToId, toTagline } from '../githubImport';
 import type { GithubImportResult } from '../githubImport';
@@ -466,6 +466,7 @@ import {
 import type { UploadProgress } from '../ossUpload';
 import { shrinkIcon, ICON_INPUT_MAX_BYTES } from '../iconResize';
 import { CONTACT_PUBLIC_KEY } from '../feedback';
+import { downloadUrlProblem } from '../downloadUrlRule';
 /**
  * 压缩后仍超过该体积时提醒。
  * 128 px 的图标通常只有几 KB，达到该阈值说明压缩未生效（如浏览器无法解码 HEIC），
@@ -482,7 +483,7 @@ const DRAFT_KEY = 'csh-submit-draft';
 const REPO_NEW_FILE_URL = 'https://github.com/c1201y/ClassSoftwareHub/new/main/submissions';
 // 联系方式公钥统一由 feedback.ts 的 CONTACT_PUBLIC_KEY 提供
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 /**
  * 下载方式索引 → 写入数据的 kind 值。
@@ -589,8 +590,9 @@ function focusPlatform(key: string) {
 
 /** 右栏单独展示版本，补上系统名，避免只看到「7」「10」不知道属于哪个系统 */
 function versionLabel(platform: SoftwarePlatform, version: SoftwarePlatformVersion): string {
-  if (version.key === 'other' || !platform.versionRange) return version.name;
-  return `${platform.name} ${version.name}`;
+  const label = platformVersionName(version, locale);
+  if (version.key === 'other' || !platform.versionRange) return label;
+  return `${platformName(platform, locale)} ${label}`;
 }
 
 /**
@@ -623,6 +625,41 @@ function formatPlatformRequirement(platform: (typeof platforms)[number], selecte
   return `${platform.name} ${expression}${hasOther ? ' / 其他' : ''}`;
 }
 
+/**
+ * 与 formatPlatformRequirement 同构，但按当前语言输出（英文用半角括号）。
+ * 只用于界面展示；写进数据的 `system` 永远走上面那个中文版本。
+ */
+function formatPlatformRequirementDisplay(
+  platform: (typeof platforms)[number],
+  selectedKeys: string[]
+): string {
+  const versions = platform.versions ?? [];
+  const name = platformName(platform, locale);
+  if (!versions.length) return name;
+
+  const ordered = versions.filter((version) => version.key !== 'other');
+  const picked = ordered.filter((version) => selectedKeys.includes(version.key));
+  const hasOther = selectedKeys.includes('other');
+  const otherWord = t('common.other');
+  const label = (version: SoftwarePlatformVersion) => platformVersionName(version, locale);
+  const wrap = (inner: string) => (locale === 'en-US' ? ` (${inner})` : `（${inner}）`);
+
+  if (!picked.length) {
+    return hasOther ? `${name}${wrap(otherWord)}` : t('submit.system-version-needed', { platform: name });
+  }
+
+  if (!platform.versionRange) {
+    return `${name}${wrap(picked.map(label).join(' / ') + (hasOther ? ` / ${otherWord}` : ''))}`;
+  }
+
+  const start = ordered.indexOf(picked[0]);
+  const isRange = picked.length >= 2 &&
+    start + picked.length === ordered.length &&
+    picked.every((version, index) => ordered[start + index] === version);
+  const expression = isRange ? `${label(picked[0])}+` : picked.map(label).join(' / ');
+  return `${name} ${expression}${hasOther ? ` / ${otherWord}` : ''}`;
+}
+
 const selectedSystemText = computed(() =>
   platforms
     .filter((platform) => form.platforms.includes(platform.key))
@@ -630,7 +667,18 @@ const selectedSystemText = computed(() =>
     .join(' / ')
 );
 
-const platformSummary = computed(() => selectedSystemText.value || t('submit.system-placeholder'));
+/**
+ * 界面展示用的系统文本：按当前语言输出。
+ * 写入数据的 `system` 仍用 selectedSystemText（中文原文），两者刻意分开。
+ */
+const selectedSystemDisplay = computed(() =>
+  platforms
+    .filter((platform) => form.platforms.includes(platform.key))
+    .map((platform) => formatPlatformRequirementDisplay(platform, form.platformVersions[platform.key] ?? []))
+    .join(' / ')
+);
+
+const platformSummary = computed(() => selectedSystemDisplay.value || t('submit.system-placeholder'));
 
 /**
  * WinFlyout 的内容滚动层拿不到 max-height（内容再高也会被外层裁掉），
@@ -1324,6 +1372,15 @@ async function buildPayload(): Promise<{ payload: Record<string, unknown> | null
   // 该键会被保留，JSON.stringify 随即写成 `"sort": null`，污染数据。
   if (payload.sort !== undefined && !Number.isFinite(payload.sort as number)) {
     return { payload: null, error: t('submit.error-sort') };
+  }
+
+  // 下载链接协议与格式：规则见 downloadUrlRule.ts（单独成文件以便直接跑用例）
+  const downloadUrls = (payload.downloads as { url?: string }[]).map((item) => String(item.url || ''));
+  if (downloadUrls.some((url) => downloadUrlProblem(url) === 'scheme')) {
+    return { payload: null, error: t('submit.error-url-scheme') };
+  }
+  if (downloadUrls.some((url) => downloadUrlProblem(url) === 'invalid')) {
+    return { payload: null, error: t('submit.error-url-invalid') };
   }
 
   // 校验值格式检查：填了就必须是合法写法 —— 写错的哈希比不写更糟（用户会照着核对下载文件）
