@@ -56,29 +56,33 @@
                 :OffContent="$t('text.off')"
                 @Toggled="onHolidaySkinToggled" />
             </WinExpander>
+            <!-- 版本与更新：参照 Windows 11「Windows 更新」页的写法——
+                 一行状态（已是最新 / 有可用更新）+ 上次检查时间 + 操作按钮 -->
             <WinExpander
-              :Header="$t('text.browser-cache')"
-              :Description="updateInfo ? $t('text.update-available', { latest: updateInfo.latest, running: updateInfo.running }) : $t('text.browser-cache-desc')"
+              :Header="$t('text.version-updates')"
+              :Description="$t('text.version-updates-desc')"
               Height="70">
-              <div class="cache-actions">
-                <WinButton
-                  v-if="updateInfo"
-                  :IsEnabled="!updating"
-                  :Content="$t('text.update-now')"
-                  @Click="runUpdate" />
-                <WinButton
-                  v-else
-                  :IsEnabled="!clearingCache"
-                  :Content="$t('text.clear-cache')"
-                  @Click="clearCacheNow" />
-                <WinTextBlock
-                  v-if="cacheClearState === 'ok'"
-                  class="cache-result cache-result-ok"
-                  :Text="$t('text.cache-cleared')" />
-                <WinTextBlock
-                  v-else-if="cacheClearState === 'fail'"
-                  class="cache-result cache-result-fail"
-                  :Text="$t('text.cache-clear-failed')" />
+              <div class="version-update">
+                <div class="version-update-row">
+                  <span class="version-status" :class="`is-${updateState}`">
+                    <span class="version-status-dot" aria-hidden="true"></span>
+                    <span class="version-status-text">{{ updateStatusText }}</span>
+                  </span>
+                  <div class="cache-actions">
+                    <WinButton
+                      :IsEnabled="!checkingUpdate"
+                      :Content="checkingUpdate ? $t('text.update-checking') : $t('text.update-check')"
+                      @Click="refreshUpdate(true)" />
+                    <WinButton
+                      Style="AccentButtonStyle"
+                      :IsEnabled="!updating"
+                      :Content="updateState === 'stale' ? $t('text.update-now') : $t('text.force-update')"
+                      @Click="runUpdate" />
+                  </div>
+                </div>
+                <p class="version-update-meta">
+                  {{ $t('text.update-last-check', { time: lastCheckText, build: runningBuild }) }}
+                </p>
               </div>
             </WinExpander>
             <WinExpander
@@ -224,9 +228,8 @@ import credits from '../../../鸣谢文本';
 import legalDocs from '../../../法律文本';
 import { useRouter } from 'vue-router';
 import EchoCaveCard from '../EchoCaveCard.vue';
-import { clearBrowserCaches } from '../browserCache';
-import { applyUpdate, checkForUpdate } from '../appUpdate';
-import type { UpdateInfo } from '../appUpdate';
+import { applyUpdate, checkForUpdate, runningBuild } from '../appUpdate';
+import type { UpdateCheck } from '../appUpdate';
 import { onInstallAvailability, promptInstallPwa } from '../pwaInstall';
 
 const { t, locale } = useI18n();
@@ -260,31 +263,47 @@ const onHolidaySkinToggled = ({ IsOn }: { IsOn: boolean }) => {
   holidaySkinEnabled.value = IsOn;
 };
 
-// 浏览器缓存（常开）：只保留「清除缓存」，见 ../browserCache.ts
-const clearingCache = ref(false);
-const cacheClearState = ref<'idle' | 'ok' | 'fail'>('idle');
-let cacheClearTimer = 0;
-const clearCacheNow = async () => {
-  if (clearingCache.value) return;
-  clearingCache.value = true;
-  cacheClearState.value = 'idle';
-  const cleared = await clearBrowserCaches();
-  clearingCache.value = false;
-  cacheClearState.value = cleared ? 'ok' : 'fail';
-  window.clearTimeout(cacheClearTimer);
-  cacheClearTimer = window.setTimeout(() => {
-    cacheClearState.value = 'idle';
-  }, 4000);
+// ── 版本与更新 ─────────────────────────────────────────────────────
+// 站点常驻 Service Worker，浏览器可能还在用旧 bundle。进入设置页自动比对
+// /version.json（构建时生成）与当前 bundle 的提交号；三种结果都显式展示，
+// 「已是最新」时不再沉默（参照 Windows 11 的「Windows 更新」页）。
+const updateInfo = ref<UpdateCheck | null>(null);
+const checkingUpdate = ref(false);
+const updating = ref(false);
+const lastCheckedAt = ref<Date | null>(null);
+
+const refreshUpdate = async (force = false) => {
+  if (checkingUpdate.value) return;
+  checkingUpdate.value = true;
+  try {
+    updateInfo.value = await checkForUpdate(force);
+    lastCheckedAt.value = new Date();
+  } finally {
+    checkingUpdate.value = false;
+  }
 };
 
-// ── 版本检测与安装入口 ───────────────────────────────────────────────
-// 浏览器可能还在用 SW 缓存里的旧 bundle：/version.json（构建时生成）里的
-// 提交号与当前 bundle 不一致时，把「清除缓存」换成「更新到最新版本」。
-const updateInfo = ref<UpdateInfo | null>(null);
-const updating = ref(false);
-const refreshUpdate = async () => {
-  updateInfo.value = await checkForUpdate();
-};
+const updateState = computed(() => {
+  if (checkingUpdate.value) return 'checking';
+  return updateInfo.value?.state ?? 'unknown';
+});
+
+const updateStatusText = computed(() => {
+  if (checkingUpdate.value) return t('text.update-checking');
+  const info = updateInfo.value;
+  if (!info) return t('text.update-unknown');
+  if (info.state === 'stale') {
+    return t('text.update-available', { latest: info.latest, running: info.running });
+  }
+  return info.state === 'current' ? t('text.update-current') : t('text.update-unknown');
+});
+
+const lastCheckText = computed(() =>
+  lastCheckedAt.value
+    ? lastCheckedAt.value.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
+    : '—'
+);
+
 const runUpdate = async () => {
   if (updating.value) return;
   updating.value = true;
@@ -375,7 +394,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (uptimeTimer !== undefined) window.clearInterval(uptimeTimer);
-  window.clearTimeout(cacheClearTimer);
   stopInstallWatch?.();
 });
 </script>
@@ -464,8 +482,60 @@ onBeforeUnmount(() => {
   gap: 12px;
 }
 
-.cache-result {
+.version-update {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.version-update-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.version-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.version-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--text-secondary);
+}
+.version-status.is-current {
+  color: #0f7b0f;
+}
+.version-status.is-current .version-status-dot {
+  background: #0f7b0f;
+}
+.version-status.is-stale {
+  color: var(--accent-base);
+}
+.version-status.is-stale .version-status-dot {
+  background: var(--accent-base);
+}
+.version-status.is-checking .version-status-dot,
+.version-status.is-unknown .version-status-dot {
+  background: var(--text-secondary);
+}
+.version-update-meta {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+:global(html.theme-dark) .version-status.is-current {
+  color: #6ccb5f;
+}
+:global(html.theme-dark) .version-status.is-current .version-status-dot {
+  background: #6ccb5f;
 }
 
 .cache-result-ok {
