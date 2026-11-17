@@ -12,6 +12,7 @@ import { createI18n, i18nKey } from './components/i18n/index'
 import galleryEnUS from './gallery/Strings/en-US/Resources'
 import galleryZhCN from '../文字设置'
 import { initBrowserCache } from './gallery/browserCache'
+import { warmUpDownloadOrigin } from './gallery/githubMirror'
 
 const i18n = createI18n(navigator.language, {
   'en-US': galleryEnUS,
@@ -68,6 +69,9 @@ app.use(router)
 app.provide(i18nKey, i18n)
 app.config.globalProperties.$t = i18n.t
 app.mount('#app')
+
+// 让浏览器尽早记住下载节点的 h3（Alt-Svc），首个下载也能走 QUIC
+warmUpDownloadOrigin()
 
 // 可选浏览器缓存：首屏渲染完成后再注册，避免与关键资源抢带宽
 if (typeof window.requestIdleCallback === 'function') {

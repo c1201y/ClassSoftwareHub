@@ -149,6 +149,26 @@ export function defaultChannel(): MirrorChannel | null {
   return usable.find((channel) => channel.self) || usable[0] || null;
 }
 
+/** 预热只做一次，页面内多次调用不重复发请求 */
+let downloadOriginWarmed = false;
+
+/**
+ * 预热自建节点，让浏览器提前从 Alt-Svc 记住 HTTP/3。
+ *
+ * 下载域名同时开 TCP 与 QUIC。跨境链路上单条 TCP 流只有几十 KB/s，
+ * 而 QUIC 实测能到 300–450 KB/s；浏览器要先在响应里见过 Alt-Svc 才会
+ * 对后续连接改用 h3，所以在页面启动时打一个空响应（__h3，节点直接 204）。
+ * 失败无所谓：UA 不支持或 UDP 被封时浏览器本来就会回退 TCP。
+ */
+export function warmUpDownloadOrigin(): void {
+  if (downloadOriginWarmed || typeof window === 'undefined') return;
+  const self = MIRROR_CHANNELS.find((channel) => channel.self);
+  if (!self || self.insecure || window.location.protocol !== 'https:') return;
+  downloadOriginWarmed = true;
+  // no-cors：只需要头，不需要读响应体；跨域 204 也不会被 CORS 拦掉
+  fetch(`${self.prefix}__h3`, { mode: 'no-cors', cache: 'no-store', keepalive: true }).catch(() => {});
+}
+
 /**
  * 该下载链接能否走镜像。
  *

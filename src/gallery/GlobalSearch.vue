@@ -141,6 +141,19 @@ const activeHit = ref<GlobalHit | null>(null);
 /** 下拉的内联定位样式（贴在标题栏输入框下方） */
 const panelStyle = ref<Record<string, string>>({});
 
+/**
+ * 本地覆盖的查询词。
+ *
+ * query 是父组件的单向 prop（由搜索框 input 驱动），本组件不能直接改它。
+ * 点历史/推荐词时不需要回写输入框 —— 只要**本面板**按这个词出结果即可，
+ * 所以这里用一个本地 ref 覆盖；用户一旦重新敲键盘，父组件更新 query，
+ * 这个覆盖值就自动让位（见下方 effectiveQuery）。
+ */
+const localQuery = ref('');
+
+/** 实际用于搜索的词：本地覆盖优先，否则用父组件的 query */
+const effectiveQuery = computed(() => localQuery.value || props.query);
+
 const groups = computed(() => searchGlobal(effectiveQuery.value, t, locale, LIMIT_PER_KIND));
 /** 搜索历史（最近在前）；空查询时展示 */
 const historyTerms = ref<string[]>(readSearchHistory());
@@ -183,19 +196,6 @@ watch(
     if (groups.value.length) historyTerms.value = pushSearchHistory(q, true);
   }
 );
-
-/**
- * 本地覆盖的查询词。
- *
- * query 是父组件的单向 prop（由搜索框 input 驱动），本组件不能直接改它。
- * 点历史/推荐词时不需要回写输入框 —— 只要**本面板**按这个词出结果即可，
- * 所以这里用一个本地 ref 覆盖；用户一旦重新敲键盘，父组件更新 query，
- * 这个覆盖值就自动让位（见下方 effectiveQuery）。
- */
-const localQuery = ref('');
-
-/** 实际用于搜索的词：本地覆盖优先，否则用父组件的 query */
-const effectiveQuery = computed(() => localQuery.value || props.query);
 
 /** 用户重新输入时清掉本地覆盖，回到跟随输入框 */
 watch(
