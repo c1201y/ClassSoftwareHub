@@ -1,5 +1,5 @@
 {
-  "id": "VirusDetector",
+  "id": "virus-detector",
   "name": "反银狐病毒浏览器插件VirusDetector",
   "icon": "https://cdn.jsdelivr.net/gh/Lolitide/VirusDetector@main/icons/icon128.png",
   "category": "system",

@@ -80,6 +80,7 @@ import WinButton from '../components/WinButton.vue';
 import WinFlyout from '../components/WinFlyout.vue';
 import WinHyperlinkButton from '../components/WinHyperlinkButton.vue';
 import { useI18n } from '../components/i18n/index';
+import { orderedEndpoints, rememberEndpoint, SUBMIT_TIMEOUT_MS } from './submitEndpoints';
 
 const { t } = useI18n();
 
@@ -161,14 +162,7 @@ const next = async () => {
   await typeOut(text);
 };
 
-// ══════════ 投稿 ══════════
-
-// 提交入口与「提交软件」页同一套（SubmitPage.vue）：记忆入口也共用同一个 localStorage key
-const SUBMIT_ENDPOINTS = [
-  import.meta.env.VITE_CSH_API_BASE ?? 'https://api.classsoftwarehub.cn'
-];
-const SUBMIT_TIMEOUT_MS = 10000;
-const ENDPOINT_CACHE_KEY = 'csh-submit-endpoint';
+// 提交入口与「提交软件」页同一套，统一由 submitEndpoints.ts 维护（原先这里复制了一份）
 
 // 兜底：投稿服务不可用时，改为在 GitHub 的 submissions/ 新建一份审核草稿，
 // 与「提交软件」落在同一目录、走同一条审核管道。
@@ -194,25 +188,6 @@ const flyoutStatus = ref('');
 const flyoutIsError = ref(false);
 const showFallback = ref(false);
 const submitting = ref(false);
-
-function orderedEndpoints(): string[] {
-  let remembered = '';
-  try {
-    remembered = window.localStorage.getItem(ENDPOINT_CACHE_KEY) ?? '';
-  } catch {
-    remembered = '';
-  }
-  if (!remembered || !SUBMIT_ENDPOINTS.includes(remembered)) return SUBMIT_ENDPOINTS;
-  return [remembered, ...SUBMIT_ENDPOINTS.filter((item) => item !== remembered)];
-}
-
-function rememberEndpoint(base: string) {
-  try {
-    window.localStorage.setItem(ENDPOINT_CACHE_KEY, base);
-  } catch {
-    // 隐私模式等场景写入失败时忽略
-  }
-}
 
 /** 服务端明确应答（拿到 JSON 且给了 error）就算定局，不再换入口重试 */
 class DefinitiveError extends Error {}

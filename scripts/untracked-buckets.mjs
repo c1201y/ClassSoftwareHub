@@ -66,7 +66,7 @@ export const BUCKETS = {
 
   // ── 有意归档 ──
   'wps2019ayxingz': { bucket: 'archive', reason: '有意收录 WPS2019 归档版（2022 年的包），不跟随上游' },
-  'bandizip6.29': { bucket: 'archive', reason: '有意收录 6.x 末代无广告版（dl.php?old），只需盯「官方是否撤链」' },
+  'bandizip-6-29': { bucket: 'archive', reason: '有意收录 6.x 末代无广告版（dl.php?old），只需盯「官方是否撤链」' },
   //    直链原先挂在 sw.pcmgr.qq.com 的**带签名**地址上（路径里两段十六进制），签名一到期就 403 ——
   //    2026-09-27 实测确已失效，换成腾讯官方 CDN 的免签名同文件地址。只需盯「官方是否撤链」。
   'wxxpayxingz': { bucket: 'archive', reason: '有意收录微信 3.2.1 老版本（给老机器用），不跟随上游；直链已改用腾讯官方 CDN 免签名地址，只需盯「官方是否撤链」' },

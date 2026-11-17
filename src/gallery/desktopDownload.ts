@@ -27,7 +27,7 @@ import type { MirrorChannel } from './githubMirror';
 /** 桌面版仓库（安装包由该仓库发布，与本站主仓库相互独立） */
 const REPO = 'c1201y/ClassSoftwareHub-Desktop';
 /** Win7 移植版仓库：Avalonia 重做 UI，独立发布、独立更新，安装包文件名带 win7 */
-const WIN7_REPO = 'c1201y/ClassSoftwareHub-windows7';
+export const WIN7_REPO = 'c1201y/ClassSoftwareHub-windows7';
 /** 安卓客户端仓库：原生 Android，产物是 app-release.apk */
 const ANDROID_REPO = 'c1201y/ClassSoftwareHub-Android';
 

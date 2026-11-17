@@ -24,39 +24,6 @@
             TextWrapping="Wrap"
             :Text="t('submit.subtitle')" />
 
-          <!-- ── 投稿类型向导 ──────────────────────────────────────
-               三类投稿要填的字段差别很大，先选类型再展示对应字段，
-               比把所有字段一次摊开清楚得多。切换类型不会清空已填内容。 -->
-          <section class="submit-section submit-kind-wiz">
-            <WinTextBlock
-              class="submit-section-title is-in-card"
-              FontSize="20"
-              FontWeight="600"
-              Margin="0,0,0,6"
-              :Text="t('submit.kind-title')" />
-            <WinTextBlock
-              class="submit-import-desc"
-              FontSize="14"
-              Foreground="var(--TextFillColorSecondaryBrush, var(--text-secondary))"
-              TextWrapping="Wrap"
-              :Text="t('submit.kind-desc')" />
-            <div class="submit-kind-row">
-              <button
-                v-for="item in KIND_ITEMS"
-                :key="item.key"
-                type="button"
-                class="submit-kind-card"
-                :class="{ 'is-active': submitKind === item.key }"
-                @click="submitKind = item.key">
-                <span class="submit-kind-icon" aria-hidden="true">{{ item.icon }}</span>
-                <span class="submit-kind-text">
-                  <span class="submit-kind-name">{{ t('submit.kind-' + item.key) }}</span>
-                  <span class="submit-kind-hint">{{ t('submit.kind-' + item.key + '-hint') }}</span>
-                </span>
-              </button>
-            </div>
-          </section>
-
           <!-- ── 从 GitHub 一键读取（省去手抄安装包直链）────────────── -->
           <section class="submit-section submit-import">
             <WinTextBlock
@@ -145,27 +112,19 @@
               Margin="0,0,0,18"
               :Text="t('submit.section-basic')" />
             <div class="submit-fields">
-            <div class="submit-field-wrap">
-              <WinTextBox
-                :Header="t('submit.id')"
-                :PlaceholderText="t('submit.id-placeholder')"
-                :Description="t('submit.id-desc')"
-                v-model:Text="form.id"
-                @LostFocus="markTouched('id')">
-                <template #header>{{ t('submit.id') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
-              </WinTextBox>
-              <p v-if="idError" class="submit-field-error">{{ t(idError) }}</p>
-            </div>
-            <div class="submit-field-wrap">
-              <WinTextBox
-                :Header="t('submit.name')"
-                :PlaceholderText="t('submit.name-placeholder')"
-                v-model:Text="form.name"
-                @LostFocus="markTouched('name')">
-                <template #header>{{ t('submit.name') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
-              </WinTextBox>
-              <p v-if="fieldError('name')" class="submit-field-error">{{ t(fieldError('name')) }}</p>
-            </div>
+            <WinTextBox
+              :Header="t('submit.id')"
+              :PlaceholderText="t('submit.id-placeholder')"
+              :Description="t('submit.id-desc')"
+              v-model:Text="form.id">
+              <template #header>{{ t('submit.id') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
+            </WinTextBox>
+            <WinTextBox
+              :Header="t('submit.name')"
+              :PlaceholderText="t('submit.name-placeholder')"
+              v-model:Text="form.name">
+              <template #header>{{ t('submit.name') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
+            </WinTextBox>
             <div class="submit-field-row">
               <div class="submit-icon-field">
                 <WinTextBox
@@ -200,7 +159,7 @@
             <WinTextBox
               :Header="t('submit.tagline')"
               :PlaceholderText="t('submit.tagline-placeholder')"
-              v-model:Text="form.tagline" @LostFocus="markTouched('tagline')">
+              v-model:Text="form.tagline">
               <template #header>{{ t('submit.tagline') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
             </WinTextBox>
             <WinTextBox
@@ -208,7 +167,7 @@
               :PlaceholderText="t('submit.description-placeholder')"
               AcceptsReturn
               MinHeight="120"
-              v-model:Text="form.description" @LostFocus="markTouched('description')">
+              v-model:Text="form.description">
               <template #header>{{ t('submit.description') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
             </WinTextBox>
             <!-- 联系方式：本地加密成 age 密文后只进审核工单，不随软件数据发布（见 buildPayload 里的 _联系方式） -->
@@ -216,7 +175,7 @@
               :Header="t('submit.contact')"
               :PlaceholderText="t('submit.contact-placeholder')"
               :Description="t('submit.contact-desc')"
-              v-model:Text="form.contact" @LostFocus="markTouched('contact')">
+              v-model:Text="form.contact">
               <template #header>{{ t('submit.contact') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
             </WinTextBox>
             </div>
@@ -271,20 +230,20 @@
                       :class="{ 'is-active': detailPlatform?.key === platform.key }">
                       <WinCheckBox
                         :IsChecked="form.platforms.includes(platform.key)"
-                        :aria-label="platformName(platform, locale)"
+                        :aria-label="platform.name"
                         @update:IsChecked="togglePlatform(platform.key, $event)" />
                       <button
                         type="button"
                         class="submit-platform-name"
                         :aria-current="detailPlatform?.key === platform.key ? 'true' : undefined"
                         @click="focusPlatform(platform.key)">
-                        {{ platformName(platform, locale) }}
+                        {{ platform.name }}
                       </button>
                     </div>
                   </div>
                   <div v-if="detailPlatform" class="submit-platform-detail">
                     <div class="submit-platform-detail-head">
-                      <span class="submit-platform-detail-title">{{ platformName(detailPlatform, locale) }}</span>
+                      <span class="submit-platform-detail-title">{{ detailPlatform.name }}</span>
                       <span v-if="detailPlatform.versions?.length" class="submit-platform-detail-hint">
                         {{ t('submit.system-versions') }}
                       </span>
@@ -293,7 +252,7 @@
                       v-if="detailPlatform.versions?.length"
                       class="submit-platform-versions"
                       role="group"
-                      :aria-label="`${platformName(detailPlatform, locale)} ${t('submit.system-versions')}`">
+                      :aria-label="`${detailPlatform.name} ${t('submit.system-versions')}`">
                       <WinCheckBox
                         v-for="version in detailPlatform.versions"
                         :key="version.key"
@@ -312,16 +271,10 @@
               :Header="t('submit.website')"
               :PlaceholderText="t('submit.website-placeholder')"
               v-model:Text="form.website" />
-            <div class="submit-field-wrap">
-              <WinTextBox
-                :Header="t('submit.github')"
-                :PlaceholderText="t('submit.github-placeholder')"
-                v-model:Text="form.github"
-                @LostFocus="onGithubBlur" />
-              <p v-if="fieldError('github')" class="submit-field-error">{{ t(fieldError('github')) }}</p>
-              <!-- 自动读取的状态：读取中 / 已读取（省得用户不知道发生了什么） -->
-              <p v-if="autoImportNote" class="submit-field-note">{{ autoImportNote }}</p>
-            </div>
+            <WinTextBox
+              :Header="t('submit.github')"
+              :PlaceholderText="t('submit.github-placeholder')"
+              v-model:Text="form.github" />
             <!-- 开发者与开源协议：都选填。详情页只在有值时显示这两行，
                  所以「查不到作者」的商业软件留空即可，不用硬编一个「未知」。 -->
             <WinTextBox
@@ -358,13 +311,6 @@
             FontWeight="600"
             Margin="0,32,0,0"
             :Text="t('submit.section-downloads')" />
-          <!-- 按投稿类型给出针对性的填写提示（开源项目可留空，链接能从仓库生成） -->
-          <WinTextBlock
-            class="submit-kind-tip"
-            FontSize="13"
-            Foreground="var(--TextFillColorSecondaryBrush, var(--text-secondary))"
-            TextWrapping="Wrap"
-            :Text="t('submit.downloads-tip-' + submitKind)" />
           <div v-if="ossReady" class="submit-upload-hint">{{ t('submit.upload-limit-note', { limit: humanSize(UPLOAD_MAX_BYTES) }) }}</div>
           <div class="submit-download-list">
             <div v-for="(dl, i) in form.downloads" :key="i" class="submit-download-card">
@@ -440,12 +386,8 @@
             <WinButton
               Style="AccentButtonStyle"
               :Content="loading ? t('submit.submitting') : t('submit.submit')"
-              :IsEnabled="canSubmit"
+              :IsEnabled="!loading"
               @Click="submit" />
-            <!-- 按钮置灰时说明还差什么，避免用户点不动又不知道原因 -->
-            <span v-if="!loading && missing > 0" class="submit-missing">
-              {{ t('submit.missing-hint', { count: missing }) }}
-            </span>
             <WinButton
               v-if="hasDraft"
               Style="SubtleButtonStyle"
@@ -509,7 +451,7 @@ import WinInfoBar from '../../components/WinInfoBar.vue';
 import WinCheckBox from '../../components/WinCheckBox.vue';
 import WinFlyout from '../../components/WinFlyout.vue';
 import { useI18n } from '../../components/i18n/index';
-import { apps, categories, platformName, platformVersionName, platforms } from '../data';
+import { apps, categories, platforms } from '../data';
 import type { SoftwarePlatform, SoftwarePlatformVersion } from '../data';
 import { GithubImportError, importFromGithub, repoToId, toTagline } from '../githubImport';
 import type { GithubImportResult } from '../githubImport';
@@ -523,6 +465,7 @@ import {
 } from '../ossUpload';
 import type { UploadProgress } from '../ossUpload';
 import { shrinkIcon, ICON_INPUT_MAX_BYTES } from '../iconResize';
+import { CONTACT_PUBLIC_KEY } from '../feedback';
 /**
  * 压缩后仍超过该体积时提醒。
  * 128 px 的图标通常只有几 KB，达到该阈值说明压缩未生效（如浏览器无法解码 HEIC），
@@ -537,23 +480,9 @@ const DRAFT_KEY = 'csh-submit-draft';
  * 合并进 main 后同样会触发 .github/workflows/create-review-issue.yml 建审核 Issue。
  */
 const REPO_NEW_FILE_URL = 'https://github.com/c1201y/ClassSoftwareHub/new/main/submissions';
-/**
- * 联系方式的接收方公钥（age1...）：网页端与桌面端硬编码同一把。
- * 私钥仅开发者本地持有，绝不出现在任何客户端 / 网页 / 版本库代码里；
- * 这里只做公钥加密，不做任何解密。
- */
-const RECIPIENT_PUBLIC_KEY = 'age1l9axcy0sxu6eeanapg0maughsv380fh8nhd4unf9p8d7x20rjqfsgz4dxa';
+// 联系方式公钥统一由 feedback.ts 的 CONTACT_PUBLIC_KEY 提供
 
-import {
-  collectProblems,
-  guessKind,
-  validateDownloadUrl,
-  validateId,
-  missingCount
-} from '../submitValidation';
-import type { SubmitKind } from '../submitValidation';
-
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 /**
  * 下载方式索引 → 写入数据的 kind 值。
@@ -608,71 +537,6 @@ const form = reactive({
 });
 
 /** 排序值单独用字符串接（WinTextBox 只收字符串），提交时再转数字 */
-/**
- * 投稿类型向导（2026-11-14）。
- *
- * 三类投稿要填的字段差别很大：开源项目只要仓库地址，商业软件必须给
- * 官网/商店，本站上传则要传安装包。以前不分类型、所有字段一次摊开，
- * 用户不知道哪些该填、填完才发现缺东西。
- */
-const submitKind = ref<SubmitKind>('commercial');
-
-/** 类型选项（图标取自 SEGOEICONS 子集） */
-/**
- * 类型选项。
- *
- * ⚠️ 图标码点**必须实测过形状**再填 —— SEGOEICONS.TTF 是重映射过的子集，
- * 码点与标准 Segoe MDL2 不一致：E825 在标准里是「商店」，这个子集里画的
- * 却是「银行建筑」；E9D5 也不是代码图标。下面三个码点都用 .shot/icons.html
- * 实际渲染确认过形状对应的语义。
- */
-const KIND_ITEMS = [
-  { key: 'commercial' as SubmitKind, icon: '\uE7BF' },  // 购物车 → 商业软件
-  { key: 'opensource' as SubmitKind, icon: '\uEC7A' },  // 扳手/工具 → 开源项目
-  { key: 'upload' as SubmitKind, icon: '\uE898' }       // 向上箭头 → 本站上传
-];
-
-/** 校验模块需要的表单快照 */
-const formForCheck = computed(() => ({
-  id: form.id,
-  name: form.name,
-  category: form.category,
-  tagline: form.tagline,
-  description: form.description,
-  contact: form.contact,
-  website: form.website,
-  github: form.github,
-  platforms: form.platforms,
-  downloads: form.downloads.map((d) => ({ url: d.url, platform: d.platform }))
-}));
-
-/** 全部问题（驱动按钮可用性与「还差 N 项」） */
-const problems = computed(() => collectProblems(formForCheck.value, submitKind.value));
-
-/** 还差几项（同一字段只算一次） */
-const missing = computed(() => missingCount(formForCheck.value, submitKind.value));
-
-/** 提交按钮是否可点 */
-const canSubmit = computed(() => !loading.value && missing.value === 0);
-
-/**
- * 只在「用户碰过这个字段」之后才标红 —— 一进页面就满屏红框很劝退。
- */
-const touched = reactive<Record<string, boolean>>({});
-const markTouched = (field: string) => {
-  touched[field] = true;
-};
-
-/** 某字段的错误 key（没碰过或没错误则为空） */
-const fieldError = (field: string): string => {
-  if (!touched[field]) return '';
-  const hit = problems.value.find((p) => p.field === field);
-  return hit ? hit.key : '';
-};
-
-/** ID 有格式要求，单独处理 */
-const idError = computed(() => (touched.id ? validateId(form.id)?.key ?? '' : ''));
-
 const sortText = ref('');
 
 const loading = ref(false);
@@ -725,9 +589,8 @@ function focusPlatform(key: string) {
 
 /** 右栏单独展示版本，补上系统名，避免只看到「7」「10」不知道属于哪个系统 */
 function versionLabel(platform: SoftwarePlatform, version: SoftwarePlatformVersion): string {
-  const label = platformVersionName(version, locale);
-  if (version.key === 'other' || !platform.versionRange) return label;
-  return `${platformName(platform, locale)} ${label}`;
+  if (version.key === 'other' || !platform.versionRange) return version.name;
+  return `${platform.name} ${version.name}`;
 }
 
 /**
@@ -735,45 +598,31 @@ function versionLabel(platform: SoftwarePlatform, version: SoftwarePlatformVersi
  * 数字版本（versionRange）勾中了「最新的连续几档」时压成最老一档 +，
  * 例如 Windows 勾 10 / 11 → Windows 10+；勾 7 / 10 / 11 → Windows 7+；
  * 跳着勾（7 / 11）则老实列出。Linux 这类发行版清单不做 + 号。
- *
- * display=false 用于提交数据（沿用中文原文，保持数据格式一致）；
- * display=true 按界面语言输出（英文界面用英文系统名与半角括号）。
  */
-function formatPlatformRequirement(
-  platform: (typeof platforms)[number],
-  selectedKeys: string[],
-  display = false
-): string {
+function formatPlatformRequirement(platform: (typeof platforms)[number], selectedKeys: string[]): string {
   const versions = platform.versions ?? [];
-  const name = display ? platformName(platform, locale) : platform.name;
-  if (!versions.length) return name;
+  if (!versions.length) return platform.name;
 
   const ordered = versions.filter((version) => version.key !== 'other');
   const picked = ordered.filter((version) => selectedKeys.includes(version.key));
   const hasOther = selectedKeys.includes('other');
-  const label = (version: SoftwarePlatformVersion) =>
-    display ? platformVersionName(version, locale) : version.name;
-  const otherWord = display ? t('common.other') : '其他';
-  const wrap = (inner: string) => (display && locale === 'en-US' ? ` (${inner})` : `（${inner}）`);
 
   if (!picked.length) {
-    return hasOther ? `${name}${wrap(otherWord)}` : t('submit.system-version-needed', { platform: name });
+    return hasOther ? `${platform.name}（其他）` : t('submit.system-version-needed', { platform: platform.name });
   }
 
   if (!platform.versionRange) {
-    const list = picked.map(label).join(' / ');
-    return `${name}${wrap(list + (hasOther ? ` / ${otherWord}` : ''))}`;
+    return `${platform.name}（${picked.map((version) => version.name).join(' / ')}${hasOther ? ' / 其他' : ''}）`;
   }
 
   const start = ordered.indexOf(picked[0]);
   const isRange = picked.length >= 2 &&
     start + picked.length === ordered.length &&
     picked.every((version, index) => ordered[start + index] === version);
-  const expression = isRange ? `${label(picked[0])}+` : picked.map(label).join(' / ');
-  return `${name} ${expression}${hasOther ? ` / ${otherWord}` : ''}`;
+  const expression = isRange ? `${picked[0].name}+` : picked.map((version) => version.name).join(' / ');
+  return `${platform.name} ${expression}${hasOther ? ' / 其他' : ''}`;
 }
 
-/** 提交数据里的系统文本：沿用中文原文 */
 const selectedSystemText = computed(() =>
   platforms
     .filter((platform) => form.platforms.includes(platform.key))
@@ -781,15 +630,7 @@ const selectedSystemText = computed(() =>
     .join(' / ')
 );
 
-/** 界面展示用的系统文本：按当前语言输出 */
-const selectedSystemDisplay = computed(() =>
-  platforms
-    .filter((platform) => form.platforms.includes(platform.key))
-    .map((platform) => formatPlatformRequirement(platform, form.platformVersions[platform.key] ?? [], true))
-    .join(' / ')
-);
-
-const platformSummary = computed(() => selectedSystemDisplay.value || t('submit.system-placeholder'));
+const platformSummary = computed(() => selectedSystemText.value || t('submit.system-placeholder'));
 
 /**
  * WinFlyout 的内容滚动层拿不到 max-height（内容再高也会被外层裁掉），
@@ -1329,52 +1170,6 @@ function applyImport(result: GithubImportResult) {
 }
 
 /**
- * GitHub 仓库填写后自动读取（2026-11-14 新增）。
- *
- * 以前「一键读取」是个可选按钮，用户常常想不起来点，于是手抄版本号、
- * 体积、下载直链 —— 既费事又容易抄错。现在失焦时只要仓库地址看起来
- * 像 GitHub、且还没读过这个仓库，就自动读一次。
- *
- * 约束：
- *   · 用户已经手填了下载项时**不自动覆盖**，只提示可以手动读取；
- *   · 同一个仓库只自动读一次（GitHub 匿名限额 60 次/小时）。
- */
-const autoImportNote = ref('');
-const lastAutoRepo = ref('');
-
-const looksLikeGithubRepo = (value: string) => {
-  const v = value.trim();
-  if (!v) return false;
-  // 接受 owner/repo 简写与完整 URL 两种写法（与 importFromGithub 的口径一致）
-  return /^(https?:\/\/)?(www\.)?github\.com\/[\w.-]+\/[\w.-]+/i.test(v) || /^[\w.-]+\/[\w.-]+$/.test(v);
-};
-
-/** 是否已有非空下载项（用于判断能不能自动覆盖） */
-const hasFilledDownload = () => form.downloads.some((d) => d.url.trim().length > 0);
-
-async function onGithubBlur() {
-  markTouched('github');
-
-  const repo = form.github.trim();
-  if (!repo || !looksLikeGithubRepo(repo)) return;
-  if (lastAutoRepo.value === repo) return;
-  if (reading.value) return;
-
-  if (hasFilledDownload()) {
-    autoImportNote.value = t('submit.auto-import-skipped');
-    return;
-  }
-
-  lastAutoRepo.value = repo;
-  repoInput.value = repo;
-  autoImportNote.value = t('submit.auto-import-reading');
-  await runImport();
-  autoImportNote.value = importError.value
-    ? t('submit.auto-import-failed')
-    : t('submit.auto-import-done');
-}
-
-/**
  * 校验值输入的写法多样：可能带「MD5:」「sha256 =」前缀、0x 前缀、按字节以冒号或空格分隔。
  * 站点只接受纯十六进制（算法按位数识别），此处统一清洗。
  */
@@ -1426,7 +1221,7 @@ async function encryptContact(): Promise<string | null> {
   try {
     const age = await import('age-encryption');
     const encrypter = new age.Encrypter();
-    encrypter.addRecipient(RECIPIENT_PUBLIC_KEY);
+    encrypter.addRecipient(CONTACT_PUBLIC_KEY);
     const ciphertext = await encrypter.encrypt(contact);
     return age.armor.encode(ciphertext);
   } catch {
@@ -1834,104 +1629,6 @@ async function submit() {
 .submit-subtitle {
   margin-bottom: 4px;
 }
-
-/* ── 投稿类型向导 ──────────────────────────────────────────────────
-   三张并排的卡片，选中态用强调色描边。窄屏时自动落到单列。 */
-.submit-kind-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 14px;
-  /* 三张卡等高：提示文案长短不一时底边仍然对齐 */
-  align-items: stretch;
-}
-
-.submit-kind-card {
-  /* 基准 260px：三张卡在 1400 宽下各约 320px，提示文案不会折成三行 */
-  flex: 1 1 260px;
-  min-width: 0;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
-  background: var(--card-bg, var(--CardBackgroundFillColorDefaultBrush));
-  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-
-.submit-kind-card:hover {
-  border-color: var(--accent-fill-rest, var(--AccentFillColorDefaultBrush));
-}
-
-.submit-kind-card.is-active {
-  border-color: var(--accent-fill-rest, var(--AccentFillColorDefaultBrush));
-  background: var(--accent-soft, var(--SubtleFillColorSecondaryBrush));
-  box-shadow: inset 0 0 0 1px var(--accent-fill-rest, var(--AccentFillColorDefaultBrush));
-}
-
-.submit-kind-icon {
-  font-family: 'WinUIOnWebIcons';
-  font-size: 18px;
-  line-height: 1.2;
-  color: var(--accent, var(--AccentTextFillColorPrimaryBrush));
-  flex: none;
-}
-
-.submit-kind-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.submit-kind-name {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.submit-kind-hint {
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
-  display: block;
-}
-
-/* ── 字段级错误提示与「还差 N 项」────────────────────────────────── */
-.submit-field-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.submit-kind-tip {
-  margin: 6px 0 14px;
-  line-height: 1.6;
-}
-
-.submit-field-note {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
-}
-
-.submit-field-error {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.5;
-  color: #d13438;
-}
-
-.submit-missing {
-  align-self: center;
-  font-size: 12px;
-  color: var(--text-secondary, var(--TextFillColorSecondaryBrush));
-}
-
 
 /* 分区标题（基本信息 / 补充信息 / 下载项）：字号、字重、间距一律走 WinTextBlock
    的 FontSize / FontWeight / Margin 参数——它的内联样式优先级高于外部 CSS，
