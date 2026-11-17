@@ -36,15 +36,40 @@ const buildId = (() => {
 const asciiChunkName = (chunk: { name: string }) =>
   `assets/${chunk.name.replace(/[^A-Za-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '') || 'chunk'}-[hash].js`;
 
-/** 构建完成后在 dist 根目录写 version.json，供前端比对缓存是否落后 */
+/**
+ * 构建完成后写两个清单：
+ *   version.json  —— 前端比对「浏览器缓存是否落后于服务器」
+ *   precache.json —— Service Worker 安装时把**全部**哈希产物预缓存下来，
+ *                    让离线打开任何页面/工具都不缺 chunk（只解析 index.html
+ *                    只能拿到入口，其余路由是点到才缓存的）。
+ */
 const emitVersion = (): Plugin => ({
   name: 'csh-emit-version',
   apply: 'build',
-  generateBundle() {
+  generateBundle(_options, bundle) {
     this.emitFile({
       type: 'asset',
       fileName: 'version.json',
       source: JSON.stringify({ build: buildId, time: new Date().toISOString() }, null, 2)
+    });
+
+    const hashed = Object.values(bundle)
+      .map((item) => item.fileName)
+      .filter((name) => /\.(?:js|css|webp|png|svg|woff2?|ico)$/i.test(name) && !name.endsWith('sw.js'));
+    // public/ 下的固定文件不会出现在 bundle 里，按已知清单补上
+    const fixed = [
+      'legal.json',
+      'offline.html',
+      'favicon.ico',
+      'apple-touch-icon.png',
+      'og-cover.png',
+      'screenshots/home.png',
+      'screenshots/settings.png'
+    ];
+    this.emitFile({
+      type: 'asset',
+      fileName: 'precache.json',
+      source: JSON.stringify({ build: buildId, files: [...new Set([...fixed, ...hashed])] }, null, 2)
     });
   }
 });

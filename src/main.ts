@@ -53,6 +53,12 @@ const resolvedManifest = {
     name: i18n.t(shortcut.name),
     url: resolveManifestUrl(shortcut.url)
   })),
+  // 安装对话框里的应用截图：同样要绝对化，label 走 i18n
+  screenshots: (manifestTemplate.screenshots ?? []).map((shot) => ({
+    ...shot,
+    src: resolveManifestUrl(shot.src),
+    label: i18n.t(shot.label)
+  })),
   icons: manifestTemplate.icons.map((icon) => ({
     ...icon,
     src: resolveManifestUrl(manifestIconUrls[icon.src] ?? icon.src)

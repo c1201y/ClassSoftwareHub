@@ -1,13 +1,14 @@
 // ClassSoftwareHub 浏览器缓存 Service Worker（scope = 站点根）
 //
 // 缓存范围：
-//   · 页面外壳（index.html）与其中引用的哈希静态资源 —— 安装时预缓存，离线可开
-//   · /assets/* 其它哈希资源（图标、字体、图片）—— 用后即缓存
+//   · 页面外壳（index.html）与构建产物里**全部**哈希资源（precache.json 清单）
+//     —— 安装时一次预缓存，离线打开任何页面 / 内置工具都不缺 chunk
+//   · /assets/* 后续新增资源 —— 用后即缓存
 //   · /api/icon 图标、/legal.json —— stale-while-revalidate
 //   · /offline.html —— 导航失败时的兜底页
-// 不缓存：/version.json（必须实时，用于版本检测）、/api/ 的其它接口、
+// 不缓存：/version.json 与 /precache.json（必须实时）、/api/ 其它接口、
 // 以及所有跨域请求（下载节点等）。
-const VERSION = 'csh-sw-v2';
+const VERSION = 'csh-sw-v3';
 const SHELL = `${VERSION}-shell`;
 const ASSETS = `${VERSION}-assets`;
 const ICONS = `${VERSION}-icons`;
@@ -15,8 +16,9 @@ const OFFLINE = `${VERSION}-offline`;
 const CACHE_PREFIX = 'csh-sw-';
 
 const ICON_LIMIT = 800;
-const ASSET_LIMIT = 600;
+const ASSET_LIMIT = 900;
 const NAV_TIMEOUT = 4000;
+const PRECACHE_PARALLEL = 6;
 
 /** 站点根（兼容子目录部署） */
 const SCOPE = self.registration.scope;
@@ -61,39 +63,75 @@ self.addEventListener('message', (event) => {
   }
 });
 
-/** 安装时预缓存外壳及其引用的哈希资源 */
+const abs = (name) => new URL(name, SCOPE).href;
+
+async function mapLimit(items, limit, fn) {
+  let cursor = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) || 0 }, async () => {
+    while (cursor < items.length) {
+      const index = cursor;
+      cursor += 1;
+      await fn(items[index]);
+    }
+  });
+  await Promise.all(workers);
+}
+
+/** 安装时预缓存外壳与构建清单里的全部资源 */
 async function precache() {
   const shellCache = await caches.open(SHELL);
   const response = await fetch(new Request(SCOPE, { cache: 'reload' }));
-  if (!response.ok) return;
-  const html = await response.clone().text();
-  await shellCache.put(new Request(SCOPE), response.clone());
+  if (response.ok) {
+    await shellCache.put(new Request(SCOPE), response.clone());
+  }
 
   const assets = await caches.open(ASSETS);
-  const urls = new Set();
-  for (const match of html.matchAll(/(?:src|href)="([^"]*\/assets\/[^"]+)"/g)) {
+  const offlineCache = await caches.open(OFFLINE);
+
+  // 1) 构建清单（推荐路径）：一次拿全所有哈希产物
+  let files = [];
+  try {
+    const manifest = await fetch(new Request(abs('precache.json'), { cache: 'reload' }));
+    if (manifest.ok) {
+      const data = await manifest.json();
+      if (Array.isArray(data.files)) {
+        files = data.files.filter((name) => typeof name === 'string' && name);
+      }
+    }
+  } catch {
+    /* 清单缺失：退回解析 index.html */
+  }
+
+  // 2) 兜底：解析 index.html 里引用的入口资源
+  if (!files.length) {
     try {
-      urls.add(new URL(match[1], SCOPE).href);
+      const html = await response.clone().text();
+      for (const match of html.matchAll(/(?:src|href)="([^"]*\/assets\/[^"]+)"/g)) {
+        try {
+          files.push(new URL(match[1], SCOPE).pathname.replace(/^\//, ''));
+        } catch {
+          /* 忽略畸形地址 */
+        }
+      }
     } catch {
-      /* 忽略畸形地址 */
+      /* 忽略 */
     }
   }
-  await Promise.all(
-    [...urls].map((url) =>
-      fetch(new Request(url, { cache: 'reload' }))
-        .then((res) => (res.ok ? assets.put(url, res) : null))
-        .catch(() => null)
-    )
-  );
 
-  // 离线兜底页与法务文本：失败不影响安装
-  const offlineCache = await caches.open(OFFLINE);
-  await fetch(new Request(new URL('offline.html', SCOPE).href, { cache: 'reload' }))
-    .then((res) => (res.ok ? offlineCache.put(new URL('offline.html', SCOPE).href, res) : null))
-    .catch(() => null);
-  await fetch(new Request(new URL('legal.json', SCOPE).href, { cache: 'reload' }))
-    .then((res) => (res.ok ? assets.put(new URL('legal.json', SCOPE).href, res) : null))
-    .catch(() => null);
+  await mapLimit(files, PRECACHE_PARALLEL, async (name) => {
+    const url = abs(name);
+    try {
+      const res = await fetch(new Request(url, { cache: 'reload' }));
+      if (!res.ok) return;
+      if (name.endsWith('offline.html')) {
+        await offlineCache.put(url, res.clone());
+        return;
+      }
+      await assets.put(url, res);
+    } catch {
+      /* 单个文件失败不影响安装 */
+    }
+  });
 }
 
 async function trim(cacheName, limit) {
@@ -171,7 +209,9 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.endsWith('/sw.js') || url.pathname.endsWith('/version.json')) return;
+  if (url.pathname.endsWith('/sw.js') || url.pathname.endsWith('/version.json') || url.pathname.endsWith('/precache.json')) {
+    return;
+  }
 
   if (request.mode === 'navigate') {
     event.respondWith(networkFirstNavigation(event));

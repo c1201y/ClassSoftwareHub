@@ -781,3 +781,8 @@ html.theme-dark .category-badge {
     width: 100%;
   }
 }
+
+/* 首页版本提示：贴近 Windows 更新页的信息条，只占一行高度 */
+.home-update-bar {
+  margin: 0 0 16px;
+}

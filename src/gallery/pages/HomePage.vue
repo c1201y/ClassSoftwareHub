@@ -46,6 +46,27 @@
           </div>
         </section>
 
+        <!-- 版本更新提示：可关闭的 WinUI InfoBar，只占一行高度，不挡内容 -->
+        <WinInfoBar
+          v-if="updateAvailable"
+          class="home-update-bar"
+          :IsOpen="true"
+          IsClosable
+          Severity="Informational"
+          :Title="t('home.update-title')"
+          :Message="updateMessage"
+          @CloseButtonClick="dismissUpdate"
+          @update:IsOpen="onUpdateBarOpen">
+          <!-- @vue-expect-error 上游 WinInfoBar 未导出插槽类型，运行时正常 -->
+          <template #ActionButton>
+            <WinButton
+              FontSize="13"
+              Padding="12,0,12,0"
+              :Content="t('home.update-action')"
+              @Click="runHomeUpdate" />
+          </template>
+        </WinInfoBar>
+
         <!-- 桌面应用版推广卡：整页宽、矮高度，位于「内置工具 / AI 导航」上方。
              ⚠️ 这里是「下载桌面版」的**唯一入口**（导航栏那个已移除，见 App.vue）。
              点卡片 / 按钮都进 #/desktop 下载页 —— 那里能选线路、切正式/预览、
@@ -190,7 +211,10 @@ import WinScrollViewer from '../../components/WinScrollViewer.vue';
 import WinTextBlock from '../../components/WinTextBlock.vue';
 import WinSelectorBar from '../../components/WinSelectorBar.vue';
 import WinComboBox from '../../components/WinComboBox.vue';
+import WinInfoBar from '../../components/WinInfoBar.vue';
+import WinButton from '../../components/WinButton.vue';
 import { useI18n } from '../../components/i18n/index';
+import { applyUpdate, checkForUpdate } from '../appUpdate';
 import { apps, categories, categoryName, platformName, platforms } from '../data';
 import type { SoftwareApp } from '../data';
 import { appIconUrlSafe, markIconBroken } from '../appIcons';
@@ -266,12 +290,63 @@ const openDetail = (app: SoftwareApp) => {
 };
 
 // 空闲时预取详情页代码块：首页最常见的下一步就是点开某个软件
+/* ── 版本更新提示 ────────────────────────────────────────────────────
+   发现服务器有新版本时在首页顶部显示一条可关闭的 InfoBar；用户关掉后，
+   同一个版本不再打扰（换新版本才会再次出现）。 */
+const UPDATE_DISMISS_KEY = 'csh-update-dismissed';
+const pendingUpdate = ref<{ latest: string; running: string } | null>(null);
+
+const isUpdateDismissed = (latest: string): boolean => {
+  try {
+    return localStorage.getItem(UPDATE_DISMISS_KEY) === latest;
+  } catch {
+    return false;
+  }
+};
+
+const updateAvailable = computed(
+  () => !!pendingUpdate.value && !isUpdateDismissed(pendingUpdate.value.latest)
+);
+const updateMessage = computed(() =>
+  pendingUpdate.value
+    ? t('home.update-message', {
+        running: pendingUpdate.value.running,
+        latest: pendingUpdate.value.latest
+      })
+    : ''
+);
+const dismissUpdate = () => {
+  const latest = pendingUpdate.value?.latest;
+  if (latest) {
+    try {
+      localStorage.setItem(UPDATE_DISMISS_KEY, latest);
+    } catch {
+      /* 无痕模式写不进去：本次隐藏即可 */
+    }
+  }
+  pendingUpdate.value = null;
+};
+const onUpdateBarOpen = (open: boolean) => {
+  if (!open) dismissUpdate();
+};
+const runHomeUpdate = () => {
+  void applyUpdate();
+};
+
 onMounted(() => {
   const schedule =
     typeof window.requestIdleCallback === 'function'
       ? window.requestIdleCallback
       : (callback: () => void) => window.setTimeout(callback, 1200);
   schedule(() => prefetchRoute('download-detail'));
+
+  void checkForUpdate()
+    .then((result) => {
+      if (result.state === 'stale') {
+        pendingUpdate.value = { latest: result.latest, running: result.running };
+      }
+    })
+    .catch(() => {});
 });
 
 /**

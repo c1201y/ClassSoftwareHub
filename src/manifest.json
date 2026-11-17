@@ -9,17 +9,33 @@
   "lang": "zh-CN",
   "dir": "ltr",
   "display": "standalone",
-  "display_override": [ "window-controls-overlay", "standalone" ],
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
   "orientation": "any",
   "id": "./",
   "scope": "./",
   "start_url": "./",
-  "categories": [ "productivity", "utilities", "education" ],
+  "categories": [
+    "productivity",
+    "utilities",
+    "education"
+  ],
   "prefer_related_applications": false,
   "shortcuts": [
-    { "name": "pwa.shortcut-desktop", "url": "./#/desktop" },
-    { "name": "pwa.shortcut-tools", "url": "./#/tools" },
-    { "name": "pwa.shortcut-feedback", "url": "./#/feedback" }
+    {
+      "name": "pwa.shortcut-desktop",
+      "url": "./#/desktop"
+    },
+    {
+      "name": "pwa.shortcut-tools",
+      "url": "./#/tools"
+    },
+    {
+      "name": "pwa.shortcut-feedback",
+      "url": "./#/feedback"
+    }
   ],
   "icons": [
     {
@@ -47,6 +63,25 @@
       "purpose": "any"
     }
   ],
-  "theme_color": "transparent",
-  "background_color": "transparent"
+  "theme_color": "#0067C0",
+  "background_color": "#f3f3f3",
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "screenshots": [
+    {
+      "src": "./screenshots/home.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "pwa.screenshot-home"
+    },
+    {
+      "src": "./screenshots/settings.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "pwa.screenshot-settings"
+    }
+  ]
 }
