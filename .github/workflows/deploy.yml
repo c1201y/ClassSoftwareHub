@@ -68,6 +68,12 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: 取出构建产物
+        uses: actions/download-artifact@v4
+        with:
+          name: site-dist
+          path: dist
+
       - name: 发布 dist/ 到 deploy-ecs 分支（每次单提交，强制覆盖）
         # 只保留一条提交：Force push 后分支体积恒定，ECS 的 `--depth 1` 拉取也快。
         env:
