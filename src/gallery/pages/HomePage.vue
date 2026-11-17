@@ -50,7 +50,7 @@
              ⚠️ 这里是「下载桌面版」的**唯一入口**（导航栏那个已移除，见 App.vue）。
              点卡片 / 按钮都进 #/desktop 下载页 —— 那里能选线路、切正式/预览、
              看历史版本，比在首页直接甩三个 exe 按钮清楚得多。 -->
-        <div class="home-desktop-promo" role="button" tabindex="0" @click="openDesktopPage" @keydown.enter="openDesktopPage">
+        <div class="home-desktop-promo" role="button" tabindex="0" @mouseenter="prefetchRoute('desktop')" @focus="prefetchRoute('desktop')" @click="openDesktopPage" @keydown.enter="openDesktopPage">
           <span class="home-desktop-promo-icon" aria-hidden="true">&#xE977;</span>
           <span class="home-desktop-promo-text">
             <span class="home-desktop-promo-title">{{ desktopPromo.title }}</span>
@@ -75,6 +75,8 @@
           <button
             type="button"
             class="home-jump-card"
+            @mouseenter="prefetchRoute('tools')"
+            @focus="prefetchRoute('tools')"
             @click="openTools">
             <span class="home-jump-icon" aria-hidden="true">&#xEC7A;</span>
             <span class="home-jump-text">
@@ -86,6 +88,8 @@
           <button
             type="button"
             class="home-jump-card"
+            @mouseenter="prefetchRoute('ai')"
+            @focus="prefetchRoute('ai')"
             @click="openAiNav">
             <span class="home-jump-icon" aria-hidden="true">&#xE99A;</span>
             <span class="home-jump-text">
@@ -143,6 +147,8 @@
               :key="app.id"
               type="button"
               class="control-item download-card"
+              @mouseenter="prefetchRoute('download-detail')"
+              @focus="prefetchRoute('download-detail')"
               @click="openDetail(app)">
               <span class="control-item-surface">
                 <span class="download-app-icon">
@@ -175,9 +181,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref } from 'vue';
+import { computed, inject, onMounted, ref } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { prefetchRoute } from '../router';
 import type { HolidayTheme } from '../holidayTheme';
 import WinScrollViewer from '../../components/WinScrollViewer.vue';
 import WinTextBlock from '../../components/WinTextBlock.vue';
@@ -257,6 +264,15 @@ const showIwbCard = computed(
 const openDetail = (app: SoftwareApp) => {
   void router.push({ name: 'download-detail', params: { id: app.id } });
 };
+
+// 空闲时预取详情页代码块：首页最常见的下一步就是点开某个软件
+onMounted(() => {
+  const schedule =
+    typeof window.requestIdleCallback === 'function'
+      ? window.requestIdleCallback
+      : (callback: () => void) => window.setTimeout(callback, 1200);
+  schedule(() => prefetchRoute('download-detail'));
+});
 
 /**
  * 首页「体验桌面应用版」推广卡（整页宽、矮高度，位于内置工具 / AI 导航卡片上方）：

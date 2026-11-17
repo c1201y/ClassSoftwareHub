@@ -1,9 +1,34 @@
 import { defineConfig } from 'vite';
+import type { Plugin } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { viteSingleFile } from 'vite-plugin-singlefile';
+import { execSync } from 'node:child_process';
 
 // SINGLEFILE=1 时打包成“单文件 HTML”（可离线双击打开，等同旧版 indexV20260831.html 的形态）
 const singleFile = process.env.SINGLEFILE === '1';
+
+/**
+ * 构建标识：用于「浏览器缓存落后于服务器」检测（见 src/gallery/appUpdate.ts）。
+ *
+ * 以提交号为准而不是时间戳：同一提交重复构建时标识不变，用户不会因为
+ * “重新构建了一次”就被提示更新。CI 里用 GITHUB_SHA，本地用 git。
+ * 本地有未提交改动时加 -dirty，避免本地调试永远判不出差异。
+ */
+const buildId = (() => {
+  if (process.env.CSH_BUILD_ID) return process.env.CSH_BUILD_ID;
+  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 7);
+  try {
+    const commit = execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim();
+    const dirty = execSync('git status --porcelain', { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim();
+    return dirty ? `${commit}-dirty` : commit;
+  } catch {
+    return 'dev';
+  }
+})();
 
 // 模块文件名里带中文时（根目录「AI导航文本.ts」就是），Rollup 会拆出一个同名 chunk，
 // 产出 assets/AI导航文本-xxxxxxxx.js 这种非 ASCII 文件名 —— 部分 FTP / 网盘服务器
@@ -11,11 +36,27 @@ const singleFile = process.env.SINGLEFILE === '1';
 const asciiChunkName = (chunk: { name: string }) =>
   `assets/${chunk.name.replace(/[^A-Za-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '') || 'chunk'}-[hash].js`;
 
+/** 构建完成后在 dist 根目录写 version.json，供前端比对缓存是否落后 */
+const emitVersion = (): Plugin => ({
+  name: 'csh-emit-version',
+  apply: 'build',
+  generateBundle() {
+    this.emitFile({
+      type: 'asset',
+      fileName: 'version.json',
+      source: JSON.stringify({ build: buildId, time: new Date().toISOString() }, null, 2)
+    });
+  }
+});
+
 export default defineConfig({
   // 相对路径：站点既有「根目录」形态（GitHub Pages / FTP），也有「子目录」形态
   // （OpenList 网盘的 网站/ 文件夹），相对引用两边都能用；hash 路由不会改变文档路径。
   base: './',
-  plugins: [vue(), ...(singleFile ? [viteSingleFile()] : [])],
+  define: {
+    __BUILD_ID__: JSON.stringify(buildId)
+  },
+  plugins: [vue(), emitVersion(), ...(singleFile ? [viteSingleFile()] : [])],
   server: {
     host: '0.0.0.0',
     port: 5173

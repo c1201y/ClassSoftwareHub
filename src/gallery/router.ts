@@ -84,4 +84,23 @@ const router = createRouter({
   routes
 });
 
+/** 已预取的路由名（避免 hover 反复触发） */
+const prefetchedRoutes = new Set<string>();
+
+/**
+ * 预取某个路由的代码块。
+ *
+ * 页面组件都是 `() => import(...)` 的懒加载块，鼠标移到卡片/按钮上时先拉
+ * 下来，点下去就能直接渲染 —— 跨境网络下这一步通常能省 100–400ms。
+ * 失败时从集合里移除，下次 hover 可以重试。
+ */
+export function prefetchRoute(name: string): void {
+  if (prefetchedRoutes.has(name)) return;
+  const record = router.getRoutes().find((item) => item.name === name);
+  const loader = record?.components?.default as unknown as (() => Promise<unknown>) | undefined;
+  if (typeof loader !== 'function') return;
+  prefetchedRoutes.add(name);
+  void Promise.resolve(loader()).catch(() => prefetchedRoutes.delete(name));
+}
+
 export default router;

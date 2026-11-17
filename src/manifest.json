@@ -6,9 +6,21 @@
   },
   "author": "app.author",
   "version": "app.version",
+  "lang": "zh-CN",
+  "dir": "ltr",
   "display": "standalone",
-  "display_override": [ "window-controls-overlay" ],
-  "start_url": "/WinUIonWeb/",
+  "display_override": [ "window-controls-overlay", "standalone" ],
+  "orientation": "any",
+  "id": "./",
+  "scope": "./",
+  "start_url": "./",
+  "categories": [ "productivity", "utilities", "education" ],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    { "name": "pwa.shortcut-desktop", "url": "./#/desktop" },
+    { "name": "pwa.shortcut-tools", "url": "./#/tools" },
+    { "name": "pwa.shortcut-feedback", "url": "./#/feedback" }
+  ],
   "icons": [
     {
       "src": "@app-icon",

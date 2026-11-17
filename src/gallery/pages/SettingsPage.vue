@@ -58,10 +58,16 @@
             </WinExpander>
             <WinExpander
               :Header="$t('text.browser-cache')"
-              :Description="$t('text.browser-cache-desc')"
+              :Description="updateInfo ? $t('text.update-available', { latest: updateInfo.latest, running: updateInfo.running }) : $t('text.browser-cache-desc')"
               Height="70">
               <div class="cache-actions">
                 <WinButton
+                  v-if="updateInfo"
+                  :IsEnabled="!updating"
+                  :Content="$t('text.update-now')"
+                  @Click="runUpdate" />
+                <WinButton
+                  v-else
                   :IsEnabled="!clearingCache"
                   :Content="$t('text.clear-cache')"
                   @Click="clearCacheNow" />
@@ -73,6 +79,18 @@
                   v-else-if="cacheClearState === 'fail'"
                   class="cache-result cache-result-fail"
                   :Text="$t('text.cache-clear-failed')" />
+              </div>
+            </WinExpander>
+            <WinExpander
+              v-if="installAvailable"
+              :Header="$t('text.install-app')"
+              :Description="$t('text.install-app-desc')"
+              Height="70">
+              <div class="cache-actions">
+                <WinButton
+                  :IsEnabled="installState !== 'accepted'"
+                  :Content="installState === 'accepted' ? $t('text.install-done') : $t('text.install-now')"
+                  @Click="installApp" />
               </div>
             </WinExpander>
           </div>
@@ -207,6 +225,9 @@ import legalDocs from '../../../法律文本';
 import { useRouter } from 'vue-router';
 import EchoCaveCard from '../EchoCaveCard.vue';
 import { clearBrowserCaches } from '../browserCache';
+import { applyUpdate, checkForUpdate } from '../appUpdate';
+import type { UpdateInfo } from '../appUpdate';
+import { onInstallAvailability, promptInstallPwa } from '../pwaInstall';
 
 const { t, locale } = useI18n();
 
@@ -256,8 +277,28 @@ const clearCacheNow = async () => {
   }, 4000);
 };
 
-const themeOptions = ['system', 'light', 'dark'];
-const materialOptions = ['mica', 'acrylic'];
+// ── 版本检测与安装入口 ───────────────────────────────────────────────
+// 浏览器可能还在用 SW 缓存里的旧 bundle：/version.json（构建时生成）里的
+// 提交号与当前 bundle 不一致时，把「清除缓存」换成「更新到最新版本」。
+const updateInfo = ref<UpdateInfo | null>(null);
+const updating = ref(false);
+const refreshUpdate = async () => {
+  updateInfo.value = await checkForUpdate();
+};
+const runUpdate = async () => {
+  if (updating.value) return;
+  updating.value = true;
+  await applyUpdate();
+};
+
+const installAvailable = ref(false);
+const installState = ref<'idle' | 'accepted' | 'dismissed' | 'unavailable'>('idle');
+let stopInstallWatch: (() => void) | undefined;
+const installApp = async () => {
+  installState.value = await promptInstallPwa();
+};
+
+const themeOptions = ['system', 'light', 'dark'];const materialOptions = ['mica', 'acrylic'];
 const themeIndex = computed(() => themeOptions.indexOf(themeSetting.value));
 const materialIndex = computed(() => materialOptions.indexOf(materialSetting.value));
 const onThemeSelectionChanged = ({ SelectedIndex }: { SelectedIndex: number }) => {
@@ -325,11 +366,17 @@ onMounted(() => {
       if (f === 'ipv6' || f === 'ipv4') connectionFamily.value = f;
     })
     .catch(() => {});
+  // 进入设置页时比对一次版本（失败静默，不打扰用户）
+  void refreshUpdate();
+  stopInstallWatch = onInstallAvailability((available) => {
+    installAvailable.value = available;
+  });
 });
 
 onBeforeUnmount(() => {
   if (uptimeTimer !== undefined) window.clearInterval(uptimeTimer);
   window.clearTimeout(cacheClearTimer);
+  stopInstallWatch?.();
 });
 </script>
 

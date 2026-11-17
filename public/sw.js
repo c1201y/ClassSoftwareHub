@@ -1,25 +1,32 @@
-// classsoftwarehub.cn 可选浏览器缓存 Service Worker
-// 范围（scope）为站点根：/assets/* 哈希静态资源、/api/icon 图标、页面导航。
-// 不缓存任何其它 /api/ 接口（提交、签名、统计等必须实时）。
-const VERSION = 'csh-sw-v1';
+// ClassSoftwareHub 浏览器缓存 Service Worker（scope = 站点根）
+//
+// 缓存范围：
+//   · 页面外壳（index.html）与其中引用的哈希静态资源 —— 安装时预缓存，离线可开
+//   · /assets/* 其它哈希资源（图标、字体、图片）—— 用后即缓存
+//   · /api/icon 图标、/legal.json —— stale-while-revalidate
+//   · /offline.html —— 导航失败时的兜底页
+// 不缓存：/version.json（必须实时，用于版本检测）、/api/ 的其它接口、
+// 以及所有跨域请求（下载节点等）。
+const VERSION = 'csh-sw-v2';
 const SHELL = `${VERSION}-shell`;
 const ASSETS = `${VERSION}-assets`;
 const ICONS = `${VERSION}-icons`;
+const OFFLINE = `${VERSION}-offline`;
 const CACHE_PREFIX = 'csh-sw-';
 
-const ICON_LIMIT = 500;
-const ASSET_LIMIT = 240;
+const ICON_LIMIT = 800;
+const ASSET_LIMIT = 600;
 const NAV_TIMEOUT = 4000;
+
+/** 站点根（兼容子目录部署） */
+const SCOPE = self.registration.scope;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
-      try {
-        const cache = await caches.open(SHELL);
-        await cache.add(new Request('/', { cache: 'reload' }));
-      } catch {
+      await precache().catch(() => {
         /* 首次安装离线也允许，后续导航再填充 */
-      }
+      });
       await self.skipWaiting();
     })()
   );
@@ -32,6 +39,10 @@ self.addEventListener('activate', (event) => {
       await Promise.all(
         keys.filter((key) => key.startsWith(CACHE_PREFIX) && !key.startsWith(VERSION)).map((key) => caches.delete(key))
       );
+      // 导航预加载：SW 启动的同时就发出网络请求，减少一次往返
+      if (self.registration.navigationPreload) {
+        await self.registration.navigationPreload.enable().catch(() => {});
+      }
       await self.clients.claim();
     })()
   );
@@ -49,6 +60,41 @@ self.addEventListener('message', (event) => {
     );
   }
 });
+
+/** 安装时预缓存外壳及其引用的哈希资源 */
+async function precache() {
+  const shellCache = await caches.open(SHELL);
+  const response = await fetch(new Request(SCOPE, { cache: 'reload' }));
+  if (!response.ok) return;
+  const html = await response.clone().text();
+  await shellCache.put(new Request(SCOPE), response.clone());
+
+  const assets = await caches.open(ASSETS);
+  const urls = new Set();
+  for (const match of html.matchAll(/(?:src|href)="([^"]*\/assets\/[^"]+)"/g)) {
+    try {
+      urls.add(new URL(match[1], SCOPE).href);
+    } catch {
+      /* 忽略畸形地址 */
+    }
+  }
+  await Promise.all(
+    [...urls].map((url) =>
+      fetch(new Request(url, { cache: 'reload' }))
+        .then((res) => (res.ok ? assets.put(url, res) : null))
+        .catch(() => null)
+    )
+  );
+
+  // 离线兜底页与法务文本：失败不影响安装
+  const offlineCache = await caches.open(OFFLINE);
+  await fetch(new Request(new URL('offline.html', SCOPE).href, { cache: 'reload' }))
+    .then((res) => (res.ok ? offlineCache.put(new URL('offline.html', SCOPE).href, res) : null))
+    .catch(() => null);
+  await fetch(new Request(new URL('legal.json', SCOPE).href, { cache: 'reload' }))
+    .then((res) => (res.ok ? assets.put(new URL('legal.json', SCOPE).href, res) : null))
+    .catch(() => null);
+}
 
 async function trim(cacheName, limit) {
   const cache = await caches.open(cacheName);
@@ -90,23 +136,33 @@ async function staleWhileRevalidate(request, cacheName, limit) {
   return new Response('', { status: 504, statusText: 'Gateway Timeout' });
 }
 
-async function networkFirstNavigation(request) {
-  const cache = await caches.open(SHELL);
+function fetchWithTimeout(request, ms) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), NAV_TIMEOUT);
+  const timer = setTimeout(() => controller.abort(), ms);
+  return fetch(request, { signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
+async function networkFirstNavigation(event) {
+  const cache = await caches.open(SHELL);
   try {
-    const response = await fetch(request, { signal: controller.signal });
+    // navigationPreload 已启用时直接用预发的请求，省一次等待
+    const preload = await event.preloadResponse;
+    const response = preload || (await fetchWithTimeout(event.request, NAV_TIMEOUT));
     if (response.ok) {
-      await cache.put(new Request('/'), response.clone());
-      await cache.put(new Request('/index.html'), response.clone());
+      await cache.put(new Request(SCOPE), response.clone());
     }
     return response;
   } catch {
-    const hit = (await cache.match(new Request('/'))) || (await cache.match(new Request('/index.html')));
+    const hit = await cache.match(SCOPE);
     if (hit) return hit;
-    return new Response('offline', { status: 503, statusText: 'Offline', headers: { 'content-type': 'text/plain; charset=utf-8' } });
-  } finally {
-    clearTimeout(timer);
+    const offline = await caches.open(OFFLINE);
+    const page = await offline.match(new URL('offline.html', SCOPE).href);
+    if (page) return page;
+    return new Response('offline', {
+      status: 503,
+      statusText: 'Offline',
+      headers: { 'content-type': 'text/plain; charset=utf-8' }
+    });
   }
 }
 
@@ -115,13 +171,13 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  if (url.pathname === '/sw.js') return;
+  if (url.pathname.endsWith('/sw.js') || url.pathname.endsWith('/version.json')) return;
 
   if (request.mode === 'navigate') {
-    event.respondWith(networkFirstNavigation(request));
+    event.respondWith(networkFirstNavigation(event));
     return;
   }
-  if (url.pathname.startsWith('/assets/')) {
+  if (url.pathname.includes('/assets/')) {
     event.respondWith(cacheFirst(request, ASSETS));
     return;
   }
@@ -129,7 +185,16 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(staleWhileRevalidate(request, ICONS, ICON_LIMIT));
     return;
   }
-  if (/^\/(favicon\.ico|apple-touch-icon\.png|og-cover\.png|BingSiteAuth\.xml|da15f3394d7ab9b0701c2e8f4db9cc40\.txt)$/.test(url.pathname)) {
+  if (url.pathname.endsWith('/legal.json')) {
+    event.respondWith(staleWhileRevalidate(request, ASSETS, ASSET_LIMIT));
+    return;
+  }
+  if (url.pathname.endsWith('/offline.html')) {
+    event.respondWith(cacheFirst(request, OFFLINE));
+    return;
+  }
+  const name = url.pathname.split('/').pop() || '';
+  if (/^(favicon\.ico|apple-touch-icon\.png|og-cover\.png|BingSiteAuth\.xml|da15f3394d7ab9b0701c2e8f4db9cc40\.txt)$/.test(name)) {
     event.respondWith(cacheFirst(request, ASSETS));
   }
 });

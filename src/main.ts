@@ -13,6 +13,7 @@ import galleryEnUS from './gallery/Strings/en-US/Resources'
 import galleryZhCN from '../文字设置'
 import { initBrowserCache } from './gallery/browserCache'
 import { warmUpDownloadOrigin } from './gallery/githubMirror'
+import { initPwaInstall } from './gallery/pwaInstall'
 
 const i18n = createI18n(navigator.language, {
   'en-US': galleryEnUS,
@@ -38,11 +39,20 @@ const manifestIconUrls: Record<string, string> = {
 
 const resolvedManifest = {
   ...manifestTemplate,
+  // id / scope / start_url 必须绝对地址：manifest 以 blob: URL 挂载，
+  // 相对值会相对 blob: 解析而被浏览器忽略（与图标同一类问题）。
+  id: resolveManifestUrl(import.meta.env.BASE_URL),
+  scope: resolveManifestUrl(import.meta.env.BASE_URL),
   name: i18n.t(manifestResources.name ?? appTitleKey),
   short_name: i18n.t(manifestResources.shortName ?? 'app.shortTitle'),
   author: i18n.t(appAuthorKey),
   version: i18n.t(appVersionKey),
   start_url: resolveManifestUrl(import.meta.env.BASE_URL),
+  shortcuts: (manifestTemplate.shortcuts ?? []).map((shortcut) => ({
+    ...shortcut,
+    name: i18n.t(shortcut.name),
+    url: resolveManifestUrl(shortcut.url)
+  })),
   icons: manifestTemplate.icons.map((icon) => ({
     ...icon,
     src: resolveManifestUrl(manifestIconUrls[icon.src] ?? icon.src)
@@ -69,6 +79,9 @@ app.use(router)
 app.provide(i18nKey, i18n)
 app.config.globalProperties.$t = i18n.t
 app.mount('#app')
+
+// 安装提示事件只触发一次，监听必须在页面早期注册
+initPwaInstall()
 
 // 让浏览器尽早记住下载节点的 h3（Alt-Svc），首个下载也能走 QUIC
 warmUpDownloadOrigin()
