@@ -43,8 +43,10 @@ const resolvedManifest = {
   // 相对值会相对 blob: 解析而被浏览器忽略（与图标同一类问题）。
   id: resolveManifestUrl(import.meta.env.BASE_URL),
   scope: resolveManifestUrl(import.meta.env.BASE_URL),
-  name: i18n.t(manifestResources.name ?? appTitleKey),
-  short_name: i18n.t(manifestResources.shortName ?? 'app.shortTitle'),
+  // PWA 的安装名称固定用品牌名，不随界面语言翻译：
+  // 开始菜单 / 桌面快捷方式 / 应用列表里应该始终叫 ClassSoftwareHub。
+  name: 'ClassSoftwareHub',
+  short_name: 'ClassSoftwareHub',
   author: i18n.t(appAuthorKey),
   version: i18n.t(appVersionKey),
   start_url: resolveManifestUrl(import.meta.env.BASE_URL),

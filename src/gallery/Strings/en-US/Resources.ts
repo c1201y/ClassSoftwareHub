@@ -33,7 +33,7 @@ export default {
     "text.holiday-skin": "Holiday skin",
     "text.holiday-skin-desc": "Turns on automatically during the holiday window (Mid-Autumn / National Day); you can also switch it on manually at any time.",
     "text.version-updates": "Version & updates",
-    "text.version-updates-desc": "Pages and scripts stay cached on this device for faster loading. Check for a new version here and update — the cache rebuilds itself afterwards.",
+    "text.version-updates-desc": "Pages stay cached for faster loading; check for updates here.",
     "text.update-available": "Update available: {latest} (currently running {running})",
     "text.update-current": "You're up to date",
     "text.update-check": "Check for updates",

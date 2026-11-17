@@ -55,7 +55,7 @@ export default {
       "text.holiday-skin": "节日皮肤",
       "text.holiday-skin-desc": "节日档期内自动换上应景横幅与主题色（中秋 / 国庆）；档期外也可以手动打开。",
       "text.version-updates": "版本与更新",
-      "text.version-updates-desc": "页面与脚本会保留在本机缓存里，让下次打开更快；有新版本时可在这里检查并更新，更新后缓存会自动重建。",
+      "text.version-updates-desc": "页面缓存让打开更快；有新版本时可在这里检查并更新。",
       "text.update-available": "发现新版本 {latest}（当前运行 {running}），建议更新",
       "text.update-current": "当前已是最新版本",
       "text.update-check": "检查更新",
