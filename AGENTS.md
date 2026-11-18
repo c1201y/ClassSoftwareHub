@@ -83,8 +83,7 @@ scripts/                         Maintenance scripts — `check-updates.mjs` (up
                                  `resolve-direct-links.mjs` (direct links + versions for apps that have
                                  no GitHub repo — vendor endpoints / winget manifests / page probes),
                                  `untracked-buckets.mjs` (the "why isn't this tracked" registry),
-                                 `update-ignore.mjs` (edits the ignore list), `upload-webdav.py`
-                                 (mirrors dist/ to the OpenList folder) and `icon-sync.py`
+                                 `update-ignore.mjs` (edits the ignore list) and `icon-sync.py`
                                  (localises slow/heavy app icons into `src/assets/icons/`);
                                  see "CI Notes"
 .github/workflows/               The 5 workflows (see "CI Notes")
@@ -124,7 +123,7 @@ Routes (hash-based):
 5. **Never put credentials in any file of this repo — comments included.** This is a **public repo**:
    writing a secret here publishes it, and once it is in git history it **cannot be taken back**
    (deleting it afterwards does not undo the leak — you have to rotate the secret at the provider).
-   All credentials go through repository Secrets (`FTP_*`, `WEBDAV_*`).
+   All credentials go through repository Secrets.
 6. **Do not commit or push on your own initiative.** The maintainer reviews changes before they are pushed.
    Without an explicit instruction, stay in the working tree: no commit,
    no push, no tags.
@@ -347,8 +346,7 @@ changes are replayed by `visitor.ts`.
      so anything else — including `..` — is rejected outright).
 4. Because **pushes made with `GITHUB_TOKEN` do not trigger other workflows** (GitHub's anti-recursion
    rule), step 3 ends by **explicitly dispatching** the deploy with `gh workflow run deploy.yml`.
-5. `deploy.yml` builds the single-file bundle and publishes it to **GitHub Pages + FTP + OpenList
-   (WebDAV)** at once.
+5. `deploy.yml` builds the bundle and publishes it to **GitHub Pages**.
 
 ### Echo Cave messages (`回声洞`) — the same pipeline, a second entry point
 
@@ -498,23 +496,15 @@ label.
   the next push). ⚠️ App and echo-cave drafts are **never** touched by it: they must survive until a
   human reviews them. `review-submission.yml` also carries a guard that stops immediately if a
   feedback draft ever reaches it.
-- `deploy.yml` builds **once** in the `build` job (`npm run build`, multi-file) and passes the
-  artifact to the three upload jobs (previously every upload job rebuilt on its own, consuming extra runner minutes).
+- `deploy.yml` builds **once** in the `build` job (`npm run build`, multi-file) and publishes the
+  artifact to **GitHub Pages**.
   The artifact is the whole `dist/` — `index.html`, the `public/` copies, and an `assets/` folder of
   content-hashed, per-route chunks (~66 chunks in `assets/`, ~2 MB; ~72 files in `dist/` overall).
-  - **Pages** takes `dist/` as-is. **FTP** mirrors it (FTP-Deploy-Action also deletes remote files
-    that are no longer in `dist/`, so stale hashed chunks do not pile up).
-  - **OpenList (WebDAV)** runs `scripts/upload-webdav.py`: mkcol → PUT every file → verify → prune.
-    Uploads are **raw** — no zip / tar / gzip — so the remote folder stays a browsable copy of the
-    site. The prune pass only cleans folders the build itself produced (`assets/`); it never touches
-    the target root, which may hold files we do not own. Every request retries, and the job keeps
-    `continue-on-error` because that host occasionally drops connections.
   - ⚠️ `index.html` must keep referencing its assets **relatively** (`vite.config.ts` sets
-    `base: './'`): the OpenList copy lives in a sub-folder (`网站/`), where an absolute `/assets/…`
-    would 404. Hash routing (the document path never changes) is what makes one build work at both
-    depths. The same file also sanitises chunk names to ASCII — a Chinese module filename
-    (`AI导航文本.ts`) would otherwise emit `assets/AI导航文本-xxxx.js`, and some servers mishandle
-    percent-encoded paths.
+    `base: './'`) so the build works at any deployment depth. Hash routing (the document path never
+    changes) is what makes one build work everywhere. The same file also sanitises chunk names to
+    ASCII — a Chinese module filename (`AI导航文本.ts`) would otherwise emit
+    `assets/AI导航文本-xxxx.js`, and some servers mishandle percent-encoded paths.
 - All five workflows carry Chinese comments explaining *why* they are written this way —
   **read those comments before changing anything.**
 - `check-updates.yml` runs `scripts/check-updates.mjs` **every Friday** (and on demand), comparing
@@ -732,7 +722,7 @@ preview image shown when the link is posted in QQ / WeChat). **Every absolute UR
 use the main domain `https://classsoftwarehub.cn/`** — Bing rejects a sitemap that lists another
 domain ("not contained in this site"); the two mirrors (132614.xyz / xfane.com) are folded into the
 main domain by `canonical`. Vite copies `public/` verbatim into
-`dist/`, so all three deploy targets (Pages · FTP · OpenList) carry them.
+`dist/`, so the deploy target carries them.
 Keep this copy in step with the real site — search engines index the static `<title>`/`description`
 and the `<noscript>` block, **not** the runtime i18n strings. Two limits worth repeating: the site
 uses **hash routing**, so `/#/download/<id>` is not a distinct URL to a crawler (only the home page

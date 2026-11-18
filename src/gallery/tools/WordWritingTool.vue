@@ -134,8 +134,10 @@
                 class="ww-label"
                 :style="{ top: i * ROW_H + 'px', height: ROW_H + 'px' }">
                 <span class="ww-label-index">{{ startIndex + i + 1 }}</span>
-                <span class="ww-label-cn">{{ item.cn }}</span>
-                <span v-if="revealed && item.en" class="ww-label-en">{{ item.en }}</span>
+                <span class="ww-label-text">
+                  <span class="ww-label-cn">{{ item.cn }}</span>
+                  <span v-if="revealed && item.en" class="ww-label-en">{{ item.en }}</span>
+                </span>
               </div>
             </div>
 
@@ -245,11 +247,12 @@ const { t } = useI18n();
 const STORAGE_KEY = 'word-writing.v1';
 
 /** 每行高度（含四线三格）：足够大的触摸目标，投影下也看得清 */
-const ROW_H = 72;
+const ROW_H = 96;
 
 /** 四线三格的四条线相对行顶的位置：第 1 条在最上，第 4 条在最下。
- *  三格高度均分（8→26→45→64），字母主体写在中间那格。 */
-const GUIDE_Y = [8, 26, 45, 64];
+ *  三格高度均分（12→36→60→84），字母主体写在中间那格。
+ *  行高定为 96px：投影到教室大屏时，学生要隔着几米看清格线。 */
+const GUIDE_Y = [12, 36, 60, 84];
 
 const PER_PAGE_OPTIONS = [6, 8, 10, 12, 16];
 
@@ -261,7 +264,10 @@ const PENS = [
   { id: 'green', nameKey: 'word-writing.pen-green', color: '#107C10' }
 ];
 
-const SAMPLE_TEXT = ['苹果', '香蕉', '橙子', '葡萄', '西瓜', '草莓', '菠萝', '芒果'].join('\n');
+const SAMPLE_TEXT = [
+  '苹果 apple', '香蕉 banana', '橙子 orange', '葡萄 grape',
+  '西瓜 watermelon', '草莓 strawberry', '菠萝 pineapple', '芒果 mango'
+].join('\n');
 
 interface WordItem {
   /** 稳定 key：用下标 + 汉语，避免 Vue 复用错行 */
@@ -982,11 +988,16 @@ onBeforeUnmount(() => {
   width: 100%;
 }
 
-/* 左侧汉语标签 */
+/* 左侧汉语标签
+ *
+ * 教室投影下学生看的是这块，所以汉语字号尽量做大：现在 26px，
+ * 是整页仅次于标题的字号。标签区同步加宽，避免「办公室」这类
+ * 三字词被省略号截断。
+ */
 .ww-labels {
   position: relative;
   flex: none;
-  width: 132px;
+  width: 190px;
   border-right: 1px solid var(--ctrl-border, rgba(0, 0, 0, 0.12));
 }
 
@@ -997,31 +1008,42 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 10px;
+  padding: 0 12px;
   box-sizing: border-box;
 }
 
 .ww-label-index {
   flex: none;
-  min-width: 18px;
-  font-size: 12px;
+  min-width: 20px;
+  font-size: 13px;
   color: var(--text-tertiary, var(--text-secondary));
   text-align: right;
 }
 
 .ww-label-cn {
-  font-size: 16px;
+  font-size: 26px;
   font-weight: 600;
+  line-height: 1.15;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* 显示答案时的英文：也要够大，放在汉语下面单独一行 */
 .ww-label-en {
   margin-left: auto;
-  font-size: 12px;
+  font-size: 17px;
+  font-weight: 500;
   color: var(--accent-base, #0067C0);
   white-space: nowrap;
+}
+
+/* 汉语 + 英文纵向排（显示答案时才有第二行） */
+.ww-label-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 /* 四线三格 + 画布 */

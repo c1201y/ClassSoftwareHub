@@ -1,4 +1,4 @@
-name: 部署站点（Pages · FTP · OpenList）
+name: 部署站点（GitHub Pages）
 
 on:
   push:
@@ -12,18 +12,14 @@ permissions:
 
 concurrency:
   # ⚠️ 必须 false（GitHub 官方 Pages 模板也是 false）：
-  #    deploy 这一趟要往**三个**目标分别发布（Pages / FTP / OpenList），
-  #    中途被 cancel 就留下「Pages 是新的、网盘还是旧的」这种半成品镜像 —— 而且不会有任何报错。
-  #    而本工作流除了 push 之外还会被 check-updates.yml / review-submission.yml 主动派发，
+  #    本工作流除了 push 之外还会被 check-updates.yml / review-submission.yml 主动派发，
   #    两处接连派发是常态，用 true 就等于给「发布到一半被掐掉」留了后门。
   #    false 时新来的那一次只是排队（GitHub 只保留 1 个 running + 1 个 pending，
-  #    更新的 pending 会顶掉旧的 pending），永远不会打断正在进行的上传。
+  #    更新的 pending 会顶掉旧的 pending），永远不会打断正在进行的发布。
   group: pages
   cancel-in-progress: false
 
 jobs:
-  # 只在这里构建一次，产物由后面三个上传任务共用。
-  # （原先三个任务各自 npm ci + build，一次部署白构建两遍。）
   build:
     runs-on: ubuntu-latest
     steps:
@@ -43,8 +39,6 @@ jobs:
         # 以前是 npm run build:single —— 整站塞进一个约 2 MB 的 HTML，每次打开都全量重下。
         # 现在走普通多文件构建：assets/ 按路由分包、文件名带内容 hash，首屏只下当前页
         # 需要的几个文件，重复访问直接命中缓存。
-        # 产物 index.html 用**相对路径**引用资源（vite.config.ts 的 base:'./'），
-        # 所以「根目录」（Pages / FTP）与「子目录」（网盘 网站/ 文件夹）两种形态都能跑。
         run: npm run build
 
       - name: 上传打包结果到 GitHub Pages Artifact
@@ -52,7 +46,7 @@ jobs:
         with:
           path: dist
 
-      - name: 上传打包结果（供 FTP / OpenList 复用）
+      - name: 上传打包结果（供 publish-ecs-branch 复用）
         uses: actions/upload-artifact@v4
         with:
           name: site-dist
@@ -87,6 +81,7 @@ jobs:
           git commit -q -m "deploy: ${GITHUB_SHA::7}"
           git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/deploy-ecs
 
+
   deploy-github-pages:
     needs: build
     runs-on: ubuntu-latest
@@ -98,69 +93,11 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-  upload-to-openlist:
-    needs: build
-    runs-on: ubuntu-latest
-    # 网盘（OpenList WebDAV）偶发抖动会导致连接超时 —— 这一路失败只标黄警告，
-    # 不让整次部署变红（站点主入口同时走 GitHub Pages 与 FTP，不受影响）。
-    continue-on-error: true
-    steps:
-      - name: 取出源码
-        # 上传脚本 scripts/upload-webdav.py 在仓库里，这一步不能省。
-        # （旧的 curl 写法不需要 checkout，换成脚本后忘了加，第一次跑就报
-        #  "can't open file .../scripts/upload-webdav.py: No such file or directory"。）
-        uses: actions/checkout@v4
-
-      - name: 取出构建产物
-        uses: actions/download-artifact@v4
-        with:
-          name: site-dist
-          path: dist
-
-      - name: 整目录上传到 OpenList WebDAV（原样上传，不压缩、不打包）
-        # scripts/upload-webdav.py 做四件事：建子目录 → 逐个 PUT → 校验 → 清理上个版本
-        # 遗留的旧 hash 文件（只清构建产生的 assets/ 那层，目标根目录不动）。
-        # 文件按原样上传：不做 zip / tar，也不预先 gzip。
-        # 目标：https://pan.132614.xyz/dav/网站/（%E7%BD%91%E7%AB%99 就是「网站」）。
-        env:
-          WEBDAV_BASE: https://pan.132614.xyz/dav/%E7%BD%91%E7%AB%99
-          WEBDAV_USERNAME: ${{ secrets.WEBDAV_USERNAME }}
-          WEBDAV_PASSWORD: ${{ secrets.WEBDAV_PASSWORD }}
-          LOCAL_DIR: dist
-        run: python3 scripts/upload-webdav.py
-
-  upload-to-ftp:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: 取出构建产物
-        uses: actions/download-artifact@v4
-        with:
-          name: site-dist
-          path: dist
-
-      - name: 镜像 dist/ 到 FTP 服务器（原样上传，不压缩、不打包）
-        # 把 dist/ 整目录镜像到 FTP 根目录，文件按原样上传。
-        # FTP-Deploy-Action 默认会删掉服务器上「本地已不存在」的文件，
-        # 所以旧版本 hash 命名的 assets 不会堆积。
-        # 凭据全部通过仓库 Secrets 注入：FTP_SERVER / FTP_USERNAME / FTP_PASSWORD
-        # ⚠️ 本仓库是公开仓库，任何凭据都不要明文写进本文件（含注释）——
-        #    写进来等于公开，且进入 git 历史后无法撤回，只能改密码。
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: 21
-          protocol: ftp
-          local-dir: ./dist/
-          server-dir: /
-
   notify-indexnow:
-    # 三个目标都发完之后再通知搜索引擎，否则引擎来抓时可能还是旧页面。
+    # 站点发完之后再通知搜索引擎，否则引擎来抓时可能还是旧页面。
     # 这一步永远不失败（脚本内部把一切异常都降级成 warning）：IndexNow 只是
     # 「让重抓快一点」的加速器，挂了不该把一次成功的部署染色。
-    needs: [deploy-github-pages, upload-to-ftp]
+    needs: [deploy-github-pages]
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -175,4 +112,3 @@ jobs:
 
       - name: 通知 Bing / Yandex 等 IndexNow 引擎（本站只有首页可提交，见 AGENTS.md）
         run: node scripts/indexnow.mjs
-
