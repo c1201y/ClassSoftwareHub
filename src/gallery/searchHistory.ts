@@ -1,20 +1,3 @@
-// ════════════════════════════════════════════════════════════════════
-// searchHistory.ts —— 搜索历史与「猜你想找」（纯逻辑，便于单独验证）
-//
-// 背景：全局搜索（Ctrl+K）此前完全没有记忆 —— 每次打开都是空白，
-// 用户搜过「希沃」下次还得重新打字。网页版相对桌面版的一个优势就是
-// 这类轻量状态可以跨会话保留（localStorage），这里把它补上。
-//
-// 设计取舍：
-//   · **不存日期、不存次数权重**，只存最近 N 个关键词 —— 搜索历史是
-//     高频短生命周期数据，存简单结构最不容易出兼容问题（旧版本的记录
-//     读进来也不会因为缺字段而崩）。
-//   · 去重时「大小写不敏感但保留原样」：用户搜 Arc 与 arc 算同一个词，
-//     但显示时保留他第一次输入的样子。
-//   · 只存**成功的查询**（有结果的才记），避免把一堆错字留在历史里。
-//
-// 本文件不产出界面文字 —— 文案在 文字设置.ts 的 search.* 中。
-// ════════════════════════════════════════════════════════════════════
 
 import type { Locale } from '../components/i18n/index';
 
@@ -55,13 +38,6 @@ const norm = (value: string) => value.trim().toLowerCase();
 export function readSearchHistory(): string[] {
   return readRaw().slice(0, HISTORY_MAX);
 }
-
-/**
- * 记一条搜索历史。
- *
- * @param term 用户输入的查询词
- * @param hadResult 这次查询是否出了结果 —— 没结果的错字不进历史
- */
 export function pushSearchHistory(term: string, hadResult = true): string[] {
   const value = term.trim().slice(0, MAX_TERM_LEN);
   if (!value || !hadResult) return readSearchHistory();
@@ -87,14 +63,6 @@ export function clearSearchHistory(): string[] {
   writeRaw([]);
   return [];
 }
-
-/**
- * 「猜你想找」的候选词。
- *
- * 空查询时展示的固定推荐：**从站点实际内容里挑高频需求**，
- * 不写死成「热门搜索」这种空话。这些词都能真的搜到东西
- * （搜索索引里有对应的同义词组），点了不会出现空结果。
- */
 const SUGGESTED_ZH = [
   '白板',
   '投屏',
@@ -109,13 +77,6 @@ const SUGGESTED_ZH = [
   '计时',
   '二维码'
 ];
-
-/**
- * 英文界面的推荐词。
- *
- * 英文查询在这份搜索索引里主要命中内置工具与页面（软件描述是中文数据），
- * 所以这里挑的是工具/页面里确实存在的英文说法，点了不会落到空结果。
- */
 const SUGGESTED_EN = [
   'whiteboard',
   'screen mirroring',
@@ -144,13 +105,6 @@ export const suggestedTerms = (locale: Locale = 'zh-CN'): string[] => {
   }
   return out;
 };
-
-/**
- * 拼音首字母匹配：让「xhbb」能搜到「希沃白板」。
- *
- * 不引入拼音库（体积大、且只需首字母）—— 用一张覆盖教学场景常用字的
- * 首字母表。表外的字不做映射（宁可搜不到，也不要错误匹配到别的软件）。
- */
 const PINYIN_INITIALS: Record<string, string> = {
   希: 'x', 沃: 'w', 白: 'b', 板: 'b', 课: 'k', 表: 'b', 计: 'j', 时: 's', 器: 'q',
   投: 't', 屏: 'p', 截: 'j', 图: 't', 压: 'y', 缩: 's', 解: 'j', 输: 's', 入: 'r',
@@ -175,21 +129,6 @@ export function toPinyinInitials(text: string): string {
   }
   return out;
 }
-
-/**
- * 拼音首字母是否匹配查询。
- *
- * 只有查询**全是字母**时才启用（中文查询走原有的分词逻辑）。
- *
- * 两种匹配都算命中：
- *   ① 子串匹配：`wbb` 能在 `xwbb` 里找到 → 命中「希沃白板」
- *   ② **逐字前缀匹配**：查询按顺序对应每个字的首字母前缀
- *      —— `xh` 能命中「希沃白板」，因为它是 x(希) h(?) 的**前缀式**匹配：
- *      用户常常只记得前两个字，而不会完整打出四个字的首字母。
- *
- * 第 ② 条是必需的：只做子串匹配的话，「xh」在「xwbb」里找不到
- * （中间隔了 w），但用户脑子里就是「希-沃」两个音，打 xh 最自然。
- */
 export function matchesInitials(text: string, query: string): boolean {
   const q = query.trim().toLowerCase();
   if (!q || !/^[a-z]+$/.test(q)) return false;

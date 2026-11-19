@@ -1,47 +1,8 @@
 /// <reference types="vite/client" />
 
-// 上传文件到本站的阿里云 OSS —— 浏览器直传，不经任何后端中转。
-//
-// 链路：
-//   ① 把 { name, size, contentType, purpose, fp } 发给提交服务的 /api/oss-sign，换回一条
-//      「只能写这一个对象、一小时后过期」的预签名 PUT 地址；
-//   ② 浏览器直接 PUT 到 OSS（上传进度即该步骤的进度）；
-//   ③ 回填的是对象键而不是公开直链 —— 桶为私有，公开直链任何访问均返回 403。
-//
-// 两种 purpose，落两个前缀、走两条完全不同的读取路径：
-//   file（默认）→ upload/…  私有，读取需经过 /api/dl 的短时票据闸门（见 ossDownload.ts）
-//   icon        → icon/…    小图，走 /api/icon 公开只读（审核 Issue 中需可直接打开）
-//
-// 签名放在服务端完成的原因：
-//   本站是纯静态的公开站点，OSS 的 AccessKey 一旦写入前端即等同于公开 —— 任何人都能
-//   拿其向桶内写入数据并产生流量费用。AK/SK 仅以 Cloudflare Secret 存储，
-//   前端拿到的只是一条有时效、且只能写单个对象的地址。
-//
-// 为什么 Content-Type 必须原样照抄服务端回传的值：
-//   预签名地址把「请求形状」锁死了，Content-Type 是签名的一部分。浏览器 PUT 时一定会带
-//   这个头，发的值和签的值对不上就会被 OSS 打回 403 SignatureDoesNotMatch。
-//
-// 为什么不再有 100 MB 的限制：
-//   旧链路需经 Cloudflare Worker 中转，而 Worker 会将整个文件读入 128 MB 的 isolate 内存
-//   （非流式），因此当时上限为 100 MB。现在浏览器直连 OSS，中转环节已移除，上限仅取决于
-//   OSS 本身（单次 PUT 5 GB）。下方仍保留一道本站自身的闸门。
-
 import { SUBMIT_TIMEOUT_MS, orderedEndpoints, rememberEndpoint } from './submitEndpoints';
 import { OSS_SCHEME } from './ossDownload';
 import { deviceFingerprint } from './deviceFingerprint';
-
-/**
- * 单文件上限。
- *
- * 该链路中已不存在「中转节点内存」限制，门槛按本站愿意接收的投稿体量确定：
- * 2.5 GB。更大的文件（超大型游戏、整套离线镜像）既增加存储成本又占用下行流量，
- * 且单次 PUT 中途断网需要整体重传 —— 此类文件引导用户填写官网 / GitHub Releases
- * 直链更合理，因此上限定为 2.5 GB，界面同时提示「超限时改用官网直链」。
- *
- * 修改此处需同步修改 Worker 的 OSS_MAX_BYTES（服务端兜底；两侧可以不一致，
- * 但前端上限不得大于服务端，否则用户上传完成后才被拒绝）。
- * 硬上限为 OSS 单次 PUT 的 5 GB；超出则必须改用分片上传。
- */
 export const UPLOAD_MAX_BYTES = 2.5 * 1024 * 1024 * 1024;
 
 /** 超过此大小给「文件较大、上传较慢」的提示，但不阻止上传 */
@@ -104,12 +65,6 @@ interface OssSignReply {
 
 /** 上传用途：软件包（私有、走票据闸门）还是图标（小图、公开只读） */
 export type OssUploadPurpose = 'file' | 'icon';
-
-/**
- * 向单个入口请求预签名地址。
- * 仅接受提交服务的 JSON 响应：连不上、超时、或返回其他内容（如回源尚未生效时的
- * nginx HTML 错误页）均视为该入口不可用，由上层换下一个入口。
- */
 async function requestSignedTarget(
   base: string,
   file: File,
@@ -189,11 +144,6 @@ function ossFailureText(status: number, body: string): string {
   const code = /<Code>([^<]+)<\/Code>/.exec(body || '')?.[1];
   return code ? `HTTP ${status} ${code}` : `HTTP ${status}`;
 }
-
-/**
- * 把文件 PUT 到预签名地址，带上传进度。
- * 使用 XHR 而非 fetch —— fetch 不提供上传进度事件。
- */
 function putToSignedUrl(
   target: SignedTarget,
   file: File,
@@ -226,20 +176,6 @@ function putToSignedUrl(
     xhr.send(file);
   });
 }
-
-/**
- * 把文件传到 OSS。
- *
- * @returns `{ key, url, orphanMinutes }`：
- *   - key 为对象键（审核流程与删除接口据此定位文件）；
- *   - url 写入数据，表示该对象的读取方式：
- *       软件包 → `oss://对象键`（详情页点下载时换票据，见 ossDownload.ts）
- *       图标   → 提交服务的 /api/icon 公开只读地址（能直接塞进 <img>）
- *   - orphanMinutes 是服务端此刻的回收阈值：对象传上来之后，**这么久之内必须完成提交**，
- *     否则会被当成「传了没提交」的垃圾自动清掉（详见 Worker 的 runGc）。
- *     界面需如实展示该值 —— 该阈值可在线调整，前端硬编码会与服务端不一致。
- * @throws OssUploadError（见 OssUploadErrorCode）
- */
 export async function uploadToOss(
   file: File,
   onProgress?: (p: UploadProgress) => void,

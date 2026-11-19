@@ -24,10 +24,7 @@
       VerticalScrollMode="Auto">
       <div class="gallery-item-page feedback-page-body">
         <div class="gallery-page-content">
-          <!-- ══ 主视觉区（仅选择态）═══════════════════════════════
-               仿微软反馈中心：先以横幅说明页面用途，其后才是类型卡片；
-               进入表单后由具体类型标题取代，不再显示。
-               不使用装饰插画：纯文字主视觉更克制，也避免与卡片图标冲突。 -->
+
           <section v-if="!activeKind" class="feedback-hero">
             <div class="feedback-hero-inner">
               <div class="feedback-hero-main">
@@ -68,9 +65,6 @@
             </button>
           </div>
 
-          <!-- ══ 提交后流程（仅选择态）═════════════════════════════
-               向用户说明提交后的三步去向，回应「提交后是否有人处理」的疑虑。
-               编号由 CSS 计数器生成，不写死数字 —— 后续增删步骤无需修改文案。 -->
           <section v-if="!activeKind" class="feedback-flow">
             <WinTextBlock
               class="feedback-flow-title"
@@ -89,9 +83,6 @@
             </ol>
           </section>
 
-          <!-- ══ 已有反馈入口（仅选择态）═══════════════════════════
-               议题列表公开可查，不提供入口会令用户在无法查重的情况下填写；
-               做成低调的一行链接，避免抢占类型卡片的注意力。 -->
           <section v-if="!activeKind" class="feedback-existing">
             <span class="feedback-existing-text">
               <span class="feedback-existing-title">{{ t('feedback.existing-title') }}</span>
@@ -374,20 +365,12 @@ const appItems = computed(() => apps.map((a) => ({ id: a.id, name: a.name })));
 const selectedApp = computed(() => apps.find((a) => a.id === form.appId) ?? null);
 
 const hasDraft = ref(false);
-
-// 各控件的变化同步回 draft。
-// `form.kind` 必须由 activeKind 的 watch 来写，不能只在 chooseKind 里写一次：
-//    applyDraft（恢复草稿）也会改 activeKind，只写一处会漏掉那条路径。
 watch(subKindIndex, (i) => {
   form.subKind = i >= 0 ? REPORT_SUBKINDS[i].key : '';
 });
 watch(appIndex, (i) => {
   form.appId = i >= 0 ? apps[i].id : '';
 });
-// activeKind 的三个来源：点卡片、返回、恢复草稿。
-// 「清空子类型」只对**切到非 report** 有意义（否则会把草稿里那一条也抹掉，
-// 而 applyDraft 是在同一个同步块里设下标的，watch 晚一拍跑，正好会误伤）。
-// 所以这里只在 kind 不是 report 时才清 —— 从 report 切到 report 或恢复草稿都不会触发。
 watch(activeKind, (kind) => {
   form.kind = kind;
   if (kind !== 'report') {
@@ -425,12 +408,6 @@ const restoreDraft = () => {
   if (draft) applyDraft(draft);
   hasDraft.value = false;
 };
-
-/**
- * 联系方式：本地用 age 公钥加密成 ASCII armor 密文，只把密文发出去；未填写则无需加密。
- * age-encryption 体积较大（含后量子曲线依赖），走动态 import，仅在真正提交时按需加载。
- * 只加密、绝不解密；私钥不在本站。
- */
 async function encryptContact(): Promise<{ cipher: string; failed: boolean }> {
   const contact = form.contact.trim();
   if (!contact) return { cipher: '', failed: false };
@@ -444,13 +421,6 @@ async function encryptContact(): Promise<{ cipher: string; failed: boolean }> {
     return { cipher: '', failed: true };
   }
 }
-
-/**
- * 校验并组装要发出去的内容；不通过时把错误填进 errorText 并返回 null。
- * 联系方式在这里用 age 公钥加密（在内存里完成，form 本身保留明文供本地草稿）——
- * 离开本机的那一份**永远是密文**：提交服务也拒收明文（见 worker 的 /api/feedback），
- * 因为它会被公开贴在 Issue 上。
- */
 const prepareOutgoing = async () => {
   const key = validateFeedback(form);
   if (key) {
@@ -481,14 +451,8 @@ const prepareOutgoing = async () => {
   };
 };
 
-
 /** 服务端明确应答（拿到 JSON 且给了 error）就算定局，不再换入口重试 */
 class DefinitiveError extends Error {}
-
-/**
- * 向单个入口发一次反馈提交（带超时）。
- * 只认提交接口的 JSON 应答；连不上 / 超时 / 拿到 HTML 错误页都算该入口不可用，换下一个。
- */
 async function postFeedback(
   base: string,
   payload: Record<string, unknown>
@@ -512,12 +476,6 @@ async function postFeedback(
     window.clearTimeout(timer);
   }
 }
-
-/**
- * 主操作：POST 到提交服务。
- * 拿到成功应答即代表内容已落进仓库的 `submissions/`，其后由工作流开出 Issue ——
- * 因此可直接清草稿、清表单。
- */
 const submitFeedback = async () => {
   if (submitting.value) return;
 
@@ -570,12 +528,6 @@ const submitFeedback = async () => {
     submitting.value = false;
   }
 };
-
-/**
- * 兜底：提交服务不可用时，退回「打开 GitHub 的预填新建 Issue 页」。
- * 该路径绕过 /api/feedback：标题 / 正文 / 标签均已填好，但用户需自行点击提交，
- * 且需要 GitHub 账号 —— 因此仅在主路径确实不可用时才露出按钮。
- */
 const openGithub = async () => {
   const built = await prepareOutgoing();
   if (!built) return;
@@ -642,17 +594,10 @@ onMounted(() => {
   padding-top: 0;
   max-width: 1064px;
 }
-
-/* ── 主视觉区（横幅）────────────────────────────────────────────────
-   仿微软反馈中心：一块有底色的大横幅承载主标题与说明。
-   底色用主题变量而非常量深色，否则浅色主题下会突兀。 */
 .feedback-hero {
   position: relative;
   overflow: hidden;
   margin-top: 4px;
-  /* 左右内边距较常见的 36px 收窄：本横幅仅有文字一栏、无插画与右侧标签列，
-     保留 36px 会使大标题较下方卡片明显右缩进，视觉上不对齐。
-     收窄至 28px 后标题与卡片基本处于同一视觉起线。 */
   padding: 36px 28px 40px;
   border: 1px solid var(--card-stroke, var(--ctrl-border, rgba(0, 0, 0, 0.12)));
   border-radius: 8px;
@@ -724,10 +669,6 @@ onMounted(() => {
   outline: 2px solid var(--SystemFillColorAttentionBrush, var(--accent, #005fb8));
   outline-offset: 2px;
 }
-
-/* 图标外框：3D 图标自带体积感与透明底，再叠加色块反而显得杂乱，此处仅作定位容器。
-   尺寸取 64px —— 该图集为「文档 + 彩色圆标」的复合造型，缩至 48px 时
-   圆标过小难以辨认，需保留足够高度。 */
 .feedback-kind-icon-wrap {
   display: grid;
   place-items: center;

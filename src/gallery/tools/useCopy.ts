@@ -1,15 +1,5 @@
 import { onBeforeUnmount, ref } from 'vue';
 import { useI18n } from '../../components/i18n/index';
-
-/**
- * 复制到剪贴板 + 底部轻提示，各工具通用。
- * 用法：const { toast, copy, flash } = useCopy();
- *      模板中放置 <div v-if="toast" class="tool-toast">{{ toast }}</div>
- *
- * 显示提示必须调用 flash()（或 copy()），不要直接写 toast.value = '…'：
- * 清除定时器由 flash 负责维护，直接赋值会导致提示永久停留在页面上
- * （此前 Base64 解码失败的提示曾因直接赋值而无法消失，易被误认为程序卡死）。
- */
 export function useCopy() {
   const { t } = useI18n();
   const toast = ref('');

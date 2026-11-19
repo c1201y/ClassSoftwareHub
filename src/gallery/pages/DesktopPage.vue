@@ -387,13 +387,6 @@ interface HistoryColumn {
   /** 该通道下的版本总数（用于判断要不要显示「显示更多」） */
   total: number;
 }
-
-/**
- * 从某个仓库的历史里，按通道筛出该平台的版本列表。
- *
- * `kindsOf` 负责把「文件名数组」翻译成页面上的下载行 ——
- * 桌面版只有一个 .exe，Win7 版有安装版 + 便携版两种，所以交给调用方决定。
- */
 const buildColumn = (
   history: ReleaseHistoryItem[],
   repo: string,
@@ -419,15 +412,6 @@ const buildColumn = (
     total: all.length
   };
 };
-
-/**
- * 某个 release 里匹配正则的那个文件的直链。
- *
- * GitHub 的下载直链形态固定为
- *   https://github.com/<owner>/<repo>/releases/download/<tag>/<file>
- * 所以这里需要 repo 与 tag —— 两者都不在 ReleaseHistoryItem 上，
- * 由调用方传进来，避免把 repo 字符串散落在各处。
- */
 const assetUrl = (
   item: ReleaseHistoryItem,
   repo: string,

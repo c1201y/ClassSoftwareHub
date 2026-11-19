@@ -130,16 +130,6 @@ const clear = () => {
   error.value = '';
   result.value = null;
 };
-
-/**
- * 解析一个化学式，返回元素 → 原子数。
- *
- * 支持：
- *   · 元素符号 H / Na / Cl（首字母大写，可跟一个小写）
- *   · 下标 H2 / C6H12O6
- *   · 括号 Ca(OH)2 / (NH4)2SO4
- *   · 前后带系数 2H2O（系数在这一步先剥掉，由配平求解）
- */
 function parseFormula(raw: string): Record<string, number> | null {
   const s = raw.trim();
   if (!s) return null;
@@ -189,17 +179,6 @@ function parseFormula(raw: string): Record<string, number> | null {
 
 /** 最大公约数 */
 const gcd = (a: number, b: number): number => (b === 0 ? Math.abs(a) : gcd(b, a % b));
-
-/**
- * 求解配平系数。
- *
- * 做法：对每个元素建立「左边原子数 − 右边原子数 = 0」的线性方程，
- * 未知数是各物质的系数。用**高斯消元**把它化成行最简形，再取一组正整数解。
- *
- * 化学方程式的系数通常很小（≤ 20），所以：
- *   1. 先按整数运算消元（用分数避免浮点误差）；
- *   2. 自由变量从 1 开始逐个试探，找到第一个让所有系数都是正整数的组合。
- */
 function solveCoefficients(terms: Term[]): number[] | null {
   const elements = [...new Set(terms.flatMap((t) => Object.keys(t.atoms)))];
   const n = terms.length;
@@ -273,12 +252,6 @@ function solveCoefficients(terms: Term[]): number[] | null {
       if (!coef) return null;
       const cleaned = coef.map((v) => Math.round(v * 1e6) / 1e6);
       if (!cleaned.every((v) => Number.isFinite(v) && v > 0)) return null;
-
-      // ⚠️ 关键校验：某些自由变量的取值会得到「正数但每个元素都不守恒」的解
-      //    （例：Al + HCl 那组里 Al=1,HCl=2 也是正数，但 H 与 Cl 都对不上）。
-      //    消元只保证「解满足线性方程组」，而这里传入的是**非方阵**，
-      //    自由变量随便取会给出一组看似合理、实际不满足方程的数。
-      //    所以必须回代每一项元素、确认两边原子数真的相等。
       const balanced = elements.every((el) => {
         let left = 0;
         let right = 0;

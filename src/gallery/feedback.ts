@@ -1,21 +1,3 @@
-// ════════════════════════════════════════════════════════════════════
-// 反馈中心的纯逻辑（页面是 pages/FeedbackPage.vue）—— 不依赖 Vue，可单独验证
-//
-// 提交走站点自己的提交服务：页面把这份草稿 POST 给 Cloudflare Worker `classhub`
-// 的 /api/feedback（与「提交软件」「回声洞」同一套入口，见 FeedbackPage.vue），
-// 由 .github/workflows/create-review-issue.yml 开出一张带标签的公开 Issue ——
-// 反馈没有审核合并环节，Issue 本身就是它的归宿。
-// 本文件只管**校验 / 正文拼装 / 本地草稿**，网络那一层在页面里。
-// 下面拼 GitHub 预填链接的函数仍然保留：提交服务不可用时，页面会退回
-// 「打开 GitHub 预填的新建 Issue 页」或「复制反馈内容」，两条兜底路径均需使用它们。
-//
-// 分类是两层的，改分类只动下面两个数组 + 文字设置.ts 里的对应文案：
-//   一层 kind     ：report（报告问题） / suggestion（提出建议）
-//   二层 subKind  ：只有 report 才有（interaction / link / other）
-//
-// 文案：全部在根目录「文字设置.ts」的 feedback.* 与 search.page-feedback* 键，
-//       英文在 src/gallery/Strings/en-US/Resources.ts。本文件只管逻辑。
-// ════════════════════════════════════════════════════════════════════
 
 /** 一层：反馈大类 */
 export type FeedbackKind = 'report' | 'suggestion';
@@ -24,9 +6,6 @@ export type ReportSubKind = 'interaction' | 'link' | 'other';
 
 export interface FeedbackKindDef {
   key: FeedbackKind;
-  /** 卡片上的图标标识。页面层据此从 src/assets/feedback/<icon>.png 取图。
-   *  仅存放文件名而非图片对象：本文件保持纯逻辑（不依赖 Vue、不依赖 Vite
-   *  的资源处理），便于独立验证。 */
   icon: string;
   /** 卡片标题 / 表单页标题的文案 key */
   titleKey: string;
@@ -47,13 +26,6 @@ export interface ReportSubKindDef {
   /** 标题前缀的后半段 */
   tag: string;
 }
-
-/**
- * 选择态的两张卡片。加/删卡片只改此处，再到 文字设置.ts 补上 titleKey / descKey、
- * 并在 src/assets/feedback/ 放入同名 png 即可。
- *
- * 图标是 3D 风格 PNG（透明底），由页面层 import 进来 —— 不是图标字体的码点。
- */
 export const FEEDBACK_KINDS: FeedbackKindDef[] = [
   {
     key: 'report',
@@ -72,11 +44,6 @@ export const FEEDBACK_KINDS: FeedbackKindDef[] = [
     tag: '提出建议'
   }
 ];
-
-/**
- * 「报告问题」下面的子类型。建议分支没有子类型（列表为空即可）。
- * label 必须与仓库标签名一致；标题前缀会拼成「报告问题 · 链接失效」。
- */
 export const REPORT_SUBKINDS: ReportSubKindDef[] = [
   { key: 'interaction', labelKey: 'feedback.sub-interaction', label: '逻辑交互', tag: '逻辑交互' },
   { key: 'link', labelKey: 'feedback.sub-link', label: '链接失效', tag: '链接失效' },
@@ -112,11 +79,6 @@ export const emptyDraft = (): FeedbackDraft => ({
 // ── 目标仓库与站点地址 ──────────────────────────────────────────────────
 export const FEEDBACK_REPO = 'c1201y/ClassSoftwareHub';
 export const REPO_URL = `https://github.com/${FEEDBACK_REPO}`;
-/**
- * 站点主域。只用于拼 Issue 正文里的详情页直链。
- *    按仓库约定（见 AGENTS.md「SEO & the share card」），绝对 URL 一律用主域，
- *    两个镜像站会被 canonical 折回主域，所以这里写主域是对的。
- */
 export const SITE_ORIGIN = 'https://classsoftwarehub.cn/';
 
 // ── 长度上限 ────────────────────────────────────────────────────────────
@@ -124,14 +86,6 @@ export const SITE_ORIGIN = 'https://classsoftwarehub.cn/';
 export const TITLE_MAX = 80;
 /** 正文里描述部分的软上限：超过会在拼 URL 时被截断 */
 export const DETAIL_MAX = 1800;
-/**
- * 整个预填 URL 的长度上限（保守值）。
- * 仅兜底路径（提交服务不可用、改走 GitHub 预填链接）受此限制——
- *    主路径将内容 POST 给提交服务，无 URL 长度约束。
- * 设置此上限并非浏览器限制（Chromium 上限远大于此），而是中间链路
- *    （代理、聊天软件转发、手工复制粘贴）会在某个长度截断内容，
- *    一旦截断，Issue 正文即不完整——比主动截断更糟。
- */
 export const URL_MAX = 7000;
 
 // ── 正文 / 标题 / URL 拼装 ──────────────────────────────────────────────
@@ -144,12 +98,6 @@ function kindTag(draft: FeedbackDraft): string {
   const sub = REPORT_SUBKINDS.find((s) => s.key === draft.subKind);
   return sub ? `${kind.tag} · ${sub.tag}` : kind.tag;
 }
-
-/**
- * 这条反馈要用到的全部标签（GitHub Issue 的 labels 字段）。
- * 报告问题会带上：用户反馈 + 报告问题 + 子类型（逻辑交互 / 链接失效 / 其他问题）
- * 提出建议会带上：用户反馈 + 提出建议
- */
 export function feedbackLabels(draft: FeedbackDraft): string[] {
   const labels = [FEEDBACK_LABEL];
   const kind = FEEDBACK_KINDS.find((k) => k.key === draft.kind);
@@ -168,11 +116,6 @@ function quote(text: string): string {
     .map((line) => (line.trim() ? `> ${line}` : '>'))
     .join('\n');
 }
-
-/**
- * 拼 Issue 正文（Markdown）。
- * app 是从 `data/index.ts` 里按 appId 找出来的软件对象，用于注入「涉及软件」区块。
- */
 export function buildIssueBody(
   draft: FeedbackDraft,
   app: { id: string; name: string } | null
@@ -194,9 +137,6 @@ export function buildIssueBody(
     lines.push('| 涉及软件 | 站点本身 / 未指定 |');
   }
   if (draft.contact.trim()) {
-    // 传进来的是**本地加密后的 age 密文**（页面层加密，见 FeedbackPage.vue 的 encryptContact），
-    // 绝不是明文。密文是多行 ASCII armor，塞进 Markdown 表格会把表格撑破，
-    // 所以单列一段代码块 —— 顺带也好整段复制去用私钥解密。
     lines.push(
       '',
       '### 联系方式（已在本地加密，仅维护者可用私钥解密）',
@@ -218,16 +158,6 @@ export function buildIssueTitle(draft: FeedbackDraft): string {
   const subject = draft.title.trim() || '（未填写标题）';
   return tag ? `[${tag}] ${subject}` : subject;
 }
-
-/**
- * 构造 GitHub Issue 新建页的预填链接。
- *
- * 返回实际使用的 body 与截断标记，页面据此显示提示——不允许无提示地静默截断：
- * 维护者看到不完整内容比看到完整内容更难处理。
- *
- * 截断策略：优先缩减 detail（保留标题、类型、涉及软件——三者是分流必需项），
- * 并在正文末尾追加一行说明。
- */
 export function buildIssueUrl(
   draft: FeedbackDraft,
   app: { id: string; name: string } | null
@@ -268,12 +198,6 @@ export function buildIssueUrl(
 
   return { url, body, truncated };
 }
-
-/**
- * 校验：返回第一条不满足的文案 key，全部通过返回空串。
- * 校验放在 JS 中执行（与 SubmitPage.vue 一致）——提交按钮不是原生 submit，
- * HTML 的 required 属性不会触发。
- */
 export function validateFeedback(draft: FeedbackDraft): string {
   if (!draft.kind) return 'feedback.error-kind';
   if (draft.kind === 'report' && !draft.subKind) return 'feedback.error-sub-kind';
@@ -311,14 +235,6 @@ export function readFeedbackDraft(): FeedbackDraft | null {
     return null;
   }
 }
-
-/**
- * 清除本地草稿（localStorage 里的 `csh-feedback-draft`）。
- *
- * 走提交服务路径后会自动调用：POST 返回 success 即说明内容已进入
- * 仓库的 submissions/，继续保留草稿只会让用户下次进入时看到一份已提交的内容。
- * 兜底路径（复制 / 打开 GitHub）不清除——这两条路径无法确认用户是否实际提交。
- */
 export function clearFeedbackDraft(): void {
   try {
     window.localStorage.removeItem(DRAFT_KEY);
@@ -336,16 +252,4 @@ export async function copyText(text: string): Promise<boolean> {
     return false;
   }
 }
-
-/**
- * 联系方式的接收方公钥（age1…）。
- *
- * 「提交软件」页和「反馈中心」页都要用它加密用户填写的联系方式，
- * 以前两个页面各自硬编码了一份 —— 换密钥时漏改一处就会出现
- * 「一处加密成功、另一处解不开」，而且不会有任何报错提示。
- * 现在只在这里维护一份。
- *
- * 私钥仅维护者本地持有，绝不出现在任何客户端 / 网页 / 版本库代码里；
- * 这里只做公钥加密，不做任何解密。
- */
 export const CONTACT_PUBLIC_KEY = 'age1l9axcy0sxu6eeanapg0maughsv380fh8nhd4unf9p8d7x20rjqfsgz4dxa';

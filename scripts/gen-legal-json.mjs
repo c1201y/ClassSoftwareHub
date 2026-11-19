@@ -1,32 +1,4 @@
 #!/usr/bin/env node
-// ══════════════════════════════════════════════════════════════════════
-//  法律文本 → public/legal.json（给桌面客户端拉的纯数据版）
-//
-//  【为什么要有这个文件】
-//  条款的唯一真源是根目录的 `法律文本.ts`（站点「条款」页 #/agreement 直接用它）。
-//  桌面客户端以前是「构建期同步成 C# 常量打进程序集」，后果是**改一次条款就要发一次版**，
-//  装在用户机器上的旧版本永远显示旧条款。改成运行时拉一份 json 之后，站点改完提交即生效，
-//  旧版本客户端下次打开也能看到最新条款。
-//
-//  【为什么不让客户端直接拉 .ts】
-//  那是 TypeScript 源码，不是数据格式：单引号字符串、`\'` 转义、行内注释、尾逗号，
-//  C# 里要手写一个解析器去啃它，站点哪天改个写法就全崩。json 是机器格式，反过来只有好处。
-//
-//  【只导中文】
-//  站点是中英双语（zh / en 两版结构一一对应），客户端界面全中文，en 没人读 ⇒ 不导，
-//  体积直接减半，也少一份「两版不同步」的隐患。
-//
-//  【用法】
-//      node scripts/gen-legal-json.mjs
-//      npm run build        （build 前自动跑一次；见 package.json 的 legal:json）
-//
-//  ⚠️ 产物要**提交进仓库**：客户端除了站点域名，还会从 raw.githubusercontent.com /
-//     jsDelivr 那几条线路取同一份文件（见桌面端 Services/LegalTextSource.cs 的线路表），
-//     不提交的话那几条线路就是 404。
-//
-//  ⚠️ 内容没变就不重写：`generated` 是时间戳，每次 build 都刷新会让 git 永远脏。
-//     所以这里比对的是去掉 generated 之后的 docs 部分。
-// ══════════════════════════════════════════════════════════════════════
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -45,20 +17,12 @@ if (!fs.existsSync(SRC)) {
   console.error(`找不到源文件：${SRC}`);
   process.exit(1);
 }
-
-// ── 1. 取源 ────────────────────────────────────────────────────────────
-//  Node 22.6 起自带类型擦除，可以直接 import .ts（本机 v22.22 实测可用）。
-//  ⛔ 不要退回手写正则解析 —— 条款里有大量引号、括号、中文标点，正则迟早咬手。
 let docs;
 try {
   const mod = await import(pathToFileURL(SRC).href);
   docs = mod.default;
 } catch (e) {
   console.error(`解析 ${path.basename(SRC)} 失败：${e.message}`);
-
-  // ⚠️ 这条路径是给 CI 兜底的：直接 import .ts 要 Node 22.6+（自带类型擦除）。
-  //    CI（deploy.yml）写的是 node-version: 22，正常够用；但万一解析到 22.0~22.5，
-  //    这里不能把整站构建带崩 —— 仓库里已经有一份能用的 json，保留它继续构建即可。
   if (fs.existsSync(OUT)) {
     console.error('  → 保留仓库里现有的 public/legal.json，继续构建。');
     console.error('  → 要重新生成请用 Node 22.6 以上在本机跑一次。');

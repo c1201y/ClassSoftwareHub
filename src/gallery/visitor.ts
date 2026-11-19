@@ -1,9 +1,4 @@
 import { reactive } from 'vue';
-
-// 自托管访问统计：Cloudflare Worker + KV（见 stats-worker/worker.js）。
-// 三个域名共用同一 Worker 地址，后台 KV 自动把各域名的访问累加成一个总数，
-// 解决不蒜子(busuanzi)按域名分别统计、各域名数字对不上的问题。
-// 国内 .workers.dev 被墙，故使用自定义域名 service.132614.xyz。
 const API_BASE =
   import.meta.env.VITE_CSH_STATS_BASE ?? 'https://service.132614.xyz';
 
@@ -28,23 +23,12 @@ let lastKey = '';
 export function hasTracked(): boolean {
   return lastKey !== '';
 }
-
-// ── 百度统计（hm.js 在 index.html <head> 异步注入）────────────────────
-// 本站是 hash 路由 SPA：hm.js 只会在页面首次加载时自动记一个 PV，
-// 之后的路由切换不会触发页面刷新，需要在每次切页时手动 _trackPageview 补报。
 declare global {
   interface Window {
     _hmt?: unknown[];
   }
 }
 let baiduFirstView = true;
-
-/**
- * 上报一次页面浏览（PV +1），并把最新数字写进共享状态。
- * 在应用根组件挂载时、以及每次路由切换后调用，从而覆盖全站所有页面。
- * @param key  稳定的页面标识（路由名 + 详情页 id），用于去重
- * @param page 展示/统计用的路径（如 `/`、`/settings`、`/download/xxx`）
- */
 export function trackVisit(key: string, page: string): void {
   const pageKey = key || page || '/';
   if (pageKey === lastKey) return;
@@ -61,12 +45,6 @@ export function trackVisit(key: string, page: string): void {
       window._hmt.push(['_trackPageview', page || '/']);
     }
   }
-
-  // 本地预览走只读 /api/stats，避免把开发访问算进线上计数；线上走 /api/hit 正常 +1。
-  // 用 query 参数把「真实来源域名 + 真实页面」带给统计端，否则 Worker 会把统计接口自己当成来源
-  // （请求实际发往 service.132614.xyz/api/hit）。用 query 而非自定义请求头，避免跨域预检。
-  // `_` 为时间戳，强制绕过任何浏览器/边缘缓存 —— 否则同页面第二次访问会命中缓存、不计数。
-  // credentials: 'include' 用于携带 Worker 域下的去重 Cookie（跨域 UV / 在线去重需要）。
   const endpoint = isLocal ? '/api/stats' : '/api/hit';
   const params = new URLSearchParams({ host: location.hostname, page: page || '/', _: String(Date.now()) });
   const url = API_BASE + endpoint + '?' + params.toString();

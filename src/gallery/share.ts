@@ -1,16 +1,3 @@
-// ════════════════════════════════════════════════════════════════════
-// share.ts —— 分享用的纯逻辑（不依赖 Vue，便于单独验证）
-//
-// 网页版相对桌面版最大的优势之一是「可分享」：桌面版发给同事只能发个
-// 安装包，网页版发的是**一条能直接打开的链接**。但链接发到 QQ / 微信里
-// 只显示域名，看不出是哪个软件 —— 所以这里负责把「这个软件」表达清楚：
-//
-//   · buildShareText()  纯文本分享文案（粘贴到群里能看懂）
-//   · buildShareUrl()   带定位的链接（打开直达该软件详情页）
-//   · buildQrSvg()      二维码 SVG（投屏到教室大屏，全班扫码）
-//
-// 本文件不产出界面文字 —— 文案在 文字设置.ts 的 share.* 中。
-// ════════════════════════════════════════════════════════════════════
 
 import qrcode from 'qrcode-generator';
 import type { Locale } from '../components/i18n/index';
@@ -34,24 +21,9 @@ export interface ShareTarget {
   /** 系统限制（可选） */
   system?: string;
 }
-
-/**
- * 该软件在站内的可分享地址。
- *
- * 本站是 hash 路由，`#/download/<id>` 就是唯一能定位到具体软件的形态。
- * 用绝对地址（带域名）而不是相对路径 —— 分享出去要能直接点开。
- */
 export function buildShareUrl(id: string): string {
   return `${SHARE_ORIGIN}/#/download/${encodeURIComponent(id)}`;
 }
-
-/**
- * 纯文本分享文案。
- *
- * 设计目标：**粘贴到 QQ / 微信群里，不点链接也知道是什么**。
- * 所以名称 + 简介 + 关键信息（版本/体积/系统）都要有；
- * 但整体控制在 4 行以内，太长的文案在手机上会被折成一屏。
- */
 export function buildShareText(target: ShareTarget, locale: Locale = 'zh-CN'): string {
   const lines: string[] = [];
   lines.push(locale === 'en-US' ? `[${target.name}]` : `【${target.name}】`);
@@ -68,14 +40,6 @@ export function buildShareText(target: ShareTarget, locale: Locale = 'zh-CN'): s
   lines.push(`${locale === 'en-US' ? 'Download: ' : '下载：'}${buildShareUrl(target.id)}`);
   return lines.join('\n');
 }
-
-/**
- * 生成二维码（SVG 字符串）。
- *
- * 用站内已有的 qrcode-generator（提交页 / 二维码工具都在用），
- * 不引入新依赖。纠错级别选 M（15% 容错）：教室投影常有反光、
- * 手机对着屏幕扫，M 比 L 明显更稳，体积又不至于像 H 那样稠密。
- */
 export function buildQrSvg(text: string): string {
   // typeNumber 0 = 自动选择最小版本
   const qr = qrcode(0, 'M');

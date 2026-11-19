@@ -212,7 +212,6 @@
             @Click="applyImport" />
         </div>
       </div>
-
     </div>
   </ToolShell>
 </template>
@@ -225,33 +224,12 @@ import WinTextBox from '../../components/WinTextBox.vue';
 import WinComboBox from '../../components/WinComboBox.vue';
 import { useI18n } from '../../components/i18n/index';
 
-
-/* ══════════════════════════════════════════════════════════════════
-   单词默写 —— 2026-11-15 由 iframe 版重写为原生 Vue 组件。
-
-   原实现把 1200 行独立 HTML 塞进 iframe，自带一套灰白配色，
-   与站内 WinUI 深色主题完全割裂。现在：
-     · UI 全部用 WinUIonWeb 组件 + tool.css 公共类，跟随站点主题
-     · 词表 / 笔迹仍存 localStorage，key 与旧版一致（word-writing.v1），
-       老用户的数据不会丢
-     · 四线三格用 SVG 画，笔迹用 canvas —— 打印时只留线条不留笔迹
-
-   数据形状：
-     lists: [{ name, text }]        多套词表（老师可给不同班级各存一份）
-     active: number                 当前词表下标
-     ink: Record<string, Stroke[]>  以「词表名:页码」为 key 存笔迹
-   ══════════════════════════════════════════════════════════════════ */
-
 const { t } = useI18n();
 
 const STORAGE_KEY = 'word-writing.v1';
 
 /** 每行高度（含四线三格）：足够大的触摸目标，投影下也看得清 */
 const ROW_H = 96;
-
-/** 四线三格的四条线相对行顶的位置：第 1 条在最上，第 4 条在最下。
- *  三格高度均分（12→36→60→84），字母主体写在中间那格。
- *  行高定为 96px：投影到教室大屏时，学生要隔着几米看清格线。 */
 const GUIDE_Y = [12, 36, 60, 84];
 
 const PER_PAGE_OPTIONS = [6, 8, 10, 12, 16];
@@ -739,13 +717,6 @@ const printPage = () => {
 };
 
 /* ── 全屏 ─────────────────────────────────────────────────────────── */
-
-/**
- * 是否处于全屏。
- *
- * 用 document.fullscreenElement 作为唯一真源，而不是自己记一个 flag ——
- * 用户按 Esc 退出全屏时浏览器不会通知我们，只有读这个属性才准。
- */
 const isFullscreen = ref(false);
 
 const syncFullscreenState = () => {
@@ -987,13 +958,6 @@ onBeforeUnmount(() => {
   display: flex;
   width: 100%;
 }
-
-/* 左侧汉语标签
- *
- * 教室投影下学生看的是这块，所以汉语字号尽量做大：现在 26px，
- * 是整页仅次于标题的字号。标签区同步加宽，避免「办公室」这类
- * 三字词被省略号截断。
- */
 .ww-labels {
   position: relative;
   flex: none;
@@ -1057,10 +1021,6 @@ onBeforeUnmount(() => {
   display: block;
   pointer-events: none;
 }
-
-/* 四线三格：外侧两条（第 1 / 第 4 条）是格界，画实；
-   中间两条（第 2 / 第 3 条）是辅助线，明显更淡 ——
-   否则四线等距会让整块看起来像密集横条纹。 */
 .ww-guides line {
   stroke: color-mix(in srgb, var(--text-secondary, #888) 55%, transparent);
   stroke-width: 1;
@@ -1084,10 +1044,6 @@ onBeforeUnmount(() => {
 .ww-board-hint {
   margin: 0;
 }
-
-/* ── 全屏：书写区铺满屏幕 ───────────────────────────────────────────
-   全屏的是 .ww-board-wrap 本身，所以这里要让它在全屏下撑满视口，
-   并把背景改成不透明（浏览器全屏层默认黑底，透出主题色会很怪）。 */
 .ww-board-wrap:fullscreen {
   width: 100vw;
   height: 100vh;

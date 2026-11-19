@@ -67,10 +67,6 @@
           </template>
         </WinInfoBar>
 
-        <!-- 桌面应用版推广卡：整页宽、矮高度，位于「内置工具 / AI 导航」上方。
-             ⚠️ 这里是「下载桌面版」的**唯一入口**（导航栏那个已移除，见 App.vue）。
-             点卡片 / 按钮都进 #/desktop 下载页 —— 那里能选线路、切正式/预览、
-             看历史版本，比在首页直接甩三个 exe 按钮清楚得多。 -->
         <div class="home-desktop-promo" role="button" tabindex="0" @mouseenter="prefetchRoute('desktop')" @focus="prefetchRoute('desktop')" @click="openDesktopPage" @keydown.enter="openDesktopPage">
           <span class="home-desktop-promo-icon" aria-hidden="true">&#xE977;</span>
           <span class="home-desktop-promo-text">
@@ -271,11 +267,6 @@ const onFilterChanged = (sender: { Items?: { Tag?: string }[]; SelectedItem?: { 
   selectedIndex.value = Math.max(0, sender?.Items?.indexOf(selected as never) ?? 0);
   activeFilter.value = selected?.Tag ?? 'all';
 };
-
-/**
- * 「教学课堂」分类顶部的推荐卡（Awesome IWB）：
- * 只在选中该分类时出现；文案中 title/desc 全部清空时自动隐藏（等效于移除该卡片）。
- */
 const classroomCategoryKey = 'classroom';
 const showIwbCard = computed(
   () =>
@@ -290,9 +281,6 @@ const openDetail = (app: SoftwareApp) => {
 };
 
 // 空闲时预取详情页代码块：首页最常见的下一步就是点开某个软件
-/* ── 版本更新提示 ────────────────────────────────────────────────────
-   发现服务器有新版本时在首页顶部显示一条可关闭的 InfoBar；用户关掉后，
-   同一个版本不再打扰（换新版本才会再次出现）。 */
 const UPDATE_DISMISS_KEY = 'csh-update-dismissed';
 const pendingUpdate = ref<{ latest: string; running: string } | null>(null);
 
@@ -348,13 +336,6 @@ onMounted(() => {
     })
     .catch(() => {});
 });
-
-/**
- * 首页「体验桌面应用版」推广卡（整页宽、矮高度，位于内置工具 / AI 导航卡片上方）：
- * 右侧两个按钮直接下载 exe —— 安装包版本由 desktopDownload.ts 动态获取（桌面版发新版无需修改此处），
- * 下载走 GitHub 镜像加速，镜像全部失效时自动跳转该版本的 Release 页。
- * 文案直接写在此处（与 toolsCard 一样不进 文字设置.ts）；title 或 desc 留空即隐藏整张卡。
- */
 const desktopPromo = {
   ...(locale === 'zh-CN'
     ? {
@@ -370,14 +351,6 @@ const desktopPromo = {
         allVersions: 'Downloads'
       })
 };
-
-/**
- * 进入下载页（#/desktop）。
- *
- * 首页这张卡是「下载桌面版」的唯一入口 —— 导航栏那个已移除。
- * 这里只负责跳转，具体下载（选线路、正式/预览、历史版本）都在下载页完成，
- * 不再在首页直接甩 exe 按钮：那种做法没法选镜像、也没法看历史版本。
- */
 const openDesktopPage = () => {
   void router.push({ name: 'desktop' });
 };
@@ -402,11 +375,6 @@ const openTools = () => {
 const openAiNav = () => {
   void router.push({ name: 'ai' });
 };
-
-/**
- * “⬇ 下载软件清单模板”：把登记新软件用的 _模板.json 原样下载给用户。
- * 模板内容打包时已内联（?raw），离线单文件版也能正常下载。
- */
 const downloadSoftwareTemplate = () => {
   try {
     const blob = new Blob([softwareTemplateRaw], { type: 'application/json;charset=utf-8' });

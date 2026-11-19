@@ -1,16 +1,3 @@
-// ════════════════════════════════════════════════════════════════════
-// 图片取色（纯前端，全部在浏览器本地完成，图片不会上传到任何服务器）
-//
-// 目标：像 Win11 的「从壁纸提取主题色」那样，取出一组**柔和**的配色，
-//       而不是原图中最刺眼、观感最差的那几块颜色。
-//
-// 步骤：
-//   1. 把图片画到 canvas（最长边约 120px），遍历像素、跳过透明像素；
-//   2. 中位切分法（median cut）把颜色空间切成 8 个区域，每区取平均色 → 候选色；
-//   3. 给每个候选色打分：出现频率 × 饱和度权重 × 亮度权重 × 中等饱和度加分；
-//   4. 取分最高的候选色作为「种子色」；
-//   5. 把种子色转 HSL 并夹到柔和的区间，基于它生成 7 个明暗变体。
-// ════════════════════════════════════════════════════════════════════
 
 export interface Hsl {
   /** 色相 0–360 */
@@ -165,11 +152,6 @@ function averageColor(box: Rgb[]): Rgb {
   const n = box.length || 1;
   return [round(r / n), round(g / n), round(b / n)];
 }
-
-/**
- * 中位切分法：反复挑「颜色跨度最大」的区域，按跨度最大的通道排序后从中间切开，
- * 直到切出 target 个区域（或再也切不动）。每个区域取平均色作为一个候选色。
- */
 function medianCut(pixels: Rgb[], target: number) {
   let boxes: Rgb[][] = [pixels];
   while (boxes.length < target) {
@@ -218,11 +200,6 @@ function candidateScores(pixels: Rgb[]) {
     };
   });
 }
-
-/**
- * 主入口：从一张已经缩小过的 ImageData 里提取柔和配色。
- * 图里没有任何不透明像素时返回 null。
- */
 export function extractPalette(imageData: ImageData): PaletteResult | null {
   const { data } = imageData;
   const pixels: Rgb[] = [];

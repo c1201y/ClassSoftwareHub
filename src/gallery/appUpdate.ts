@@ -1,13 +1,3 @@
-// ════════════════════════════════════════════════════════════════════
-// appUpdate.ts —— 检测「浏览器里缓存的版本」是否落后于服务器
-//
-// 站点常驻 Service Worker，静态资源缓存优先，因此一次部署之后，浏览器
-// 可能还在用旧 bundle。这里用构建时注入的 __BUILD_ID__（提交号）与服务器
-// 根目录的 version.json 比对：不一致就说明当前页面来自旧缓存。
-//
-// 三种结果分开返回（current / stale / unknown），设置页才能像 Windows
-// 「Windows 更新」那样显示「当前已是最新版本」而不是沉默。
-// ════════════════════════════════════════════════════════════════════
 
 import { clearBrowserCaches } from './browserCache';
 
@@ -26,11 +16,6 @@ const CHECK_INTERVAL_MS = 60 * 1000;
 
 const versionUrl = (): string =>
   new URL(`${import.meta.env.BASE_URL}version.json`, window.location.href).href;
-
-/**
- * 与服务器比对版本。
- * 结果缓存 1 分钟，避免设置页反复进出时刷接口；force=true 忽略缓存。
- */
 export function checkForUpdate(force = false): Promise<UpdateCheck> {
   const now = Date.now();
   if (!force && pending && now - lastCheck < CHECK_INTERVAL_MS) return pending;
@@ -50,11 +35,6 @@ export function checkForUpdate(force = false): Promise<UpdateCheck> {
   })();
   return pending;
 }
-
-/**
- * 应用更新：清掉本站缓存 → 让 SW 立即检查新版本 → 重载。
- * 只清本站 csh-sw-* 缓存，不动用户其它站点数据。
- */
 export async function applyUpdate(): Promise<void> {
   try {
     await clearBrowserCaches();

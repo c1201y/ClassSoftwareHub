@@ -1,20 +1,3 @@
-/* ════════════════════════════════════════════════════════════════════
-   desktop-page.css —— 下载桌面版页面（#/desktop）
-
-   ⚠️ 本文件的布局/尺寸/间距**逐条搬自文档站**
-   docs.classsoftwarehub.cn/download 的 Download.vue 编译产物
-   （style.css 中 data-v-258a1b98 那一组规则）。
-
-   原文用的是 vuepress 的 --vp-c-* 变量，这里一对一做等价替换：
-     --vp-c-text-1  → var(--text-primary)
-     --vp-c-text-2  → var(--text-secondary)
-     --vp-c-text-3  → var(--text-tertiary)
-     --vp-c-divider → var(--card-border)
-     --vp-c-bg-soft → var(--subtle-fill)
-     --vp-c-brand-1 → var(--accent-fill-rest)
-     --vp-c-brand-soft → var(--accent-soft)
-   其余（字号、内边距、圆角、栅格、断点）原样保留，不要凭手感改。
-   ════════════════════════════════════════════════════════════════════ */
 
 .desktop-page {
   max-width: 1060px;
@@ -154,13 +137,6 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
-
-/* ⚠️ 这里的 stretch 是**故意的**（2026-11-10 按需求改回）：
-   桌面版卡只有一行下载、Win7 卡有安装版 + 便携版两行，
-   不拉齐时左边会明显矮一截，看着像没加载完。
-   等高之后两张卡底部对齐，下载按钮落在同一水平线上。
-   卡片内部靠 .download-rows 的 margin-top:auto 把下载区顶到底部，
-   所以内容不会被拉伸变形，只是下方留白。 */
 .edition-card {
   display: flex;
   flex-direction: column;
@@ -169,10 +145,6 @@
   border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
   background: var(--card-bg, var(--CardBackgroundFillColorDefaultBrush));
 }
-
-/* 图标字形 —— 站内 SEGOEICONS.TTF 是重映射过的子集，
-   必须显式指定字体族，否则会掉回正文字体、显示成方框/空白。
-   模板里所有 `&#xE9xx;` 图标都必须带这个 class。 */
 .icon-glyph {
   font-family: var(--SymbolThemeFontFamily, 'WinUIOnWebIcons');
   font-style: normal;

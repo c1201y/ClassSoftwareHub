@@ -1,7 +1,4 @@
 /* 软件详情页样式 —— 从单文件版 indexV20260831.html 提取（原 scoped 属性已剥离） */
-/* 注意：这里必须用 .gallery-page-content.download-detail-page 双类提高权重——
-   单文件打包时本文件会排在 theme.css 之前，theme.css 里同权重的
-   .gallery-page-content { padding: 0 } 会把下面的内边距清零（左右贴边）。 */
 .gallery-page-content.download-detail-page {
   padding: 24px 36px 48px;
 }
@@ -285,10 +282,6 @@ html.theme-dark .detail-category-badge {
 .detail-mirror-button {
   flex: none;
 }
-/* 闪电图标：字形取自站点自带的内嵌图标字体（'WinUIOnWebIcons' = assets/Fonts/SEGOEICONS.TTF，
-   字体声明在 App.vue 里），和全站其它图标同一套写法。
-   ⚠️ 不要写成 'Segoe Fluent Icons' 之类的系统字体名：手机上没这两个字体，
-   U+E945 落在私有区会直接渲染成空白 —— 图标就"不显示"了。 */
 .detail-mirror-button-icon {
   font-family: 'WinUIOnWebIcons';
   font-size: 14px;
@@ -412,10 +405,6 @@ html.theme-dark .detail-category-badge {
     width: 100%;
   }
 }
-
-/* ── 分享面板（详情页右上「分享」）──────────────────────────────────
-   网页版独有能力：发出去的是一条能直接打开这个软件的链接。
-   窄屏时二维码列会落到文案下方（见文件末尾的媒体查询）。 */
 
 .detail-share {
   flex: none;

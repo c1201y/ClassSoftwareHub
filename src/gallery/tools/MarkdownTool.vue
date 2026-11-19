@@ -47,19 +47,6 @@ const { t } = useI18n();
 const { toast, copy } = useCopy();
 
 const input = ref(t('markdown.default-content'));
-
-/**
- * 渲染 + 消毒。
- *
- * marked 不做 HTML 消毒：Markdown 中原样的 HTML 会直接进入输出，
- * 例如 <img src=x onerror="alert(1)"> 会被真实执行。当前输入只来自用户本人
- * （属于自 XSS，危害有限），但本工具是公开的，一旦后续支持从网址载入 Markdown
- * 或粘贴他人文档，就会变成可被利用的 XSS，因此在渲染管线中先行拦截。
- *
- * 使用 DOMPurify 而非自行编写白名单：手写的标签/属性白名单是 XSS 的常见薄弱点
- * （<svg> 内嵌 <script>、javascript: 变形、属性中的换行等），
- * 此类过滤应交给持续维护的专门库处理。
- */
 const html = computed(() => {
   try {
     const raw = marked.parse(input.value, { async: false }) as string;

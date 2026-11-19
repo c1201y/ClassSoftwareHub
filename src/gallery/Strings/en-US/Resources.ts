@@ -177,6 +177,21 @@ export default {
     "detail.hash-checksum": "Checksum",
     "detail.mirror-desc": "This route does not always work (throttling, ISP blocking, a node going down). Try any of the ones below instead — each relays the same file from its own server, which is usually much faster from mainland China. You can also go back and use the plain Download button for the official GitHub link.",
     "detail.mirror-note": "The \"this site's node\" is run by us and only relays files without modifying them. The rest are third-party mirrors that may go offline or throttle at any time. Verify the official hash before installing.",
+    "dlfb.title": "Download feedback",
+    "dlfb.question": "How was the accelerated download?",
+    "dlfb.good": "Good",
+    "dlfb.bad": "Not good",
+    "dlfb.good-prompt": "What worked well? Speed, stability, interruptions…",
+    "dlfb.bad-prompt": "What went wrong? Slow speed, stalls, 403, or nothing started…",
+    "dlfb.good-placeholder": "e.g. 5 MB/s, stable throughout",
+    "dlfb.bad-placeholder": "e.g. only 200 KB/s, stopped halfway",
+    "dlfb.contact-placeholder": "Contact (optional): QQ / WeChat / Bilibili",
+    "dlfb.contact-note": "Used only for follow-up, never published.",
+    "dlfb.submit": "Submit",
+    "dlfb.cancel": "Cancel",
+    "dlfb.close": "Close",
+    "dlfb.thanks": "Thanks, feedback received.",
+    "dlfb.failed": "Submission failed. Try later, or use the Feedback Centre.",
     "detail.open-page": "Go to website",
     "detail.open-netdisk": "Open netdisk link",
     "detail.hint-page": "This app only offers an official download page — the button takes you there to get the installer.",
@@ -378,15 +393,7 @@ export default {
   "about.reward-url": "https://ifdian.net/a/TinyNickCSHub",
   "about.qq-group": "Join the QQ group",
   "about.qq-group-url": "https://qm.qq.com/q/wByO7XG8Wk",
-  // ── 反馈中心（#/feedback） ──────────────────────────────
-  // 两级结构：kind（report / suggestion），仅 "report" 含子类型。
-  // 卡片与子类型由 src/gallery/feedback.ts 决定。
   "nav.feedback": "Feedback",
-
-  // ── Desktop download page (#/desktop) ──────────────────────────────
-  // Versions, sizes and download URLs are NOT here — they are resolved live
-  // from GitHub Releases by src/gallery/desktopDownload.ts.
-  // Layout mirrors the docs site: hero → platform tabs → channel → button → source → changelog.
   "desktop.hero-title": "Download ClassSoftwareHub",
   "desktop.hero-subtitle": "Software download station for classroom admins \u00b7 desktop and mobile",
   "desktop.loading": "Fetching release info\u2026",

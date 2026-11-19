@@ -189,14 +189,6 @@ const randInt = (n: number) => {
   } while (v >= limit);
   return v % n;
 };
-
-/**
- * 范围 / 数量上限。
- *
- * NumberBox 无法拦截全部非法输入（粘贴超大数值或 localStorage 中的脏值）：
- * 不设上限时 pickOnce/doGroup 会按 range 构建十亿元素级数组，直接耗尽标签页内存。
- * 10 万个号码对课堂抽号场景已足够。
- */
 const MAX_POOL = 100000;
 const MAX_COUNT = 10000;
 const poolTooBig = () => poolSize.value > MAX_POOL;

@@ -1,21 +1,3 @@
-// ════════════════════════════════════════════════════════════════════
-// 全站搜索索引 —— 标题栏搜索（Ctrl + K）面板的数据源
-//
-// 搜索范围（四类，结果按类别分组显示）：
-//   ① 软件    软件名 / 一句话简介 / 详细介绍（数据在 软件数据/apps/）
-//   ② 内置工具 工具名 / 说明 / 分组名（注册表在 src/gallery/tools/index.ts）
-//   ③ AI 导航 站点名 / 说明 / 域名（清单在根目录 AI导航文本.ts）
-//   ④ 页面    首页 / 内置工具 / AI 导航 / 提交软件 / 反馈中心 / 设置
-//
-// 规则：不知道软件叫什么、只记得“它是干嘛的”也能搜到 ——
-//       名称命中的结果排在同组的简介命中之前；组内不超过 limit 条。
-//
-// ⚠️ 匹配是「分词 + AND/OR」而不是「整串子串」：用户会打「内存 清理」「希沃 白板」
-//       「数据 恢复」这种带空格的自然语言，整串 includes 会让它们全部搜空
-//       （实测 67 个查询词里 22 个搜不到）。分词逻辑见下面 tokenize() 的注释。
-// 文案：结果里的分组名、来源称呼、提示语都在根目录 文字设置.ts 的 search.* 键，
-//       本文件只管匹配逻辑，日常维护【不要】改这里。
-// ════════════════════════════════════════════════════════════════════
 import { apps, categoryName } from './data';
 import type { Locale } from '../components/i18n/index';
 import { TOOLS } from './tools';
@@ -122,21 +104,6 @@ const SEARCH_PAGES: SearchPageDef[] = [
 ];
 
 const normalize = (value: string) => value.trim().toLowerCase();
-
-/**
- * 把查询词切成 token（支持中英混排、标点分隔）。
- *
- * 为什么不能只用「整串 includes」：用户搜「内存 清理」「希沃 白板」「数据 恢复」时，
- * 整串子串在任何一个字段里都不连续出现，结果一个都搜不到。实测 67 个自然语言查询词里
- * 有 22 个因此搜空（见 search-test.cjs）。切成 token 后做 AND 匹配即可命中。
- *
- * 切分规则：
- *   · 空白与中英文标点（, ，/ / 、。; ；: ：! ！? ？| |( （) ）[ ][ 】_ _- -+ += = 等）都是分隔符；
- *   · 「C++」「VC++」这类带加号的写法不会被加号拆散（+ 只在两侧都有内容时才断开，
- *     且拆出来的片段仍保留 ++，交给后面的单字符兜底匹配）；
- *   · 纯中文长串按二元切分：中文没有空格，「希沃白板」切成 希沃/沃白/白板… 之类的窗口，
- *     这样「希沃 白板」「沃白」都能命中（中文切词不引入第三方分词库，靠窗口重叠覆盖）。
- */
 const tokenize = (value: string): string[] => {
   const text = normalize(value);
   if (!text) return [];
@@ -148,9 +115,6 @@ const tokenize = (value: string): string[] => {
   for (const part of rough) {
     // 保留「C++ / VC++ / msvcp140.dll / 7-zip」这类整体写法
     tokens.push(part);
-    // 含中文的片段再切出二元窗口，让「希沃 白板」能命中「希沃白板」。
-    // 条件放宽到「含中文且长度 > 2」：纯中文（火绒安全软件）与中英混排
-    // （希沃白板5 / ClassIsland 课表）都要切，否则混排的那类漏窗口。
     if (/[\u4e00-\u9fa5]/.test(part) && part.length > 2) {
       // 只对连续的中文片段切窗口（数字/字母段落不切，避免产生噪声 token）
       const cjk = part.match(/[\u4e00-\u9fa5]+/g) ?? [];
@@ -163,16 +127,6 @@ const tokenize = (value: string): string[] => {
   // 去重（保持顺序），并丢掉空串
   return [...new Set(tokens.filter(Boolean))];
 };
-
-/**
- * 匹配打分：把「命中了几个 token」量化出来，让结果按相关度排序，
- * 而不是「先到先得」地按数据顺序输出。
- *
- * 没有同义词歧义时（最常见的单字/单词查询）直接数原文命中数；
- * 有同义词时按「组」数，一组算一个 token 的分。
- *   · 全命中（score = 组数）→ 最相关
- *   · 部分命中             → 按命中比例排后面
- */
 const scoreMatch = (text: string, groups: string[][]): number => {
   if (!groups.length) return 0;
   const haystack = normalize(text);
@@ -182,30 +136,10 @@ const scoreMatch = (text: string, groups: string[][]): number => {
   }
   return hits;
 };
-
-/**
- * 简介/描述的命中判定。
- *
- * 同义词在这里也放开，但只对「同义词表里登记了等价说法」的词生效 ——
- * 表里每条都是「同一件事的不同叫法」（C盘 = 磁盘 = 系统盘，解压 = 压缩），
- * 不是竞品也不是主观偏好，所以不会把无关软件牵进来。
- *
- * 比例阈值 60% 兜底：多词查询至少得命中一多半，避免一个词命中就把整条拖进来。
- * 单词查询天然满足 100%，行为与从前一致（命中就是命中，不命中就是不命中）。
- */
 const introMatches = (text: string, groups: string[][]): boolean => {
   if (!groups.length) return false;
   return scoreMatch(text, groups) >= Math.ceil(groups.length * 0.6);
 };
-
-/**
- * 常见说法的同义词扩展：用户嘴里的词和数据里的词对不上时兜底。
- * key 会连同它的同义词一起成为 OR 组 —— 命中任意一个就算这个 token 命中。
- *
- * 典型例子：搜「C盘清理」时数据写的是「清理磁盘」（light-c 的简介），
- * C 盘 = 系统盘 = 磁盘，不做这层映射就只能靠用户自己改词。
- * 只收「同一件事的不同叫法」，不塞竞品或主观偏好。
- */
 const SYNONYMS: Record<string, string[]> = {
   c盘: ['磁盘', '系统盘', 'harddisk', '硬盘'],
   系统盘: ['磁盘', 'c盘', '硬盘'],
@@ -380,11 +314,6 @@ export const searchAiSites = (query: string, locale: Locale = 'zh-CN', limit = 5
     .slice(0, limit)
     .map((entry) => entry.hit);
 };
-
-/**
- * ④ 页面：标题与说明要走 i18n，所以把 t 传进来。
- * 空关键词时返回全部页面（面板初始状态显示“去哪”的快捷入口）。
- */
 export const searchPages = (
   query: string,
   t: (key: string) => string,
@@ -408,11 +337,6 @@ export const searchPages = (
   }
   return hits;
 };
-
-/**
- * 全局搜索：返回已经分好组的结果（顺序 = 软件 → 工具 → AI 导航 → 页面）。
- * 空关键词只返回页面快捷入口；没有任何结果时返回空数组。
- */
 export const searchGlobal = (
   query: string,
   t: (key: string) => string,

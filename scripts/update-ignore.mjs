@@ -1,25 +1,4 @@
 #!/usr/bin/env node
-/**
- * scripts/update-ignore.mjs
- *
- * 增删「软件信息体检」的忽略清单条目（软件数据/update-ignore.json）。
- * 体检 Issue 里的「点方框」与 `/ignore`、`/unignore` 命令都由
- * `.github/workflows/update-ignore-command.yml` 调它来落地；平时也可以手工跑。
- *
- * 用法：
- *   node scripts/update-ignore.mjs --add=<软件id> [--skip=updates|all] [--reason=理由]
- *   node scripts/update-ignore.mjs --remove=<软件id>
- *   node scripts/update-ignore.mjs --skip-once=<软件id> --key=<问题指纹> [--kind=<类型>]
- *   node scripts/update-ignore.mjs --unskip-once=<软件id>
- *   node scripts/update-ignore.mjs --list
- *
- * 「本次跳过」与「忽略」是两种强度：忽略＝永久静音；本次跳过＝只压住当前这一版问题，
- * 问题内容一变（上游又发新版、直链又换了一批）就自动重新提醒。指纹由 check-updates.mjs
- * 的 pendingKey() 算出，写进 Issue 正文的隐藏标记里，这里只负责搬运入库。
- *
- * 写回时保留原文件的**行尾**（本仓行尾是混合的，别整成一种），
- * 并把 `_` 开头的注释键排在最前、其余按键名排序，避免每次改动都产生无意义 diff。
- */
 
 import fs from 'node:fs'
 import path from 'node:path'

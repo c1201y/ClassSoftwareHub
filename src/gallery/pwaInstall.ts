@@ -1,10 +1,3 @@
-// ════════════════════════════════════════════════════════════════════
-// pwaInstall.ts —— 把「安装到桌面」做成可订阅的状态
-//
-// beforeinstallprompt 在页面加载后随时可能触发，必须尽早注册监听，
-// 否则会错过事件；设置页只负责展示按钮与调用 promptInstall()。
-// 已安装（standalone / minimal-ui）时不再显示安装入口。
-// ════════════════════════════════════════════════════════════════════
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;

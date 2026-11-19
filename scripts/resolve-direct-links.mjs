@@ -1,39 +1,4 @@
 #!/usr/bin/env node
-/**
- * scripts/resolve-direct-links.mjs
- *
- * 「把官网下载页换成文件直链」—— 让详情页的按钮对**没有 GitHub 仓库**的软件也能原地下载，
- * 而不是把用户送去官网自己找安装包。
- *
- * 为什么这件事必须放在 CI 而不是网页里：浏览器有同源策略，抓不了别人的官网页面（CORS），
- * 也读不到 302 之后的地址。CI 跑在服务器上，跟重定向、读页面、调接口都不受限 ——
- * **所以不需要自建 Worker。**
- *
- * 五种来源（见下方 RESOLVERS）：
- *   · seewo   厂商按产品码下发的固定接口（e.seewo.com/download/file?code=xxx）
- *             URL 里不带版本号 → 天生「始终最新」，写一次就不用再管
- *   · winget  microsoft/winget-pkgs 官方清单。默认直链带版本号、两边一起刷新；
- *             加 `keepUrl` 的只借它的**版本号**，站内那条「始终最新」直链不动
- *   · probe   探一个「不会变的入口」，从**产物本身**读版本号：
- *             重定向的最终地址（Firefox / 火绒 / GeoGebra）、目录清单（VLC）、
- *             或页面里抠出来的安装包名（DiskGenius）。入口不变，版本号自动跟着走
- *   · rewrite 带 `rewrite` 的 probe —— 链接文件名里带版本号、新版本一发布旧名就 404
- *             的那类（VLC），按模板重建每一条下载项的地址
- *
- * 用法：
- *   node scripts/resolve-direct-links.mjs --report=报告.md      # 只看，不改任何文件
- *   node scripts/resolve-direct-links.mjs --apply --report=报告.md
- *   node scripts/resolve-direct-links.mjs --only=dingtalk,qq    # 只处理指定软件
- *
- * ⚠️ 三条约束，改代码前先读：
- *  1. **只处理没有 `github` 字段的软件** —— 有仓库的由 check-updates.mjs 负责，
- *     两边都写会互相打架。
- *  2. **版本号只向前、不后退** —— 写回的版本必须来自我们**实际分发的那个产物**
- *     （重定向后的地址、Content-Disposition 文件名、页面里抠出的安装包名、winget 清单），
- *     而且只在它比站内更新时才覆盖；上游比站内旧则整条跳过（见 main 里的闸门）。
- *     拿不到可靠版本号就别写 —— `keepVersion` 是给「版本号没法可靠还原」的个例留的出口。
- *  3. 写文件**保持原行尾**（本仓没有 .gitattributes，行尾是混合的），否则整文件重写会产生假 diff。
- */
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -45,14 +10,6 @@ const UA = 'ClassSoftwareHub-Resolver/1.0 (+https://classsoftwarehub.cn)'
 const TIMEOUT = 20000
 const API_BASE = (process.env.GITHUB_API_BASE || 'https://api.github.com').replace(/\/+$/, '')
 const TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || ''
-
-/**
- * 站内对象（用户投稿直传 OSS，数据里写成 `oss://对象键`）。
- *
- * 它们**不是上游直链**：地址由我们自己保管，读取要过一次下载闸门（见 src/gallery/ossDownload.ts）。
- * 解析器若把它当成「该换成上游直链的那条」，就会把作者上传的包替换成官网链接 —— 用户白传。
- * 所以下面选目标、改写两处都要显式跳过它。
- */
 const OSS_OBJECT_RE = /^oss:\/\//i
 
 // ── 参数 ────────────────────────────────────────────────────────────────
@@ -111,12 +68,6 @@ function cmpVer(a, b) {
 
 /** 站内版本号是不是「占位」——一个数字都没有就算（「官网」「跟随官网」「最新版」） */
 const isPlaceholderVersion = (s) => !/\d/.test(cur(s))
-
-/**
- * 从版本字符串里取出「纯版本核心」再比大小。
- * 站内版本常带装饰（`5.2.4.11441（2026-09-15）`、`v2.3.3 - Tangram`），
- * 不剥掉这些，`cmpVer` 会退化成字符串比较、得出反的结论。
- */
 const verCore = (s) => (cur(s).match(/\d+(?:\.\d+)+/) || [])[0] || cur(s)
 
 /** 只看扩展名的粗判断，用于挑「哪一条下载项还不是直链」（真判定在前端 downloadLink.ts） */const FILE_EXT_RE =
@@ -136,15 +87,6 @@ const FILE_TYPES =
   /octet-stream|msdownload|msdos-program|x-msi|zip|x-7z-compressed|x-rar|x-tar|gzip|x-xz|x-bzip|dmg|diskimage|vnd\.android\.package|flatpak|vnd\.ms-|x-apple/i
 
 const isFileType = (type) => FILE_TYPES.test(cur(type))
-
-/**
- * 把错误说成人话。
- *
- * `fetch` 抛出来的永远只有一句 "fetch failed"，真正的原因藏在 `error.cause` 里 ——
- * 不把它挖出来，报告上就只剩「fetch failed」这种没法排查的字。
- * 常见的两条：`UNABLE_TO_VERIFY_LEAF_SIGNATURE`（本机装了 HTTPS 中间人代理，CI 上不会有）、
- * `ETIMEDOUT` / `ENOTFOUND`（网络不通）。
- */
 function errText(error) {
   const cause = error?.cause
   const code = cause?.code || cause?.message || ''
@@ -152,14 +94,7 @@ function errText(error) {
   return code && !message.includes(code) ? `${message}（${code}）` : message
 }
 
-
 // ── 网络 ────────────────────────────────────────────────────────────────
-
-/**
- * http(s) 协议守卫 —— 所有出站请求的统一入口。
- * 数据文件里的 URL 属于半可信输入（维护者手抄的官网地址），万一混进
- * file: / ftp: / data: 这类协议，Node 的 fetch 虽然多半会拒，但别赌它。
- */
 function assertHttpUrl(url) {
   let u
   try {
@@ -184,13 +119,6 @@ async function fetchWithTimeout(url, options = {}, timeout = TIMEOUT) {
     clearTimeout(timer)
   }
 }
-
-/**
- * 有上限地读文本响应。
- * res.text() 会把整个响应体吃进内存 —— 内容型响应（html/json）一般不大，
- * 但 content-type 是对方说了算的：一个标成 text/html 的巨型响应能把
- * runner 的内存打爆。边读边数，超限即断流报错。
- */
 async function readTextCapped(res, max = 3 * 1024 * 1024) {
   const reader = res.body.getReader()
   const chunks = []
@@ -211,13 +139,6 @@ async function readTextCapped(res, max = 3 * 1024 * 1024) {
   }
   return Buffer.concat(chunks).toString('utf8')
 }
-
-/**
- * 探一个地址：跟完重定向，回报最终地址、类型、体积。
- *
- * 先 HEAD；有些服务器不认 HEAD（回 405 / 空响应），那就退化成 GET —— 但**只读响应头就断开**，
- * 绝不去读 body，否则一个几百 MB 的包会被真的拉下来。
- */
 async function probe(url) {
   const headers = { 'User-Agent': UA, Accept: '*/*' }
   for (const method of ['HEAD', 'GET']) {
@@ -279,33 +200,6 @@ async function ghRaw(apiUrl, fallbackUrl) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return await readTextCapped(res)
 }
-
-// ════════════════════════════════════════════════════════════════════════
-// 解析器登记表
-//
-// 一个软件一条。key = 软件 id（软件数据/apps/<id>.json）。
-// 想让某个软件也能原地下载 / 自动跟版本，就在这里加一行 —— 不需要动任何其它文件。
-//
-// 目前**不在这里**、仍然只能跳转的（见 scripts/untracked-buckets.mjs 的登记理由）：
-//   xrkayxingz 向日葵     —— 官网 Nuxt SSR，页面里没有安装包地址（down.oray.com 那条
-//                            固定名是 302 回下载页的假直链）
-//   yjxzsayxingz         —— Vue SPA，要逆向接口
-//   dingtalk             —— winget 清单停在 7.1.0，比站内还旧、被闸门拦下
-//   '360-jijiuxiang'     —— 抓到的唯一 .exe 是页面里推广的 360 优盘助手，不是本软件
-//   '360-safe-guard-speed' —— 直链固定，但唯一能读到版本号的 360 软件宝库页（appid
-//                           2000003222）**比站内还旧**（宝库 15.0.3.1005 < 站内
-//                           15.0.3.1058），登记了也会被降级闸门每次拦下，反而让报告
-//                           误以为"有人在跟" —— 不如如实留在 page-only
-//   'driver-ceo'         —— 直链是在线安装器，官网页面抓不到版本
-//   VirusDetector / directx-repair —— 纯网盘分发，物理上做不到直连
-//   sxsrfayxingz 手心输入法 —— 官网页面没有任何版本文字，直链也不带版本号
-//   qq-music             —— PC 端直链无版本且带防盗链，Mac/安卓那条的签名 URL 只对
-//                           签名时绑定的文件名有效，无法推广到新版本
-//   gomplayer            —— 站内收录的是第三方修改版（mefcl），与官方 release-note 的
-//                           版本线对不上，硬跟会把版本号写错
-//   heysafex             —— 未能识别出对应的 Windows 软件，无从下书
-//   仅 Microsoft Store 分发的若干 —— 官方就没有安装包（见 BUCKETS 里的 store 档）
-// ════════════════════════════════════════════════════════════════════════
 const SEEWO_DL = 'https://e.seewo.com/download/file?code='
 
 export const RESOLVERS = {
@@ -315,14 +209,7 @@ export const RESOLVERS = {
   xwbb5: { kind: 'seewo', code: 'EasiNote5' },
   xwspztayxingz: { kind: 'seewo', code: 'EasiCamera' },
   xiwopinke: { kind: 'seewo', code: 'seewoPincoTeacher' },
-  //    希沃管家：站内原来存的是腾讯 COS 的**带签名**直链（签名一到期就 403），
-  //    e.seewo.com 上确实有它的产品码，改成 code 地址后版本号顺带能从
-  //    Content-Disposition 的文件名里读出来（…SeewoServiceSetup_1.6.7.4018.exe）。
   xwgjayxingz: { kind: 'seewo', code: 'SeewoServiceSetup' },
-
-  // ── 稳定入口 + 跟重定向读版本（入口不变，只刷新版本号）──────────────────
-  //    Firefox 的 302 直接落在 …/releases/<版本>/… 里 —— 版本号是白拿的。
-  //    站点同时用 32 位与 MSI 两条入口，但版本号是同一个，探一条就够。
   firefox: {
     kind: 'probe',
     entry: 'https://download.mozilla.org/?product=firefox-latest&os=win64&lang=zh-CN',
@@ -352,9 +239,6 @@ export const RESOLVERS = {
     versionRe: /360csex_(\d+(?:\.\d+){2,})/,
     versionMax: true,
   },
-  //    360 系统急救箱：下载页里的安装包是**协议相对**写法（`//dl.360safe.com/…`），
-  //    之前只按 `https://` 找链接，所以一直以为它「没有直链」——其实直链和版本号都全。
-  //    页面上还挂着一个 360 优盘助手的推广包，用文件名前缀区分开，别抓错。
   '360-jijiuxiang': {
     kind: 'probe',
     entry: 'https://weishi.360.cn/jijiuxiang/index.html',
@@ -373,20 +257,12 @@ export const RESOLVERS = {
       { match: /win32/, url: (v) => `https://get.videolan.org/vlc/last/win32/vlc-${v}-win32.exe` },
     ],
   },
-  //    DiskGenius：中转页首选蓝奏云网盘，但页面里同时留着官方 CDN 直链
-  //    （download_cn.eassos.com/DG<版本>_x64.zip）。抠出来当直链最稳；
-  //    它的版本号是厂商自己编码过的（DG6201829），没法可靠还原成点号版本，故 keepVersion。
   diskgenius: {
     kind: 'probe',
     entry: 'https://www.diskgenius.cn/download/downloadURL.php?Name=DG_64',
     pickUrl: /https?:\/\/[^"'\s<>]+\.(?:zip|exe)/i,
     keepVersion: true,
   },
-  //    HiBit Uninstaller：官网下载页里挂着**当期**的安装包名（HiBitUninstaller-setup-4.0.10.exe），
-  //    版本号从页面白拿；但站内用的是官网那条**固定文件名**地址
-  //    （…/HiBitUninstaller/HiBitUninstaller-setup.exe，不带版本号、发新版就用同名覆盖，
-  //    2026-09-30 实测与当期版本化包的 Last-Modified 完全一致）——
-  //    所以 keepUrl：只借页面里的版本号与体积，URL 永不过期。
   'hibit-uninstaller': {
     kind: 'probe',
     entry: 'https://www.hibitsoft.ir/Uninstaller.html',
@@ -394,10 +270,6 @@ export const RESOLVERS = {
     pickUrl: /HiBitUninstaller\/HiBitUninstaller-setup-[0-9.]+\.exe/gi,
     versionRe: /HiBitUninstaller-setup-(\d+(?:\.\d+)+)\.exe/i,
   },
-  //    SpaceSniffer：官网首页推荐的**主镜像 dAppCDN 对脚本恒 403**（带 Referer 也没用），
-  //    幸好官网「备用下载」页把每个历史版本的直链都列了出来
-  //    （files/spacesniffer_2_2_0_27_x64.zip）——取版本号最大的那条即可。
-  //    2.x 只有 x64 版；文件名里版本是下划线写法，用 versionFix 换回点号。
   spacesniffer: {
     kind: 'probe',
     entry: 'https://www.uderzo.it/main_products/space_sniffer/download_alt.html',
@@ -406,25 +278,11 @@ export const RESOLVERS = {
     versionRe: /spacesniffer_(\d+(?:_\d+)+)_x64\.zip/i,
     versionFix: (s) => cur(s).replace(/_/g, '.'),
   },
-
-  //   WinRAR：⚠️ rarlab.com 的下载页把 **beta 表放在稳定版表前面**，直接全文匹配
-  //   第一个 winrar-x64-*.exe 会抓到 7.30 beta 1。用 pickUrl 限定「三位数字 + sc 后缀」
-  //   的形状（`/rar/winrar-x64-723sc.exe`）就只会命中稳定版的**简体中文**包 ——
-  //   beta（730b1）与其他语言后缀（ar/tc/ru…）都被这个形状排除。
-  //   版本号从抠出的 URL 文件名里读，天然与下载项一致。
-  //   另注：winrar.com.cn 那个中文站不能当入口 —— 页面里唯一的安装包是
-  //   汉化包 winrarcn-1.5.2sc.exe，按文件名取版本会得到错的 1.5.2。
   winrar: {
     kind: 'probe',
     entry: 'https://www.rarlab.com/download.htm',
     pickUrl: /\/rar\/winrar-x64-(\d{3})sc\.exe/i,
   },
-
-  //   K-Lite：下载页的 <h4> 就是当期版本（`Version 20.0.5 Full`），
-  //   四个变体的文件名规则完全确定（`K-Lite_Codec_Pack_<版本去点>_<变体>.exe`），
-  //   所以用 rewrite 把站内那 5 条一次性全部重建；旧版本文件不会被删，缓存友好。
-  //   ⚠️ rewrite 规则要**按 files2 / files3 分别写**：官方给每个变体都提供两个镜像，
-  //   站内把「Server 1 / Server 2」分开登记，若两条都重建到同一个主机就丢了冗余。
   klite: {
     kind: 'probe',
     entry: 'https://codecguide.com/download_k-lite_codec_pack_full.htm',
@@ -440,10 +298,6 @@ export const RESOLVERS = {
       { match: /files3\.codecguide\.com\/K-Lite_Codec_Pack_\d+_Basic\.exe/i, url: (v) => `https://files3.codecguide.com/K-Lite_Codec_Pack_${v.replace(/\./g, '')}_Basic.exe` },
     ],
   },
-
-  //   CentBrowser：官网首页同时给出 `版本号：` 文字与带版本的直链，两边互证。
-  //   走 .cn 镜像（与站内数据一致，国内可达）；下载地址模板里版本号出现两次。
-  //   便携版与安装版共用同一个 rewrite 之外的路径，靠 platform 名区分。
   centbrowser: {
     kind: 'probe',
     entry: 'https://www.centbrowser.cn/index.html',
@@ -453,13 +307,6 @@ export const RESOLVERS = {
       { match: /_x64\.exe/i, url: (v) => `https://static.centbrowser.cn/win_stable/${v}/centbrowser_${v}_x64.exe` },
     ],
   },
-
-  //   IDM：⚠️ 下载页那条 URL 里的版本号是**装饰性**的 —— 实测 idman643build15 /
-  //   idman642build11 / idman639build1 返回完全相同的字节，服务端只认 idman* 前缀，
-  //   返回的永远是当前最新版。所以版本号必须从 news.html 的正文读，
-  //   **不能**从下载 URL 读（会把版本号判断带偏）；直链本身 keepUrl 不动。
-  //   正文形状是 `What's new in version 6.43 Build 15`，用 versionFix 把中间那段
-  //   换成点号，得到与 winget 清单一致的 6.43.15。
   idm: {
     kind: 'probe',
     entry: 'https://www.internetdownloadmanager.com/news.html',
@@ -467,19 +314,11 @@ export const RESOLVERS = {
     versionRe: /What's new in version\s+\d+\.\d+\s+Build\s+\d+/i,
     versionFix: (s) => cur(s).replace(/^.*?version\s+/i, '').replace(/\s+Build\s+/i, '.'),
   },
-
-  // ── winget 官方清单：直链带版本号，链接与版本号一起自动刷新 ───────────────
-  //    微信 4.x 的安装包换了目录（weixin/Universal/Windows/WeChatWin_<版本>.exe），
-  //    老路径 dldir1.qq.com/weixin/Windows/WeChatSetup.exe 已经停在 3.x 不再更新。
   wechat: { kind: 'winget', pkg: 'Tencent.WeChat.Universal' },
   dingtalk: { kind: 'winget', pkg: 'Alibaba.DingTalk' },
   'tencent-meeting': { kind: 'winget', pkg: 'Tencent.TencentMeeting' },
   qq: { kind: 'winget', pkg: 'Tencent.QQ.NT' },
   wps: { kind: 'winget', pkg: 'Kingsoft.WPSOffice' },
-
-  // ── winget 官方清单：只借版本号，站内那条「始终最新」直链不动 ─────────────
-  //    这些软件的官方直链都是「固定文件名 + 永远指向最新版」，换成带版本号的地址反而
-  //    更脆；版本号却可以从清单里拿 —— 比站内写「跟随官网」「最新版」有用得多。
   chrome: { kind: 'winget', pkg: 'Google.Chrome', keepUrl: true },
   potplayer: { kind: 'winget', pkg: 'Daum.PotPlayer', keepUrl: true },
   rammap: { kind: 'winget', pkg: 'Microsoft.Sysinternals.RAMMap', keepUrl: true },
@@ -489,14 +328,6 @@ export const RESOLVERS = {
 }
 
 // ── seewo ───────────────────────────────────────────────────────────────
-
-/**
- * 希沃：`https://e.seewo.com/download/file?code=<产品码>` 会 302 到当期安装包。
- *
- * **写回的是这条 code 地址本身，不是它 302 之后那条**：后者带 sha1 签名
- * （`&sign=q-sign-algorithm%3Dsha1…`，参数被改动一个字符就 403），而 code 地址永远有效。
- * 体积从响应头拿；版本号顺带从 Content-Disposition 的文件名里读出来，只用于报告。
- */
 async function resolveSeewo(resolver) {
   if (!resolver.code) return { error: '没登记产品码' }
   const url = SEEWO_DL + resolver.code
@@ -521,11 +352,6 @@ async function resolveSeewo(resolver) {
 }
 
 // ── winget ──────────────────────────────────────────────────────────────
-
-/**
- * 从 winget 的 `.installer.yaml` 里抠安装包（只认这几个字段，不为它引一个 YAML 库）。
- * 缩进是关键：顶层键 0 缩进，安装项里的键是缩进的；`Installers:` 之后才是列表。
- */
 function parseInstallerYaml(text) {
   const top = {}
   const installers = []
@@ -550,15 +376,6 @@ function parseInstallerYaml(text) {
   }
   return { top, installers }
 }
-
-/**
- * 找到并读出一个 winget 包的最新清单。
- *
- * 目录形状并不统一（有 `…/QQ.NT/9.9.9.23424/`，也有 `…/DingTalk/Mainland/8.3.x/`、
- * `…/WPSOffice/12.1.0.x/CN/x64/`），所以这里**逐层下行**：
- * 优先挑「像版本号的目录里最大的那个」，没有版本号目录时再挑 Mainland / zh-CN，
- * 最后才退化成「目录里排序最后一个」；下到某一层出现 `*.installer.yaml` 就停。
- */
 async function findWingetManifest(pkg) {
   const segs = String(pkg || '').split('.')
   if (segs.length < 2) throw new Error('包标识格式不对（应为 发布者.软件名）')
@@ -620,9 +437,6 @@ async function resolveWinget(resolver) {
     url,
     size: fmtSize(info.length),
     version: detected,
-    // winget 是**版本钉死**的目录（清单写的是哪一个版本，URL 就是哪一个版本的文件），
-    // 所以这里报出钉死版本，交给 main() 判「上游是不是比站内还旧」——
-    // 真实案例：winget 的 Alibaba.DingTalk 停在 7.1.0，站内已经是 8.5.0。
     pinnedVersion: detected,
     fileName: url.split('/').pop().split('?')[0],
     source,
@@ -633,14 +447,6 @@ async function resolveWinget(resolver) {
 
 /** 默认版本号形状：`156.0.1`、`6.0.12.1` 这种至少带一个小数点的数字串 */
 const DEFAULT_VERSION_RE = /\d+(?:\.\d+){1,}/
-
-/**
- * 探一个「不会变的入口」，跟完重定向后把最终地址、类型、体积、以及**正文**一起拿回来。
- *
- * ⚠️ **绝不把安装包的 body 读进来** —— 入口 302 到一个八九十 MB 的 exe 是常态，
- * 只有响应是 html / text / json 这类文本时才读正文（目录清单、下载页）。
- * 不需要正文时不发 GET，避免白白触发一次大文件传输。
- */
 async function probeEntry(entryUrl, needBody = false) {
   const headers = { 'User-Agent': UA, Accept: '*/*' }
   let last = null
@@ -698,17 +504,6 @@ function pickVersion(re, text, max = false) {
     .sort((a, b) => cmpVer(a, b))
   return nums.length ? nums[nums.length - 1] : ''
 }
-
-/**
- * 探「不会变的入口」拿版本号（必要时连下载地址一起重建）。
- *
- *   默认      入口 302 到当期安装包，版本号就在最终地址里         —— Firefox / 火绒
- *   versionRe 版本号要从响应体里抠（目录清单、下载页）              —— VLC / 360 / GeoGebra
- *   pickUrl   响应体里藏着真正的安装包地址，先抠出来再去看它         —— DiskGenius / 360 急救箱
- *             ⚠️ 别忘了**协议相对**写法（`//dl.360safe.com/x.zip`）—— 只按 `https://` 找
- *             会以为人家「没有直链」，360 急救箱就这么被误判了很久。
- *   rewrite   链接文件名带版本号、旧版本会被删，按模板重建每条地址    —— VLC
- */
 async function resolveProbe(resolver) {
   if (!resolver.entry) return { error: '没登记入口地址' }
   const needBody = Boolean(resolver.pickUrl || resolver.versionRe)
@@ -793,15 +588,6 @@ async function resolveProbe(resolver) {
 }
 
 // ── 挑「改哪一条下载项」 ─────────────────────────────────────────────────
-
-/**
- * 一个软件可能有好几条下载项（多平台 / 多架构）。只动**最该动的那一条**：
- *   · seewo：先找本来就是 code 地址的那条（体积要刷新），没有就挑第一条还不是直链的
- *   · 先看显式声明：数据里写 `"kind": "file"` 就是在说「这条是直链」，它优先 ——
- *     否则会被同一页那条「官网下载页」（kind=page）抢走位置。微信就踩过这个坑：
- *     真的要改的是 kind=file 的安装包，不是 kind=page 的官网入口。
- *   · 其余：挑第一条还不是直链的；全都已是直链时挑第一条
- */
 function pickTarget(app, resolver) {
   const items = Array.isArray(app.downloads) ? app.downloads : []
   if (!items.length) return null
@@ -843,14 +629,6 @@ function writeApp(entry) {
     JSON.stringify(entry.data, null, 2).split('\n').join(entry.eol) + (entry.trailingNewline ? entry.eol : '')
   fs.writeFileSync(entry.file, text, 'utf8')
 }
-
-/**
- * 把「引导至官网下载」这类**占位平台名**换成真名。
- *
- * 这些标签是当年「只能跳官网」时写的（`该应用更新频繁，故引导至官网下载`），
- * 而这一条现在已经变成直链了 —— 标签再那么写就自相矛盾，用户会以为点了要跳走。
- * 标签里本来提到「其他版本」的，把这句话挪进 note，别把信息丢了。
- */
 const PLACEHOLDER_PLATFORM = /引导至官网|官网下载页?$|官网获取/
 
 function fixPlatformLabel(item) {
@@ -862,18 +640,6 @@ function fixPlatformLabel(item) {
   item.platform = 'Windows 安装版'
   return '平台名'
 }
-
-/**
- * 把解析结果落回 JSON。返回「做了哪些改动」，供报告使用。
- *
- * 两种落法：
- *   · 有 `result.rewrites` —— 按模板重建**每一条**匹配的下载项（VLC 的 win64 / win32）。
- *   · 否则 —— 只动 `pickTarget` 挑中的那一条：`url` / `kind` / `size`；
- *     `keepUrl` 的解析器只借版本号，这条连 url 都不碰。
- *
- * 版本号是**只向前**的：占位版本（「官网」「跟随官网」）直接填上；已有数字的只在
- * 新版本更大时覆盖 —— 上游偶尔回退一次，也不该把站内已经写好的版本号冲回去。
- */
 function applyResolved(app, resolver, result) {
   const changes = []
   const items = Array.isArray(app.downloads) ? app.downloads : []
@@ -983,10 +749,6 @@ async function main() {
       failed.push({ id, why: result.error, platform: cur(target.platform) })
       continue
     }
-
-    // ── 闸门：上游清单比站内旧，一个字都不许改 ──────────────────────────
-    // winget 的清单由社区维护，会落后于厂商（钉钉就停在 7.1.0，而站内已是 8.5.0）。
-    // 没有这道闸，一个偷懒的上游会把用户从新版拽回旧版，而且没人看得出来。
     if (
       result.pinnedVersion &&
       !isPlaceholderVersion(app.version) &&
@@ -1035,10 +797,6 @@ async function main() {
     `\n统计：写回 ${applied.length} 个，失败 ${failed.length} 个${APPLY ? '' : '（只读模式，未写任何文件）'}`
   )
 }
-
-// 直接执行（`node scripts/resolve-direct-links.mjs`）才跑 main()；被 import 进来拿登记表时不跑。
-// scripts/untracked-buckets.mjs 就靠这条 import 承认「这些软件的直链与版本号已经有人在跟」，
-// 这样「谁在被自动跟踪」只有 RESOLVERS 一处真相，不会两个文件各写一份、慢慢对不上。
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   await main()
 }

@@ -1,26 +1,3 @@
-// ════════════════════════════════════════════════════════════════════
-// ★★★★★ 全站文字设置区（中文）★★★★★
-// 原版 HTML 里这块叫 window.DOWNLOAD_STATION_TEXT —— 全站文字就集中在
-// 这一个地方。本文件放在项目根目录，打开就能改。
-//
-// 【日常改文字 = 只改这个文件】建议只改引号里的文字，不要动左边的 key
-// （key 是页面找文字的“编号”，例如 home.title，改错就找不到文字了）。
-// 改完保存：npm run dev 下浏览器自动刷新；发布前跑 npm run build
-// 或 npm run build:single。
-//
-// 英文站文字在 src/gallery/Strings/en-US/Resources.ts（和这里一一对应，
-// 中文站改了顺手同步英文站；只维护中文站可不管它）。
-// 软件数据（软件名/简介/下载链接不在这里）→ 根目录「软件数据」文件夹。
-//
-// key 速查：app.*=站名/版权/版本号；home.*=首页标题区+
-//             「教学辅助」分类顶部的外链推荐卡（home.iwb-card-*）；
-// filter.*=筛选条；detail.*=详情页；text.*=通用按钮/设置页；
-// about.*=设置页“关于”区（*-url 是链接地址；QQ 群入口=about.qq-group(+url)）。
-// welcome.*=欢迎弹窗（进入网站时弹出；仓库/作者/QQ 群链接复用 about.*-url 键；
-//           相关文章=welcome.article(+url)，投喂作者=about.reward(+url)）。
-// search.*=全站搜索（Ctrl+K 面板：描述文字、分组名、页面条目、快捷键提示；
-//           以及工具页那句“按 Ctrl + K 搜索”的提示）。
-// ════════════════════════════════════════════════════════════════════
 export default {
       "app.title": "电教委员常用软件下载站",
       "text.back": "返回",
@@ -94,9 +71,6 @@ export default {
       // 「关于」里的 UI 内核链接：本站界面用的上游组件库 WinUIonWeb（致敬原作者）
       "about.ui-kernel": "UI 内核（WinUIonWeb）",
       "about.ui-kernel-url": "https://github.com/Furry-Xiyi/WinUIonWeb",
-      // 「回声洞」设置页展开项（数据在根目录 回声洞/messages/，一条一个文件）
-      // subtitle 仍被站内页 /echo-cave 用着，留着
-      // ⛔ 展开区里只显示字条本身，卡面不许再有任何状态字（2026-10-03 Nick 指定）
       "echo-cave.title": "回声洞",
       "echo-cave.subtitle": "收集 QQ 群里那些让人笑出声的沙雕发言，点一下换一条。",
       "echo-cave.description": "请点击这里收看 ClassSoftwareHub 群友的逆天发言！",
@@ -124,11 +98,6 @@ export default {
       "text.use-system-setting": "使用系统设置",
       "nav.home": "首页",
       "nav.feedback": "反馈中心",
-
-      // ── 下载桌面版页面（#/desktop）──────────────────────────────
-      // 版本号、体积、下载地址不在这里 —— 那些由 src/gallery/desktopDownload.ts
-      // 从 GitHub Releases 实时获取，此处只放不会随发版变化的说明文字。
-      // 布局仿文档站：Hero → 平台切换 → 正式/预览通道 → 主按钮 → 线路选择 → 更新日志。
       "desktop.hero-title": "下载 ClassSoftwareHub",
       "desktop.hero-subtitle": "电教委员常用软件下载站 · 桌面客户端与移动端",
       "desktop.loading": "正在获取版本信息…",
@@ -223,9 +192,6 @@ export default {
       "home.download-template": "下载软件添加模板【开发者】",
       "home.download-template-tip": "共创！添加软件使用的模板",
       "home.download-template-filename": "模板.json",
-      // ★首页「教学辅助」分类顶部的外链推荐卡（Awesome IWB）
-      //   想换推荐的网站/改文案：只动下面这 4 个 key。
-      //   url 填完整网址（https:// 开头）；把 title 和 desc 都留空("")这张卡就不显示。
       "home.iwb-card-title": "想找更多教学软件？去 Awesome IWB 逛逛",
       "home.iwb-card-desc": "班级一体机 / 交互白板软件合集：希沃白板工具、课堂管理、课表看板、随机点名…… 都是开源好物",
       "home.iwb-card-action": "打开 Awesome IWB",
@@ -302,6 +268,21 @@ export default {
       "detail.hash-checksum": "校验值",
       "detail.mirror-desc": "这条路不一定每次都通（节点限速、被运营商拦、临时挂掉都有可能）。换下面任意一条再试，都是把同一个文件原样转发一份，国内下载通常快很多；也可以直接回上面点「下载」走 GitHub 官方。",
       "detail.mirror-note": "「本站加速节点」由本站自建维护，只做转发、不改动文件；其余为第三方公益镜像，随时可能失效或限速。装之前建议核对官方公布的哈希值。",
+      "dlfb.title": "下载体验",
+      "dlfb.question": "刚才的加速下载怎么样？",
+      "dlfb.good": "好用",
+      "dlfb.bad": "不好用",
+      "dlfb.good-prompt": "好在哪里？比如速度、稳定性、有没有中断。",
+      "dlfb.bad-prompt": "不好在哪里？比如速度慢、卡住、提示 403 或根本无法开始。",
+      "dlfb.good-placeholder": "例如：速度 5MB/s，全程稳定",
+      "dlfb.bad-placeholder": "例如：只有 200KB/s，下载到一半断了",
+      "dlfb.contact-placeholder": "联系方式（可选）：QQ / 微信 / B站",
+      "dlfb.contact-note": "只在需要回访时使用，不会公开。",
+      "dlfb.submit": "提交",
+      "dlfb.cancel": "取消",
+      "dlfb.close": "关闭",
+      "dlfb.thanks": "谢谢，已收到你的反馈。",
+      "dlfb.failed": "提交失败，稍后再试；也可以到「反馈中心」留言。",
       // 下载项的落地方式：能直下的按钮写「下载」（点了本页直接开始下，不跳走）；
       // 只能跳转的按来源写「前往官网 / 前往网盘」，下面再补一句说明
       "detail.open-page": "前往官网",
@@ -504,10 +485,6 @@ export default {
       "submit.auto-import-done": "已从仓库读取版本与下载链接，可继续修改。",
       "submit.auto-import-failed": "自动读取没成功，可以点上面的「一键读取」重试，或手动填写。",
       "submit.auto-import-skipped": "你已经填了下载项，为免覆盖没有自动读取；需要的话点上面的「一键读取」。",
-      // ── 反馈中心（#/feedback）────────────────────────────────────────────
-      // 用户在这里报告问题 / 提建议，提交时生成 GitHub Issue 预填链接（本站无后端）。
-      // 分类是两层的：kind 两级（报告 / 建议），只有「报告问题」才有子类型 sub-*。
-      // 改文案只动引号里的字；分几张卡片、几个子类型由 src/gallery/feedback.ts 决定。
       "feedback.title": "帮助改进 ClassSoftwareHub",
       "feedback.subtitle": "报告软件信息错误、下载链接失效或其他使用问题；也可以提出功能建议。每条反馈都会进入公开的议题列表，由维护者跟进。",
       // 选择态「接下来会怎样」三步说明

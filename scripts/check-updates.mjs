@@ -1,55 +1,4 @@
 #!/usr/bin/env node
-/**
- * scripts/check-updates.mjs
- *
- * 「软件信息自动更新」：扫描 软件数据/apps/*.json，去上游核对每个软件的最新版本
- * 与下载直链，并把结果写成 Markdown 报告；加 --apply 时再把**能确定**的部分写回 JSON。
- *
- * 上游来源：**只有 GitHub Releases 一条腿** —— 认软件的 `github` 字段。
- *
- * 曾经还有一条「非 GitHub 官方来源」的腿（抓希沃产品清单 / VideoLAN 目录 / 360 页面…），
- * 因为那些厂商页面一改版就得跟着改解析规则、维护成本高收益不抵，**已整体删除**
- * （2026-09-21，见 git 历史）。对应的 10 个软件改由 `scripts/untracked-buckets.mjs`
- * 登记为「跟不了」，在体检 Issue 里如实点名，要人偶尔看一眼。
- *
- * 够不着 GitHub 的软件（微软商店分发、官方固定「最新版」直链、有意归档、
- * 只有网页入口、第三方网盘），**逐个写明是哪一种**，由报告与体检 Issue 如实列出 ——
- * 「没被检查到」不等于「没问题」，所以不能像以前那样让它悄悄消失。
- *
- * 用法：
- *   node scripts/check-updates.mjs --report=update-report.md          # 只体检
- *   node scripts/check-updates.mjs --apply --report=update-report.md  # 体检 + 写回
- *
- * 参数：
- *   --apply            把可安全更新的字段写回 JSON（默认只报告，不动数据）
- *   --report=<path>    把完整 Markdown 报告写到该文件
- *   --pending=<path>   把「必须人工确认」的清单写到该文件（体检 Issue 用的就是它）
- *   --ignore=<path>    忽略清单，默认 软件数据/update-ignore.json
- *   --no-link          跳过下载直链存活检查（更快、可离线）
- *   --jobs=4           并发请求数（默认 4）
- *   --dump=<path>      把「每个软件落在哪一档、为什么」导出成 JSON
- *                      （排查「Issue 里几个数字对不上账」时全靠它）
- *   --token=xxx        GitHub 令牌；默认读 GITHUB_TOKEN / GH_TOKEN
- *
- * 五条设计原则：
- *  1. 保守 —— 只改「能确定」的东西，判定不了的一律只报告。宁可少改，不可改错。
- *  2. 全有或全无 —— 一个软件的「版本号 + 它的下载直链」是一个整体：
- *     只要有任何一处不能自动处理（跨大版本、下载项带校验值、新 release 里找不到对应文件），
- *     就**一个字都不改**，整体交给人工。否则会出现
- *     「version 已经是 26.03，下载链接却还是 7z2602」这种自相矛盾的数据。
- *  3. 不破坏 —— 写回时保持原文件的缩进与**行尾**（本仓没有 .gitattributes，行尾是混合的：
- *     多数 JSON 是 LF，但个别文件是 CRLF），绝不能整文件重写。
- *  4. 不碰校验值 —— 带校验值的下载项（`hash` 字段，或早期写在 note 里的）**一律不自动改直链**：
- *     换了文件校验值就失效，留下错的 SHA512 比不更新更糟，那种必须人工核对。
- *  5. 账要对得上 —— 对外（体检 Issue）只给**一套**数字：全部软件按「要不要人管」
- *     分成互斥的四类，相加恒等于总数（见 reconcile()）。内部 state 计数只留在
- *     Actions 完整报告里，绝不和上面那套混着写 —— 两套账摆在一起，
- *     就会出现「已自动更新 7 个」和「站内落后 6 个」互相打脸的场面。
- *
- * 产出分工（配合 check-updates.yml）：
- *   --report  完整报告 → Actions 运行摘要（留档用）
- *   --pending 待审清单 → 体检 Issue（只需人看的那些）＋ 已自动处理摘要 ＋ 覆盖情况一览
- */
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -115,14 +64,6 @@ function cmpVer(a, b) {
   }
   return 0
 }
-/**
- * 从一堆 tag 名里挑出「最新那个」。
- *
- * 只在「仓库一个 release 都没有、只能退回 tags」时用（见 resolveUpstream）。
- * GitHub 的 /tags 大致按提交时间倒序返回，所以 tags[0] 一般就是最新；
- * 但为了让「站内版本 vs 上游版本」的比较结果稳定，这里在**可比较版本号**里挑数字段最大的，
- * 挑不出来（清一色不是版本串）才退回 tags[0]。
- */
 function latestTag(tags) {
   const list = (tags || []).filter(Boolean)
   if (!list.length) return ''
@@ -135,11 +76,6 @@ function latestTag(tags) {
 const isNotChecked = (r) => !!(r.unreachable || r.deferred)
 
 const isVerLike = (s) => /^v?\d+(\.\d+)*/i.test(cur(s))
-
-/**
- * 是否预发布。不能只看 release 的 `prerelease` 标志 ——
- * 实测有作者不发预发布标记、只在 tag 名里写 alpha/beta（如 `v2.5.2-alpha.1`）。
- */
 const PRE_RE = /(alpha|beta|rc|preview|nightly|canary|insider)/i
 const isPre = (r) => !!r && (r.draft || r.prerelease || PRE_RE.test(cur(r.tag_name)) || PRE_RE.test(cur(r.name)))
 
@@ -152,14 +88,6 @@ function fmtSize(bytes) {
   if (mb < 1000) return `${mb < 10 ? mb.toFixed(1) : Math.round(mb)} MB`
   return `${(mb / 1024).toFixed(2)} GB`
 }
-
-/**
- * 忽略清单（软件数据/update-ignore.json）：维护者声明「这个软件不用管」。
- * 值是 `{ skip: 'updates'|'all', reason, at }`，也接受直接写一句理由的字符串写法。
- *   updates（默认）＝ 不再提醒版本更新 / 仓库信息这类事，但下载直链失效仍会提醒
- *   all            ＝ 连直链失效也不提醒（软件已下架、不再维护）
- * 键名以 `_` 开头的（如 `_说明`）一律跳过，方便在同一个文件里写注释。
- */
 function loadIgnore() {
   const map = new Map()
   let raw
@@ -177,17 +105,6 @@ function loadIgnore() {
   }
   return map
 }
-
-/**
- * 「本次跳过」记录（同一个文件的 `_skip_once` 键）——**跟「永久忽略」是两种强度**：
- * 勾一次只压住**当前这一版问题**；问题内容一变（上游又发新版、直链又换了一批）
- * 就自动重新出现。为什么要这样设计：只有「永久忽略」时，人面对一条暂时不想管的
- * 提醒只剩两个选择 —— 要么放着被每周提醒一次，要么永久静音（以后真出问题也不提醒了）。
- *
- * 结构：`{ "<软件id>": { keys: [{ key, kind, at }] } }`
- * （一个软件可能同时有多条待审项，所以 key 是数组，不是单个字符串）
- * 键名 `_skip_once` 以 `_` 开头 —— loadIgnore() 会跳过所有 `_` 开头的键，不会误当软件 id。
- */
 function loadSkipOnce() {
   const map = new Map()
   try {
@@ -217,21 +134,6 @@ function isMuted(ig, kind) {
 
 // ── GitHub API ──────────────────────────────────────────────────────────
 let apiCalls = 0
-
-/**
- * API 基址。默认官方 `https://api.github.com`。
- *
- * ⚠️ 为什么允许改：**有些运行环境根本连不上 api.github.com**（公司 / 校园网出口策略、
- *    受限沙箱都会这样），而 CI runner 偶尔也会抽风。这时整个体检会全数报「连不上」，
- *    等于白跑一趟 —— 但改走一个能通的 GitHub 反代镜像就能正常出结果。
- *    `check-updates.yml` 里**不设**这个变量（CI 直连没问题，也不该让第三方镜像看到 token）；
- *    只在确实连不通的机器上临时用：`GITHUB_API_BASE=https://gh-proxy.com/https://api.github.com`。
- *
- * 两种写法都支持：
- *   · 带占位符：`https://gh-proxy.com/https://api.github.com`（后面直接拼 `/repos/...`）
- *   · 纯前缀：  `https://api.example.com`
- * 传进来的 token 会照常以 `Authorization` 头发给这个地址 —— **所以只对你信任的地址使用**。
- */
 const API_BASE = (process.env.GITHUB_API_BASE || 'https://api.github.com').replace(/\/+$/, '')
 
 async function ghApi(pathname, { retry = 3 } = {}) {
@@ -277,18 +179,6 @@ async function resolveUpstream(slug) {
     return out
   }
   if (!rl.ok) {
-    // ⚠️ 必须把三类分开，判据是「这个答复到底在说谁有问题」：
-    //   status === 0      —— 根本没连上（DNS / 超时 / TLS / 代理拦截）：CI runner 偶尔连不上
-    //                        api.github.com，本机/受限网络环境更是常态；
-    //   401/403/429/5xx   —— 服务器答复了，但说的是「**我们这边**不行」（令牌无效或过期、
-    //                        次级限流、GitHub 自己抽风），跟这个软件的 `github` 字段毫无关系；
-    //   404               —— 服务器明确说「这个仓库不存在」，这才是数据问题。
-    //    以前后两类混在一起，一次网络抽风或令牌过期就会把**全部**软件判成「仓库信息有问题」，
-    //    让人挨个去改 `github` 字段 —— 而字段本来就是对的（2026-09-21 实测复现：
-    //    沙箱内 32 个软件全被误报成 repo 问题；2026-09-25 审计又发现限流/令牌过期同样会误报）。
-    //    前两类统一记为「本次没能检查」（unreachable 字样沿用，含义已扩为「没能检查」），
-    //    不进待人工清单、下次体检自动重试。这与 checkLink() 里「连不上 ≠ 失效」是同一条原则，
-    //    别在一条腿上守、另一条腿上破。
     if (!rl.status) {
       out.unreachable = true
       out.error = `连不上 API（${rl.error || '网络错误'}）—— 本次没能检查，不代表仓库有问题`
@@ -314,11 +204,6 @@ async function resolveUpstream(slug) {
     const tl = await ghApi(`/repos/${slug}/tags?per_page=50`)
     if (tl.ok && Array.isArray(tl.data)) {
       out.tags = tl.data.map((t) => cur(t.name)).filter(Boolean)
-      // ★ 回退命中时必须把「最新 tag」**提升出来**：analyze() / planUpdate() 只认
-      //   up.stable / up.any，而零 release 时这两个恒为 null，于是 releaseTag 一直是空，
-      //   这类「有 tag、没 release」的仓库会永远停在 state='no-release'：
-      //   既不会被自动跟进，还会附上一句「上游没有任何 release / tag」的**错话**
-      //   （明明 tag 就在手里）。这里补上那条一直缺失的搬运。
       out.tagLatest = latestTag(out.tags)
       out.source = out.tagLatest ? 'tags' : 'none'
     }
@@ -328,23 +213,6 @@ async function resolveUpstream(slug) {
   if (info.ok && info.data) out.archived = !!info.data.archived
   return out
 }
-
-/**
- * 直链存活检查：返回 { status, ok, answered, tries }
- *
- * ⚠️ 两条必须遵守的规矩（2026-09-20 踩过，用户直接质疑「那几条链接明明能下」）：
- *
- *  ① **单次 HEAD 不算数，必须重试**。CDN 抖一下就把好链接判成坏的：
- *     体检 Issue 说「360 极速浏览器 / Lively 的直链已经打不开，装软件的人会点到 404」，
- *     手工连打 4 次**全部 200**（151 MB / 163 MB 的文件都好好躺在上面）。
- *     维护者照着 Issue 去换链纯属白干，还会把好链换成坏的。
- *  ② **必须区分「服务器答复了」和「根本没连上」**。只有前者能说「链接失效」；
- *     后者（DNS / 超时 / TLS / 代理拦截）只能记成「本次没能验证」——
- *     中国 CDN 对 GitHub 海外 runner 不友好是常态，把它当成 404 会永远误报到天荒地老。
- *
- * 4xx 是服务器明确说「没有这东西」，重试没意义，直接返回；
- * 5xx 与网络异常才退避重试。
- */
 async function checkLink(url, tries = 3) {
   let last = { status: 0, ok: false, answered: false, error: 'not-tried', tries: 0 }
   for (let i = 0; i < tries; i++) {
@@ -356,9 +224,6 @@ async function checkLink(url, tries = 3) {
       last = { status: r.status, ok: false, answered: true, error: '', tries: i + 1 }
       if (r.status < 500) return last   // 4xx：服务器已经把话说死了，重试无意义
     } catch (e) {
-      // undici 的 `fetch failed` 本身不带信息，真正的原因藏在 `cause` 里
-      // （`Tunnel connection failed: 502` / `ECONNRESET` / `ENOTFOUND` …）—— 报告里要写清楚，
-      // 否则维护者看到「fetch failed」只会以为脚本坏了。
       const why = String(e?.cause?.message || e?.cause?.code || e?.message || e)
       last = { status: 0, ok: false, answered: false, error: why, tries: i + 1 }
     }
@@ -445,17 +310,6 @@ const safeDecode = (s) => {
     return s
   }
 }
-
-/**
- * 为新版本里的下载项找一个对应的新直链（只做「文件名几乎相同」的替换）。
- *
- * @returns {{status: string, asset?: object, oldTag?: string, oldFile?: string}}
- *   not-ours      链接不指向本仓库的 releases（别的仓库 / 官网 / 镜像）—— 不归脚本管
- *   up-to-date    链接里的 tag 已经是新版，无需改动
- *   no-assets     新 release 里一个附件都没有
- *   no-match      是本仓库的链接，但在新 release 的附件里找不到对应文件 —— 需人工
- *   hit           找到对应的新附件
- */
 function matchNewAsset(item, repoSlug, oldTags, newRelease) {
   const url = cur(item.url)
   const m = new RegExp(`github\\.com/${repoSlug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/releases/download/([^/]+)/(.+)$`, 'i').exec(url)
@@ -520,20 +374,6 @@ function findStaleNonGithubLinks(app, version) {
   }
   return out
 }
-
-/**
- * 找「**已经过期**」的非 GitHub 直链 —— 站内版本已经是新的了，链接里却还印着旧版本号。
- *
- * 为什么需要它：`findStaleNonGithubLinks` 拿的是**升级前**的版本号，只能在「版本要变」的那一刻
- * 提示一句；等版本真的升完（脚本自动改的那种），这条提示就再也不出现了 —— 于是留下
- * 「version 写着 26.03、官网链接还是 7z2602-x64.exe」这种没人再提醒的死角（7-Zip 就中过招）。
- *
- * 判定刻意保守，宁漏不误（误报会污染待审清单）：
- *   - 只看非 github.com 的链接（GitHub 直链由 matchNewAsset 负责，它更准）；
- *   - 站内 version 的数字段至少 4 位才比（`1.2.3` → `123` 太短，容易撞上日期、序号）；
- *   - 要求 URL 里出现**等长**、**前两位相同**、**整体不同**的数字串
- *     （`26.03` → `2603`，撞上 `2602` 报；撞上 `2026` 这类长度不等的不管）。
- */
 function findMismatchedVersionLinks(app, version) {
   const out = []
   const v = cur(version)
@@ -637,21 +477,10 @@ async function main() {
       res.applied = plan.applied
       if (plan.applied.length) applied.push({ id: app.id, name: res.name, changes: plan.applied })
     } else if (res.state === 'ok') {
-      // ★ 「版本号没变、但直链还指着本仓库的**旧** release」—— 比如 version 已经是 2.0，
-      //   下载项却还写着 /releases/download/v1.9/App.exe。这类修正以前**根本不会发生**
-      //   （planUpdate 只在 outdated 时被调用），所以上面那句标记从来没机会出现。
-      //   这里补一条 linkOnly 计划：只修直链与体积，不碰版本号、不产生 blockers
-      //   —— blockers 会进待审清单的「有新版本要拍板」档，可这种情况压根没有新版本。
-      //   怎么改、改成哪条，都会由 applied 进入「本次自动写回」一节，改了什么看得见。
       const plan = planUpdate(e, app, up, APPLY && !res.muted, { linkOnly: true })
       res.applied = plan.applied
       if (plan.applied.length) applied.push({ id: app.id, name: res.name, changes: plan.applied })
     }
-
-    // ── 非 GitHub 直链与版本号对不对得上 ──
-    // staleNonGithub：这次要升级、这些官网/镜像链会随之过期（planUpdate 算的，只在 outdated 时有）
-    // staleLinks   ：站内版本**已经是新的**，链接里却还印着旧版本号 —— 升级完成后就再也发现不了的死角
-    //                （7-Zip 中过招：version 26.03、两条 7-zip.org 链还写着 7z2602-x64.exe）
     res.staleNonGithub = res.staleNonGithub || []
     res.staleLinks = findMismatchedVersionLinks(app, app.version)
     results.push(res)
@@ -661,12 +490,6 @@ async function main() {
   const pendingRaw = collectPending(results)
   const skipOnce = loadSkipOnce()
   const { kept: pending, skipped } = applySkipOnce(pendingRaw, skipOnce)
-  // 记录只留还在生效的：问题消失了、或问题内容变了（上游又发新版）就该清掉，
-  // 否则越积越多，下次再勾同一处还会被陈年记录干扰。
-  //
-  // ⚠️ 只体检（没 --apply）时不动数据。
-  //    （以前这里还有个 `!ONLY.length` 条件，防的是 `--only` 局部体检用局部快照
-  //     把整个 `_skip_once` 清空 —— 那个参数已删除，体检现在恒为全量，故不再需要。）
   if (APPLY) saveSkipOnce(pruneSkipOnce(pendingRaw, skipOnce))
   const full = buildFullReport(results, applied, ignore, { skipped })
   const pendingMd = buildPendingReport(results, pending, applied, ignore, { skipped, skipOnce })
@@ -681,11 +504,6 @@ async function main() {
     fs.writeFileSync(PENDING_PATH, pendingMd, 'utf8')
     console.log(`待审清单已写入 ${PENDING_PATH}`)
   }
-
-  // 诊断用：把「每个软件落在哪一档」原样导出。
-  // 为什么需要：Issue 顶部那几个数字（要裁决 / 已自动更新 / 自动跟踪 / 跟不了）
-  // 和历史遗留的「全部结果」（已是最新 / 站内落后 / 需人工……）口径不同，
-  // 光看 Issue 很难判断是渲染错了还是真有两套账 —— 有这份原始数据就能逐条点名核对。
   if (DUMP_PATH) {
     const dump = {
       at: new Date().toISOString(),
@@ -732,33 +550,7 @@ async function main() {
 
 /** note 里是否嵌了校验值（换了文件就失效，必须人工重算） */
 const hasChecksum = (s) => /sha512|sha256|sha-512|sha-256|md5|crc32/i.test(cur(s))
-
-/**
- * 这条下载项带不带校验值 —— 带了就说明「文件换了要人工重算」，脚本不许自动换直链。
- * 两种写法都算：单独的 `hash` 字段（现行写法），早期写在 `note` 里的。
- * 注意 `hash` 里只有十六进制、不含算法名，hasChecksum() 单独查它匹配不到，必须显式判空。
- */
 const itemHasChecksum = (item) => hasChecksum(item?.note) || !!cur(item?.hash)
-
-/**
- * 为一个「站内版本落后于上游」的软件出**更新计划**，`apply=true` 时才真的写文件。
- *
- * 策略是「全有或全无」：版本号与它的下载直链是一个整体，
- * 只要有任何一处不能自动处理（blockers 非空），就一个字都不改 ——
- * 否则会出现「version 已经是 26.03，下载链接却还是 7z2602」这种自相矛盾的数据。
- *
- * blockers 的 kind（同类会合并成一条，避免渲染时一屏 12 行）：
- *   bump   {crossMajor, text}  跨大版本（站内可能有意收录旧版，或升级涉及简介/截图等人工内容）
- *   link   {files[]}           是本仓库的 release 链接，但在新版本的附件里找不到对应文件
- *   sha    {platforms[]}       下载项带校验值（hash 字段，或 note 里写着 SHA512/SHA256），换了文件校验值就失效
- *   verify {text}              站内版本号不等于上游任何 tag，搞不清它对应哪个版本，不敢动
- *
- * `opts.linkOnly`（站内版本号**已经**是最新、只为修直链时用）：
- *   只做「直链 / 体积」的修正，不判断版本号、也不产生 blockers ——
- *   因为 blockers 的下场是进待审清单的「有新版本要拍板」那一档，而这种情况压根没有新版本。
- *
- * @returns {{ok: boolean, applied: string[], blockers: {kind: string, text: string}[], staleNonGithub: object[]}}
- */
 function planUpdate(entry, app, up, apply, opts = {}) {
   const linkOnly = !!opts.linkOnly
   const out = { ok: false, applied: [], blockers: [], staleNonGithub: [] }
@@ -856,24 +648,6 @@ function planUpdate(entry, app, up, apply, opts = {}) {
 }
 
 // ── 待人工确认的清单 ────────────────────────────────────────────────────
-/**
- * 挑出「脚本不敢自动改」的条目 —— 这些会进体检 Issue，由维护者逐条裁决。
- *
- * kind：
- *   bump       有新版但被阻塞（跨大版本 / 带校验值 / 找不到对应附件 / 版本号来源不明）
- *   verify     版本号对不上，或上游只有预发布版，得人来拍板
- *   repo       GitHub 仓库信息有问题（404 / github 字段不是仓库地址 / 拉取失败）
- *   source     非 GitHub 官方来源读不到（页面改版 / 接口挂了）—— 这条腿暂时退回人工
- *   stale      非 GitHub 直链（官网 / 镜像）与站内版本号对不上 —— 脚本不会改这些链接，只能人换
- *   dead-link  下载直链失效（HTTP 非 2xx/3xx）—— 这个即使被 /ignore 也仍然提醒
- *
- * 忽略清单里声明过的软件会被压掉（`skip: all` 连 dead-link 也压）。
- *
- * ⚠️ 「两条腿都够不着」的软件（store / always-latest / archive / page-only / netdisk）
- *    在这里**不产生待审条目** —— 它们不是「待确认」，而是「本来就跟踪不了」，
- *    由 buildPendingReport 的「覆盖情况」分区如实列出，免得 Issue 里堆一堆点了也没用
- *    的方框（那才是真正的噪音）。
- */
 function collectPending(results) {
   const items = []
   const push = (r, o) => items.push({
@@ -885,10 +659,6 @@ function collectPending(results) {
     const ig = r.ignored || null
 
     if (r.state === 'error') {
-      // ⚠️ 「本次没能检查」不进待人工清单：
-      //    ① 连不上 API —— 那不是软件数据的问题，让维护者去改 `github` 字段只会白忙；
-      //    ② 被限流 / 令牌过期 / 5xx —— 服务器答复了，但说的是**我们这边**不行，同样不是数据问题。
-      //    两者都单独汇总在「本次没能检查」一区，下次体检自动重试（同 checkLink 的原则）。
       if (isNotChecked(r)) continue
       // 到这里就只剩 404 一类「服务器明确说这个仓库不存在」了，才算「仓库信息有问题」
       if (!isMuted(ig, 'repo')) push(r, { kind: 'repo' })
@@ -902,9 +672,6 @@ function collectPending(results) {
     // ⚠️ 不看 state：版本号相同也可能有 blockers —— 来源指出「直链写的是旧文件」时就是这样
     //    （`360-speed-browser` 的 32 位链）。只看 outdated 会把这类问题整批漏掉。
     if ((r.blockers || []).length && !isMuted(ig, 'bump')) {
-      // ⚠️ 这里**不再**带上 staleNonGithub：非 GitHub 直链过期是独立的一类问题，
-      //    挂在 bump 上会有一个致命后果 —— 一旦脚本把版本自动升好（blockers 为空），
-      //    这条提示就再也不会出现，也没人会想起来去改那几条官网链（7-Zip 就这样漏掉了两条）。
       push(r, { kind: 'bump', blockers: r.blockers, versionChanged: r.state === 'outdated' })
     }
     // 非 GitHub 直链和版本号对不上：官网 / 镜像链还印着旧版本，脚本不会改，必须有人去换
@@ -921,13 +688,6 @@ function collectPending(results) {
   items.sort((a, b) => (order[a.kind] - order[b.kind]) || a.id.localeCompare(b.id))
   return items
 }
-
-/**
- * 一条待审项的「问题指纹」——「本次跳过」靠它判断**问题有没有变化**。
- * 只取能代表问题本身的东西（涉及哪些链接 / 上游版本 / 阻塞类型），
- * 刻意**不含 HTTP 状态码**：网络抖动会让 403 / 404 来回变，那不算「情况变了」，
- * 含进去会让人点了跳过又被下周一叫醒一次。
- */
 function pendingKey(it) {
   let parts
   if (it.kind === 'bump') {
@@ -943,13 +703,6 @@ function pendingKey(it) {
   }
   return createHash('sha256').update(`${it.kind}|${parts.join('|')}`).digest('hex').slice(0, 12)
 }
-
-/**
- * 应用「本次跳过」：指纹一致的压掉，进 skipped（Issue 里单列一区）。
- * ⚠️ 必须比对指纹，不能只看 id —— 只按 id 压就等于「永久忽略」的另一种写法，
- *    上游一发新版就再也提醒不了，那正是「本次跳过」要避免的事。
- * 顺带把 key 挂到每一条上：Issue 渲染「本次跳过」方框时要把它埋进隐藏标记。
- */
 function applySkipOnce(items, skipOnce) {
   const kept = []
   const skipped = []
@@ -973,12 +726,6 @@ function pruneSkipOnce(rawItems, skipOnce) {
   }
   return live
 }
-
-/**
- * 把「本次跳过」记录写回忽略清单（只在 --apply 时调用）。
- * 保持原文件的**行尾**，并把 `_` 开头的键排在最前 —— 与 update-ignore.mjs 的写法一致，
- * 否则两边交替写会把整个文件抖成一团无意义 diff。
- */
 function saveSkipOnce(records) {
   if (!fs.existsSync(IGNORE_PATH)) return
   const raw = fs.readFileSync(IGNORE_PATH, 'utf8')
@@ -1006,29 +753,6 @@ function saveSkipOnce(records) {
   fs.writeFileSync(IGNORE_PATH, JSON.stringify(ordered, null, 2).split('\n').join(eol) + (trailing ? eol : ''), 'utf8')
   console.log(`「本次跳过」记录已更新（${records.size} 条）`)
 }
-
-/**
- * ★ 对账：对外只给**一套**数字 —— 全部软件按「要不要人管」分成互斥的四类。
- *
- * 为什么必须有这个函数：以前 Issue 顶部写「要你裁决 N 条 / 已自动更新 M 个 /
- * 自动跟踪 K 个 / 跟不了 J 个」，文末「全部结果」又写一套「已是最新 / 站内落后 /
- * 比上游新 / 需人工 / 查询失败 / 跟不了」。两套账口径不同、互不解释：
- *   · 「要你裁决」的 N 是**条目数**且会被忽略清单过滤，「需人工」是**软件数**；
- *   · 「已自动更新 M 个」是写回**之后**的事实，「站内落后」是检查**那一刻**的快照；
- *   · 同一条软件可以既是「已自动更新」又「要你裁决」（vlc：直链修好了、官网页面仍打不开）；
- *   · 「查询失败」那 1 条在顶部根本没有对应格子，读者找不到它去哪了。
- * 结果就是用户看到「已自动更新 7 个 / 站内落后 6 个 / 跟不了 28 / 需人工 2」——
- * 同一个 Issue 里三套数字互相打脸，谁也不知道该信哪个。
- *
- * 现在的划分（互斥，优先级从上到下）：
- *   1. need        要你处理      —— 产生了待审条目的软件。**即使本次也修好了一部分**
- *                                  （vlc）也只算一次，因为它仍然要人看一眼。
- *   2. fixed       本次自动修好  —— 写回成功、且没留下待审条目的。
- *   3. rest        跟踪中、不用管 —— 其余在跟踪的（已最新 / 比上游新 / 上游暂无发行版 /
- *                                  查询失败但已被忽略）。用减法算，保证账目天然守恒。
- *   4. notFollowed 本来就不跟    —— 两条腿都够不着的，与「跟不了」一节同源。
- * 1+2+3+4 恒等于软件总数（`balanced` 就是这个断言的结论）。
- */
 function reconcile(results, pending, applied) {
   const cov = coverageOf(results)
   const need = new Set(pending.map((p) => p.id))
@@ -1102,25 +826,8 @@ function bumpAdvice(it) {
   if (kinds.has('verify')) lines.push('站内版本号不在上游 tag 里，先确认它对应哪个版本，再决定怎么改')
   return lines
 }
-
-/** 「点一下就执行」的隐藏标记：GitHub 不渲染 HTML 注释，所以人眼里只有复选框
- *  （不用记命令、不用复制 id），而 API 读到的正文里带着软件 id ——
- *  .github/workflows/update-ignore-command.yml 的 `issues.edited` 分支就是靠它把勾选映射回 id。
- *  action：`ignore`＝永久忽略 / `unignore`＝恢复提醒 / `recheck`＝「我改完了，重跑一次体检」。
- *  ⚠️ 改这里的格式必须同步改那个工作流里的正则。 */
 const tick = (action, id) => `<!-- ${action}:id=${id} -->`
-
-/** 带「问题指纹」的标记：「本次跳过」必须记下**当时是哪一版问题**，
- *  否则下次没法判断「还是老问题（继续静默）」还是「情况变了（重新提醒）」。
- *  ⚠️ 与 update-ignore-command.yml 的正则一一对应，改一边必须同步改另一边。 */
 const tick2 = (action, id, key) => `<!-- ${action}:id=${id} key=${key} -->`
-
-/** 生成一条待审项的 markdown。
- *  正文刻意压得很短：标题、一行「为什么没自动改」、两个勾选框，长步骤收进折叠区。
- *  两个框对应维护者的两条出路：
- *    「已改好 → 重新检测」去别处（网页改 JSON / 本地改完推）改完，回来点一下，机器立刻重跑体检确认；
- *    「不用跟进」        不想管，点一下＝永久忽略。
- *  清单每次体检都会整体重写（勾选状态留不住）—— 那是刻意的：勾选在这里是**一次性动作**，不是待办状态。 */
 function renderPendingItem(it, index) {
   const L = []
   const ver = cur(it.version).replace(/\s+/g, ' ') || '—'
@@ -1130,9 +837,6 @@ function renderPendingItem(it, index) {
   const relUrl = it.repo && tag ? `${GH(it.repo)}/releases/tag/${encodeURIComponent(tag)}` : ''
 
   L.push(`#### ${index}. ${it.name}　\`${it.id}\``, '')
-  // 版本号跟上游**完全一致**时绝不能画箭头 —— 「站内 3.0.23 → 上游 3.0.23」看着就是
-  // 「有新版本了」，可实际上要处理的是链接（VLC / 360 极速浏览器 / Lively 就这么被误会过，
-  // 用户原话：「显示有新版本但版本号都没变」）。版本号一致的统一写成「版本号没问题」。
   const sameAsUpstream = !!tag && normVer(ver) === normVer(tag)
   if (it.kind === 'stale' || (it.kind === 'bump' && it.versionChanged === false)) {
     L.push(`站内 \`${ver}\`　·　版本号没问题，要处理的是下面这些直链`, '')
@@ -1157,15 +861,7 @@ function renderPendingItem(it, index) {
       : `${it.stale.length} 条不在 GitHub 上的直链，里面的版本号跟站内 \`${ver}\` 对不上`
   } else why = `${it.deadLinks.length} 条下载直链已失效（用户点击后将无法下载）`
   L.push(`> **未自动修改的原因**：${why}`, '')
-
-  // ★ 决策只有一步：点一下勾选框（点勾＝编辑 Issue 正文＝触发工作流，幂等）。
-  //   跟进那条路**不用在这里动手** —— 人是去别处改 JSON 的，这里只负责「改完回来说一声」。
-  //   两个框之间不留空行：留了 markdown 会把它们当成"松散列表"，中间多出一段间距
   L.push(`- [ ] **已改好 → 重新检测**（在别处修改并提交后勾选，将立即重跑一次体检）${tick('recheck', it.id)}`)
-  // 「本次跳过」＝ 中等强度的第三条路：不修、也不永久静音，只是这次别再来烦我。
-  // 方框里带着**问题指纹**（tick2），工作流把它原样存下来，下次体检比对得上就继续静默。
-  // ⚠️ 指纹缺失时**不渲染这个框**：勾了也存不进有效记录（工作流那边会因为 key 不合法而拒绝），
-  //    与其给个点了没反应的方框，不如不给。
   if (it.key) L.push(`- [ ] **本次跳过**（本次暂不处理；问题一旦有变化将自动恢复提醒）${tick2('skip', it.id, it.key)}`)
   L.push(`- [ ] **不用跟进**（勾选即永久忽略，此后不再提醒）${tick('ignore', it.id)}`, '')
 
@@ -1206,19 +902,9 @@ function renderPendingItem(it, index) {
 }
 
 // ── 覆盖情况：谁在跟踪、谁没被跟踪 ─────────────────────────────────────
-/**
- * 把「自动跟踪」与「本来就跟踪不了」分开算清楚 —— 报告与体检 Issue 共用。
- *
- * 为什么要单列：以前这两类在报告里都是「未纳入检查」，混在一个数字里，
- * 于是「微软商店自己会更新」和「官网是 SPA 抓不到版本」看起来一模一样，
- * 维护者既不知道该管哪些，也看不出站内到底被覆盖了多少。
- */
 function coverageOf(results) {
   const github = results.filter((r) => r.tracker === 'github')
   const rest = results.filter((r) => !r.tracker)
-  // ★ 「官方下载源自动跟」的这批**是有人在跟的**（resolve-direct-links.mjs 每周刷新
-  //   直链与版本号），必须从「没得跟」里拆出来。混在一起报，用户就会看到
-  //   「明明直链都自动更新了，报告还说 38 个没人跟」—— 数字没错，口径错了，一样是假账。
   const auto = rest.filter((r) => r.bucket === 'auto')
   const untracked = rest.filter((r) => r.bucket !== 'auto')
   const byBucket = {}
@@ -1303,9 +989,6 @@ function buildPendingReport(results, pending, applied, ignore, ctx = {}) {
   const rec = reconcile(results, pending, applied)
   // 账目不平就是渲染逻辑出了问题，宁可当场喊出来，也别把两套打架的数字发到 Issue 上让人猜
   if (!rec.balanced) console.error(`⚠️ 账目不平：${rec.need.length}+${rec.fixed.length}+${rec.rest.length}+${rec.notFollowed.length} ≠ ${rec.total}`)
-  // ★ 分档的依据是「**人要做哪一件事**」，不是「程序内部怎么分类」。
-  //   标题用动词短语（做什么），正文第一句说清「为什么脚本不动它」。
-  //   排序 = 从「必须马上管」到「有空再看」：链接已经坏了的最急，官网链指着旧版的最不急。
   const groups = [
     ['dead-link', '① 下载直链已失效', '更换下载链接', '这些地址已返回 404 或拒绝访问，用户点击后无法下载。**优先级最高。**'],
     ['bump', '② 上游有新版本，需人工裁决', '决定是否升级', '脚本遵循「全有或全无」原则，本次未改动该软件的任何字段 —— 逐条原因见下（跨大版本、下载项带校验值、附件改名等）。'],
@@ -1395,12 +1078,6 @@ function buildPendingReport(results, pending, applied, ignore, ctx = {}) {
   } else {
     L.push('本次所有软件都在自动跟踪范围内。', '')
   }
-
-  // ★ 「本次没能验证」：连不上的链接**不能**装成「失效」，但也不能瞒着 ——
-  //   列表里明说「不是失效」，人就不用去换链，也不会以为脚本漏查了。
-  // ★ 「本次没能检查」：连不上 API、或 GitHub 这一侧没答复好（令牌过期 / 限流 / 5xx）的软件
-  //   **不能**装成「仓库有问题」，但也不能瞒着 —— 明说「不是数据问题」，
-  //   人就不用去动 `github` 字段（字段本来就是对的），也不会以为脚本漏查了。
   const unreachable = results.filter(isNotChecked)
   const unverified = results.filter((r) => (r.unverifiedLinks || []).length)
   const ignoredList = [...ignore.entries()]
@@ -1467,14 +1144,6 @@ function buildPendingReport(results, pending, applied, ignore, ctx = {}) {
     }
     L.push('', '</details>', '')
   }
-
-  // ★ 这是顶部那行数字的明细版：**四类互斥、相加等于总数**。
-  //   以前这里写的是另一套 state 计数（已是最新 / 站内落后 / 需人工 / 查询失败），
-  //   口径与顶部不同、又没有任何说明，于是同一份 Issue 里出现两套互相矛盾的数字。
-  // ★ 这是顶部那行数字的明细版：**四类互斥、相加等于总数**。
-  //   内部 state 计数（ok / outdated / ahead…）只留在 Actions 完整报告里 ——
-  //   以前这里也印过一套，两套口径摆在一起会出现「已自动修好 7 个」与
-  //   「站内落后 6 个」互相打脸的场面，已删除（2026-09-21）。
   const idList = (ids) => (ids.length ? ids.map((i) => `\`${i}\``).join('、') : '（无）')
   L.push('## 附录、本次账目', '')
   L.push('<details>', `<summary>${results.length} 个软件的归属，点开可逐条核对</summary>`, '')
@@ -1506,9 +1175,6 @@ function buildFullReport(results, applied, ignore, ctx = {}) {
   const ok = results.filter((r) => r.state === 'ok')
   const noRelease = results.filter((r) => r.state === 'no-release')
   const cov = coverageOf(results)
-  // ⚠️ 必须跟着忽略清单过滤：被忽略的软件**不会**进待审 Issue，
-  //    这里若照旧列出来，报告就会说「已进体检 Issue 待确认」而人去了 Issue 找不到它
-  //    （classisland-17 就撞过这个：明明已忽略，报告还在催）。
   const blocked = results.filter((r) => (r.blockers || []).length && !r.muted)
 
   L.push('# 软件信息体检报告', '')
@@ -1530,9 +1196,6 @@ function buildFullReport(results, applied, ignore, ctx = {}) {
     L.push('## 有新版本', '')
     L.push('| 软件 | id | 站内版本 | 上游最新 | 发布时间 | 自动处理 | 说明 |', '|---|---|---|---|---|---|---|')
     for (const r of outdated) {
-      // 已忽略的优先显示：它既不会被自动改，也不会进待审 Issue，写「✋ 未动手」会让人白等
-      // ⚠️ 「✅ 已自动」要跟着 APPLY 走：只体检（没 --apply）时一个字都没写，
-      //    照旧写「已自动」会让人以为数据已经动过了
       const auto = r.muted ? '已忽略'
         : (r.blockers || []).length ? '未动手'
           : APPLY ? '已自动' : '可自动（本次未写回）'

@@ -1,30 +1,3 @@
-// ════════════════════════════════════════════════════════════════════
-// githubMirror.ts —— GitHub 下载链接的「国内加速」通道
-//
-// 背景：站点内大量下载链接指向 github.com，而国内直连 GitHub 下载 Releases
-// 常常只有几十 KB/s 甚至断流。本文件提供若干加速通道，将原始链接原样
-// 拼接转发，国内下载速度通常显著提升。
-//
-// 原理：把完整原始链接接在镜像域名后面：
-//   https://github.com/a/b/releases/download/v1/x.exe
-//   → https://ghfast.top/https://github.com/a/b/releases/download/v1/x.exe
-//
-// 通道分两类：
-//   · 自建节点（self）—— 本站维护的中转服务器，排最前、优先使用；
-//   · 第三方公益镜像 —— 自建节点不可用时的备用通道，随时可能失效或限速。
-//
-// 混合内容约束（修改前务必确认）：
-//    浏览器禁止「HTTPS 页面下载 HTTP 文件」——Chrome 88+ 与 Firefox 都会把
-//    这种下载判定为 mixed content download 并直接拦截（控制台报 Mixed Content，
-//    下载面板无任何提示，用户只会认为按钮失效）。本站为 HTTPS，任何
-//    `http://` 的镜像通道在站内均不可用。
-//    因此本文件提供 isChannelUsable() 守卫：https 页面下自动跳过 http 通道。
-//    目前所有通道均为 https，守卫不会拦截任何一条 —— 但不可删除：以后临时
-//    接入未配置证书的节点时依赖它兜底，否则表现为「点击后毫无反应」这类最难排查的故障。
-//    该判断仅保留在此一处，页面与桌面版均调用它，不重复实现。
-//
-// 本文件不产出界面文字 —— 文案均在 文字设置.ts 的 detail.mirror-* 中。
-// ════════════════════════════════════════════════════════════════════
 
 import { orderedEndpoints } from './submitEndpoints';
 import { gt } from './localize';
@@ -39,38 +12,8 @@ export interface MirrorChannel {
   prefix: string;
   /** 本站自建节点（非第三方公益镜像），文案会区别处理 */
   self?: boolean;
-  /**
-   * 该通道目前仅有 http（未配置 TLS）。
-   * HTTPS 页面上浏览器会按混合内容规则拦截其下载，isChannelUsable() 会在
-   * https 页面下跳过它。配置证书后：prefix 改为 https:// 并删除本字段。
-   */
   insecure?: boolean;
 }
-
-/**
- * 通道清单 —— 按推荐顺序排列，第一条是「未选择过」时的默认值。
- *
- * ┌─ 通道增删规范 ────────────────────────────────────────────────┐
- * │ 复制一行并修改 id / name / prefix 即可。                       │
- * │ prefix 后面拼接的是完整原始链接（带 https://），写法与        │
- * │ githubImport.ts 中两个镜像一致。                              │
- * │ 新增前必须实测验证（不可照抄网上的名单）：                     │
- * │    HEAD 应返回 200 + Content-Type: application/octet-stream；  │
- * │    GET 带 Range 应返回 206（支持断点续传）；                   │
- * │    完整下载一个小文件并比对官方 sha256，确认内容未被篡改。      │
- * │    仅返回 30x / HTML 页面的一律不收录 —— 通常是域名被抢注。    │
- * │ 域名失效后应立即删除对应条目。                                 │
- * └──────────────────────────────────────────────────────────────┘
- *
- * 自建节点部署于日本东京（nginx 反代 + Let's Encrypt 证书），使用固定域名
- *   https://download.classsoftwarehub.cn/。
- * 节点端启用双重防盗链，不能使用「前缀直拼」方式（拼接后返回 403）：
- *   ① Referer 白名单（站内各域名已放行，浏览器下载时自动携带）；
- *   ② 下载必须携带限时签名（HMAC-SHA256，默认 15 分钟过期）。签发接口 /sign
- *   需要 X-Api-Key 鉴权，密钥不能进入公开前端 —— 由本站 Worker 代签：
- *   前端 GET {入口}/api/mirror-sign?url=<直链> → Worker 使用密钥调用节点 /sign
- *   → 返回 /d?u=..&e=..&s=.. 临时链接。见下方 fetchSelfSignedUrl()。
- */
 export const MIRROR_CHANNELS: MirrorChannel[] = [
   {
     id: 'self',
@@ -92,14 +35,6 @@ const CHANNEL_KEY = 'csh-gh-mirror-channel';
 
 /** 页面本身是不是跑在 HTTPS 上（没有 location 的环境按不安全处理） */
 const PAGE_IS_SECURE = typeof location !== 'undefined' && location.protocol === 'https:';
-
-/**
- * 该通道在当前页面下是否可用。
- *
- * 唯一的否决理由是混合内容：https 页面上不能下载 http 文件。
- * 此判断不可删除 —— 删除后的表现为「点击后毫无反应」，
- * 且仅打开开发者工具才能看到原因，极难排查。
- */
 export function isChannelUsable(channel: MirrorChannel): boolean {
   return !(PAGE_IS_SECURE && channel.prefix.startsWith('http:'));
 }
@@ -128,13 +63,6 @@ export function rememberChannel(id: string): void {
     /* 忽略 */
   }
 }
-
-/**
- * 上次使用的通道排最前，其余按清单顺序。
- *
- * `preferred` 可显式传入（页面将其存为 ref，切换通道后能跟随重排）；
- * 不传则读取一次 localStorage（适用于桌面版等一次性调用场景）。
- */
 export function orderedChannels(preferred = preferredChannelId()): MirrorChannel[] {
   const usable = usableChannels();
   if (!usable.length) return MIRROR_CHANNELS;
@@ -151,15 +79,6 @@ export function defaultChannel(): MirrorChannel | null {
 
 /** 预热只做一次，页面内多次调用不重复发请求 */
 let downloadOriginWarmed = false;
-
-/**
- * 预热自建节点，让浏览器提前从 Alt-Svc 记住 HTTP/3。
- *
- * 下载域名同时开 TCP 与 QUIC。跨境链路上单条 TCP 流只有几十 KB/s，
- * 而 QUIC 实测能到 300–450 KB/s；浏览器要先在响应里见过 Alt-Svc 才会
- * 对后续连接改用 h3，所以在页面启动时打一个空响应（__h3，节点直接 204）。
- * 失败无所谓：UA 不支持或 UDP 被封时浏览器本来就会回退 TCP。
- */
 export function warmUpDownloadOrigin(): void {
   if (downloadOriginWarmed || typeof window === 'undefined') return;
   const self = MIRROR_CHANNELS.find((channel) => channel.self);
@@ -168,15 +87,6 @@ export function warmUpDownloadOrigin(): void {
   // no-cors：只需要头，不需要读响应体；跨域 204 也不会被 CORS 拦掉
   fetch(`${self.prefix}__h3`, { mode: 'no-cors', cache: 'no-store', keepalive: true }).catch(() => {});
 }
-
-/**
- * 该下载链接能否走镜像。
- *
- * 仅识别「GitHub 上的文件地址」——仓库主页、第三方官网直链不显示加速按钮：
- *   github.com/o/r/releases/download/...   各版本安装包（站点里的绝大多数）
- *   github.com/o/r/archive/...             仓库源码压缩包
- *   objects.githubusercontent.com / codeload.github.com / raw...  文件真正落地的域名
- */
 export function isMirrorableUrl(url?: string): boolean {
   if (!url) return false;
   let parsed: URL;
@@ -205,18 +115,6 @@ export function mirrorUrl(url: string, channel: MirrorChannel): string {
 
 /** 签名链接获取的单入口超时（毫秒）：与投稿服务共用入口，连不上时立即换下一个入口 */
 const SIGN_TIMEOUT_MS = 8000;
-
-/**
- * 向本站 Worker 要自建节点的限时签名下载链接。
- *
- * 自建节点开了「无签名一律 403」的防盗链，签发接口又要 X-Api-Key 鉴权 ——
- * 密钥不能进公开前端，所以由 Worker 代签（服务端到服务端），前端只拿到
- * 一个 15 分钟后过期、只能下这一个文件的临时链接。接口入口复用投稿服务
- * 那两个域名（orderedEndpoints 会记住上次成功的那个）。
- *
- * @returns 签名后的完整下载地址；所有入口均不可用（未配置 / 节点失效 / 超时）时
- *          返回 null，调用方应退回公益镜像，不得将原始直链拼接到 self 前缀上。
- */
 export async function fetchSelfSignedUrl(target: string): Promise<string | null> {
   for (const base of orderedEndpoints()) {
     const controller = new AbortController();

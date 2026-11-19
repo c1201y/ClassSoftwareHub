@@ -1,7 +1,5 @@
 <template>
-  <!-- AI 导航：一行一个网站，整行为链接，点击在新标签页打开。
-       文字与站点清单均在根目录「AI导航文本.ts」中维护，本页只负责显示。
-       页面不引用任何图片文件，站点图标为内联 base64（aiSiteIcons.ts），不产生额外服务器流量。 -->
+
   <WinGrid
     class="ai-page-root"
     RowDefinitions="Auto,*">

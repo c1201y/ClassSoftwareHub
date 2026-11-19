@@ -1,18 +1,12 @@
 <template>
-  <!--
-    回声洞（同 ClassIsland 的形态）：
-    可下拉的展开项 —— 收起时仅表头一行；展开后正文整块可点、点击换一条，
-    「投稿」按钮在右侧，点击弹出小面板（输入一句话 + 提交），不打开新页面。
-  -->
+
   <WinExpander
     class="echo-expander"
     :Header="t('echo-cave.title')"
     :Description="t('echo-cave.description')"
     HeaderIcon="&#xE8BD;">
     <div class="ec-body">
-      <!-- 正文：整块可点（原生 button 去外观，仅保留悬停底色 + 手型光标，无边框）。
-           此区域只显示字条本身 —— 条数 / 取数状态 / 报错 / 投稿回执一律不在此显示，
-           回执统一放在投稿面板中（保持回声洞展示纯粹）。 -->
+
       <button
         type="button"
         class="ec-stage"
@@ -21,9 +15,6 @@
         <p class="ec-text" :class="{ 'is-empty': messages.length === 0 }">{{ displayText }}</p>
       </button>
 
-      <!-- 投稿：右侧按钮 → 主题自带的 WinFlyout，等价于桌面端的 <Flyout Placement="Bottom">：
-           空间不足时自动翻转到按钮上方并按视口夹取，不会被屏幕下沿裁切。
-           禁止改回手写绝对定位面板，也不需自行实现点外关闭 / Esc —— WinFlyout 均已内置。 -->
       <div class="ec-side">
         <WinFlyout
           v-model:IsOpen="flyoutOpen"
@@ -163,11 +154,6 @@ const next = async () => {
 };
 
 // 提交入口与「提交软件」页同一套，统一由 submitEndpoints.ts 维护（原先这里复制了一份）
-
-// 兜底：投稿服务不可用时，改为在 GitHub 的 submissions/ 新建一份审核草稿，
-// 与「提交软件」落在同一目录、走同一条审核管道。
-// 不可直接写入 回声洞/messages —— 那会绕过审核直接上线。
-// 通过 GitHub 新建文件页的 ?filename=&value= 预填，草稿内容（含 `_类型` 标记）自动携带。
 const fallbackUrl = () => {
   const payload = JSON.stringify(
     { _类型: '回声洞', text: draftText.value.trim() || t('echo-cave.submit-placeholder') },
@@ -191,11 +177,6 @@ const submitting = ref(false);
 
 /** 服务端明确应答（拿到 JSON 且给了 error）就算定局，不再换入口重试 */
 class DefinitiveError extends Error {}
-
-/**
- * 向单个入口发一次回声洞投稿（带超时）。
- * 只认投稿接口的 JSON 应答；连不上 / 超时 / 拿到 HTML 错误页都算该入口不可用，换下一个。
- */
 async function postEcho(base: string, text: string): Promise<{ message?: string }> {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), SUBMIT_TIMEOUT_MS);
@@ -231,13 +212,6 @@ let dismissedAt = 0;
 const onFlyoutClosed = () => {
   dismissedAt = performance.now();
 };
-
-/**
- * 点击「投稿」按钮。
- * 面板开启时，按下鼠标的事件会被 WinFlyout 的轻确认层拦截（先收起面板），
- * 随后浏览器仍会把 click 补发给按钮，若不拦截会出现「刚收起又弹开」的表现。
- * 因此刚被收起的那次点击直接忽略。
- */
 const toggleFlyout = () => {
   if (flyoutOpen.value) {
     closeFlyout();
@@ -357,10 +331,6 @@ onBeforeUnmount(() => {
   align-items: flex-start;
   flex-shrink: 0;
 }
-
-/* 面板内容：外壳（边框 / 圆角 / 阴影 / 定位 / 翻转换边 / 轻确认）全部由 WinFlyout 负责。
-   禁止在此编写 position / top / right / background / box-shadow ——
-   手写绝对定位会贴按钮下沿向下弹出，页面底部一行会被屏幕裁切。 */
 .ec-flyout-body {
   width: 320px;
   box-sizing: border-box;

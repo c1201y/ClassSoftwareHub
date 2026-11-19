@@ -5,10 +5,6 @@
       <WinTextBlock class="ec-subtitle" :Text="t('echo-cave.subtitle')" />
     </header>
 
-    <!--
-      舞台：点击换一条，打字机逐字输出（照 ClassIsland 的回声洞）。
-      无自动轮播；洗牌后顺序随机，故不展示「第 x / y 条」进度。
-    -->
     <button
       type="button"
       class="ec-stage"

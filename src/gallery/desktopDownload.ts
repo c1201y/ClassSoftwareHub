@@ -1,28 +1,7 @@
-// ════════════════════════════════════════════════════════════════════
-// desktopDownload.ts —— 首页「桌面应用版」的安装包直接下载
-//
-// 国内直连 github.com 下载 Release 常常只有几十 KB/s 甚至断流，本文件提供
-// 「点击即下载安装包」的能力：
-//
-//   1. 版本号动态获取 —— 桌面版仓库发布新版后按钮自动更新，无需改代码。
-//      接口入口：本站 Worker 反代（国内可达）→ gh-proxy.com 兜底。
-//   2. 下载走镜像 —— 复用 githubMirror.ts 的加速通道（自建节点优先，公益镜像兜底）。
-//   3. 镜像全部不可用时，自动跳转到该版本的 Release 页，用户仍可自行下载。
-//
-// 实现约束（均经实测验证，不可回退）：
-//   · 镜像对文件路径不返回 CORS 头，可用性探测只能用 no-cors + HEAD：
-//     读不到状态码，但「域名失效 / 连不上 / 超时」都会使 fetch reject，足以判定。
-//     不可改为 GET 探测，否则会把整个安装包真实下载下来。
-//   · ghfast.top 能代理文件，但不能代理 api.github.com（返回 403），
-//     因此接口入口中不包含它（它仅出现在镜像清单中，负责下载，不负责取版本）。
-//   · Worker 的 /api/gh 反代只放行固定路径：`/releases` 可用，`/releases/latest`
-//     会被拦截返回 {"error":"forbidden"}。因此此处取列表后自行筛选最新版本。
-//
-// 本文件不产出界面文字 —— 按钮文案在 HomePage.vue 的 desktopPromo 中。
-// ════════════════════════════════════════════════════════════════════
 
 import { fetchSelfSignedUrl, mirrorUrl, orderedChannels, rememberChannel, usableChannels } from './githubMirror';
 import type { MirrorChannel } from './githubMirror';
+import { noteAcceleratedDownload } from './downloadFeedback';
 
 /** 桌面版仓库（安装包由该仓库发布，与本站主仓库相互独立） */
 const REPO = 'c1201y/ClassSoftwareHub-Desktop';
@@ -39,11 +18,6 @@ export const WIN7_RELEASES_URL = `https://github.com/${WIN7_REPO}/releases`;
 export const ANDROID_RELEASES_URL = `https://github.com/${ANDROID_REPO}/releases`;
 /** 文档站：桌面版的使用说明、安装方式与常见问题都在那里 */
 export const DOCS_URL = 'https://docs.classsoftwarehub.cn/download';
-
-/**
- * 取某个仓库 Release 清单的接口入口，按顺序试，第一个成功的胜出。
- * 默认走同源 /api/gh（ECS 反代 GitHub，服务端带令牌），比跨域访问统计域名更快。
- */
 const STATS_BASE =
   import.meta.env.VITE_CSH_STATS_BASE ?? '';
 
@@ -70,15 +44,6 @@ const CACHE_TTL = 30 * 60 * 1000;
 
 /** 三个下载通道：稳定版 / Insider 版来自原版仓库，Win7 版来自独立的移植仓库 */
 export type DesktopChannel = 'stable' | 'insider' | 'win7';
-
-/**
- * 下载页（#/desktop）用的通道。
- *
- * 比 HomePage 的三个通道更细：同一个仓库里「安装版」和「便携版」是两条独立产物，
- * 用户需要按需选（便携版给没有安装权限的机器）。安卓单独一条。
- * 与 DesktopChannel 分开，是因为首页那张卡只需要「一个平台一个按钮」的粗粒度，
- * 混成一个联合类型会让首页的 switch 变得难读。
- */
 export type DownloadId =
   | 'stable'
   | 'insider'
@@ -112,14 +77,6 @@ export interface DesktopBuilds {
   insider: DesktopBuild;
   win7: DesktopBuild;
 }
-
-/**
- * 下载页（#/desktop）需要的全部产物。
- *
- * 与 DesktopBuilds 的区别：那个是首页三按钮的粗粒度（一个平台一条），
- * 这个按「安装版 / 便携版」拆开，并补上安卓。接口不可用时为 null ——
- * 下载页会退化成「只显示『去 Releases 页』链接」，绝不显示一个点不动的按钮。
- */
 export interface DownloadEntries {
   stable: DesktopBuild | null;
   insider: DesktopBuild | null;
@@ -146,12 +103,6 @@ function buildOf(channel: DesktopChannel, tag: string, name: string, repo?: stri
     releaseUrl: `https://github.com/${owner}/releases/tag/${tag}`
   };
 }
-
-/**
- * 兜底版本 —— 接口全部不可用时使用（静态写入当前已发布的版本）。
- * 正常情况下版本为动态获取，无需随桌面版发版更新此处；
- * 仅当接口长期不可用时，用户才会下载到旧版本安装包。
- */
 const FALLBACK: DesktopBuilds = {
   stable: buildOf('stable', 'dv1.0.0', 'ClassSoftwareHub-Setup-dv1.0.0-stable.exe'),
   insider: buildOf('insider', 'dv1.0.0-insider1.3', 'ClassSoftwareHub-Setup-dv1.0.0-insider1.3.exe'),
@@ -197,15 +148,6 @@ function pickBuild(releases: RawRelease[], channel: DesktopChannel): DesktopBuil
   }
   return null;
 }
-
-/**
- * 在 Release 列表里找到「满足条件的那个 asset」所在的那个 release。
- *
- * 与 pickBuild 的区别：这里不按通道（正式/预览）过滤，而是由调用方传进来两个判定 ——
- * 一个决定「要不要看这个 release」，一个决定「要它的哪个 asset」。
- * 下载页要在一份 Release 列表里同时取出安装版和便携版（同一 tag、不同文件），
- * 所以不能沿用 pickBuild 那种「一个通道一个 exe」的写法。
- */
 function pickAsset(
   releases: RawRelease[],
   allowRelease: (release: RawRelease) => boolean,
@@ -288,16 +230,6 @@ export interface ReleaseHistoryItem {
   /** 是否是预发布 */
   prerelease: boolean;
 }
-
-/**
- * 取某个仓库的历史版本（含正文）。
- *
- * 与 fetchReleases 的差别：那个只喂给「取最新一条」用，per_page=10；
- * 这个要铺满历史列表，per_page 提到 HISTORY_LIMIT。
- *
- * 失败时返回空数组而不是抛错 —— 历史版本是页面的次要信息，
- * 接口挂了不该把整页拖垮。
- */
 export async function fetchReleaseHistory(repo: string): Promise<ReleaseHistoryItem[]> {
   const bases = apiBases(repo);
   for (const base of bases) {
@@ -379,13 +311,6 @@ async function loadBuilds(): Promise<DesktopBuilds> {
   memoryBuilds = builds;
   return builds;
 }
-
-/**
- * 获取三个通道的可下载版本。
- *
- * - 命中内存 / 本地缓存 → 立即返回（首页 onMounted 会预热一次，点击按钮时通常命中此路径）
- * - 均未命中 → 向接口获取，最多等待 RESOLVE_GRACE 后改用兜底版本返回
- */
 export async function resolveDesktopBuilds(): Promise<DesktopBuilds> {
   if (memoryBuilds) return memoryBuilds;
   const cached = readCache();
@@ -405,15 +330,6 @@ export async function resolveDesktopBuilds(): Promise<DesktopBuilds> {
 /** 下载页产物的缓存键与 TTL —— 与首页分开，避免互相把对方的缓存冲掉 */
 const ENTRIES_KEY = 'csh-download-entries';
 const ENTRIES_TTL = 30 * 60 * 1000;
-
-/**
- * 取下载页需要的全部产物。
- *
- * 与 resolveDesktopBuilds 的关键差异：**失败就是 null，不回退到写死的旧版本**。
- * 首页那张卡是「推广位」，显示个稍旧的版本号无伤大雅；下载页是用户专门来下东西的，
- * 给他一个对不上号的文件名、点下去 404，比明确告诉他「暂时取不到，去 Releases 页」糟糕得多。
- * 所以这里宁可空着，也不猜。
- */
 let memoryEntries: DownloadEntries | null = null;
 let entriesInFlight: Promise<DownloadEntries> | null = null;
 
@@ -478,13 +394,6 @@ function readEntriesCache(): DownloadEntries | null {
     return null;
   }
 }
-
-/**
- * 获取下载页的全部产物。
- *
- * 注意没有 RESOLVE_GRACE 竞速：这里不像首页那样「超时了就先用兜底版本」——
- * 兜底版本对这个页面没有意义（见 loadEntries 的注释）。调用方应展示加载态。
- */
 export async function resolveDownloadEntries(): Promise<DownloadEntries> {
   if (memoryEntries) return memoryEntries;
   const cached = readEntriesCache();
@@ -517,11 +426,6 @@ export function entryOf(entries: DownloadEntries, id: DownloadId): DesktopBuild 
       return null;
   }
 }
-
-/**
- * 下载下载页的某一条产物（走镜像；镜像全不通则跳该版本的 Release 页）。
- * 返回 'missing' 表示这条产物没取到 —— 调用方应提示用户去 Releases 页。
- */
 export async function downloadEntry(entries: DownloadEntries, id: DownloadId): Promise<DesktopDownloadResult | 'missing'> {
   const build = entryOf(entries, id);
   if (!build) return 'missing';
@@ -529,14 +433,6 @@ export async function downloadEntry(entries: DownloadEntries, id: DownloadId): P
 }
 
 /* ── 镜像探测 + 触发下载 ─────────────────────────────────────────── */
-
-/**
- * 探测单个镜像是否可用。
- *
- * 只能使用 no-cors：镜像对文件路径不返回 CORS 头，正常模式的 fetch 会直接 reject。
- * no-cors 下响应是不透明的（读不到状态码），但网络层失败（域名失效 / 连不上 /
- * 超时）仍会 reject，以此作为不可用信号。使用 HEAD 方法，不会真实下载文件。
- */
 function probeMirror(url: string): Promise<boolean> {
   return new Promise((resolve) => {
     let settled = false;
@@ -561,34 +457,20 @@ function probeMirror(url: string): Promise<boolean> {
       .catch(() => finish(false));
   });
 }
-
-/**
- * 候选通道：用户上次选择的排最前，其余按清单顺序。
- *
- * 使用 orderedChannels() 而非自行排序 —— 它会先过滤掉当前页面下不可用的通道
- * （典型是仅有 http 的自建节点：https 页面上浏览器按混合内容规则拦截下载，
- * 探测必然失败，纳入候选只会多等待一次超时）。
- */
 function candidateChannels(): MirrorChannel[] {
   const all = orderedChannels();
   const self = all.find((channel) => channel.self);
   // 自建节点固定排最前 —— 即使用户上次选择了其他通道并存储在 localStorage，默认仍走自建节点
   return self ? [self, ...all.filter((channel) => channel !== self)] : all;
 }
-
-/**
- * 并发探测所有候选通道，按「偏好顺序」取第一条可用的。
- *
- * 自建节点不走 HEAD 探测：其防盗链策略为「无签名一律 403」，而 no-cors
- * 探测读不到状态码，403 也会被误判为可用，选中后必然无法下载。正确做法是
- * 直接向 Worker 请求限时签名链接，签名结果即为可直接下载的地址；获取失败
- * 则视为不可用，由公益镜像兜底。
- */
 async function pickWorkingMirror(target: string): Promise<string | null> {
   const self = candidateChannels().find((channel) => channel.self);
   if (self) {
     const signed = await fetchSelfSignedUrl(target);
-    if (signed) return signed;
+    if (signed) {
+      noteAcceleratedDownload({ target });
+      return signed;
+    }
   }
   const channels = candidateChannels().filter((channel) => !channel.self);
   const probed = await Promise.all(
@@ -612,47 +494,13 @@ function triggerDownload(url: string): void {
 }
 
 /* ── 下载页：让用户自己选线路 ────────────────────────────────────── */
-
-/**
- * 「自建节点」在选择器里的固定 id。
- *
- * 复用 githubMirror.ts 的 SELF_CHANNEL_ID，页面只认这一个常量，
- * 不要在各处重复写字符串 'self'。
- */
 export { SELF_CHANNEL_ID } from './githubMirror';
-
-/**
- * 下载页可选的线路清单（自建节点排最前，其余按 githubMirror 的顺序）。
- *
- * 与首页/详情页的「自动挑一条能用」不同：下载页把选择权交给用户 ——
- * 文档站就是这么做的，而且用户往往比自动探测更清楚自己这边哪条通。
- * 但**候选范围仍然只来自 MIRROR_CHANNELS**，不另开一套清单，
- * 否则通道增删时两处会漂移。
- */
 export function mirrorChoices(): MirrorChannel[] {
   const usable = usableChannels();
   const self = usable.find((channel) => channel.self);
   return self ? [self, ...usable.filter((channel) => channel !== self)] : usable;
 }
-
-/**
- * 「GitHub 官方」这条线的虚拟 id。
- *
- * 它不在 MIRROR_CHANNELS 里 —— 那是个「加前缀转发」的清单，
- * 官方直链是原样的 url，前缀为空，放进去会和 mirrorUrl() 的语义打架。
- * 因此单独作为一个选项 id，下载时走 downloadBuildDirect()。
- */
 export const OFFICIAL_CHANNEL_ID = 'github';
-
-/**
- * 按用户**明确选定**的线路下载某个产物。
- *
- * 与 downloadBuild 的差别：那条路会自动探测、失败就换下一条；
- * 这条路尊重用户的选择 —— 选了哪条就下哪条，不通就是不通（由页面提示换一条）。
- *
- * 自建节点要签名（防盗链），签名失败时回退到该线路前缀直拼，
- * 让用户至少看到一次真实的 403，而不是静默跳到别的线路。
- */
 export async function downloadBuildVia(
   build: DesktopBuild,
   channelId: string
@@ -664,7 +512,9 @@ export async function downloadBuildVia(
 
   let href = '';
   if (channel.self) {
-    href = (await fetchSelfSignedUrl(build.url)) || mirrorUrl(build.url, channel);
+    const signed = await fetchSelfSignedUrl(build.url);
+    href = signed || mirrorUrl(build.url, channel);
+    if (signed) noteAcceleratedDownload({ target: build.url });
   } else {
     href = mirrorUrl(build.url, channel);
   }
@@ -680,13 +530,6 @@ export function downloadBuildDirect(build: DesktopBuild): void {
 }
 
 export type DesktopDownloadResult = 'mirror' | 'release';
-
-/**
- * 下载一个已知的产物（走镜像；镜像全不通就跳该版本的 Release 页）。
- *
- * 抽出来是因为首页点和下载页点走的是同一条路 —— 镜像探测、签名、兜底跳转
- * 这套逻辑只能有一份，否则两处的降级行为迟早会不一致。
- */
 async function downloadBuild(build: DesktopBuild): Promise<DesktopDownloadResult> {
   const working = await pickWorkingMirror(build.url);
   if (working) {
@@ -701,13 +544,6 @@ async function downloadBuild(build: DesktopBuild): Promise<DesktopDownloadResult
   else window.location.href = build.releaseUrl;
   return 'release';
 }
-
-/**
- * 下载指定通道的桌面版安装包（首页三个按钮用）。
- *
- * 优先走镜像；镜像一条都不通就跳到该版本的 Release 页。
- * 返回值只用于调用方判断走的是哪条路（不产出文案）。
- */
 export async function downloadDesktopBuild(channel: DesktopChannel): Promise<DesktopDownloadResult> {
   return downloadBuild((await resolveDesktopBuilds())[channel]);
 }

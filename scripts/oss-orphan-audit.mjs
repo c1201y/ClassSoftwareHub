@@ -1,20 +1,4 @@
 #!/usr/bin/env node
-// OSS 桶 ↔ 仓库引用的对账（由 .github/workflows/oss-audit.yml 定时触发，也可手动跑）
-//
-// 为什么需要它：Worker 里的孤儿回收只看得到「我们签发过、又没被任何一次提交认领」的
-// upload/ 对象，它不知道仓库里到底引用了什么，也够不着 releases/ 与事后补登的历史对象。
-// 只有能同时读「桶」和「仓库」的地方才做得了这件事 —— 那就是这里。
-//
-// 回答三个问题：
-//   ① 断链：apps/ 或 submissions/ 引用了桶里**不存在**的对象。线上点下载会 404，
-//      这是唯一会让站点真的坏掉的一类，发现了就以非零码退出（定时任务会发失败通知）。
-//   ② 真孤儿：桶里有、仓库里没人引用、且上传超过 STALE_HOURS 小时 —— 白付存储费。
-//      **只报告，不删除**：删除不可逆，删哪些由人拍板（见维护手册 2.8 的 /api/purge）。
-//   ③ 登记表漂移：顺带调一次 /api/registry-sync，以桶为准把登记表补齐。
-//
-// 环境变量：PURGE_BASE（默认 https://submit.132614.xyz —— Cloudflare 直连；
-// cshapi 那条走 SpeedOnline CDN 回源，2026-10-05 起持续 502）、PURGE_TOKEN（必需）。
-// 拿不到数据（网络/中继/未配 token）一律只告警、退出码 0 —— 基础设施抽风不该变成每天的红色告警。
 
 import fs from 'node:fs'
 import path from 'node:path'

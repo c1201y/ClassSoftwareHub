@@ -1,21 +1,3 @@
-// ════════════════════════════════════════════════════════════════════
-// 节日皮肤（补丁模块）
-// --------------------------------------------------------------------
-// 规则：暗色模式 = 中秋主题，亮色模式 = 国庆主题
-//   · 中秋：青色 #0F566C + assets/holiday/midautumn.jpg（深色海报）
-//   · 国庆：中国红 #C31D1D + assets/holiday/nationalday.jpg（亮色海报）
-// 海报以柔和方式铺在首页页头之后作背景（样式见 gallery/styles/home-page.css）。
-//
-// 启用规则：
-//   · 落在「档期」（见 HOLIDAY_WINDOW）内 → 设置里的「节日皮肤」开关默认开启，
-//     进入网站自动换上节日主题；档期外默认关闭，保持默认主题。
-//   · 档期内外的设置开关均可手动打开/关闭（用户手动更改后始终遵循用户设置）。
-//
-// 移除方式：删除本文件，并移除 App.vue / HomePage.vue / SettingsPage.vue /
-// home-page.css 中含 "holiday" 的引用即可，不影响其它功能。
-//
-// 日常改档期：只改下面 HOLIDAY_WINDOW 的 from / to（YYYY-MM-DD，含当天）。
-// ════════════════════════════════════════════════════════════════════
 import midautumnBanner from '../assets/holiday/midautumn.jpg';
 import nationaldayBanner from '../assets/holiday/nationalday.jpg';
 

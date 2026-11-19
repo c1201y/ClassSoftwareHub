@@ -238,9 +238,6 @@
   cursor: default;
   opacity: 0.65;
 }
-/* ── 首页两个入口卡片（内置工具 / AI 导航，各占一半，在分类筛选条上方）──
-   内置工具的文案在 HomePage.vue 里硬编码（工具相关文案不进 文字设置.ts）；
-   AI 导航的文案在根目录 AI导航文本.ts 里（方便自己改） */
 .home-jump-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -312,9 +309,6 @@
   font-size: 13px;
   color: var(--text-secondary);
 }
-/* ── 节日皮肤：首页顶部海报（补丁，见 src/gallery/holidayTheme.ts）──
-   整幅海报铺在首页最顶部（图片顶 = 网页顶），高度按原比例自动、尽量完整显示，
-   底部用 mask 渐隐进页面；不走“压字”那套，所以不会遮挡下方文字。 */
 .holiday-hero {
   width: 100%;
   overflow: hidden;
@@ -415,9 +409,6 @@
   max-width: 100%;
   margin: 0;
 }
-/* WinSelectorBar 组件在根节点上带了内联样式 `place-self: start center`（对应 WinUI 默认的
-   “纵向贴顶、横向居中”），内联样式优先级最高 —— 在 flex 竖排容器里 align-self: start 会让
-   筛选条横轴上贴左。这里用 !important 把它扳回居中（窄屏下宽度仍是 auto 自动撑满，不受影响）。 */
 .filter-row .filter-bar {
   align-self: center !important;
 }
@@ -758,9 +749,6 @@ html.theme-dark .category-badge {
   .category-promo-action {
     grid-column: 2;
   }
-  /* 手机窄屏：筛选条占满可用宽度，分类按钮自动换行，避免溢出屏幕。
-     （.win-selector-bar 是 inline-grid 且列宽 auto=内容宽，须把列改成 1fr
-       并让 items-view 宽度 100% 才能真正约束换行） */
   /* 窄屏：筛选条撑满宽度（它的按钮会换行），小字在下方 */
   .filter-row {
     align-items: stretch;

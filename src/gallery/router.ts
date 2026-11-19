@@ -1,19 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import { TOOLS } from './tools';
-
-// 路由一览：
-//   #/home              首页（软件卡片列表）
-//   #/download/:id      软件详情页（id 见数据区的软件 id）
-//   #/settings          设置页
-//   #/submit            提交新软件页
-//   #/feedback          反馈中心（报告问题 / 提出建议 → 生成 GitHub Issue 预填链接）
-//   #/ai                AI 导航（国产 AI 网址，一行一个、整行可点）
-//   #/desktop           下载桌面版（Win10/11 · Win7 · 安卓，走镜像加速）
-//   #/tools             内置工具（工具集合入口，卡片式）
-//   #/tools/<工具id>     具体工具（路由由 tools/index.ts 注册表自动生成）
-// 说明：空地址（#/ 或没带 hash）→ 重定向首页；未知地址 → 回首页。
-// “欢迎弹窗”不占路由：进入网站落在首页时由 App.vue 弹出一次（见 WelcomeDialog.vue）。
 const routes: RouteRecordRaw[] = [
   { path: '/', redirect: '/home' },
   {
@@ -86,14 +73,6 @@ const router = createRouter({
 
 /** 已预取的路由名（避免 hover 反复触发） */
 const prefetchedRoutes = new Set<string>();
-
-/**
- * 预取某个路由的代码块。
- *
- * 页面组件都是 `() => import(...)` 的懒加载块，鼠标移到卡片/按钮上时先拉
- * 下来，点下去就能直接渲染 —— 跨境网络下这一步通常能省 100–400ms。
- * 失败时从集合里移除，下次 hover 可以重试。
- */
 export function prefetchRoute(name: string): void {
   if (prefetchedRoutes.has(name)) return;
   const record = router.getRoutes().find((item) => item.name === name);

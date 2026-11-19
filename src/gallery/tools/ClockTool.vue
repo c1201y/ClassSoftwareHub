@@ -328,13 +328,6 @@ const veilStyle = computed<Record<string, string>>(() => {
       return { backgroundColor: 'transparent', backdropFilter: 'none' };
   }
 });
-
-/**
- * 底色 / 文字色的叠加规则：
- *   跟随主题 → 亮色为白底黑字，暗色为黑底白字（由 CSS 决定）
- *   强制白/黑 → 通过 --clock-bg / --clock-fg 变量覆盖，亮色模式下也可使用黑底
- *   有背景图 → 白蒙版配深色字，其余配白字
- */
 const stageClass = computed(() => ({
   'is-photo': !!bgUrl.value,
   'is-light-bg': !!bgUrl.value && veil.value === 'white',

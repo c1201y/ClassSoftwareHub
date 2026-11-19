@@ -6,14 +6,6 @@ import { execSync } from 'node:child_process';
 
 // SINGLEFILE=1 时打包成“单文件 HTML”（可离线双击打开，等同旧版 indexV20260831.html 的形态）
 const singleFile = process.env.SINGLEFILE === '1';
-
-/**
- * 构建标识：用于「浏览器缓存落后于服务器」检测（见 src/gallery/appUpdate.ts）。
- *
- * 以提交号为准而不是时间戳：同一提交重复构建时标识不变，用户不会因为
- * “重新构建了一次”就被提示更新。CI 里用 GITHUB_SHA，本地用 git。
- * 本地有未提交改动时加 -dirty，避免本地调试永远判不出差异。
- */
 const buildId = (() => {
   if (process.env.CSH_BUILD_ID) return process.env.CSH_BUILD_ID;
   if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 7);
@@ -29,20 +21,8 @@ const buildId = (() => {
     return 'dev';
   }
 })();
-
-// 模块文件名里带中文时（根目录「AI导航文本.ts」就是），Rollup 会拆出一个同名 chunk，
-// 产出 assets/AI导航文本-xxxxxxxx.js 这种非 ASCII 文件名 —— 部分 FTP / 网盘服务器
-// 对百分号编码的中文路径处理不稳，这里统一清洗成 ASCII。
 const asciiChunkName = (chunk: { name: string }) =>
   `assets/${chunk.name.replace(/[^A-Za-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '') || 'chunk'}-[hash].js`;
-
-/**
- * 构建完成后写两个清单：
- *   version.json  —— 前端比对「浏览器缓存是否落后于服务器」
- *   precache.json —— Service Worker 安装时把**全部**哈希产物预缓存下来，
- *                    让离线打开任何页面/工具都不缺 chunk（只解析 index.html
- *                    只能拿到入口，其余路由是点到才缓存的）。
- */
 const emitVersion = (): Plugin => ({
   name: 'csh-emit-version',
   apply: 'build',

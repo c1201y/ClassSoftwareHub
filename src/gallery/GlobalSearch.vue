@@ -140,15 +140,6 @@ const listRef = ref<HTMLElement | null>(null);
 const activeHit = ref<GlobalHit | null>(null);
 /** 下拉的内联定位样式（贴在标题栏输入框下方） */
 const panelStyle = ref<Record<string, string>>({});
-
-/**
- * 本地覆盖的查询词。
- *
- * query 是父组件的单向 prop（由搜索框 input 驱动），本组件不能直接改它。
- * 点历史/推荐词时不需要回写输入框 —— 只要**本面板**按这个词出结果即可，
- * 所以这里用一个本地 ref 覆盖；用户一旦重新敲键盘，父组件更新 query，
- * 这个覆盖值就自动让位（见下方 effectiveQuery）。
- */
 const localQuery = ref('');
 
 /** 实际用于搜索的词：本地覆盖优先，否则用父组件的 query */
@@ -161,13 +152,6 @@ const historyTerms = ref<string[]>(readSearchHistory());
 const suggestions = suggestedTerms(locale);
 /** 查询词是否为空（空时展示历史 / 推荐，而不是「无结果」） */
 const queryEmpty = computed(() => !effectiveQuery.value.trim());
-
-/**
- * 拼音首字母兜底：中文搜不到时，试着把查询当作拼音首字母再搜一次。
- *
- * 只在「常规搜索完全没结果 + 查询是纯字母」时触发 —— 正常中文查询
- * 不会走这条路，避免把结果搅乱。
- */
 const initialsFallback = computed(() => {
   if (groups.value.length) return null;
   const q = effectiveQuery.value.trim();
@@ -181,13 +165,6 @@ const initialsFallback = computed(() => {
 
 /** 实际展示的结果：常规结果，或拼音兜底结果 */
 const shownGroups = computed(() => (groups.value.length ? groups.value : (initialsFallback.value ?? [])));
-
-/**
- * 查询「生效」时记历史。
- *
- * 放在这里而不是每次输入都记：输入过程中每敲一个字都会变，
- * 只有「出现了结果」才说明这是一次有意义的查询。
- */
 watch(
   () => effectiveQuery.value,
   (value) => {
@@ -296,9 +273,6 @@ const updatePosition = () => {
   if (!anchor) return;
   const rect = anchor.getBoundingClientRect();
   const vw = window.innerWidth;
-  // 窄屏：面板改为近全宽、贴标题栏下方固定位置。
-  // 移动端锚点是展开中的搜索框（40px 放大镜 → 全宽过渡），rect 尺寸在动画期间不可靠，
-  // 且面板也不应被压缩成放大镜宽度；标题栏高度固定，直接用固定 top 即可。
   if (vw <= 640) {
     const top = 64;
     const width = vw - 24;

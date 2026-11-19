@@ -1,24 +1,4 @@
 #!/usr/bin/env node
-// 下载直链存活巡检（清单 #10 的独立版）
-//
-// 为什么除了「审核通过那一刻探一次」之外还要有它：
-//   审核时那次探测只能管住**上线那一刻**。站点上的链接是会被上游改掉的 ——
-//   GitHub Release 被作者删掉、官网改版换路径、网盘分享过期。这些都不会有任何通知，
-//   站点看起来一切正常，只是用户点开就 404。所以要有一个能随时/定期扫全量的工具。
-//
-// 用法：
-//   node scripts/verify-links.mjs                     # 扫 软件数据/apps/ 下全部
-//   node scripts/verify-links.mjs 软件数据/apps/7-zip.json ...
-//   node scripts/verify-links.mjs --soft              # 有死链也退 0（用于只做报告的定时任务）
-//   node scripts/verify-links.mjs --only github.com   # 只探匹配这个子串的链接
-//
-// 判定：
-//   · 2xx / 3xx            → 活
-//   · 4xx（403 除外）/ 5xx → 死链（报出来）
-//   · 403 / 405 / 501      → 换 GET + Range: bytes=0-0 再试一次（不少站点不爱 HEAD）
-//   · 超时 / DNS / TLS     → **不计死链**，只记「无结论」。一次网络抖动判人死链，比漏判更糟。
-//
-// 本站对象（oss:// 与 /api/icon）不在这里探：它们的存活由审核迁移与桶对账脚本负责。
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -78,11 +58,6 @@ async function probeOnce(url, method, headers) {
   }
   return res.status
 }
-
-/**
- * 探一条链接。
- * @returns {{state:'alive'|'dead'|'unknown', status:number, note:string}}
- */
 async function probe(url) {
   try {
     let status = await probeOnce(url, 'HEAD', {})
@@ -92,9 +67,6 @@ async function probe(url) {
     if (status >= 200 && status < 400) return { state: 'alive', status, note: '' }
     return { state: 'dead', status, note: `HTTP ${status}` }
   } catch (err) {
-    // 超时 / DNS / TLS / 连接被拒：**不判死链**（一次网络抖动判人死链，比漏判更糟）。
-    // 把 cause 带上：`TypeError: fetch failed` 本身没有任何信息量，
-    // 真正的原因（ENOTFOUND / CERT_HAS_EXPIRED / UNABLE_TO_VERIFY_LEAF_SIGNATURE …）在 cause 里。
     const cause = (err && err.cause && (err.cause.code || err.cause.message)) || ''
     const name = (err && err.name) || 'Error'
     return { state: 'unknown', status: 0, note: cause ? `${name}: ${cause}` : name }

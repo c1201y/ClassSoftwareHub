@@ -183,9 +183,7 @@
                   :Content="downloadButtonText(download)"
                   Style="AccentButtonStyle"
                   @click="openDownload(download)" />
-                <!-- GitHub 的链接才多给一条国内加速路（通道清单见 githubMirror.ts）。
-                     点了**直接在本页开始下载**：隐藏 <a> 触发，不跳转、不闪新标签，
-                     所以地址栏里不会出现镜像的 IP/域名。 -->
+
                 <WinButton
                   v-if="isMirrorableUrl(download.url)"
                   class="detail-mirror-button"
@@ -264,6 +262,7 @@ import {
   usableChannels
 } from '../githubMirror';
 import type { MirrorChannel } from '../githubMirror';
+import { noteAcceleratedDownload } from '../downloadFeedback';
 import '../styles/download-detail-page.css';
 import { buildShareText, buildShareUrl, buildQrSvg, isShareableUrl } from '../share';
 
@@ -286,21 +285,9 @@ const storeLink = computed(() => {
 const otherDownloads = computed(() =>
   ((app.value?.downloads) || []).filter((item) => kindOf(item) !== 'store')
 );
-
-/**
- * 这个软件有没有「文件存在本站 OSS」的下载项。
- *
- * 投稿页把上传到本站的文件记成 `oss://<对象键>`（见 src/gallery/ossUpload.ts）——
- * 这是唯一一种「文件真的在咱们机器上」的分发方式，其余全是官方直链 / 网盘跳转。
- * 只有这种才需要在详情页说明来源：文件是投稿者传的，不是官方渠道。
- */
 const hasOssDownload = computed(() =>
   (app.value?.downloads || []).some((item) => /^oss:\/\//i.test(String(item.url || '')))
 );
-
-// ── 下载项的落地方式（判定规则见 src/gallery/downloadLink.ts）───────────
-// 文件直链在本页直接下载：隐藏 <a> 触发，当前页不动、不闪新标签。
-// 网盘 / 官网下载页只能跳转 —— 因此按钮文案与说明需明确去向，避免用户点击后才发现离开本页。
 
 // 本站 OSS 对象不是能直接点的地址：先换一张短时票据，再触发下载。
 // 换票期间按钮上显示「正在准备下载…」，失败就在下载区顶部说明原因。
@@ -370,10 +357,6 @@ const openStore = () => {
   }
 };
 
-// ── 校验值（downloads[].hash）───────────────────────────────────────────
-// 128 位的 SHA512 完整显示会超出卡片宽度，故仅显示首尾几位，
-// 完整值置于 title、点击复制。填写 hash 时只写十六进制即可，算法按长度推断。
-
 /** 长度 → 算法名（32=MD5 / 40=SHA-1 / 56=SHA-224 / 64=SHA-256 / 96=SHA-384 / 128=SHA-512） */
 const HASH_ALGORITHMS: Record<number, string> = {
   32: 'MD5',
@@ -405,15 +388,6 @@ const copyHash = async (hash: string) => {
   }, 2000);
 };
 
-// ── GitHub 下载加速（通道清单与判断逻辑见 src/gallery/githubMirror.ts）──────
-// 主按钮始终是 GitHub 官方直链；「加速下载」点击后**直接在本页开始下载**，
-// 不跳转、不闪新标签 —— 用隐藏 <a> 触发，地址栏里不会出现镜像的 IP。
-// 下载失败时保留一行「不能下载？点我换个镜像」提示，展开其余通道重试。
-//
-// 两条状态各用一条 url 记（同一个软件不会有两行同一个链接）：
-//   mirrorHintUrl —— 点过加速、该显示那行小字的那条
-//   mirrorOpenUrl —— 小字点开后、展开着换镜像面板的那条
-
 /** 点过加速下载的那条链接；空串表示还没点过 */
 const mirrorHintUrl = ref('');
 /** 当前展开着「换个镜像」面板的那条链接；空串表示都没展开 */
@@ -431,28 +405,11 @@ watch(
 
 /** 上次用过的通道排到最前 —— 常用的话能少点一下 */
 const preferredId = ref(preferredChannelId());
-
-/**
- * 可用通道，按「上次用过的排第一」排序。
- * 不可用的通道（http 前缀 + 页面是 https）已在 usableChannels() 中滤除，
- * 此处不再重复判断 —— 判断逻辑只保留在 githubMirror.ts 一处。
- */
 const channels = computed(() => orderedChannels(preferredId.value));
-
-/**
- * 点「加速下载」默认走的那条 = 自建节点，**不受 localStorage 里旧选择影响**。
- * 用户之前可能点过 ghproxy 并存进 localStorage；若让那条继续当默认，就违背「默认用自建节点」的要求。
- * 这里硬取自建节点（https 页面下一定可用），记住的选择只用来给「换个镜像」面板排序。
- */
 const accelerateChannel = computed<MirrorChannel | null>(() => {
   const usable = usableChannels();
   return usable.find((channel) => channel.self) || usable[0] || null;
 });
-
-/**
- * 「换个镜像」里列出的候选 = 除刚刚作为默认用过的那条（自建节点）以外的全部通道。
- * 用户点开这一栏是想换掉刚失败的那条，所以不再把原样列回去 —— 这里正好是原来那四个公益镜像。
- */
 const alternativeChannels = computed(() =>
   channels.value.filter((channel) => channel.id !== accelerateChannel.value?.id)
 );
@@ -462,16 +419,6 @@ const mirrorHref = (download: DownloadItem, channel: MirrorChannel) =>
   download.url ? mirrorUrl(download.url, channel) : '';
 
 const accelerateBusy = ref(false);
-
-/**
- * 加速下载：默认走自建节点，**直接在本页触发下载**（不导航、不留 DOM）。
- *
- * 自建节点开启了「无签名一律 403」的防盗链，不能像公益镜像那样前缀直拼 ——
- * 需先向本站 Worker 申请一条 15 分钟有效的限时签名链接；申请失败（节点未配置 /
- * 接口不可用）则退回第一条公益镜像，保证用户始终可以下载。
- * 同时显示「不能下载？」提示行 —— 下载结果仅用户可知，
- * 当场提供备选路径优于事后反馈。
- */
 const accelerateDownload = async (download: DownloadItem) => {
   if (!download.url || accelerateBusy.value) return;
   const channel = accelerateChannel.value;
@@ -483,6 +430,7 @@ const accelerateDownload = async (download: DownloadItem) => {
       const signed = await fetchSelfSignedUrl(download.url);
       if (signed) {
         href = signed;
+        noteAcceleratedDownload({ app: app.value?.name, target: download.url });
       } else {
         // 签名获取失败：退回第一条公益镜像（自建节点不在「换个镜像」清单中，此处手动选取）
         const fallback = usableChannels().find((item) => !item.self);

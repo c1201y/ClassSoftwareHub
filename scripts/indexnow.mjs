@@ -1,27 +1,4 @@
 #!/usr/bin/env node
-// ══════════════════════════════════════════════════════════════════════
-//  部署后主动通知搜索引擎：IndexNow
-//
-//  【为什么需要】
-//  本站是 hash 路由单页应用，能提交的 URL 只有首页一条（见 AGENTS.md
-//  「SEO & the share card」）。Bing / Yandex / Seznam 等支持 IndexNow 的引擎
-//  收到推送后通常几分钟内就会重抓；不推的话只能等 sitemap 的定期巡检，
-//  内容更新要拖几天到几周才反映到搜索结果里。
-//
-//  【key 从哪来】
-//  public/<key>.txt 里的文件名就是 key，内容也是这个 key。
-//  协议要求这两个东西一致，且文件必须能公开访问 —— 引擎会先 GET 它来确认
-//  你确实控制着这个域名。所以 key 不是秘密，它就是公开的验证凭据。
-//
-//  【失败了要怎样】
-//  只警告，不失败。这是纯锦上添花的通知：站点本身早已部署成功，
-//  让一次 IndexNow 的 5xx 把整次部署染红，会把真正的故障淹掉。
-//
-//  【用法】
-//      node scripts/indexnow.mjs              # 推送首页
-//      node scripts/indexnow.mjs https://...  # 推送指定 URL
-//  ⚠️ 只推主域名 classsoftwarehub.cn 的地址，别把镜像域名推进去。
-// ══════════════════════════════════════════════════════════════════════
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';

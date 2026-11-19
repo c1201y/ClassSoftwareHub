@@ -143,9 +143,7 @@
                   TargetName="_blank"
                   HorizontalAlignment="Left"
                   :Content="t('about.ui-kernel')" />
-                <!-- 法律三件套（#/agreement）：按钮文字与页面内容都来自根目录「法律文本.ts」。
-                     站内跳转不用 WinHyperlinkButton —— 其 SAFE_URI_RE 白名单只认
-                     http(s)/ms-windows-store:，hash 路由会被降级为无响应按钮 -->
+
                 <div class="legal-links">
                   <WinButton
                     v-for="doc in legalDocLinks"
@@ -262,11 +260,6 @@ const holidaySkinEnabled = inject('holidaySkinEnabled') as Ref<boolean>;
 const onHolidaySkinToggled = ({ IsOn }: { IsOn: boolean }) => {
   holidaySkinEnabled.value = IsOn;
 };
-
-// ── 版本与更新 ─────────────────────────────────────────────────────
-// 站点常驻 Service Worker，浏览器可能还在用旧 bundle。进入设置页自动比对
-// /version.json（构建时生成）与当前 bundle 的提交号；三种结果都显式展示，
-// 「已是最新」时不再沉默（参照 Windows 11 的「Windows 更新」页）。
 const updateInfo = ref<UpdateCheck | null>(null);
 const checkingUpdate = ref(false);
 const updating = ref(false);
@@ -352,10 +345,6 @@ const legalDocLinks = computed(() =>
 const openLegal = (key: string) => {
   router.push({ path: '/agreement', query: { doc: key } });
 };
-
-// ── 网站稳定运行时长 ────────────────────────────────────────────────
-// 起始日：2026-08-29（仅需修改该处）。按本地时区零点起算，纯前端计算，
-// 不依赖任何外部服务。
 const SITE_LAUNCH_DATE = new Date(2026, 7, 29, 0, 0, 0); // 月份 0 起算，7 = 8 月
 const nowTick = ref(Date.now());
 let uptimeTimer: number | undefined;

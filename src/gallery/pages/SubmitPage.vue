@@ -467,36 +467,13 @@ import type { UploadProgress } from '../ossUpload';
 import { shrinkIcon, ICON_INPUT_MAX_BYTES } from '../iconResize';
 import { CONTACT_PUBLIC_KEY } from '../feedback';
 import { downloadUrlProblem } from '../downloadUrlRule';
-/**
- * 压缩后仍超过该体积时提醒。
- * 128 px 的图标通常只有几 KB，达到该阈值说明压缩未生效（如浏览器无法解码 HEIC），
- * 提示用户更换图片优于默认传一张大图。
- */
 const ICON_WARN_BYTES = 256 * 1024;
 /** 提交失败后本地留存的 key（存 localStorage，刷新或过一段时间重试都不丢填写内容） */
 const DRAFT_KEY = 'csh-submit-draft';
-/**
- * 兜底通道：提交服务连不上时（多见于对境外流量限制较严的地区），
- * 让用户把提交文件带到 GitHub 上自己提 PR。没有写权限时 GitHub 会引导 fork + PR，
- * 合并进 main 后同样会触发 .github/workflows/create-review-issue.yml 建审核 Issue。
- */
 const REPO_NEW_FILE_URL = 'https://github.com/c1201y/ClassSoftwareHub/new/main/submissions';
 // 联系方式公钥统一由 feedback.ts 的 CONTACT_PUBLIC_KEY 提供
 
 const { t, locale } = useI18n();
-
-/**
- * 下载方式索引 → 写入数据的 kind 值。
- *
- * 顺序必须与 downloadKindItems 一一对应：
- *   -1 自动 / 0 file / 1 page / 2 netdisk / 3 store
- *
- * ⚠️ 2026-11-12 新增 'page'（网页跳转）：
- *   商业软件常常既没有 GitHub 仓库、也没有可上传的安装包，只能给官网下载页
- *   （网易云音乐、QQ、WPS 都是这类）。原先没有这个选项，用户只能误选「网盘」，
- *   详情页于是把官网链接渲染成「前往网盘」——文案与实际不符。
- *   'page' 与 downloadLink.ts 的 DownloadKind 对得上，详情页会显示「打开下载页」。
- */
 const DOWNLOAD_KINDS = ['', 'file', 'page', 'netdisk', 'store'] as const;
 
 interface DownloadDraft {
@@ -594,13 +571,6 @@ function versionLabel(platform: SoftwarePlatform, version: SoftwarePlatformVersi
   if (version.key === 'other' || !platform.versionRange) return label;
   return `${platformName(platform, locale)} ${label}`;
 }
-
-/**
- * 把一个平台勾选的版本拼成人能读的文本。
- * 数字版本（versionRange）勾中了「最新的连续几档」时压成最老一档 +，
- * 例如 Windows 勾 10 / 11 → Windows 10+；勾 7 / 10 / 11 → Windows 7+；
- * 跳着勾（7 / 11）则老实列出。Linux 这类发行版清单不做 + 号。
- */
 function formatPlatformRequirement(platform: (typeof platforms)[number], selectedKeys: string[]): string {
   const versions = platform.versions ?? [];
   if (!versions.length) return platform.name;
@@ -624,11 +594,6 @@ function formatPlatformRequirement(platform: (typeof platforms)[number], selecte
   const expression = isRange ? `${picked[0].name}+` : picked.map((version) => version.name).join(' / ');
   return `${platform.name} ${expression}${hasOther ? ' / 其他' : ''}`;
 }
-
-/**
- * 与 formatPlatformRequirement 同构，但按当前语言输出（英文用半角括号）。
- * 只用于界面展示；写进数据的 `system` 永远走上面那个中文版本。
- */
 function formatPlatformRequirementDisplay(
   platform: (typeof platforms)[number],
   selectedKeys: string[]
@@ -666,11 +631,6 @@ const selectedSystemText = computed(() =>
     .map((platform) => formatPlatformRequirement(platform, form.platformVersions[platform.key] ?? []))
     .join(' / ')
 );
-
-/**
- * 界面展示用的系统文本：按当前语言输出。
- * 写入数据的 `system` 仍用 selectedSystemText（中文原文），两者刻意分开。
- */
 const selectedSystemDisplay = computed(() =>
   platforms
     .filter((platform) => form.platforms.includes(platform.key))
@@ -679,11 +639,6 @@ const selectedSystemDisplay = computed(() =>
 );
 
 const platformSummary = computed(() => selectedSystemDisplay.value || t('submit.system-placeholder'));
-
-/**
- * WinFlyout 的内容滚动层拿不到 max-height（内容再高也会被外层裁掉），
- * 所以选择器自己限高：版本多时右栏内部滚动，不会被浮出层切掉。
- */
 function clampPlatformPickerHeight() {
   const picker = platformPickerRef.value;
   const flyout = picker?.closest('.win-flyout') as HTMLElement | null;
@@ -695,11 +650,6 @@ function clampPlatformPickerHeight() {
     : window.innerHeight - 32;
   picker.style.maxHeight = `${Math.max(160, available)}px`;
 }
-
-/**
- * WinFlyout 只在打开和窗口尺寸变化时量位置；勾选平台后二级菜单才出现，
- * 弹层可能因此长到视口外面。这里借它的 scroll 监听触发一次重新定位。
- */
 function refreshPlatformFlyoutPosition() {
   if (!platformFlyoutOpen.value) return;
   nextTick(() => {
@@ -748,11 +698,6 @@ function toggleVersion(platformKey: string, versionKey: string, checked: boolean
     form.platforms = platforms.filter((item) => selected.has(item.key)).map((item) => item.key);
   }
 }
-
-/**
- * 旧草稿和「从 GitHub 一键读取」只有 system 文本，需要反推出 platforms 的 key。
- * 别名只做包含匹配：system 里常见的写法是「Windows 10/11 64位」「macOS（Intel）安装版」。
- */
 const PLATFORM_ALIASES: Record<string, string[]> = {
   windows: ['windows'],
   macos: ['macos', 'mac os', 'osx', 'os x', 'mac'],
@@ -772,10 +717,6 @@ function platformKeysFromText(value: string): string[] {
     })
     .map((platform) => platform.key);
 }
-
-// ════════════════════════════════════════════════════════════════════
-// 上传文件到本站的阿里云 OSS（浏览器直传一条有时效的预签名地址，不经后端中转，前端也不需要任何密钥；详见 src/gallery/ossUpload.ts）
-// ════════════════════════════════════════════════════════════════════
 const ossReady = computed(() => hasOssUpload());
 
 /** 下载方式下拉项（label 仅用于展示，索引对应 DOWNLOAD_KINDS） */
@@ -800,11 +741,6 @@ const dlUploadWarn = ref<string[]>([]);
 /** 上传进度百分比（0-100；-1 = 尚未拿到进度，退回普通「上传中…」） */
 const iconUploadPct = ref(-1);
 const dlUploadPct = ref<number[]>([]);
-/**
- * 「上传完了，但还没提交」的倒计时提示。
- * 阈值不是写死的：服务端在签发上传地址时会回传当前生效的 orphanMinutes，
- * 运维在线上把这个值调小，界面提示会跟着变，不会前后对不上。
- */
 const iconUploadTtl = ref('');
 const dlUploadTtl = ref<string[]>([]);
 
@@ -826,12 +762,6 @@ function humanSize(bytes: number): string {
   if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${bytes} B`;
 }
-
-/**
- * 上传前的本地预检：超过硬上限时拒绝。
- * 当前链路为浏览器直连 OSS，无中转限制，上限仅代表本站可接收的最大体积：
- * 超过 2.5 GB 的一律引导改填官网 / GitHub Releases 直链（存储与下行成本均过高）。
- */
 function sizeGuard(file: File): string {
   return file.size > UPLOAD_MAX_BYTES
     ? t('submit.upload-too-large', { size: humanSize(file.size), limit: humanSize(UPLOAD_MAX_BYTES) })
@@ -847,21 +777,9 @@ function sizeWarn(file: File): string {
 
 /** 单个软件最多几个下载项（与 Worker 的 MAX_DOWNLOADS_PER_APP 同口径） */
 const MAX_DOWNLOADS = 5;
-
-/**
- * 是不是「本站上传回填」的对象键。
- * 这类键由服务端生成、且与登记表一一对应，界面锁成只读 —— 手改一个字符就是另一条外部
- * 直链（轻则 404，重则把审核引到一个不受本站控制、也无法回收的对象上）。
- */
 function isManagedUrl(url: string): boolean {
   return /^oss:\/\//i.test((url || '').trim());
 }
-
-/**
- * 「上传后 N 分钟内必须提交」提示。
- * 阈值由服务端在签发上传地址时下发（可在线调整），拿不到就不显示 —— 不写死一个数字，
- * 免得运维把阈值调小后界面还在说 15 分钟。
- */
 function ttlText(minutes?: number): string {
   const n = Number(minutes);
   return Number.isFinite(n) && n > 0 ? t('submit.upload-ttl-warn', { minutes: n }) : '';
@@ -981,13 +899,6 @@ const removeDownload = (index: number) => {
   dlUploadWarn.value.splice(index, 1);
   dlUploadTtl.value.splice(index, 1);
 };
-
-// ════════════════════════════════════════════════════════════════════
-// 从 GitHub 一键读取
-// 取数据的逻辑都在 ../githubImport.ts，这里只做两件事：
-//   1. 把读到的内容填进表单（默认只填空字段，勾了「覆盖」才动已填内容）
-//   2. 把「填了什么 / 跳过了什么 / 需注意的问题」列给用户看
-// ════════════════════════════════════════════════════════════════════
 const repoInput = ref('');
 const reading = ref(false);
 /** 默认只填空白字段；勾上后连已填内容一起覆盖 */
@@ -1057,14 +968,6 @@ function applyImport(result: GithubImportResult) {
   const filled: string[] = [];
   const kept: string[] = [];
   const warnings: string[] = [];
-
-  /**
-   * 统一填充规则：
-   *   · 空字段 → 直接填
-   *   · 有内容，但内容是上一次「一键读取」填进去的（用户未改动）→ 也可以覆盖，
-   *     否则更换仓库再次读取时不会更新任何字段，不符合直觉
-   *   · 有内容，且是用户手写的 → 只有勾了「覆盖」才动
-   */
   const put = (label: string, current: string, value: string, assign: (text: string) => void) => {
     const next = (value || '').trim();
     if (!next) return;
@@ -1128,9 +1031,6 @@ function applyImport(result: GithubImportResult) {
   });
   put(t('submit.website'), form.website, repo.homepage, (text) => { form.website = text; });
   put(t('submit.github'), form.github, repo.htmlUrl, (text) => { form.github = text; });
-  // 开发者与开源协议（2026-11-08，与桌面端提交页同一口径）：协议取 GitHub 给的 SPDX
-  // 标识，比手填准确；开发者只能拿仓库所有者顶 —— fork 出来的仓库这里会是 fork 者，
-  // 所以填上之后要提示核对一句。
   put(t('submit.license'), form.license, repo.license, (text) => { form.license = text; });
   put(t('submit.author'), form.author, repo.owner, (text) => { form.author = text; });
   if (filled.includes(t('submit.author'))) {
@@ -1216,11 +1116,6 @@ function applyImport(result: GithubImportResult) {
   importKept.value = kept;
   importWarnings.value = warnings;
 }
-
-/**
- * 校验值输入的写法多样：可能带「MD5:」「sha256 =」前缀、0x 前缀、按字节以冒号或空格分隔。
- * 站点只接受纯十六进制（算法按位数识别），此处统一清洗。
- */
 function normalizeHash(raw: string): string {
   return raw
     .trim()
@@ -1228,41 +1123,12 @@ function normalizeHash(raw: string): string {
     .replace(/^0x/i, '')
     .replace(/[\s:]/g, '');
 }
-
-/**
- * 合法校验值 = 纯十六进制，且位数能对上一种算法。
- * 位数表必须和详情页 DownloadDetailPage.vue 的 HASH_ALGORITHMS 一致，否则会把合法的
- * SHA-224 / SHA-384 当成非法值拦下来：32=MD5 / 40=SHA-1 / 56=SHA-224 / 64=SHA-256 / 96=SHA-384 / 128=SHA-512
- */
 const HASH_LENGTHS = [32, 40, 56, 64, 96, 128];
 
 function isHashLike(value: string): boolean {
   return /^[0-9a-f]+$/i.test(value) && HASH_LENGTHS.includes(value.length);
 }
-
-/**
- * 软件 ID 允许的字符集。
- * 必须与以下三处保持一致，修改时需同步：
- *   · scripts/update-ignore.mjs 的 id 校验
- *   · .github/workflows/review-submission.yml 里的 ID_RE（以 id 拼写入路径）
- *   · .github/workflows/update-ignore-command.yml 从 Issue 正文解析 id 的正则
- * 这不是格式美观问题：`data.id` 会被拼成 `软件数据/apps/<id>.json` 再写文件，
- * `../../package` 这类值可逃逸至仓库外（2026-09-25 审计发现的路径穿越）。
- */
 const ID_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
-
-/**
- * 从表单拼出要提交的 payload。
- * 必填项不全、或校验值填了但格式不对时，payload 为 null，error 里带上要显示的提示
- * （error 为空表示按通用的「请填写带 * 的必填项」提示）。
- */
-/**
- * 联系方式：本地用 age 公钥加密，只提交 ASCII armor 密文。
- * 返回 null 表示「未填写」（走通用必填提示）；返回 '' 表示「已填写但加密失败」
- * —— 两者含义不同：前者未写，后者写了却无法提交，
- * 需给出专门文案，不能并入「请填写带 * 的必填项」的通用提示。
- * age-encryption 体积较大（含后量子曲线依赖），走动态 import，仅在真正提交时按需加载。
- */
 async function encryptContact(): Promise<string | null> {
   const contact = form.contact.trim();
   if (!contact) return null;
@@ -1316,26 +1182,13 @@ async function buildPayload(): Promise<{ payload: Record<string, unknown> | null
         if (hash) entry.hash = hash;
         return entry;
       }),
-    /**
-     * 版本勾选：只用于本地草稿恢复。Worker 的入参白名单不带这个键，
-     * 审核合并时所有 `_` 开头的字段也会被剥掉，所以它不会进站点数据。
-     */
     _系统版本: Object.fromEntries(
       form.platforms
         .filter((key) => (form.platformVersions[key]?.length ?? 0) > 0)
         .map((key) => [key, [...form.platformVersions[key]]])
     ),
-    /**
-     * 联系方式：下划线开头的字段是「审核用元数据」，不写进站点的软件数据 ——
-     * review-submission.yml 合并时会把所有 `_` 开头的键剥掉，只在审核 Issue 里显示。
-     * 值是本地加密后的 age 密文（ASCII armor），不再是明文；管理员用私钥才能解出联系方式。
-     */
     _联系方式: contactField
   };
-
-  // 必填校验不使用原生 required：提交按钮并非原生 submit 按钮，原生校验不会触发
-  // 「系统限制」是必填的多选：一个都没勾时给专门提示（详情页的 system 文本由勾选项拼出）
-  // contactField 为 ''（已填写但加密失败）时优先使用专门文案，不落入通用必填提示
   if (contactField === '') {
     return { payload: null, error: t('submit.error-encrypt') };
   }
@@ -1366,10 +1219,6 @@ async function buildPayload(): Promise<{ payload: Record<string, unknown> | null
   if (!ID_PATTERN.test(String(payload.id))) {
     return { payload: null, error: t('submit.error-id') };
   }
-
-  // 排序值：填写时必须为数字。
-  // 不能只靠下方的 `=== undefined` 清理 —— Number('abc') 得到 NaN，NaN !== undefined，
-  // 该键会被保留，JSON.stringify 随即写成 `"sort": null`，污染数据。
   if (payload.sort !== undefined && !Number.isFinite(payload.sort as number)) {
     return { payload: null, error: t('submit.error-sort') };
   }
@@ -1399,12 +1248,6 @@ interface SubmissionReply {
   message?: string;
   error?: string;
 }
-
-/**
- * 向单个入口发一次提交请求（带超时，避免连不上时一直转圈）。
- * 只认提交接口的 JSON 响应：网络失败、超时、或拿到别的东西（比如回源还没生效时
- * 返回的 nginx HTML 错误页）都算这个入口不可用，交给上层换下一个入口。
- */
 async function postSubmission(base: string, payload: Record<string, unknown>): Promise<SubmissionReply> {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), SUBMIT_TIMEOUT_MS);
@@ -1461,12 +1304,6 @@ function submissionFileName(id: string) {
   return `${id}-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`
     + `-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.json`;
 }
-
-/**
- * 兜底用的提交文件内容。
- * 补上 _提交时间 / _原始ID冲突 两个下划线字段，是为了和提交接口写出的草稿长得一样，
- * 这样仓库的 create-review-issue.yml 建出来的审核 Issue 信息才完整。
- */
 function buildSubmissionFile(): { name: string; text: string } | null {
   const data = pending.value ?? readDraft();
   if (!data) return null;
@@ -1686,10 +1523,6 @@ async function submit() {
 .submit-subtitle {
   margin-bottom: 4px;
 }
-
-/* 分区标题（基本信息 / 补充信息 / 下载项）：字号、字重、间距一律走 WinTextBlock
-   的 FontSize / FontWeight / Margin 参数——它的内联样式优先级高于外部 CSS，
-   写在这里的 font-size / margin 都会被覆盖，所以这里只放不冲突的排版属性 */
 
 /* 分区卡片：把「基本信息 / 补充信息」各自圈成一张卡（与下载项卡片同风格），
    否则各分区输入框连成一片，难以区分归属 */

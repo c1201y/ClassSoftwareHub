@@ -3,6 +3,7 @@
   <WinToolTipService />
   <!-- 欢迎弹窗（进入网站时弹出一次） -->
   <WelcomeDialog v-model:open="welcomeDialogOpen" />
+  <DownloadFeedbackToast />
   <!-- 全站搜索结果下拉：贴在标题栏搜索框下方（输入框在标题栏，Ctrl + K / Ctrl + F 聚焦） -->
   <GlobalSearch
     ref="searchRef"
@@ -111,6 +112,7 @@ import WinTitleBar from '../components/WinTitleBar.vue';
 import WinNavigationView from '../components/WinNavigationView.vue';
 import WinToolTipService from '../components/WinToolTipService.vue';
 import WelcomeDialog from './WelcomeDialog.vue';
+import DownloadFeedbackToast from './DownloadFeedbackToast.vue';
 import GlobalSearch from './GlobalSearch.vue';
 import { syncHolidayTheme, isHolidaySeason, type HolidayTheme } from './holidayTheme';
 import { appIconUrl } from './appIcons';
@@ -130,11 +132,6 @@ import {
 const { t, locale } = useI18n();
 // 数据文件出错提示条：默认显示，可点 ✕ 关闭
 const showDataIssueBanner = ref(true);
-
-// ── 设置项（读写 localStorage，供 SettingsPage 修改）──────────────────
-// 读写必须整段包 try/catch：浏览器禁用存储时（关闭 Cookie、无痕模式、部分 WebView），
-// localStorage.setItem 会抛 QuotaExceededError；persistSetting 带 { immediate: true }
-// 在 setup 阶段同步执行，异常会中断整个应用壳的初始化。
 const readStoredSetting = (key: string, fallback: string, allowedValues: string[]) => {
   try {
     const value = localStorage.getItem(key);
@@ -238,12 +235,6 @@ const onWindowKeydown = (event: KeyboardEvent) => {
 const isPaneOpen = ref(true);
 const themeSetting = ref(readStoredSetting('winui-theme-setting', 'system', ['system', 'light', 'dark']));
 const materialSetting = ref(readStoredSetting('winui-material-setting', 'mica', ['mica', 'acrylic']));
-
-// ── 节日皮肤（补丁模块，见 ./holidayTheme.ts）────────────────────────
-// 规则：暗色模式 → 中秋主题（青 + 中秋海报）；亮色模式 → 国庆主题（红 + 国庆海报）。
-// 开关默认值取决于是否在档期内（档期内默认开启，档期外默认关闭）；用户手动修改后以用户设置为准。
-// 关闭后同时移除背景海报与节日配色，恢复默认主题色。
-// 读取同样需要 try/catch 兜底：存储被禁时此处也在 setup 阶段执行，异常同样会白屏
 const storedHolidaySkin = (() => {
   try {
     return localStorage.getItem('winui-holiday-skin');
@@ -265,9 +256,6 @@ const activeHoliday = ref<HolidayTheme | null>(null);
 const refreshActiveHoliday = () => {
   activeHoliday.value = syncHolidayTheme(holidaySkinEnabled.value, isDarkMode.value);
 };
-// 深浅色切换时换对应节日皮肤；用户切换开关时刷新并持久化其选择。
-// 持久化不能写在深浅色变化的 watch 里，否则仅切换主题也会被记成手动开关，
-// 覆盖档期的默认值。
 watch(isDarkMode, refreshActiveHoliday);
 watch(holidaySkinEnabled, (enabled) => {
   refreshActiveHoliday();
@@ -280,12 +268,6 @@ watch(holidaySkinEnabled, (enabled) => {
 refreshActiveHoliday();
 provide('holidaySkinEnabled', holidaySkinEnabled);
 provide('activeHoliday', activeHoliday);
-
-// ── 浏览器缓存（常开，见 ./browserCache.ts）────────────────────────
-// 启动后注册 Service Worker：静态资源与图标缓存在本地，重复访问更快、更省流量。
-// ── 界面动画 ─────────────────────────────────────────────────────
-// 按需求约定：动画常驻开启，不提供开关。组件 CSS 不编写 prefers-reduced-motion
-// 降级分支，即使系统开启“减少动态效果”，本站动画仍照常播放。
 
 // 页面过渡固定使用默认动画（“页面过渡”设置项已按需求移除）
 const navigationTransitionInfo = DefaultNavigationTransitionInfo;
@@ -343,9 +325,6 @@ const removeNavigationAfterEach = router.afterEach((to, from, failure) => {
   restoreScroll(to);
 });
 const removeNavigationErrorHandler = router.onError(() => releaseNavigation());
-// ── 访问量统计：每次路由切换上报一次（含首屏），覆盖全站所有页面 ────────
-// 计数动作放在应用根组件，而非设置页组件 —— 否则只有打开设置页才会累加访问量。
-// 去重键 = 路由名 + 详情页 id：`/` 会重定向到 `/home`，按路径去重会被算成两页。
 const visitKey = (r: { name?: unknown; params?: unknown }) => {
   const name = typeof r.name === 'string' ? r.name : '';
   const params = (r.params ?? {}) as Record<string, unknown>;
@@ -371,13 +350,6 @@ interface NavItem {
 }
 
 const pageTags = new Set(['home', 'settings', 'submit', 'tools', 'ai', 'feedback']);
-
-// ── 底部导航：AI 导航 + 内置工具 + 提交软件 + 反馈中心 ──────────────
-// 反馈中心与「提交软件」同属用户操作类入口，不是浏览内容的入口；
-// 与分类菜单混排会被误认为又一个软件分类，因此归入 Footer。
-// ⚠️ 「下载桌面版」不在这里 —— 它的入口是首页顶部的「体验桌面端」推广卡
-//    （见 HomePage.vue 的 desktopPromo）。导航栏再挂一个会变成两个入口，
-//    而且它本质是「首页推广位」，不是平级的内容分类。
 const footerMenuItems = computed<NavItem[]>(() => [
   // 图标 E99A(Robot)：AI 导航
   { Tag: 'ai', Icon: '\uE99A', Content: t('nav.ai') },
@@ -398,9 +370,6 @@ const navMenuItems = computed<NavItem[]>(() => [
     SelectsOnInvoked: false,
     MenuItems: apps
       .filter((app) => app.category === category.key)
-      // 图标走 appIconUrl（本地 64px 优先，无本地文件时回退数据里的外链），
-      // 与首页卡片、详情页保持一致；直接使用 app.icon 会使本地兜底在导航栏不生效，
-      // 导致同一软件在不同位置的图标来源不一致。
       .map((app) => ({ Tag: `app:${app.id}`, Content: app.name, Icon: appIconUrl(app) }))
   }))
 ]);

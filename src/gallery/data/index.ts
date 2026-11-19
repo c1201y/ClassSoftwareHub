@@ -1,16 +1,3 @@
-// ════════════════════════════════════════════════════════════════════
-// 软件数据加载器（类型化入口）
-// ⚠️ 日常维护【不要】改本文件！
-//   · 软件数据在【项目根目录】的「软件数据」文件夹：
-//       软件数据/apps/<软件id>.json   ← 一个软件一个文件
-//       软件数据/categories.json     ← 分类
-//       软件数据/README-维护手册.md   ← 先读它！
-//   · 全站文字在根目录 文字设置.ts
-//
-// ★ 容错加载：某个软件文件写坏了【不会】影响整个网站 ——
-//   好的文件照常显示，坏文件被跳过，并在页面顶部红条里列出：
-//   哪个文件出错、一共几个、大概错在哪一行（dataLoadIssues）。
-// ════════════════════════════════════════════════════════════════════
 import categoriesRaw from '../../../软件数据/categories.json?raw';
 import platformsRaw from '../../../软件数据/platforms.json?raw';
 import type { Locale } from '../../components/i18n/index';
@@ -49,9 +36,6 @@ export interface DownloadItem {
   /** 校验值（可选）：只写十六进制，算法按长度识别（64=SHA-256 / 128=SHA-512 等）。
       详情页只显示首尾几位，点一下可复制完整值。 */
   hash?: string;
-  /** 落地方式（可选）：file=文件直链（本页直接下）/ store=应用商店 / netdisk=网盘 / page=官网下载页。
-      不写就按 URL 推断（见 src/gallery/downloadLink.ts）；**没有扩展名的直链必须显式写 file**，
-      例如 geogebra 的 /package/win-autoupdate、bandizip 的 dl.php?old。 */
   kind?: 'file' | 'store' | 'netdisk' | 'page';
   url?: string;
 }
@@ -70,15 +54,7 @@ export interface SoftwareApp {
   platforms?: string[];
   website?: string;
   github?: string;
-  /**
-   * 开发者名称（可选）：个人或团队。详情页「详细信息」区展示，没填就不显示这一行。
-   * 主要用于用户自制软件 —— 官方软件大多能顺着 github / website 找到，不必重复一遍。
-   */
   author?: string;
-  /**
-   * 开源协议（可选）：SPDX 标识或协议全名，如 `MIT`、`GPL-3.0`。
-   * 和 `author` 一起出现在「详细信息」区；不开源的软件留空即可。
-   */
   license?: string;
   /** 更新提示（可选）：更新频繁 / 链接易失效的软件，在详情页下载区上方显示一条提示 */
   notice?: string;
@@ -157,9 +133,6 @@ const PICK = [
   'platforms',
   'website',
   'github',
-  // ⚠️ 2026-11-01 加：详情页「详细信息」区要显示开发者与开源协议。
-  //    ⛔ 这个白名单是硬过滤 —— 漏一行，json 里写了也不会出现在界面上（踩过一次：
-  //    数据里有 license 但页面不显示，查了半天以为是模板问题）。
   'author',
   'license',
   'notice',

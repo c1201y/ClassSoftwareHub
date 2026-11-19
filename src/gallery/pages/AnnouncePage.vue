@@ -1,7 +1,5 @@
 <template>
-  <!-- 内置工具 · 教室喊话（发送端）：手机/电脑浏览器输入教室机配对码发消息，
-       教室机桌面端（AnnounceService 轮询）收到后弹全屏大字。
-       外壳（返回按钮 + 标题 + 滚动区）由 ToolShell 统一提供。 -->
+
   <ToolShell
     :title="t('tool.announce.name')"
     :subtitle="t('tool.announce.desc')">

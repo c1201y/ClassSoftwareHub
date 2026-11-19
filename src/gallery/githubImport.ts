@@ -1,24 +1,5 @@
 import { gt, messageLocale } from './localize';
 
-// ════════════════════════════════════════════════════════════════════
-// GitHub 一键读取（供「提交软件」页使用）
-//
-// 输入一个 GitHub 仓库地址 → 调用 GitHub 公开接口 → 转换为提交表单所需字段：
-//   GET /repos/{owner}/{repo}                    仓库信息（简介 / 官网 / 许可证…）
-//   GET /repos/{owner}/{repo}/releases?per_page=10  版本信息 + 各安装包直链
-//
-// 实现要点：
-//   1. 国内直连 api.github.com 常不可达，因此配置了镜像（见 API_BASES），
-//      直连失败会自动换镜像重试；镜像仅在「网络层失败」和「非 404」时继续尝试。
-//   2. 未登录调用 GitHub 接口有速率限制（每 IP 每小时 60 次，同一出口网络
-//      所有用户共享）。命中后会把剩余镜像依次尝试（各镜像出口 IP 不同，
-//      额度互不相干）；代码内置 GitHub 令牌（GITHUB_TOKEN 常量）时额度
-//      提升至 5000 次/小时。令牌只发送至 api.github.com 官方域名，绝不经过第三方镜像。
-//
-// 本文件只负责「取数据 + 推断平台」，不产出 UI 文案；界面文字统一在
-// 文字设置.ts 中维护（submit.import-* 开头的 key）。
-// ════════════════════════════════════════════════════════════════════
-
 /** GitHub 接口入口：按顺序尝试，第一个成功的胜出。
  *  carriesToken: true 表示该入口可以安全携带令牌（仅 GitHub 官方域名，镜像一律不发送） */
 const STATS_BASE =
@@ -178,10 +159,6 @@ export interface GithubImportResult {
   };
 }
 
-// ════════════════════════════════════════════════════════════════════
-// 1. 地址解析
-// ════════════════════════════════════════════════════════════════════
-
 /** 支持 https://github.com/o/r、github.com/o/r、o/r、git@github.com:o/r.git 等写法 */
 export function parseRepoInput(raw: string): { owner: string; repo: string } | null {
   let text = (raw || '').trim().replace(/\s+/g, '');
@@ -202,10 +179,6 @@ export function parseRepoInput(raw: string): { owner: string; repo: string } | n
   if (!valid.test(owner) || !valid.test(repo)) return null;
   return { owner, repo };
 }
-
-// ════════════════════════════════════════════════════════════════════
-// 2. 工具函数：体积 / 文件名 → 平台 / 软件 id
-// ════════════════════════════════════════════════════════════════════
 
 export function formatSize(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes <= 0) return '';
@@ -307,10 +280,6 @@ export function guessSystem(assets: GithubAsset[]): string {
   return order.filter((name) => found.has(name)).join(' / ');
 }
 
-// ════════════════════════════════════════════════════════════════════
-// 3. 请求（带镜像回退）
-// ════════════════════════════════════════════════════════════════════
-
 async function fetchJson<T>(path: string): Promise<{ data: T; via: string }> {
   let lastError: GithubImportError | null = null;
   let rateLimited = false;
@@ -370,10 +339,6 @@ async function fetchJson<T>(path: string): Promise<{ data: T; via: string }> {
   throw lastError ?? new GithubImportError('network', 'all endpoints failed');
 }
 
-// ════════════════════════════════════════════════════════════════════
-// 4. Release 文件筛选
-// ════════════════════════════════════════════════════════════════════
-
 export interface GithubAsset {
   name: string;
   size: number;
@@ -392,10 +357,6 @@ const JUNK_PATTERNS = [
 function isJunkAsset(name: string): boolean {
   return JUNK_PATTERNS.some((pattern) => pattern.test(name));
 }
-
-// ════════════════════════════════════════════════════════════════════
-// 5. 主流程
-// ════════════════════════════════════════════════════════════════════
 
 export interface GithubImportOptions {
   /** 勾上则优先取最新的预发布版本（Beta / Alpha），否则优先取最新正式版 */
