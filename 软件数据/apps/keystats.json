@@ -5,7 +5,7 @@
   "category": "utility",
   "tagline": "Keyboard & Mouse Stats for macOS/Windows",
   "description": "Keyboard & Mouse Stats for macOS/Windows",
-  "version": "v1.56",
+  "version": "v1.57",
   "size": "",
   "system": "Windows / macOS",
   "platforms": [
@@ -21,25 +21,25 @@
       "platform": "其他 XML",
       "note": "appcast.xml",
       "size": "0.8 KB",
-      "url": "https://github.com/debugtheworldbot/keyStats/releases/download/v1.56/appcast.xml"
+      "url": "https://github.com/debugtheworldbot/keyStats/releases/download/v1.57/appcast.xml"
     },
     {
       "platform": "Windows 压缩包",
       "note": "KeyStats-Windows-1.54.zip",
       "size": "4.6 MB",
-      "url": "https://github.com/debugtheworldbot/keyStats/releases/download/v1.56/KeyStats-Windows-1.56.zip"
+      "url": "https://github.com/debugtheworldbot/keyStats/releases/download/v1.57/KeyStats-Windows-1.57.zip"
     },
     {
       "platform": "macOS（磁盘映像）",
       "note": "KeyStats.dmg",
       "size": "4.1 MB",
-      "url": "https://github.com/debugtheworldbot/keyStats/releases/download/v1.56/KeyStats.dmg"
+      "url": "https://github.com/debugtheworldbot/keyStats/releases/download/v1.57/KeyStats.dmg"
     },
     {
       "platform": "其他 压缩包",
       "note": "KeyStats.zip",
       "size": "3.7 MB",
-      "url": "https://github.com/debugtheworldbot/keyStats/releases/download/v1.56/KeyStats.zip"
+      "url": "https://github.com/debugtheworldbot/keyStats/releases/download/v1.57/KeyStats.zip"
     }
   ],
   "sort": 101

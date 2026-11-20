@@ -5,7 +5,7 @@
   "category": "system",
   "tagline": "简洁的 Win 10/11 键盘状态提示工具",
   "description": "一个简洁的 Windows 键盘状态提示工具。按下 Caps Lock、Num Lock、Scroll Lock、Insert，或执行复制、粘贴、剪切时，WinTips 在屏幕边缘滑出一个亚克力质感的浮窗，报告当前按键状态或操作，随后自动淡出。程序常驻托盘，无主窗口、不联网、无第三方依赖。",
-  "version": "V0.61",
+  "version": "vV0.65",
   "size": "",
   "system": "Windows 10 1809 ~ 11（64位）",
   "website": "",
@@ -15,13 +15,13 @@
       "platform": "Windows 64 位便携版",
       "note": "WinTips.exe",
       "size": "173 MB",
-      "url": "https://github.com/DoYouNatureQ/WinTips/releases/download/V0.61/WinTips.exe"
+      "url": "https://github.com/DoYouNatureQ/WinTips/releases/download/V0.65/WinTips.exe"
     },
     {
       "platform": "Windows 64 位安装版",
       "note": "WinTipsSetup-0.61.exe",
-      "size": "58.8 MB",
-      "url": "https://github.com/DoYouNatureQ/WinTips/releases/download/V0.61/WinTipsSetup-0.61.exe"
+      "size": "59 MB",
+      "url": "https://github.com/DoYouNatureQ/WinTips/releases/download/V0.65/WinTipsSetup-0.65.exe"
     }
   ],
   "sort": 99,
