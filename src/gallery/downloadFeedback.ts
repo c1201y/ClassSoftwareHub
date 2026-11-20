@@ -1,5 +1,5 @@
 // 下载体验反馈：自建加速下载开始 5 秒后弹小悬浮窗，结果发往观测台。
-// 同一浏览器 7 天最多提示一次（展示/关闭/提交都会写入冷却时间）。
+// 同一浏览器 48 小时内最多提示一次（展示/关闭/提交都会写入冷却时间）。
 
 import { runningBuild } from './appUpdate';
 
@@ -17,7 +17,7 @@ export interface DownloadFeedbackContext {
 }
 
 const LAST_KEY = 'csh-dl-feedback-at';
-const COOLDOWN_MS = 7 * 86400000;
+const COOLDOWN_MS = 48 * 3600000;
 const ASK_DELAY_MS = 5000;
 
 export const DOWNLOAD_FEEDBACK_EVENT = 'csh:download-feedback';
