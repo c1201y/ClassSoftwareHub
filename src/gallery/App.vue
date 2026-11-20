@@ -1,10 +1,9 @@
 <template>
-  <!-- 应用壳：标题栏 + 左侧 WinUI 导航（首页 / 各分类软件 / 设置） -->
   <WinToolTipService />
-  <!-- 欢迎弹窗（进入网站时弹出一次） -->
+  <!-- 欢迎弹窗：首次进入显示一次 -->
   <WelcomeDialog v-model:open="welcomeDialogOpen" />
   <DownloadFeedbackToast />
-  <!-- 全站搜索结果下拉：贴在标题栏搜索框下方（输入框在标题栏，Ctrl + K / Ctrl + F 聚焦） -->
+  <!-- 搜索下拉：锚定标题栏搜索框 -->
   <GlobalSearch
     ref="searchRef"
     v-model:open="searchOpen"
@@ -87,7 +86,7 @@
     </div>
   </div>
 
-  <!-- 数据文件出错提示条（某个软件 JSON 写坏时出现，不影响其它软件） -->
+  <!-- 数据错误提示条：单个 JSON 失败不影响其他软件 -->
   <div v-if="showDataIssueBanner && dataLoadIssues.length > 0" class="data-issue-banner" role="alert">
     <div class="data-issue-banner-body">
       <span class="data-issue-banner-title">

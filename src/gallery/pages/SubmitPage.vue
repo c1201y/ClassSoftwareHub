@@ -24,7 +24,6 @@
             TextWrapping="Wrap"
             :Text="t('submit.subtitle')" />
 
-          <!-- ── 从 GitHub 一键读取（省去手抄安装包直链）────────────── -->
           <section class="submit-section submit-import">
             <WinTextBlock
               class="submit-section-title is-in-card"
@@ -103,7 +102,6 @@
             </template>
           </section>
 
-          <!-- ── 基本信息 ────────────────────────────────────────── -->
           <section class="submit-section">
             <WinTextBlock
               class="submit-section-title is-in-card"
@@ -139,7 +137,7 @@
                   <span v-if="uploadError" class="submit-upload-error">{{ uploadError }}</span>
                   <span v-else-if="iconUploadWarn" class="submit-upload-warn">{{ iconUploadWarn }}</span>
                 </div>
-                <!-- 上传成功不等于提交成功：这个附件要等 /api/submit 才会被认领，超时会被回收 -->
+                <!-- 上传成功不等于提交成功：附件待 /api/submit 认领，超时回收 -->
                 <div v-if="iconUploadTtl" class="submit-upload-hint">{{ iconUploadTtl }}</div>
                 <WinTextBlock
                   class="submit-upload-note"
@@ -170,7 +168,7 @@
               v-model:Text="form.description">
               <template #header>{{ t('submit.description') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
             </WinTextBox>
-            <!-- 联系方式：本地加密成 age 密文后只进审核工单，不随软件数据发布（见 buildPayload 里的 _联系方式） -->
+            <!-- 联系方式：age 加密后仅进审核工单（_联系方式），不随数据发布 -->
             <WinTextBox
               :Header="t('submit.contact')"
               :PlaceholderText="t('submit.contact-placeholder')"
@@ -181,7 +179,6 @@
             </div>
           </section>
 
-          <!-- ── 补充信息 ────────────────────────────────────────── -->
           <section class="submit-section">
             <WinTextBlock
               class="submit-section-title is-in-card"
@@ -200,7 +197,7 @@
                 :PlaceholderText="t('submit.size-placeholder')"
                 v-model:Text="form.size" />
             </div>
-            <!-- 系统限制：多选下拉（选项来自 软件数据/platforms.json），不再让投稿人手写 -->
+            <!-- 系统限制：多选，选项来自 软件数据/platforms.json -->
             <div class="submit-platform-field">
               <div class="submit-platform-label">
                 {{ t('submit.system') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span>
@@ -304,7 +301,6 @@
           <input type="file" ref="iconInput" accept="image/*" @change="onIconPicked" style="display:none" />
           <input type="file" ref="dlFileInput" @change="onDownloadFilePicked" style="display:none" />
 
-          <!-- ── 下载项 ──────────────────────────────────────────── -->
           <WinTextBlock
             class="submit-section-title"
             FontSize="20"
@@ -347,7 +343,7 @@
                   v-model:Text="dl.url">
                   <template #header>{{ t('submit.download-url') }}<span class="submit-required-star" :title="t('submit.required')" aria-hidden="true">*</span></template>
                 </WinTextBox>
-                <!-- 下载方式：决定详情页是「直接下载」还是「跳转网盘/商店」 -->
+                <!-- 下载方式：决定直下或跳转 -->
                 <WinComboBox
                   :Header="t('submit.download-kind')"
                   :PlaceholderText="t('submit.download-kind-auto')"
@@ -364,7 +360,7 @@
                 </div>
                 <div class="submit-upload-hint" v-else>{{ t('submit.upload-notconfigured') }}</div>
                 <div v-if="dlUploadTtl[i]" class="submit-upload-hint">{{ dlUploadTtl[i] }}</div>
-                <!-- 校验值（选填）：只收十六进制，页面按位数认算法，不写算法名 -->
+                <!-- 校验值：仅十六进制，按长度推断算法 -->
                 <WinTextBox
                   :Header="t('submit.download-hash')"
                   :PlaceholderText="t('submit.download-hash-placeholder')"
@@ -381,7 +377,6 @@
             </div>
           </div>
 
-          <!-- ── 提交 ────────────────────────────────────────────── -->
           <div class="submit-actions">
             <WinButton
               Style="AccentButtonStyle"
@@ -404,7 +399,7 @@
             :Title="messageTitle"
             :Message="message" />
 
-          <!-- 提交服务不可用时的兜底操作区：重试 / 下载提交文件 / 复制 JSON / 带去 GitHub -->
+          <!-- 兜底操作：重试 / 下载提交文件 / 复制 JSON / 跳 GitHub -->
           <div v-if="fallback" class="submit-fallback">
             <WinInfoBar
               :IsOpen="true"
@@ -1223,7 +1218,7 @@ async function buildPayload(): Promise<{ payload: Record<string, unknown> | null
     return { payload: null, error: t('submit.error-sort') };
   }
 
-  // 下载链接协议与格式：规则见 downloadUrlRule.ts（单独成文件以便直接跑用例）
+  // 链接校验规则见 downloadUrlRule.ts（可独立跑用例）
   const downloadUrls = (payload.downloads as { url?: string }[]).map((item) => String(item.url || ''));
   if (downloadUrls.some((url) => downloadUrlProblem(url) === 'scheme')) {
     return { payload: null, error: t('submit.error-url-scheme') };
@@ -1411,7 +1406,7 @@ function applyPayload(data: Record<string, unknown>) {
       }))
     : [emptyDownload()];
 
-  // 下拉的 watch 会按选中项覆写 form.category，所以分类要等它跑完再写一次
+  // 下拉 watch 会覆写 form.category，分类写入需在其后
   const key = text('category');
   categoryIndex.value = categories.findIndex((item) => item.key === key);
   form.category = key;

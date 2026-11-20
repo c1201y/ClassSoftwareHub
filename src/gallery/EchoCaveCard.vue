@@ -41,7 +41,7 @@
               class="ec-flyout-status"
               :class="{ 'is-error': flyoutIsError }">{{ flyoutStatus }}</p>
             <div class="ec-flyout-actions">
-              <!-- 投稿服务连不上时的兜底：GitHub 上新建字条文件 -->
+              <!-- 兜底：投稿服务不可用时跳转 GitHub 新建字条 -->
               <WinHyperlinkButton
                 v-if="showFallback"
                 class="ec-fallback"
@@ -76,7 +76,7 @@ import { orderedEndpoints, rememberEndpoint, SUBMIT_TIMEOUT_MS } from './submitE
 const { t } = useI18n();
 
 // 一条一个文件：回声洞/messages/message1.json、message2.json……
-// 用 glob 在构建期收整个目录，所以「加一条字条」= 加一个文件，不用改代码。
+// 构建期 glob 收集目录：新增字条=新增文件，无需改代码
 const files = import.meta.glob<{ default: { text?: string } }>('../../回声洞/messages/*.json', {
   eager: true,
 });
@@ -101,7 +101,7 @@ const BLINK_EVERY = 10;
 const queue = ref<string[]>([]); // 本轮洗好的队列：取出一条即少一条
 const typing = ref(false);
 
-// 展开时的默认文字（指定的固定文案，请勿修改）：首次点击前一直显示
+// 展开默认文案（固定，勿改）；首次点击前持续显示
 const displayText = ref(t('echo-cave.placeholder'));
 
 // 打字代数：每次开始 +1，旧过程发现代数变化即自行终止

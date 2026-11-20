@@ -3,7 +3,6 @@
     :title="t('tool.timestamp.name')"
     :subtitle="t('tool.timestamp.subtitle')">
     <div class="tool-grid-2">
-      <!-- 当前 -->
       <div class="tool-panel ts-now">
         <span class="tool-section-title">{{ t('timestamp.now') }}</span>
         <div class="ts-now-row">
@@ -19,7 +18,6 @@
         <div class="tool-hint ts-now-local">{{ t('timestamp.local-time', { value: nowLocal }) }}</div>
       </div>
 
-      <!-- 时间戳 -> 时间 -->
       <div class="tool-panel">
         <span class="tool-section-title">{{ t('timestamp.ts-to-time') }}</span>
         <WinTextBox
@@ -37,7 +35,6 @@
         </div>
       </div>
 
-      <!-- 时间 -> 时间戳 -->
       <div class="tool-panel">
         <span class="tool-section-title">{{ t('timestamp.time-to-ts') }}</span>
         <div class="ts-dt-row">

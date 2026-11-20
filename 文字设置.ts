@@ -1,3 +1,4 @@
+// 中文站文案：仅改引号内容，勿改 key；英文对应 src/gallery/Strings/en-US/Resources.ts
 export default {
       "app.title": "电教委员常用软件下载站",
       "text.back": "返回",

@@ -47,7 +47,6 @@
       </div>
     </div>
 
-    <!-- 配色方案 -->
     <div class="tool-panel cc-harmony">
       <span class="tool-section-title">{{ t('color-convert.harmony') }}</span>
       <div v-for="group in harmonies" :key="group.name" class="cc-harmony-row">

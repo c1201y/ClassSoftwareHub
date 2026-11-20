@@ -45,7 +45,7 @@
                 <WinRadioButton :Content="$t('text.acrylic')" />
               </WinRadioButtons>
             </WinExpander>
-            <!-- 节日皮肤（补丁模块，见 src/gallery/holidayTheme.ts；不需要时可整块移除） -->
+            <!-- 节日皮肤：可选模块（holidayTheme.ts） -->
             <WinExpander
               :Header="$t('text.holiday-skin')"
               :Description="$t('text.holiday-skin-desc')"
@@ -126,7 +126,7 @@
                   TargetName="_blank"
                   HorizontalAlignment="Left"
                   :Content="t('welcome.article')" />
-                <!-- QQ 群：群链接在根目录「文字设置.ts」的 about.qq-group-url -->
+                <!-- QQ 群链接：文字设置.ts 的 about.qq-group-url -->
                 <WinHyperlinkButton
                   :NavigateUri="t('about.qq-group-url')"
                   TargetName="_blank"
@@ -137,7 +137,7 @@
                   TargetName="_blank"
                   HorizontalAlignment="Left"
                   :Content="t('about.reward')" />
-                <!-- UI 内核：本站界面用的上游组件库 —— 文字在根目录「文字设置.ts」 -->
+                <!-- UI 组件库：文案见 文字设置.ts -->
                 <WinHyperlinkButton
                   :NavigateUri="t('about.ui-kernel-url')"
                   TargetName="_blank"
@@ -155,7 +155,7 @@
               </div>
             </WinExpander>
 
-            <!-- 鸣谢卡片：文字在根目录「鸣谢文本.ts」，贡献人员在该文件中维护（分开发团队 / 赞助人员两组） -->
+            <!-- 鸣谢：由 鸣谢文本.ts 维护（开发/赞助两组） -->
             <div class="credits-card">
               <div class="credits-card-title">{{ credits.title }}</div>
               <div class="credits-card-intro">{{ credits.intro }}</div>
@@ -183,11 +183,11 @@
               <div v-else class="credits-empty">{{ credits.empty }}</div>
             </div>
 
-            <!-- 访问量 + 稳定运行时长：独立板块，置于鸣谢下方；文字跟随主题 -->
+            <!-- 访问量与运行时长：独立板块，置于鸣谢下方 -->
             <div class="visitor-stat-card">
               <div class="visitor-stat-title">访问量</div>
               <VisitorCounter class="visitor-stat-counter" />
-              <!-- 站点运行时长：起始日见下方 SITE_LAUNCH_DATE，调整日期仅需修改该处 -->
+              <!-- 运行时长起点：修改 SITE_LAUNCH_DATE -->
               <div class="visitor-stat-uptime">
                 <span class="visitor-stat-uptime-label">网站已稳定运行</span>
                 <span class="visitor-stat-uptime-value">{{ uptimeText }}</span>
@@ -195,7 +195,7 @@
             </div>
           </div>
 
-          <!-- 回声洞：独立分组（非「关于」区块内的一张卡）；可下拉展开项，正文整块可点换一条，投稿按钮在右侧弹出小面板 -->
+          <!-- 回声洞：独立分组，可展开；右侧弹出投稿面板 -->
           <WinTextBlock class="echo-section-title" :Text="$t('echo-cave.title')" />
           <div class="echo-controls">
             <EchoCaveCard />

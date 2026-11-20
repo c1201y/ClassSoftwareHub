@@ -14,7 +14,7 @@
         :aria-label="t('text.search')"
         :style="panelStyle"
         @pointerdown.stop>
-        <!-- 结果列表：按组显示，最多 limitPerKind 条/组 -->
+        <!-- 结果按分组渲染，每组上限 limitPerKind -->
         <div ref="listRef" class="gs-list" role="list">
           <template v-for="group in shownGroups" :key="group.kind">
             <div class="gs-group-title" role="presentation">
@@ -43,7 +43,7 @@
             </button>
           </template>
 
-          <!-- 空查询：展示搜索历史 + 「猜你想找」 -->
+          <!-- 空查询：历史 + 建议 -->
           <div v-if="queryEmpty" class="gs-suggest">
             <div v-if="historyTerms.length" class="gs-suggest-block">
               <div class="gs-suggest-head">
@@ -79,19 +79,18 @@
             </div>
           </div>
 
-          <!-- 有查询但无结果时提供指引（更换关键词 / 前往提交页提出需求） -->
+          <!-- 空结果：提示更换关键词或前往提交页 -->
           <div v-else-if="!shownGroups.length" class="gs-empty">
             <p class="gs-empty-title">{{ t('search.no-results', { query: effectiveQuery.trim() }) }}</p>
             <p class="gs-empty-desc">{{ t('search.empty-hint') }}</p>
           </div>
 
-          <!-- 拼音兜底命中时给一行说明，免得用户以为搜错了 -->
+          <!-- 拼音兜底命中时标注命中原因 -->
           <p v-if="!queryEmpty && !groups.length && shownGroups.length" class="gs-fallback-note">
             {{ t('search.initials-matched', { query: effectiveQuery.trim() }) }}
           </p>
         </div>
 
-        <!-- 底部：快捷键提示 -->
         <div class="gs-footer">
           <span class="gs-footer-keys">
             <kbd class="gs-kbd">↑</kbd><kbd class="gs-kbd">↓</kbd> {{ t('search.keys-select') }}
@@ -156,7 +155,7 @@ const initialsFallback = computed(() => {
   if (groups.value.length) return null;
   const q = effectiveQuery.value.trim();
   if (!q || !/^[a-z]+$/i.test(q)) return null;
-  // 找几个能匹配首字母的候选词，交给常规搜索再跑一遍
+  // 按首字母生成候选词，交常规搜索复跑
   for (const term of suggestions) {
     if (matchesInitials(term, q)) return searchGlobal(term, t, locale, LIMIT_PER_KIND);
   }

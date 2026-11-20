@@ -7,7 +7,7 @@
       <template v-if="app">
         <div class="detail-heading">
           <div class="detail-app-icon">
-            <!-- 图标：本地那份优先（见 src/gallery/appIcons.ts）；外链挂掉就退回首字色块 -->
+            <!-- 图标：本地优先（appIcons.ts），外链失败回退首字 -->
             <img
               v-if="appIconUrlSafe(app)"
               :src="appIconUrlSafe(app)"
@@ -32,7 +32,7 @@
           </div>
         </div>
 
-        <!-- 分享面板：文案 + 链接 + 二维码（投屏到教室大屏全班扫码） -->
+        <!-- 分享：文案 + 链接 + 二维码 -->
         <div v-if="shareOpen" class="detail-share-panel">
           <div class="detail-share-main">
             <div class="detail-share-block">
@@ -111,7 +111,7 @@
           </div>
         </div>
 
-        <!-- 更新提示：更新频繁 / 直链易失效的软件，提醒去官网或应用商店拿最新版 -->
+        <!-- 更新提示：直链易失效的软件引导至官网/商店 -->
         <WinInfoBar
           v-if="app.notice"
           class="detail-notice"
@@ -123,7 +123,7 @@
 
         <h2 class="detail-section-title">{{ t('detail.downloads') }}</h2>
 
-        <!-- 应用商店入口（app.store 字段，或 downloads 里指向 Microsoft Store 的条目，都会自动显示这张高亮卡片） -->
+        <!-- 商店入口：store 字段或 Microsoft Store 条目自动生成 -->
         <div v-if="storeLink" class="detail-store-card">
           <div class="detail-store-text">
             <div class="detail-store-title">{{ t('detail.store-title') }}</div>
@@ -147,7 +147,7 @@
           :Title="t('detail.oss-title')"
           :Message="t('detail.oss-notice')" />
 
-        <!-- 换票失败时的原因说明（额度用完 / 入口不通），紧贴下载列表上方 -->
+        <!-- 取票失败原因（额度耗尽/入口不可达） -->
         <div v-if="downloadError" class="detail-download-error">{{ downloadError }}</div>
         <!-- 直连（OSS 短时地址）每次下载均需重新换取：此处主动说明，
              避免用户下载中途失败时误认为站点故障。 -->
@@ -163,9 +163,9 @@
                 <div class="detail-download-platform">{{ download.platform }}</div>
                 <div v-if="download.note" class="detail-download-note">{{ download.note }}</div>
                 <div v-if="download.size" class="detail-download-size">{{ download.size }}</div>
-                <!-- 不是文件直链的项（网盘 / 官网下载页），如实说明点了会去哪儿 -->
+                <!-- 非直链：网盘/官网需跳转，向用户明示目的地 -->
                 <div v-if="downloadHint(download)" class="detail-download-kind">{{ downloadHint(download) }}</div>
-                <!-- 校验值：只有数据里填了 hash 才出现；默认只显示首尾，点一下复制完整值 -->
+                <!-- 校验值：仅存在 hash 时显示，点按复制完整值 -->
                 <button
                   v-if="download.hash"
                   class="detail-download-hash"
@@ -320,7 +320,7 @@ const openDownload = async (download: DownloadItem) => {
     const detail = await resolveDownloadDetail(url);
     triggerDownload(detail.url);
     // direct 是一条**不带设备凭据**的短时地址，有效期按体积分档；relay 走票据中继，
-    // 只在开始下载时校验一次，中途断了也不会失效。所以只有 direct 需要提醒用户。
+    // 仅下载开始时校验一次，中断后不复验；direct 需提示
     if (detail.mode === 'direct') downloadNotice.value = t('detail.download-expired');
   } catch (error) {
     downloadError.value = downloadErrorText(error);
@@ -393,7 +393,7 @@ const mirrorHintUrl = ref('');
 /** 当前展开着「换个镜像」面板的那条链接；空串表示都没展开 */
 const mirrorOpenUrl = ref('');
 
-// 切换到其他软件时组件会被复用（ref 不会自动清空），此处收起展开的面板和复制状态
+// 组件按 ref 复用：切换软件时收起面板并重置复制状态
 watch(
   () => route.params.id,
   () => {
@@ -515,7 +515,7 @@ const selectAll = (e: Event) => {
   el?.select();
 };
 
-// 切换软件时收起面板（组件会被复用，状态不会自动重置）
+// 组件复用时状态不自动重置：切换软件需收起面板
 watch(
   () => route.params.id,
   () => {

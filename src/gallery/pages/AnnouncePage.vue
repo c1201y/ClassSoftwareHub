@@ -4,7 +4,6 @@
     :title="t('tool.announce.name')"
     :subtitle="t('tool.announce.desc')">
     <div class="announce-root">
-      <!-- ── 发送表单 ─────────────────────────────────────────── -->
       <section class="an-card">
         <div class="an-fields">
           <WinTextBox
@@ -52,7 +51,7 @@
 
         <div class="an-section-divider" aria-hidden="true" />
 
-        <!-- 发送行：主色按钮 + 忙碌指示 + 结果 InfoBar -->
+        <!-- 发送行：主按钮 + 忙碌态 + 结果 InfoBar -->
         <div class="an-send-row">
           <WinButton class="an-send" Style="AccentButtonStyle" :IsEnabled="!sending" @Click="send">
             <WinProgressRing
@@ -73,7 +72,6 @@
           :Message="result" />
       </section>
 
-      <!-- ── 开启说明 ─────────────────────────────────────────── -->
       <section class="an-howto">
         <WinTextBlock class="an-howto-title" FontSize="15" FontWeight="600" :Text="t('announce.howto-title')" />
         <ol class="an-howto-list">

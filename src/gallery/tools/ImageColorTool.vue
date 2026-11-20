@@ -2,7 +2,6 @@
   <ToolShell
     :title="t('tool.image-color.name')"
     :subtitle="t('tool.image-color.subtitle')">
-    <!-- ── 上传区 ─────────────────────────────────────────── -->
     <div
       class="color-drop"
       :class="{ 'is-dragging': dragging, 'has-image': !!previewUrl }"
@@ -33,7 +32,6 @@
 
     <div v-if="error" class="color-error tool-panel">{{ error }}</div>
 
-    <!-- ── 结果 ───────────────────────────────────────────── -->
     <template v-if="palette">
       <div class="color-seed tool-panel">
         <span class="color-seed-chip" :style="{ background: palette.seedHex }"></span>

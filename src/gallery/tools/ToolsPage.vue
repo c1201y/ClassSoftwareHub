@@ -1,5 +1,5 @@
 <template>
-  <!-- 内置工具索引页：卡片由 tools/index.ts 的注册表自动生成。 -->
+  <!-- 工具索引：由 tools/index.ts 注册表生成 -->
   <WinGrid class="tools-page-root" RowDefinitions="Auto,*">
     <div class="tools-header">
       <WinTextBlock
@@ -15,7 +15,7 @@
         Foreground="var(--TextFillColorSecondaryBrush, var(--text-secondary))"
         TextWrapping="Wrap"
         :Text="t('tools.subtitle')" />
-      <!-- 页内搜索已并入全站搜索（Ctrl + K）：这里只提示入口 + 显示工具总数 -->
+      <!-- 搜索已并入 Ctrl+K，此处仅入口与总数 -->
       <div class="tools-meta-row">
         <span class="tools-meta-hint">{{ t('search.tools-hint') }}</span>
         <span class="tools-meta-count">{{ t('search.tools-count', { count: totalCount }) }}</span>

@@ -3,7 +3,6 @@
     :title="t('tool.clock.name')"
     :subtitle="t('tool.clock.subtitle')">
     <div class="tool-grid-2">
-      <!-- ── 预览 ───────────────────────────────────────────── -->
       <div class="tool-panel">
         <span class="tool-section-title">{{ t('clock.preview') }}</span>
         <WinInfoBar
@@ -58,7 +57,6 @@
         </div>
       </div>
 
-      <!-- ── 设置 ───────────────────────────────────────────── -->
       <div class="tool-panel">
         <span class="tool-section-title">{{ t('clock.appearance') }}</span>
 
@@ -132,7 +130,6 @@
       </div>
     </div>
 
-    <!-- ── 全屏层（挂到 body，躲开页面布局） ───────────────── -->
     <Teleport to="body">
       <div
         v-if="mode !== 'normal'"

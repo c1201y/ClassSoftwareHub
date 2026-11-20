@@ -22,7 +22,6 @@
       </button>
     </div>
 
-    <!-- 结果 -->
     <div v-if="error" class="chem-error tool-panel">
       <span class="chem-error-icon" aria-hidden="true">&#xE7BA;</span>
       <span>{{ error }}</span>
@@ -47,7 +46,7 @@
         </div>
       </div>
 
-      <!-- 元素守恒表：让人能核对，而不是只信一个答案 -->
+      <!-- 元素守恒表：供人工核对 -->
       <div class="chem-table-wrap tool-panel">
         <table class="chem-table">
           <thead>
@@ -226,7 +225,7 @@ function solveCoefficients(terms: Term[]): number[] | null {
     return null;
   }
 
-  // 试探自由变量：从 1 起，最多试到 30（化学式的系数不会太大）
+  // 自由变量从 1 起，上限 30（化学式系数范围）
   const MAX = 30;
   const freeValues = new Array(freeCols.length).fill(1);
 
@@ -245,7 +244,7 @@ function solveCoefficients(terms: Term[]): number[] | null {
     return coef;
   };
 
-  // 枚举自由变量的取值组合（自由变量一般 1~2 个，不会爆炸）
+  // 枚举自由变量组合（通常 1~2 个，规模可控）
   const search = (depth: number): number[] | null => {
     if (depth === freeCols.length) {
       const coef = trySolve();

@@ -1,5 +1,5 @@
 <template>
-  <!-- 外壳 .page-view 是 overflow:hidden，页面必须自带 WinScrollViewer 才能滚动（同详情页） -->
+  <!-- 需自带 WinScrollViewer：.page-view 为 overflow:hidden -->
   <WinScrollViewer
     class="gallery-page-scroll"
     VerticalScrollBarVisibility="Auto"
@@ -11,7 +11,7 @@
           <WinTextBlock class="legal-subtitle" :Text="versionLine" />
         </header>
 
-        <!-- 三份文档的切换标签（同首页筛选条的 WinSelectorBar） -->
+        <!-- 文档切换：WinSelectorBar -->
         <WinSelectorBar
           class="legal-tabs"
           HorizontalAlignment="Left"
@@ -28,7 +28,7 @@
             class="legal-section">
             <h2 class="legal-heading">{{ section.heading }}</h2>
             <ul class="legal-items">
-              <!-- 用户协议 2.2 的（1）（2）子项也是独立一行，统一按条款行渲染 -->
+              <!-- 条款行：2.2 的 (1)(2) 子项独立渲染 -->
               <li v-for="(item, i) in section.items" :key="i" class="legal-item">
                 {{ item }}
               </li>

@@ -3,7 +3,6 @@
     :title="t('tool.pick-number.name')"
     :subtitle="t('tool.pick-number.subtitle')">
     <div class="tool-grid-2">
-      <!-- ── 抽号 ───────────────────────────────────────────── -->
       <div class="tool-panel">
         <span class="tool-section-title">{{ t('pick.section') }}</span>
         <div class="pick-range">
@@ -25,12 +24,12 @@
             @Click="start" />
         </div>
 
-        <!-- 显示当前设置的摘要，便于发现范围填写错误 -->
+        <!-- 参数摘要：便于发现范围错误 -->
         <div class="tool-hint pick-summary">
           {{ t('pick.summary', { lo, hi, count: pickCount }) }}<span v-if="noRepeat">{{ t('pick.summary-repeat') }}</span>
         </div>
 
-        <!-- 不重复模式下显示剩余可抽号数，避免号码所剩无几时结果看似分布集中 -->
+        <!-- 不重复模式显示剩余可抽数 -->
         <div v-if="noRepeat" class="tool-hint pick-remain">
           {{ t('pick.remain', { remain }) }}<template v-if="usedInRange">{{ t('pick.remain-used', { used: usedInRange }) }}</template>
           <template v-if="remain === 0">{{ t('pick.remain-empty') }}</template>
@@ -52,7 +51,7 @@
           </div>
         </div>
 
-        <!-- 公平性自检：本机实抽两万次并统计分布，用于验证随机性是否均匀 -->
+        <!-- 公平性自检：本地抽样 2 万次统计分布 -->
         <div class="pick-checkbar">
           <WinButton :Content="t('pick.fair-check')" @Click="runFairCheck" />
           <span class="tool-hint">{{ t('pick.fair-check-hint') }}</span>
@@ -68,7 +67,6 @@
         </div>
       </div>
 
-      <!-- ── 分组 ───────────────────────────────────────────── -->
       <div class="tool-panel">
         <span class="tool-section-title">{{ t('pick.group-section') }}</span>
         <div class="tool-row">

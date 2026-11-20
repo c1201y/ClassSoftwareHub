@@ -33,7 +33,7 @@
             target="_blank"
             rel="noopener noreferrer"
             :style="rowStyle(site)">
-            <!-- 站点图标：内联的 32x32 PNG（见 aiSiteIcons.ts）；没有图标时退回首字方块 -->
+            <!-- 图标：内联 PNG（aiSiteIcons.ts），缺失回退首字 -->
             <span class="ai-row-icon" aria-hidden="true">
               <img
                 v-if="iconOf(site.url)"

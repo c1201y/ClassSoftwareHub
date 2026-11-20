@@ -46,7 +46,6 @@
             </div>
           </section>
 
-          <!-- ══ 选择态：两张卡片 ═══════════════════════════════════ -->
           <div v-if="!activeKind" class="feedback-kind-list">
             <button
               v-for="kind in FEEDBACK_KINDS"
@@ -97,9 +96,8 @@
             </WinButton>
           </section>
 
-          <!-- ══ 表单态 ════════════════════════════════════════════ -->
           <template v-else>
-            <!-- 表单态标题行：返回按钮在左（层级上先于标题），标题与图标居中 -->
+            <!-- 表单头：返回按钮在左，标题与图标居中 -->
             <div class="feedback-form-head">
               <WinButton
                 class="feedback-form-back"
@@ -122,7 +120,7 @@
               </span>
             </div>
 
-            <!-- 隐私提醒置于表单最前，不以小字弱化 -->
+            <!-- 隐私提示置顶，不使用弱化样式 -->
             <WinInfoBar
               class="feedback-notice"
               :IsOpen="true"
@@ -139,7 +137,7 @@
                 :Text="t('feedback.section-basic')" />
 
               <div class="feedback-fields">
-                <!-- 子类型：只有「报告问题」才有（建议不分类） -->
+                <!-- 子类型：仅「报告问题」使用 -->
                 <WinComboBox
                   v-if="activeKind === 'report'"
                   :Header="t('feedback.sub-kind')"
@@ -193,7 +191,7 @@
                   v-model:Text="form.contact" />
               </div>
 
-              <!-- 提交成功（内容已进仓库，草稿与表单同时清掉） -->
+              <!-- 提交成功：清空草稿与表单 -->
               <WinInfoBar
                 v-if="submitted"
                 class="feedback-notice"
@@ -212,7 +210,7 @@
                 :Title="t('feedback.error-title')"
                 :Message="errorText" />
 
-              <!-- 兜底路径才会出现：预填链接太长，正文被截断 -->
+              <!-- 兜底路径：预填链接过长导致正文截断 -->
               <WinInfoBar
                 v-if="truncated"
                 class="feedback-notice"
@@ -222,7 +220,7 @@
                 :Title="t('feedback.truncated-title')"
                 :Message="t('feedback.truncated-desc')" />
 
-              <!-- 新窗口被拦，已改成复制（仅兜底路径） -->
+              <!-- 兜底路径：新窗口被拦截时改为复制 -->
               <WinInfoBar
                 v-if="popupBlocked"
                 class="feedback-notice"
@@ -279,7 +277,7 @@ import WinInfoBar from '../../components/WinInfoBar.vue';
 import { useI18n } from '../../components/i18n/index';
 import { apps } from '../data';
 // 类型图标：3D 风格透明底 PNG。走 import 而不是放 public/ ——
-// 这样会被内联进单文件版，离线双击打开也有图（见 AGENTS.md 的构建说明）
+// 内联进单文件版，离线双击可用
 import reportIcon from '../../assets/feedback/report.png';
 import suggestIcon from '../../assets/feedback/suggest.png';
 import {
@@ -396,7 +394,7 @@ const backToKinds = () => {
 const applyDraft = (draft: FeedbackDraft) => {
   Object.assign(form, draft);
   if (!draft.kind) return;
-  // 顺序有讲究：先落 activeKind（那条 watch 对 report 不会清子类型），
+  // 顺序敏感：先置 activeKind；watch 对 report 不清子类型
   // 再把两个下标设好。下标本身也会各自触发 watch 写回 form。
   activeKind.value = draft.kind;
   subKindIndex.value = REPORT_SUBKINDS.findIndex((s) => s.key === draft.subKind);
@@ -513,7 +511,7 @@ const submitFeedback = async () => {
       submitted.value = true;
       successMessage.value = reply.message?.trim() || t('feedback.success-desc');
       // 内容已经进仓库了：本地草稿与表单一起清掉 ——
-      // 留着只会让下次进来又看到已提交过的旧内容
+      // 残留内容会在下次进入时重现
       clearFeedbackDraft();
       hasDraft.value = false;
       form.title = '';

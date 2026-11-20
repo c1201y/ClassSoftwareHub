@@ -10,7 +10,7 @@
         <img class="holiday-hero-image" :src="activeHoliday.banner" :alt="t(activeHoliday.labelKey)" />
       </div>
       <div class="home-page">
-        <!-- 页头：站名 + 副标题 + 软件清单模板按钮 -->
+        <!-- 页头：站名 / 副标题 / 模板按钮 -->
         <section class="home-page-header">
           <div class="home-header-copy">
             <WinTextBlock
@@ -25,7 +25,7 @@
               FontSize="18" />
           </div>
           <div class="home-offline-download">
-            <!-- 软件清单模板：登记新软件时下载，内容与根目录 软件数据/apps/_模板.json 一致 -->
+            <!-- 模板下载：与 软件数据/apps/_模板.json 同源 -->
             <span class="home-download-template-line">
               <button
                 type="button"
@@ -34,7 +34,7 @@
                 {{ t('home.download-template') }}
               </button>
               <span class="home-download-html-tip">{{ t('home.download-template-tip') }}</span>
-              <!-- 加入 QQ 群：和模板按钮同一行、靠右（链接复用设置页「关于」的 about.qq-group-url） -->
+              <!-- QQ 群入口：复用 about.qq-group-url -->
               <a
                 class="home-download-html-btn home-qq-group-btn"
                 :href="t('about.qq-group-url')"
@@ -46,7 +46,7 @@
           </div>
         </section>
 
-        <!-- 版本更新提示：可关闭的 WinUI InfoBar，只占一行高度，不挡内容 -->
+        <!-- 更新提示：可关闭 InfoBar，单行高度 -->
         <WinInfoBar
           v-if="updateAvailable"
           class="home-update-bar"
@@ -87,7 +87,7 @@
           </span>
         </div>
 
-        <!-- 两个入口卡片：内置工具 + AI 导航（各占一半，在分类筛选条上方） -->
+        <!-- 入口卡片：内置工具 / AI 导航 -->
         <div class="home-jump-row">
           <button
             type="button"
@@ -117,7 +117,7 @@
           </button>
         </div>
 
-        <!-- 分类筛选条 + 右边的「已收录软件数量」小字 -->
+        <!-- 分类筛选条 + 收录数量 -->
         <div class="filter-row">
           <WinSelectorBar
             class="filter-bar token-filter-bar"
@@ -137,7 +137,7 @@
           </div>
         </div>
 
-        <!-- 软件卡片网格（列表最上方可能带一张分类推荐卡） -->
+        <!-- 软件卡片网格，顶部可含推荐卡 -->
         <div class="switch-presenter">
           <!-- 分类推荐卡：选到「教学课堂」时，在软件列表最上方插一条整页宽的外链卡片
                （文案/网址在根目录 文字设置.ts 的 home.iwb-card-*，title、desc 留空即隐藏） -->
@@ -169,7 +169,7 @@
               @click="openDetail(app)">
               <span class="control-item-surface">
                 <span class="download-app-icon">
-                  <!-- 图标：本地文件优先（见 src/gallery/appIcons.ts）；外链失效时回退首字色块 -->
+                  <!-- 图标：本地优先，失败回退首字 -->
                   <img
                     v-if="appIconUrlSafe(app)"
                     :src="appIconUrlSafe(app)"
@@ -280,7 +280,7 @@ const openDetail = (app: SoftwareApp) => {
   void router.push({ name: 'download-detail', params: { id: app.id } });
 };
 
-// 空闲时预取详情页代码块：首页最常见的下一步就是点开某个软件
+// 空闲预取详情页 chunk（首页主要跳转路径）
 const UPDATE_DISMISS_KEY = 'csh-update-dismissed';
 const pendingUpdate = ref<{ latest: string; running: string } | null>(null);
 

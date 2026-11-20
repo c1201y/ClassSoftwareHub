@@ -4,14 +4,12 @@
     VerticalScrollBarVisibility="Auto"
     VerticalScrollMode="Auto">
     <div class="gallery-page-content desktop-page">
-      <!-- ═══ Hero ═══ -->
       <section class="dl-hero">
         <img class="dl-logo" :src="siteIcon" alt="ClassSoftwareHub" />
         <h1>{{ t('desktop.hero-title') }}</h1>
         <p>{{ t('desktop.hero-subtitle') }}</p>
       </section>
 
-      <!-- ═══ 工具栏：版本通道 + 下载线路 ═══ -->
       <div class="dl-toolbar">
         <div class="dl-channel-slot">
           <WinSelectorBar
@@ -31,7 +29,6 @@
         </div>
       </div>
 
-      <!-- ═══ 状态：加载中 / 全部失败 ═══ -->
       <div v-if="loading" class="dl-state">
         <span class="dl-state-icon dl-spin" aria-hidden="true">&#xE895;</span>
         <span>{{ t('desktop.loading') }}</span>
@@ -54,7 +51,6 @@
           <span class="dl-notice-text">{{ t('desktop.download-failed') }}</span>
         </div>
 
-        <!-- ═══ 版本卡片网格（两列，与文档站 .dl-grid 一致）═══ -->
         <div class="dl-grid">
           <article v-for="ed in editions" :key="ed.id" class="edition-card">
             <header class="edition-head">
@@ -83,7 +79,7 @@
               </template>
             </div>
 
-            <!-- 下载行：主产物 + 次产物（便携版等） -->
+            <!-- 下载行：主产物 + 次产物 -->
             <div v-if="ed.build" class="download-rows">
               <div v-for="row in ed.rows" :key="row.id" class="download-row">
                 <div class="row-meta">
@@ -173,7 +169,6 @@
           </div>
         </section>
 
-        <!-- ═══ 网页端链接行（文档站 .web-links 同款）═══ -->
         <div class="web-links">
           <span class="web-links-label">{{ t('desktop.web-label') }}</span>
           <a :href="DOCS_URL" target="_blank" rel="noopener noreferrer">{{ t('desktop.docs') }}</a>

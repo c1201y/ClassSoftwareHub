@@ -2,7 +2,7 @@
   <ToolShell
     :title="t('tool.word-writing.name')"
     :subtitle="t('tool.word-writing.subtitle')">
-    <!-- 工具条：所有操作都在这一行，与站内其它工具一致 -->
+    <!-- 工具条：操作集中于单行 -->
     <div class="tool-row ww-toolbar">
       <WinButton
         Style="AccentButtonStyle"
@@ -34,7 +34,7 @@
         :Content="t('word-writing.print')"
         :IsEnabled="words.length > 0"
         @Click="printPage" />
-      <!-- 全屏：把书写板铺满整个屏幕，投影 / 大屏演示时用 -->
+      <!-- 全屏：投影/大屏演示 -->
       <WinButton
         FontSize="13"
         Padding="10,0,10,0"
@@ -46,7 +46,6 @@
 
     <!-- 主体：左词表 / 右书写板 -->
     <div class="ww-layout">
-      <!-- 左：词表 -->
       <div class="tool-panel ww-panel">
         <span class="tool-section-title">{{ t('word-writing.list-title') }}</span>
         <div class="tool-row ww-list-tools">
@@ -84,7 +83,6 @@
         </div>
       </div>
 
-      <!-- 右：书写板 -->
       <div class="tool-panel ww-panel ww-board-panel">
         <div class="ww-board-head">
           <span class="tool-section-title">{{ t('word-writing.board-title') }}</span>
@@ -113,7 +111,6 @@
           </div>
         </div>
 
-        <!-- 空白态 -->
         <div v-if="!words.length" class="ww-empty">
           <p class="ww-empty-title">{{ t('word-writing.empty-title') }}</p>
           <p class="ww-empty-desc">{{ t('word-writing.empty-desc') }}</p>
@@ -123,10 +120,8 @@
             @Click="loadSample" />
         </div>
 
-        <!-- 四线三格书写区 -->
         <div v-else ref="boardWrapRef" class="ww-board-wrap">
           <div class="ww-board" :style="{ height: boardHeight + 'px' }">
-            <!-- 左侧词序号 + 汉语 -->
             <div class="ww-labels">
               <div
                 v-for="(item, i) in pageWords"
@@ -141,7 +136,7 @@
               </div>
             </div>
 
-            <!-- 四线三格 + canvas 笔迹 -->
+            <!-- canvas 笔迹叠加四线三格 -->
             <div class="ww-lines">
               <svg
                 class="ww-guides"
@@ -180,7 +175,6 @@
       </div>
     </div>
 
-    <!-- 导入对话框 -->
     <div v-if="importOpen" class="ww-dialog-mask" @click.self="importOpen = false">
       <div class="ww-dialog" role="dialog" aria-modal="true" aria-labelledby="ww-dialog-title">
         <div class="ww-dialog-head">
@@ -530,7 +524,7 @@ const measureBoard = () => {
 const paintStroke = (ctx: CanvasRenderingContext2D, stroke: Stroke) => {
   const pts = stroke.points;
   if (pts.length < 2) {
-    // 单点：画一个圆点，否则点一下没痕迹
+    // 单点需绘圆点，否则无痕迹
     if (pts.length === 1) {
       const [nx, ny] = pts[0];
       ctx.beginPath();
@@ -559,7 +553,7 @@ const redraw = () => {
   const canvas = canvasRef.value;
   if (!canvas) return;
   measureBoard();
-  // 设 width/height 会清空画布，所以每次都全量重画
+  // 设置 width/height 会清空画布，故每次全量重绘
   canvas.width = boardWidth.value;
   canvas.height = boardHeight.value;
   const ctx = canvas.getContext('2d');
@@ -581,7 +575,7 @@ const pointOf = (event: PointerEvent): [number, number] | null => {
   if (!canvas) return null;
   const rect = canvas.getBoundingClientRect();
   if (rect.width <= 0 || rect.height <= 0) return null;
-  // 归一化坐标：窗口尺寸变了笔迹也不会错位
+  // 坐标归一化，窗口尺寸变化后笔迹仍对齐
   return [
     Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width)),
     Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height))
@@ -635,7 +629,7 @@ const onPointerMove = (event: PointerEvent) => {
 
 const onPointerUp = () => {
   if (!drawing) return;
-  // 单点也算一笔（点一下留个点）
+  // 单点亦视为一笔
   const list = ink[inkKey.value] ?? (ink[inkKey.value] = []);
   list.push(drawing);
   if (list.length > 400) list.shift(); // 防御：单页最多留 400 笔

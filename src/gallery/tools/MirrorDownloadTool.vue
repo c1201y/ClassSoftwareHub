@@ -1,6 +1,6 @@
 <template>
   <ToolShell :title="pick(mirror.title, mirror.titleEn)" :subtitle="pick(mirror.subtitle, mirror.subtitleEn)">
-    <!-- 免责声明：本站仅提供跳转，不存储镜像、不代为下载 -->
+    <!-- 免责声明：仅提供跳转，不存储、不代下载 -->
     <WinInfoBar
       class="mirror-disclaimer"
       :IsOpen="true"
@@ -8,7 +8,7 @@
       Severity="Warning"
       :Message="pick(mirror.disclaimer, mirror.disclaimerEn)" />
 
-    <!-- 站点列表：每行一个、整行铺满宽度，点击在新标签页打开，样式与「AI 导航」一致 -->
+    <!-- 站点列表：整行可点，新标签打开 -->
     <a
       v-for="site in mirror.sites"
       :key="site.url"
