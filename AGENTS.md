@@ -97,7 +97,7 @@ Routes (hash-based):
 | `#/download/:id` | App detail page; `:id` = the `id` field in the data |
 | `#/settings` | Settings (appearance / about / visit stats) |
 | `#/submit` | Submit a new app |
-| `#/tools` | Built-in tools (card list, 11 client-side utilities — searched via the global panel) |
+| `#/tools` | Built-in tools (card list of client-side utilities — searched via the global panel) |
 | `#/tools/<id>` | A single built-in tool; routes are generated from the `src/gallery/tools/index.ts` registry |
 | `#/ai` | AI nav (21 Chinese AI sites, full-width clickable rows) |
 | `#/feedback` | Feedback centre (报告问题 / 提出建议), modelled on the Microsoft Feedback Hub |

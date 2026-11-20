@@ -41,12 +41,28 @@ export const TOOLS: ToolDef[] = [
     load: () => import('./ColorConvertTool.vue')
   },
   {
+    id: 'image-convert',
+    nameKey: 'tool.image-convert.name',
+    descKey: 'tool.image-convert.desc',
+    icon: '\uE91B',
+    groupKey: 'tool.group.image-color',
+    load: () => import('./ImageConvertTool.vue')
+  },
+  {
     id: 'pick-number',
     nameKey: 'tool.pick-number.name',
     descKey: 'tool.pick-number.desc',
     icon: '\uE716',
     groupKey: 'tool.group.classroom',
     load: () => import('./PickNumberTool.vue')
+  },
+  {
+    id: 'random-group',
+    nameKey: 'tool.random-group.name',
+    descKey: 'tool.random-group.desc',
+    icon: '\uE902',
+    groupKey: 'tool.group.classroom',
+    load: () => import('./RandomGroupTool.vue')
   },
   {
     id: 'timer',
@@ -81,12 +97,36 @@ export const TOOLS: ToolDef[] = [
     load: () => import('./ChemistryTool.vue')
   },
   {
+    id: 'dictation',
+    nameKey: 'tool.dictation.name',
+    descKey: 'tool.dictation.desc',
+    icon: '\uE767',
+    groupKey: 'tool.group.classroom',
+    load: () => import('./DictationTool.vue')
+  },
+  {
     id: 'text',
     nameKey: 'tool.text.name',
     descKey: 'tool.text.desc',
     icon: '\uE8A5',
     groupKey: 'tool.group.text',
     load: () => import('./TextTool.vue')
+  },
+  {
+    id: 'text-diff',
+    nameKey: 'tool.text-diff.name',
+    descKey: 'tool.text-diff.desc',
+    icon: '\uE8CB',
+    groupKey: 'tool.group.text',
+    load: () => import('./TextDiffTool.vue')
+  },
+  {
+    id: 'regex',
+    nameKey: 'tool.regex.name',
+    descKey: 'tool.regex.desc',
+    icon: '\uE756',
+    groupKey: 'tool.group.text',
+    load: () => import('./RegexTool.vue')
   },
   {
     id: 'encoding',
@@ -111,6 +151,14 @@ export const TOOLS: ToolDef[] = [
     icon: '\uE8B0',
     groupKey: 'tool.group.utility',
     load: () => import('./QrCodeTool.vue')
+  },
+  {
+    id: 'unit-convert',
+    nameKey: 'tool.unit-convert.name',
+    descKey: 'tool.unit-convert.desc',
+    icon: '\uE8EF',
+    groupKey: 'tool.group.utility',
+    load: () => import('./UnitConvertTool.vue')
   },
   {
     id: 'timestamp',
