@@ -1,12 +1,16 @@
 {
   "id": "mt",
   "name": "MT管理器",
+  "nameEn": "MT Manager",
   "icon": "https://ts4.tc.mm.bing.net/th/id/OIP-C.5X07gsWBz-LNSBwPIgNOSwHaHa?w=108&h=108&c=1&bgcl=cfac03&r=0&o=7&dpr=2&pid=ImgRC&rm=3",
   "category": "system",
   "tagline": "一个好用的Android 平台文件管理 & 逆向修改神器",
+  "taglineEn": "A powerful Android file manager and reverse-engineering tool",
   "description": "独创的双窗口操作模式，两个目录同时显示，结合前进/后退/同步等功能，熟悉之后相比传统操作方式更加高效。\n内置了许多既强大又好用的功能，并且还在持续不断地更新中，您只需要装一个 MT 就可以满足许多的功能需求。\n经过十余年的更新迭代与积累，MT 获得众多好评，如今已成为许多玩机爱好者、技术极客装机必备的 APP 之一。",
+  "descriptionEn": "Its dual-pane mode shows two directories at once, and forward/back/sync actions make file operations faster once you get used to it. It includes many powerful, constantly updated features, so one MT install covers many needs. After more than a decade of development it has become a must-have app for Android enthusiasts and tinkerers.",
   "version": "v2.26.11",
   "system": "Android5+",
+  "systemEn": "Android 5+",
   "platforms": [
     "android"
   ],

@@ -1,4 +1,4 @@
-import { apps, categoryName } from './data';
+import { apps, categoryName, appName, appTagline, appDescription } from './data';
 import type { Locale } from '../components/i18n/index';
 import { TOOLS } from './tools';
 import aiNav from '../../AI导航文本';
@@ -216,8 +216,8 @@ export const searchApps = (query: string, locale: Locale = 'zh-CN', limit = 5): 
   const makeHit = (app: (typeof apps)[number], source: 'name' | 'intro'): GlobalHit => ({
     kind: 'app',
     key: app.id,
-    title: app.name,
-    subtitle: clip(app.tagline ?? app.description ?? ''),
+    title: appName(app, locale),
+    subtitle: clip(appTagline(app, locale) || appDescription(app, locale)),
     badge: categoryName(app.category, locale),
     icon: '',
     route: { name: 'download-detail', params: { id: app.id } },
@@ -225,8 +225,9 @@ export const searchApps = (query: string, locale: Locale = 'zh-CN', limit = 5): 
   });
 
   for (const app of apps) {
-    const intro = `${app.tagline ?? ''} ${app.description ?? ''}`;
-    const nameScore = scoreMatch(app.name, groups);
+    // 两种语言都参与匹配：英文界面下输入中文软件名也能搜到
+    const intro = `${app.tagline ?? ''} ${app.taglineEn ?? ''} ${app.description ?? ''} ${app.descriptionEn ?? ''}`;
+    const nameScore = scoreMatch(`${app.name} ${app.nameEn ?? ''}`, groups);
     // 名称命中（含同义词，宽松）进名称组；否则简介要求每个原词都命中（严格）
     if (nameScore > 0) {
       nameHits.push({ hit: makeHit(app, 'name'), score: nameScore });

@@ -1,10 +1,13 @@
 {
   "id": "lx-music-mobile",
   "name": "Lx Music移动端",
+  "nameEn": "LX Music Mobile",
   "icon": "https://lxmusic.toside.cn/img/logo.svg",
   "category": "media",
   "tagline": "一个免费&开源的音乐查找工具",
+  "taglineEn": "Free and open-source music search tool",
   "description": "一个免费&开源的音乐查找工具，免费且无广\n告，一个基于 React native 开发的音乐软件。\n和桌面端一样需要导入自定义源",
+  "descriptionEn": "A free, open-source, ad-free music app built with React Native. Like the desktop version, it requires importing custom sources.",
   "version": "v1.9.2",
   "size": "",
   "system": "Android",

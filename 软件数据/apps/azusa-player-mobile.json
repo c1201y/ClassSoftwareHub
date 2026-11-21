@@ -4,7 +4,9 @@
   "icon": "https://avatars.githubusercontent.com/u/106490582?v=4",
   "category": "media",
   "tagline": "移动端的抽象b站音乐播放器",
+  "taglineEn": "Experimental Bilibili music player for mobile",
   "description": "移动端的抽象b站音乐播放器",
+  "descriptionEn": "An experimental Bilibili music player for mobile devices.",
   "version": "v4.3.3",
   "size": "",
   "system": "Android",
@@ -22,5 +24,6 @@
     }
   ],
   "sort": 123,
-  "notice": "收录的是 GitHub 上的最新正式版；官方另有每日 dev-build 预发布（更新更勤但可能不稳定），需要的话可到 Releases 页自行下载。"
+  "notice": "收录的是 GitHub 上的最新正式版；官方另有每日 dev-build 预发布（更新更勤但可能不稳定），需要的话可到 Releases 页自行下载。",
+  "noticeEn": "This entry tracks the latest stable release on GitHub. The project also publishes daily dev builds (updated more often but potentially unstable); download them from the Releases page if needed."
 }

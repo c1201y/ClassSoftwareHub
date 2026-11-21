@@ -1,10 +1,13 @@
 {
   "id": "violet-toolbox",
   "name": "紫罗兰工具箱",
+  "nameEn": "Violet Toolbox",
   "icon": "https://avatars.githubusercontent.com/u/208893381?s=60&v=4",
   "category": "system",
   "tagline": "紫罗兰工具箱面向Android开发的多功能刷机工具",
+  "taglineEn": "Multi-purpose Android flashing toolbox",
   "description": "紫罗兰工具箱，\n面向Android开发的\n多功能刷机工具",
+  "descriptionEn": "Violet Toolbox is a multi-purpose Android flashing tool for Android development.",
   "version": "v3.7.0",
   "size": "34.9 MB",
   "system": "Windows",

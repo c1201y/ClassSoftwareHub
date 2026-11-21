@@ -4,7 +4,9 @@
   "icon": "https://raw.githubusercontent.com/likangxian1007/TouchGlide/refs/heads/main/res/touchglide.ico",
   "category": "classroom",
   "tagline": "让不适配触屏滚动的 Windows 桌面应用重新支持手指滑动。",
+  "taglineEn": "Restores finger scrolling in Windows desktop apps that do not support touch",
   "description": "TouchGlide\n让不适配触屏滚动的 Windows 桌面应用重新支持手指滑动。单个 EXE · 无安装 · 无运行时依赖 · Windows 10 / 11",
+  "descriptionEn": "TouchGlide restores finger scrolling in Windows desktop apps that do not support touch. Single EXE, no installation, no runtime dependencies, Windows 10/11.",
   "version": "v0.1.0",
   "system": "Windows",
   "platforms": [

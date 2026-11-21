@@ -1,16 +1,21 @@
 {
   "id": "maxhub-whiteboard",
   "name": "MAXHUB 白板书写",
+  "nameEn": "MAXHUB Whiteboard",
   "icon": "https://ts4.tc.mm.bing.net/th/id/ODF.ewg9Rbksu5iWIOduz1yp8w?w=32&h=32&qlt=90&pcl=fffffa&r=0&o=6&pid=1.2",
   "category": "classroom",
   "tagline": "MAXHUB白板书写，企业级白板，轻量，好用",
+  "taglineEn": "MAXHUB whiteboard: lightweight, easy-to-use enterprise whiteboard",
   "description": "MAXHUB白板书写软件主要用于企业会议、课堂教学中的书写批注、多人协作和内容保存分享，支持双指手势、智能图形识别、OCR、插入多媒体等功能，轻量而又强大。",
+  "descriptionEn": "MAXHUB Whiteboard is used for writing and annotation in meetings and classrooms, multi-user collaboration, and saving or sharing content. It supports two-finger gestures, shape recognition, OCR and multimedia insertion, and is both lightweight and capable.",
   "version": "6.8.0.7815",
   "size": "62.26 MB",
   "system": "Windows 10/11 x64",
+  "systemEn": "Windows 10/11 x64",
   "platforms": ["windows"],
   "website": "https://www.maxhub.vip",
   "notice": "更新频繁，直链易失效",
+  "noticeEn": "Updates frequently; direct links may expire.",
   "author": "MAXHUB（视源股份）",
   "downloads": [
     {

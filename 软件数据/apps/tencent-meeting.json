@@ -1,13 +1,17 @@
 {
   "id": "tencent-meeting",
   "name": "腾讯会议",
+  "nameEn": "Tencent Meeting",
   "icon": "https://meeting.tencent.com/favicon.ico",
   "category": "office",
   "tagline": "腾讯出品的高清视频会议 / 网课工具",
+  "taglineEn": "Tencent's HD video meetings and online classes",
   "description": "腾讯会议是腾讯推出的高清流畅、便捷易用的云视频会议产品，支持屏幕共享、美颜、背景虚化、会议录制等功能，网课和远程开会都很常用。支持 Windows、macOS、手机端，也提供网页入会方式。",
+  "descriptionEn": "Tencent Meeting is Tencent's smooth, easy-to-use cloud video meeting product, with screen sharing, beauty filters, background blur and recording. It is widely used for online classes and remote meetings, and is available for Windows, macOS and mobile, plus joining from a browser.",
   "version": "3.48.0.443",
   "size": "约 280 MB",
   "system": "Windows 7+",
+  "systemEn": "Windows 7+",
   "platforms": [
     "windows"
   ],

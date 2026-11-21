@@ -120,7 +120,7 @@ import { rememberScroll, restoreScroll } from './scrollMemory';
 import appIcon from '../assets/AppIcon.ico';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from '../components/i18n/index';
-import { apps, categories, categoryName, dataLoadIssues } from './data';
+import { apps, categories, categoryName, dataLoadIssues, appName } from './data';
 import {
   DefaultNavigationTransitionInfo,
   NavigationTrigger_NavigatingAway,
@@ -369,7 +369,7 @@ const navMenuItems = computed<NavItem[]>(() => [
     SelectsOnInvoked: false,
     MenuItems: apps
       .filter((app) => app.category === category.key)
-      .map((app) => ({ Tag: `app:${app.id}`, Content: app.name, Icon: appIconUrl(app) }))
+      .map((app) => ({ Tag: `app:${app.id}`, Content: appName(app, locale), Icon: appIconUrl(app) }))
   }))
 ]);
 

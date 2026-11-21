@@ -4,10 +4,13 @@
   "icon": "https://github.com/DoYouNatureQ/WinTips/blob/main/Resources/app-icon-512.png",
   "category": "system",
   "tagline": "简洁的 Win 10/11 键盘状态提示工具",
+  "taglineEn": "Simple keyboard status indicator for Windows 10/11",
   "description": "一个简洁的 Windows 键盘状态提示工具。按下 Caps Lock、Num Lock、Scroll Lock、Insert，或执行复制、粘贴、剪切时，WinTips 在屏幕边缘滑出一个亚克力质感的浮窗，报告当前按键状态或操作，随后自动淡出。程序常驻托盘，无主窗口、不联网、无第三方依赖。",
+  "descriptionEn": "A simple keyboard status indicator for Windows. Pressing Caps Lock, Num Lock, Scroll Lock or Insert, or copying, pasting or cutting, slides an acrylic-style overlay in from the screen edge showing the current state or action, then fades out. It lives in the tray with no main window, no network access and no third-party dependencies.",
   "version": "vV0.65",
   "size": "",
   "system": "Windows 10 1809 ~ 11（64位）",
+  "systemEn": "Windows 10 1809 ~ 11 (64-bit)",
   "website": "",
   "github": "https://github.com/DoYouNatureQ/WinTips",
   "downloads": [

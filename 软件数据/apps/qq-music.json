@@ -1,10 +1,13 @@
 {
   "id": "qq-music",
   "name": "QQ音乐",
+  "nameEn": "QQ Music",
   "icon": "https://bee-reg-ab.imagency.cn/mr/6874/26/6ac4a93c2efeb.png",
   "category": "media",
   "tagline": "QQ音乐",
+  "taglineEn": "QQ Music",
   "description": "QQ音乐是腾讯音乐娱乐集团旗下的音乐流媒体平台",
+  "descriptionEn": "QQ Music is a music streaming platform from Tencent Music Entertainment Group.",
   "version": "",
   "size": "≈110MB",
   "system": "Windows",

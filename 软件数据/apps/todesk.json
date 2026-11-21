@@ -1,16 +1,21 @@
 {
   "id": "todesk",
   "name": "ToDesk 远程控制",
+  "nameEn": "ToDesk Remote Control",
   "icon": "https://tse2-mm.cn.bing.net/th/id/OIP-C.4mfqF40daBM46zyM6mMOAQAAAA?w=135&h=150&c=7&r=0&o=7&pid=1.7&rm=3",
   "category": "network",
   "tagline": "国产远程控制软件，远程帮老师/同学修电脑",
+  "taglineEn": "Chinese remote control software for helping teachers and classmates fix PCs",
   "description": "ToDesk 是国内常用的远程控制软件，个人版免费，连接稳定、延迟低，支持文件传输、远程打印、手机远控电脑等。电教委员可以装一个：坐在自己位置上就能远程帮老师关投影、装软件、排查教室电脑问题，不用来回跑教室。",
+  "descriptionEn": "ToDesk is a popular remote control tool in China. The personal edition is free, connections are stable with low latency, and it supports file transfer, remote printing and phone-to-PC control. Classroom technicians can use it to turn off projectors, install software and troubleshoot classroom PCs from their own desk.",
   "version": "5.x（以安装时官网版本为准）",
   "size": "约 30 MB",
   "system": "Windows / macOS / Linux / Android / iOS",
+  "systemEn": "Windows / macOS / Linux / Android / iOS",
   "platforms": ["windows", "macos", "linux", "android", "ios"],
   "website": "https://www.todesk.com/",
   "notice": "这里给的是 ToDesk 官网「始终最新」的在线安装器直链（安装时会联网取最新版）。如果要离线安装包，请走下面的官网下载页按版本下载。",
+  "noticeEn": "This is ToDesk's official “always latest” online installer (it fetches the latest version during installation). For offline installers, use the official download page below and pick a version.",
   "author": "青岛飞扬",
   "downloads": [
     {

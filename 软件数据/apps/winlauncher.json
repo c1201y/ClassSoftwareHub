@@ -4,10 +4,13 @@
   "icon": "https://api.classsoftwarehub.cn/api/icon?k=icon%2F2026%2F11%2Fmweu6r45-ku89g2-ico.ico",
   "category": "system",
   "tagline": "仿 Win10/Win8 动态磁贴的独立开始菜单工具",
+  "taglineEn": "Standalone Start menu with Windows 10/8 live tiles",
   "description": "仿 Win10/Win8 动态磁贴的独立开始菜单工具",
+  "descriptionEn": "A standalone Start menu tool that imitates Windows 10/8 live tiles.",
   "version": "v3.0.0",
   "size": "",
   "system": "Windows 7+",
+  "systemEn": "Windows 7+",
   "website": "",
   "github": "https://github.com/WiseWang1013/WinLauncher",
   "downloads": [

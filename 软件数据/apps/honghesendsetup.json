@@ -1,13 +1,17 @@
 {
   "id": "honghesendsetup",
   "name": "鸿合投屏发送端",
+  "nameEn": "HiteVision Screen Share Sender",
   "icon": "https://submit.132614.xyz/api/icon?k=icon%2F2026%2F11%2Fmwfuuq2m-dq3niu-csh-icon-1c60086f19b44528b18523a119209aa9.png",
   "category": "system",
   "tagline": "鸿合设备专用投屏软件",
+  "taglineEn": "Screen-sharing sender for HiteVision devices",
   "description": "鸿合投屏发送端是大屏端投屏软件的发送工具，为跨平台无线投屏解决方案，面向教育、会议、协作展示等场景。支持手机、平板、笔记本电脑等多种终端向安卓大屏（一体机）进行无线画面投射、反向控制、文件共享与多人协作。",
+  "descriptionEn": "The sender component of HiteVision's screen-sharing software, a cross-platform wireless casting solution for education, meetings and collaborative presentations. Phones, tablets and laptops can cast to an Android display (all-in-one panel), with reverse control, file sharing and multi-user collaboration.",
   "version": "3.1.6",
   "size": "138MB",
   "system": "Windows10.1709 X64专业版 以上",
+  "systemEn": "Windows 10 1709 x64 Pro or later",
   "website": "",
   "github": "",
   "downloads": [

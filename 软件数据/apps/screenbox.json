@@ -4,10 +4,13 @@
   "icon": "https://store-images.s-microsoft.com/image/apps.27252.14412253091153471.48adf666-dcc9-44d1-95e6-206f697e816d.5cf5d0d2-01e6-4c17-bb43-9f1cb0bbb7ec?h=170",
   "category": "media",
   "tagline": "Fluent Design 开源播放器，基于 LibVLC 全格式硬解",
+  "taglineEn": "Fluent Design open-source player with LibVLC hardware decoding",
   "description": "一款专为 Windows 10/11 设计的开源媒体播放器，界面采用微软 Fluent Design 设计语言，底层基于 LibVLC，解码能力强，支持 4K / HDR / AV1 等格式硬解，观感和 Win11 系统界面统一，放视频很舒服。",
+  "descriptionEn": "An open-source media player designed for Windows 10/11 with a Fluent Design interface and LibVLC underneath. It has strong decoding support including 4K, HDR and AV1 hardware decoding, and blends in with the Windows 11 interface.",
   "version": "v0.24.0",
   "size": "222.5 MB",
   "system": "Windows 10/11",
+  "systemEn": "Windows 10/11",
   "platforms": [
     "windows"
   ],

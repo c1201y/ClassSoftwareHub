@@ -162,6 +162,10 @@ Fields and meanings (full reference: `软件数据/README-维护手册.md` and `
 | `sort` | Display order, smaller first; omitted means last |
 | `维护备注` | Maintainer note; **never rendered on the site** |
 
+Optional English fields (used by the English UI, falling back to Chinese when absent):
+`nameEn` · `taglineEn` · `descriptionEn` · `systemEn` · `noticeEn` · `versionEn` · `sizeEn` · `authorEn` · `licenseEn`,
+plus `downloads[].platformEn` / `noteEn`. Keep both languages in sync when editing an app.
+
 Key constraints:
 
 - **`id` must not contain `?` `&` `=` or similar.** Five malformed ids in the original data made the

@@ -173,18 +173,18 @@
                   <img
                     v-if="appIconUrlSafe(app)"
                     :src="appIconUrlSafe(app)"
-                    :alt="app.name"
+                    :alt="appName(app, locale)"
                     loading="lazy"
                     decoding="async"
                     referrerpolicy="no-referrer"
                     @error="markIconBroken(app.id)" />
-                  <span v-else class="download-app-icon-fallback" aria-hidden="true">{{ app.name.slice(0, 1) }}</span>
+                  <span v-else class="download-app-icon-fallback" aria-hidden="true">{{ appName(app, locale).slice(0, 1) }}</span>
                 </span>
                 <span class="control-item-text">
-                  <WinTextBlock class="control-item-title" :Text="app.name" />
+                  <WinTextBlock class="control-item-title" :Text="appName(app, locale)" />
                   <WinTextBlock
                     class="control-item-subtitle"
-                    :Text="app.tagline ?? ''"
+                    :Text="appTagline(app, locale)"
                     TextWrapping="NoWrap" />
                 </span>
                 <span class="category-badge">{{ categoryName(app.category, locale) }}</span>
@@ -211,7 +211,7 @@ import WinInfoBar from '../../components/WinInfoBar.vue';
 import WinButton from '../../components/WinButton.vue';
 import { useI18n } from '../../components/i18n/index';
 import { applyUpdate, checkForUpdate } from '../appUpdate';
-import { apps, categories, categoryName, platformName, platforms } from '../data';
+import { apps, categories, categoryName, platformName, platforms, appName, appTagline } from '../data';
 import type { SoftwareApp } from '../data';
 import { appIconUrlSafe, markIconBroken } from '../appIcons';
 import '../styles/home-page.css';

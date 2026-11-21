@@ -1,10 +1,13 @@
 {
   "id": "seewoxzqayxibgz",
   "name": "SEEVVO全家桶一剑下崽弃",
+  "nameEn": "Seewo All-in-One Downloader",
   "icon": "https://cdn.jsdelivr.net/gh/HelloGaoo/SeevvoDownloader@main/icon/002.png",
   "category": "classroom",
   "tagline": "一键下载希沃全家桶",
+  "taglineEn": "One-click downloader for Seewo's app suite",
   "description": "B站某UP主制作的一键下载希沃软件全家桶\n注意他默认会把希沃白板的启动页更换成ikun，如果你们老师开不起玩笑的话，记得及时取消勾选",
+  "descriptionEn": "A one-click downloader for Seewo's software suite made by a Bilibili creator. Note: by default it replaces the Seewo Whiteboard splash screen with an ikun meme; uncheck that option if your teachers might not find it funny.",
   "version": "v2.4.0",
   "size": "25MB",
   "system": "Windows",

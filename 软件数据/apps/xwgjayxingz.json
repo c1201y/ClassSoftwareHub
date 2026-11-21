@@ -1,17 +1,22 @@
 {
   "id": "xwgjayxingz",
   "name": "希沃管家",
+  "nameEn": "Seewo Manager",
   "icon": "https://soft-img.30405.com/2026/0417/04171652553162.jpg?resize=p_5,w_128",
   "category": "classroom",
   "tagline": "希沃管家软件",
+  "taglineEn": "Seewo Manager",
   "description": "需要加入学校集控用",
+  "descriptionEn": "Required for joining a school's centralized management system.",
   "size": "121MB(Windows)",
   "system": "Windows7及以上，通信UOS，银河麒麟",
+  "systemEn": "Windows 7 and later, UOS, Kylin",
   "platforms": [
     "windows",
     "linux"
   ],
   "notice": "如遇链接失效，建议去官网下载",
+  "noticeEn": "If a link stops working, download from the official site.",
   "author": "希沃（视源股份）",
   "downloads": [
     {

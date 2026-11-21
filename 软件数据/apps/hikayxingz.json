@@ -1,13 +1,17 @@
 {
   "id": "hikayxingz",
   "name": "海康威视综合软件下载(运维)",
+  "nameEn": "Hikvision Software Downloads (Ops)",
   "icon": "",
   "category": "utility",
   "tagline": "海康运维工具的下载区",
+  "taglineEn": "Download area for Hikvision maintenance tools",
   "description": "下载一些运维工具，便于维修时使用，正常不建议下",
+  "descriptionEn": "Maintenance tools for repairs; not recommended for ordinary users.",
   "version": "",
   "size": "",
   "system": "Windows 7+ / Android 11+ / 其他 / 网页版",
+  "systemEn": "Windows 7+ / Android 11+ / other / web",
   "website": "https://partners.hikvision.com",
   "github": "https://github.com",
   "downloads": [
@@ -19,6 +23,7 @@
   ],
   "sort": 99,
   "notice": "软件较多，请到官网下载，不提供直链",
+  "noticeEn": "Many tools are available; use the official site. No direct links are provided.",
   "platforms": [
     "windows",
     "android",

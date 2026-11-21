@@ -1,13 +1,17 @@
 {
   "id": "honghetoupingjieshouduan",
   "name": "鸿合投屏接收端",
+  "nameEn": "HiteVision Screen Share Receiver",
   "icon": "https://submit.132614.xyz/api/icon?k=icon%2F2026%2F11%2Fmwh3tfhd-halmm7-csh-icon-d36dc4d178d2455ab46471562e673f92.png",
   "category": "system",
   "tagline": "鸿合设备专用投屏软件（接收端）",
+  "taglineEn": "Screen-sharing receiver for HiteVision devices",
   "description": "鸿合投屏接收端是大屏端投屏软件的接收工具，为跨平台无线投屏解决方案，面向教育、会议、协作展示等场景。支持手机、平板、笔记本电脑等多种终端向安卓大屏（一体机）进行无线画面投射、反向控制、文件共享与多人协作。",
+  "descriptionEn": "The receiver component of HiteVision's screen-sharing software, a cross-platform wireless casting solution for education, meetings and collaborative presentations. Phones, tablets and laptops can cast to an Android display (all-in-one panel), with reverse control, file sharing and multi-user collaboration.",
   "version": "",
   "size": "",
   "system": "Windows10.1709 X64专业版 以上；",
+  "systemEn": "Windows 10 1709 x64 Pro or later",
   "website": "",
   "github": "",
   "downloads": [
@@ -18,6 +22,7 @@
   ],
   "sort": 99,
   "notice": "请根据自己的系统下载对应客户端",
+  "noticeEn": "Download the client that matches your system.",
   "platforms": [
     "windows"
   ]

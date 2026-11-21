@@ -4,16 +4,21 @@
   "icon": "https://ts3.tc.mm.bing.net/th/id/ODF.SY-7sl5MzSI0AgXYTET50Q?w=32&h=32&qlt=90&pcl=fffffa&r=0&o=6&pid=1.2",
   "category": "system",
   "tagline": "面向 Windows 的端点防护。实时拦截病毒、木马与勒索软件，清晰呈现处置过程，必要时一键隔离。",
+  "taglineEn": "Windows endpoint protection that blocks threats in real time, shows what was handled and isolates them in one click",
   "description": "HeySafe-X干净防护少打扰，面向 Windows 的端点防护。实时拦截病毒、木马与勒索软件，清晰呈现处置过程，必要时一键隔离。",
+  "descriptionEn": "HeySafe-X offers clean, low-noise endpoint protection for Windows. It blocks viruses, trojans and ransomware in real time, clearly shows what was handled, and can isolate threats in one click.",
   "version": "0.3.1",
   "size": "12.42，这是离线完整安装包，在线只有7",
+  "sizeEn": "12.42 MB (offline full installer; the online installer is 7.25 MB)",
   "system": "Win10/win11 64位",
+  "systemEn": "Windows 10 / 11 (64-bit)",
   "platforms": [
     "windows"
   ],
   "website": "https://heysafex.com",
   "author": "Heysafe",
   "notice": "基本上一天一更,我这有从测试版到现在的所有版本",
+  "noticeEn": "Updated almost daily; all builds from the first beta to the current version are available here.",
   "downloads": [
     {
       "platform": "Windows10/11",

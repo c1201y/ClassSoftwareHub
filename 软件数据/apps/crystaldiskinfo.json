@@ -4,7 +4,9 @@
   "icon": "https://raw.githubusercontent.com/WangGithubUser/FastGitHub/refs/heads/main/FastGithub.UI/app.ico",
   "category": "system",
   "tagline": "显示机械硬盘/固态硬盘的健康状态",
+  "taglineEn": "Shows the health status of HDDs and SSDs",
   "description": "显示硬盘/固态硬盘的健康状态，提供多种详细信息",
+  "descriptionEn": "Displays the health status and detailed information of hard drives and SSDs.",
   "system": "Windows 10+",
   "platforms": [
     "windows"

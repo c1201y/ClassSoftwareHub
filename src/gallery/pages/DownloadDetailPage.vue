@@ -11,15 +11,15 @@
             <img
               v-if="appIconUrlSafe(app)"
               :src="appIconUrlSafe(app)"
-              :alt="app.name"
+              :alt="appName(app, locale)"
               decoding="async"
               referrerpolicy="no-referrer"
               @error="markIconBroken(app.id)" />
-            <span v-else class="detail-app-icon-fallback" aria-hidden="true">{{ app.name.slice(0, 1) }}</span>
+            <span v-else class="detail-app-icon-fallback" aria-hidden="true">{{ appName(app, locale).slice(0, 1) }}</span>
           </div>
           <div class="detail-heading-text">
-            <h1 class="detail-title">{{ app.name }}</h1>
-            <p class="detail-tagline">{{ app.tagline }}</p>
+            <h1 class="detail-title">{{ appName(app, locale) }}</h1>
+            <p class="detail-tagline">{{ appTagline(app, locale) }}</p>
             <span class="detail-category-badge">{{ categoryName(app.category, locale) }}</span>
           </div>
           <!-- 分享：网页版相对桌面版最有价值的一处 —— 发出去是一条能直接
@@ -67,21 +67,21 @@
         </div>
 
         <h2 class="detail-section-title">{{ t('detail.intro') }}</h2>
-        <p class="detail-description">{{ app.description }}</p>
+        <p class="detail-description">{{ appDescription(app, locale) }}</p>
 
         <h2 class="detail-section-title">{{ t('detail.info') }}</h2>
         <div class="detail-info-list">
           <div class="detail-info-row">
             <span class="detail-info-label">{{ t('detail.version') }}</span>
-            <span class="detail-info-value">{{ app.version || t('detail.pending') }}</span>
+            <span class="detail-info-value">{{ appVersion(app, locale) || t('detail.pending') }}</span>
           </div>
           <div class="detail-info-row">
             <span class="detail-info-label">{{ t('detail.size') }}</span>
-            <span class="detail-info-value">{{ app.size || t('detail.pending') }}</span>
+            <span class="detail-info-value">{{ appSize(app, locale) || t('detail.pending') }}</span>
           </div>
           <div class="detail-info-row">
             <span class="detail-info-label">{{ t('detail.system') }}</span>
-            <span class="detail-info-value">{{ app.system || t('detail.pending') }}</span>
+            <span class="detail-info-value">{{ appSystem(app, locale) || t('detail.pending') }}</span>
           </div>
           <div v-if="app.website" class="detail-info-row">
             <span class="detail-info-label">{{ t('detail.website') }}</span>
@@ -103,23 +103,23 @@
                没有就不显示这一行 —— 大多数商业软件查不到作者，硬写「未知」反而像漏填。 -->
           <div v-if="app.author" class="detail-info-row">
             <span class="detail-info-label">{{ t('detail.author') }}</span>
-            <span class="detail-info-value">{{ app.author }}</span>
+            <span class="detail-info-value">{{ appAuthor(app, locale) }}</span>
           </div>
           <div v-if="app.license" class="detail-info-row">
             <span class="detail-info-label">{{ t('detail.license') }}</span>
-            <span class="detail-info-value">{{ app.license }}</span>
+            <span class="detail-info-value">{{ appLicense(app, locale) }}</span>
           </div>
         </div>
 
         <!-- 更新提示：直链易失效的软件引导至官网/商店 -->
         <WinInfoBar
-          v-if="app.notice"
+          v-if="appNotice(app, locale)"
           class="detail-notice"
           :IsOpen="true"
           :IsClosable="false"
           Severity="Informational"
           :Title="t('detail.notice-title')"
-          :Message="app.notice" />
+          :Message="appNotice(app, locale)" />
 
         <h2 class="detail-section-title">{{ t('detail.downloads') }}</h2>
 
@@ -156,13 +156,13 @@
         <div v-if="otherDownloads.length" class="detail-download-list">
           <div
             v-for="(download, index) in otherDownloads"
-            :key="download.platform + '-' + index"
+            :key="downloadPlatformName(download, locale) + '-' + index"
             class="detail-download-item">
             <div class="detail-download-row">
               <div class="detail-download-info">
-                <div class="detail-download-platform">{{ download.platform }}</div>
-                <div v-if="download.note" class="detail-download-note">{{ download.note }}</div>
-                <div v-if="download.size" class="detail-download-size">{{ download.size }}</div>
+                <div class="detail-download-platform">{{ downloadPlatformName(download, locale) }}</div>
+                <div v-if="downloadNote(download, locale)" class="detail-download-note">{{ downloadNote(download, locale) }}</div>
+                <div v-if="downloadSize(download, locale)" class="detail-download-size">{{ downloadSize(download, locale) }}</div>
                 <!-- 非直链：网盘/官网需跳转，向用户明示目的地 -->
                 <div v-if="downloadHint(download)" class="detail-download-kind">{{ downloadHint(download) }}</div>
                 <!-- 校验值：仅存在 hash 时显示，点按复制完整值 -->
@@ -247,7 +247,22 @@ import WinHyperlinkButton from '../../components/WinHyperlinkButton.vue';
 import WinInfoBar from '../../components/WinInfoBar.vue';
 import WinButton from '../../components/WinButton.vue';
 import { useI18n } from '../../components/i18n/index';
-import { findAppById, categoryName } from '../data';
+import {
+  findAppById,
+  categoryName,
+  appName,
+  appTagline,
+  appDescription,
+  appSystem,
+  appVersion,
+  appSize,
+  appAuthor,
+  appLicense,
+  appNotice,
+  downloadPlatformName,
+  downloadNote,
+  downloadSize
+} from '../data';
 import type { DownloadItem } from '../data';
 import { appIconUrlSafe, markIconBroken } from '../appIcons';
 import { isSafeNavigateUrl, kindOf, triggerDownload } from '../downloadLink';
@@ -430,7 +445,7 @@ const accelerateDownload = async (download: DownloadItem) => {
       const signed = await fetchSelfSignedUrl(download.url);
       if (signed) {
         href = signed;
-        noteAcceleratedDownload({ app: app.value?.name, target: download.url });
+        noteAcceleratedDownload({ app: app.value ? appName(app.value, locale) : undefined, target: download.url });
       } else {
         // 签名获取失败：退回第一条公益镜像（自建节点不在「换个镜像」清单中，此处手动选取）
         const fallback = usableChannels().find((item) => !item.self);
@@ -475,11 +490,11 @@ const shareTarget = computed(() => {
   if (!value) return null;
   return {
     id: value.id,
-    name: value.name,
-    tagline: value.tagline,
-    version: value.version,
-    size: value.size,
-    system: value.system
+    name: appName(value, locale),
+    tagline: appTagline(value, locale),
+    version: appVersion(value, locale),
+    size: appSize(value, locale),
+    system: appSystem(value, locale)
   };
 });
 

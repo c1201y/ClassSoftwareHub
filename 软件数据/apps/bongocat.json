@@ -4,7 +4,9 @@
   "icon": "https://store-images.s-microsoft.com/image/apps.30957.14597939646592532.54d62e1a-9978-49ee-98c4-772b926c384a.97e06195-28c4-459a-abfe-166debd64a17?h=134",
   "category": "utility",
   "tagline": "🐱 跨平台互动桌宠，按键时小猫跟着一起敲",
+  "taglineEn": "Cross-platform interactive desktop pet that types along with you",
   "description": "BongoCat 是一款开源免费的跨平台互动桌面宠物：敲键盘、点鼠标时，屏幕上的小猫都会跟着一起动，可爱又轻量，给课堂电脑添一点趣味。",
+  "descriptionEn": "BongoCat is a free, open-source interactive desktop pet: the cat on screen follows your keyboard and mouse, adding a bit of fun to classroom PCs while staying lightweight.",
   "version": "v2.4.1",
   "system": "Windows / macOS",
   "platforms": [

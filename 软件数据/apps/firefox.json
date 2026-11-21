@@ -1,13 +1,17 @@
 {
   "id": "firefox",
   "name": "Firefox 火狐浏览器",
+  "nameEn": "Firefox",
   "icon": "https://store-images.s-microsoft.com/image/apps.7279.14473293538384797.bcb417dc-ffbe-444e-9589-e6a25f04ad52.156eed19-aa35-4e69-96a7-c11abd7f887d?h=134",
   "category": "office",
   "tagline": "注重隐私的开源浏览器（提供 MSI 安装包）",
+  "taglineEn": "Privacy-focused open-source browser (MSI installer available)",
   "description": "Firefox 由 Mozilla 打造，开源免费、注重用户隐私和数据安全，支持 Windows、macOS、Linux 全平台。这里提供 64 位 MSI 安装包，方便给教室电脑静默安装或批量部署。",
+  "descriptionEn": "Firefox from Mozilla is free, open source and focused on privacy and data safety, with builds for Windows, macOS and Linux. This entry provides a 64-bit MSI package for silent or batch deployment on classroom PCs.",
   "version": "160.0.1",
   "size": "约 78 MB ~ 89 MB",
   "system": "Windows 7 ~ 11、macOS、Linux",
+  "systemEn": "Windows 7 ~ 11, macOS, Linux",
   "platforms": [
     "windows",
     "macos",

@@ -1,13 +1,17 @@
 {
   "id": "temurin17-binaries",
   "name": "Eclipse Temurin 17（Java 运行环境）",
+  "nameEn": "Eclipse Temurin 17 (Java Runtime)",
   "icon": "https://adoptium.net/images/adoptium-icon.png",
   "category": "system",
   "tagline": "免费开源的 Java 17 运行环境（OpenJDK 官方构建）",
+  "taglineEn": "Free open-source Java 17 runtime (official OpenJDK build)",
   "description": "Eclipse Temurin（原 AdoptOpenJDK）是 Eclipse 基金会维护的免费 OpenJDK 构建，这里收录的是 Java 17（长期支持版）的 Windows x64 运行环境。需要 Java 17 才能跑起来的程序（部分 Minecraft 服务端、教学软件、开源小工具）装上它就能用。\n注意：这里只有 JRE（运行环境），不含 JDK（开发工具包）；要写 Java 代码请去 Adoptium 官网下 JDK。",
+  "descriptionEn": "Eclipse Temurin (formerly AdoptOpenJDK) is a free OpenJDK build maintained by the Eclipse Foundation. This entry provides the Windows x64 Java 17 runtime (LTS). Programs that require Java 17 — some Minecraft servers, teaching apps and open-source utilities — will run after installing it. Note: this is the JRE (runtime), not the JDK; download the JDK from Adoptium if you write Java code.",
   "version": "17.0.20.1+1",
   "size": "约 30 MB（x64 MSI 安装版）",
   "system": "Windows 10 / 11（x64）",
+  "systemEn": "Windows 10 / 11 (x64)",
   "platforms": ["windows"],
   "website": "https://adoptium.net",
   "github": "https://github.com/adoptium/temurin17-binaries",
@@ -28,5 +32,6 @@
     }
   ],
   "sort": 81,
-  "notice": "本站收录的是 JRE（运行环境），不含 JDK（开发工具包）。"
+  "notice": "本站收录的是 JRE（运行环境），不含 JDK（开发工具包）。",
+  "noticeEn": "This entry provides the JRE (runtime), not the JDK (development kit)."
 }

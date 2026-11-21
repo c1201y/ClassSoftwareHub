@@ -4,7 +4,9 @@
   "icon": "https://avatars.githubusercontent.com/u/329320540?v=4",
   "category": "system",
   "tagline": "StarPie 现代化 Windows 鼠标轮盘手势系统",
+  "taglineEn": "Modern mouse-wheel gesture system for Windows",
   "description": "StarPie 现代化 Windows 鼠标轮盘手势系统",
+  "descriptionEn": "A modern mouse-wheel gesture system for Windows.",
   "version": "v2.0.0",
   "size": "",
   "system": "Windows",
@@ -34,5 +36,6 @@
     }
   ],
   "sort": 95,
-  "notice": "v2.0.0 起官方动作改为独立插件，需在「插件与扩展」中单独下载安装，不随主程序发行包附带；升级前请备份配置与插件数据。本次发行包未做代码签名，Windows 可能提示未知发布者，请从 GitHub Release 下载并核对 SHA256SUMS.txt。"
+  "notice": "v2.0.0 起官方动作改为独立插件，需在「插件与扩展」中单独下载安装，不随主程序发行包附带；升级前请备份配置与插件数据。本次发行包未做代码签名，Windows 可能提示未知发布者，请从 GitHub Release 下载并核对 SHA256SUMS.txt。",
+  "noticeEn": "Since v2.0.0, official actions are distributed as separate plugins that must be downloaded under Plugins & Extensions and are not bundled with the main installer. Back up your configuration and plugin data before upgrading. This build is not code-signed, so Windows may warn about an unknown publisher; download it from the GitHub release and verify SHA256SUMS.txt."
 }

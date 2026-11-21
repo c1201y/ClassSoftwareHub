@@ -1,13 +1,17 @@
 {
   "id": "uu-remote",
   "name": "UU 远程（网易）",
+  "nameEn": "UU Remote (NetEase)",
   "icon": "https://images-eds-ssl.xboxlive.com/image?url=4rt9.lXDC4H_93laV1_eHM0OYfiFeMI2p9MWie0CvL99U4GA1gf6_kayTt_kBblFwHwo8BW8JXlqfnYxKPmmBXLW6UXVgyMcBgDjRrbSmRx2YaFESoVn9cNxtclJttNF.5qlZCqvoOZ7fvZu9MWBCFvjbxgtBX0rAW22W5XVjlI-&format=source",
   "category": "network",
   "tagline": "网易免费远程控制软件，4K/144 帧、超低延迟",
+  "taglineEn": "Free remote control from NetEase with 4K/144 fps and ultra-low latency",
   "description": "UU 远程是网易出品的免费远程控制软件，自研传输协议，主打低延迟高画质（支持 4K / 144 帧），可远程控制电脑、手机远控电脑、手机远控手机，也支持机身文件互传与手柄直连。和 ToDesk 类似，适合电教远程协助维护教室电脑。目前个人使用免费。",
+  "descriptionEn": "UU Remote is NetEase's free remote control software with a proprietary transport protocol focused on low latency and high image quality (up to 4K/144 fps). It supports PC control, phone-to-PC and phone-to-phone control, file transfer and direct gamepad connection. Like ToDesk, it is useful for remotely maintaining classroom PCs. Personal use is currently free.",
   "version": "4.48.1.5606",
   "size": "约 40 MB",
   "system": "Windows / macOS / Android / iOS",
+  "systemEn": "Windows / macOS / Android / iOS",
   "platforms": [
     "windows",
     "macos",

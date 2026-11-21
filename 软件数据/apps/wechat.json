@@ -1,13 +1,17 @@
 {
   "id": "wechat",
   "name": "微信",
+  "nameEn": "WeChat",
   "icon": "https://ts4.tc.mm.bing.net/th/id/OIP-C.Q3gcrpIwxi7eNGhb-MMC8gHaHa?w=108&h=108&c=1&bgcl=cc5a44&r=0&o=7&dpr=2&pid=ImgRC&rm=3",
   "category": "office",
   "tagline": "微信 Windows 版官方下载",
+  "taglineEn": "Official WeChat for Windows",
   "description": "微信 Windows 版官方安装包。教室电脑上装一个，方便接收老师、家长发来的课件、通知和文件，也支持截图、文件传输与聊天记录备份，很多班级群的消息也不用再掏手机看。",
+  "descriptionEn": "The official WeChat installer for Windows. Installing it on a classroom PC makes it easy to receive lesson files, notices and documents from teachers and parents, with screenshots, file transfer and chat backup. Class group messages no longer require reaching for a phone.",
   "version": "4.2.0.53",
   "size": "约 245 MB",
   "system": "Windows 7+",
+  "systemEn": "Windows 7+",
   "platforms": [
     "windows"
   ],

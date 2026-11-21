@@ -35,6 +35,16 @@
               </WinRadioButtons>
             </WinExpander>
             <WinExpander
+              Height="70"
+              :Header="$t('text.language')"
+              :Description="$t('text.language-desc')">
+              <WinRadioButtons :SelectedIndex="languageIndex" @SelectionChanged="onLanguageSelectionChanged">
+                <WinRadioButton :Content="$t('text.language-system')" />
+                <WinRadioButton :Content="$t('text.language-zh')" />
+                <WinRadioButton :Content="$t('text.language-en')" />
+              </WinRadioButtons>
+            </WinExpander>
+            <WinExpander
               v-if="isHostedInUwpWebView"
               Height="70"
               :Header="$t('text.material')"
@@ -157,11 +167,11 @@
 
             <!-- 鸣谢：由 鸣谢文本.ts 维护（开发/赞助两组） -->
             <div class="credits-card">
-              <div class="credits-card-title">{{ credits.title }}</div>
-              <div class="credits-card-intro">{{ credits.intro }}</div>
+              <div class="credits-card-title">{{ pick(credits.title, credits.titleEn) }}</div>
+              <div class="credits-card-intro">{{ pick(credits.intro, credits.introEn) }}</div>
               <template v-if="credits.people.length > 0">
                 <div v-for="group in creditGroups" :key="group.key" class="credits-group">
-                  <div class="credits-group-title">{{ group.title }}</div>
+                  <div class="credits-group-title">{{ pick(group.title, group.titleEn) }}</div>
                   <ul class="credits-people">
                     <li v-for="person in group.people" :key="person.name" class="credits-person">
                       <!-- 填写 url 时名字渲染为链接（新标签页打开），未填写则为普通文字；
@@ -173,23 +183,23 @@
                         TargetName="_blank"
                         Padding="0"
                         Margin="0"
-                        :Content="person.name" />
-                      <span v-else class="credits-person-name">{{ person.name }}</span>
-                      <span v-if="person.note" class="credits-person-note">{{ person.note }}</span>
+                        :Content="pick(person.name, person.nameEn)" />
+                      <span v-else class="credits-person-name">{{ pick(person.name, person.nameEn) }}</span>
+                      <span v-if="person.note" class="credits-person-note">{{ pick(person.note, person.noteEn) }}</span>
                     </li>
                   </ul>
                 </div>
               </template>
-              <div v-else class="credits-empty">{{ credits.empty }}</div>
+              <div v-else class="credits-empty">{{ pick(credits.empty, credits.emptyEn) }}</div>
             </div>
 
             <!-- 访问量与运行时长：独立板块，置于鸣谢下方 -->
             <div class="visitor-stat-card">
-              <div class="visitor-stat-title">访问量</div>
+              <div class="visitor-stat-title">{{ t('settings.visitor-title') }}</div>
               <VisitorCounter class="visitor-stat-counter" />
               <!-- 运行时长起点：修改 SITE_LAUNCH_DATE -->
               <div class="visitor-stat-uptime">
-                <span class="visitor-stat-uptime-label">网站已稳定运行</span>
+                <span class="visitor-stat-uptime-label">{{ t('settings.uptime-label') }}</span>
                 <span class="visitor-stat-uptime-value">{{ uptimeText }}</span>
               </div>
             </div>
@@ -229,6 +239,7 @@ import EchoCaveCard from '../EchoCaveCard.vue';
 import { applyUpdate, checkForUpdate, runningBuild } from '../appUpdate';
 import type { UpdateCheck } from '../appUpdate';
 import { onInstallAvailability, promptInstallPwa } from '../pwaInstall';
+import { readLocaleChoice, writeLocaleChoice, type LocaleChoice } from '../localeSetting';
 
 const { t, locale } = useI18n();
 
@@ -240,12 +251,15 @@ const connectionText = computed(() => {
   return t('text.connection-unknown');
 });
 
+const pick = (zh: string, en?: string) => (locale === 'en-US' && en ? en : zh);
+
 // 鸣谢分组：按「鸣谢文本.ts」的 groupOrder / groupTitles 渲染（开发团队 / 赞助人员）
 const creditGroups = computed(() =>
   credits.groupOrder
     .map((key) => ({
       key,
       title: credits.groupTitles[key],
+      titleEn: credits.groupTitlesEn?.[key] ?? credits.groupTitles[key],
       people: credits.people.filter((person) => person.group === key),
     }))
     .filter((group) => group.people.length > 0),
@@ -319,6 +333,17 @@ const onThemeSelectionChanged = ({ SelectedIndex }: { SelectedIndex: number }) =
 const onMaterialSelectionChanged = ({ SelectedIndex }: { SelectedIndex: number }) => {
   materialSetting.value = materialOptions[SelectedIndex];
 };
+
+const languageOptions: LocaleChoice[] = ['system', 'zh-CN', 'en-US'];
+const languageChoice = ref<LocaleChoice>(readLocaleChoice());
+const languageIndex = computed(() => Math.max(0, languageOptions.indexOf(languageChoice.value)));
+const onLanguageSelectionChanged = ({ SelectedIndex }: { SelectedIndex: number }) => {
+  const choice = languageOptions[SelectedIndex] ?? 'system';
+  if (choice === languageChoice.value) return;
+  languageChoice.value = choice;
+  writeLocaleChoice(choice);
+  window.location.reload();
+};
 const appTitle = t('app.title');
 const currentYear = new Date().getFullYear();
 const copyrightText = computed(() =>
@@ -356,6 +381,11 @@ const uptimeText = computed(() => {
   const hours = Math.floor((totalSeconds % 86400) / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
+  if (locale === 'en-US') {
+    if (days > 0) return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+    return `${minutes}m ${seconds}s`;
+  }
   if (days > 0) return `${days} 天 ${hours} 小时 ${minutes} 分 ${seconds} 秒`;
   if (hours > 0) return `${hours} 小时 ${minutes} 分 ${seconds} 秒`;
   return `${minutes} 分 ${seconds} 秒`;

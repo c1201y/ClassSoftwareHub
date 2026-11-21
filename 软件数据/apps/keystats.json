@@ -4,10 +4,13 @@
   "icon": "https://avatars.githubusercontent.com/u/62830430?v=4",
   "category": "utility",
   "tagline": "Keyboard & Mouse Stats for macOS/Windows",
+  "taglineZh": "macOS / Windows 键盘与鼠标使用统计",
   "description": "Keyboard & Mouse Stats for macOS/Windows",
+  "descriptionZh": "统计 macOS 与 Windows 上的键盘、鼠标使用情况，界面简洁，可常驻后台记录输入数据。",
   "version": "v1.57",
   "size": "",
   "system": "Windows / macOS",
+  "systemZh": "Windows / macOS",
   "platforms": [
     "windows",
     "macos"

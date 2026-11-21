@@ -1,13 +1,18 @@
 {
   "id": "wyyyyayxingz",
   "name": "网易云音乐",
+  "nameEn": "NetEase Cloud Music",
   "icon": "https://images-eds-ssl.xboxlive.com/image?url=4rt9.lXDC4H_93laV1_eHHFT949fUipzkiFOBH3fAiZZUCdYojwUyX2aTonS1aIwMrx6NUIsHfUHSLzjGJFxxmJ1fOmu4McDOQ5s.KQKHr9FvkoEcPa0laJJa8jHWv1oY61Yzqch0gdGQXiaFKscg.h0ujDBJc5MDExEDuVskz0-&format=webp&h=134",
   "category": "media",
   "tagline": "常用听歌软件",
+  "taglineEn": "A popular music streaming app",
   "description": "听歌软件，不必过多介绍",
+  "descriptionEn": "A music streaming app; no further introduction needed.",
   "system": "Windows XP+ / 其他 / macOS 10.15+ / 其他 / Linux（Ubuntu / Debian / Arch / Red Hat / SUSE / 其他） / Android 8+ / 其他 / iOS 12+ / 其他 / 网页版",
+  "systemEn": "Windows XP+ / other / macOS 10.15+ / other / Linux (Ubuntu / Debian / Arch / Red Hat / SUSE / other) / Android 8+ / other / iOS 12+ / other / web",
   "website": "https://music.163.com/",
   "notice": "该软件为商业软件，故引导至官网下载",
+  "noticeEn": "This is commercial software, so it is linked to the official download page.",
   "store": "https://apps.microsoft.com/detail/9nblggh6g0jf?hl=zh-CN&gl=CN",
   "downloads": [
     {

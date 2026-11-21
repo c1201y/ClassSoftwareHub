@@ -4,10 +4,13 @@
   "icon": "https://images-eds-ssl.xboxlive.com/image?url=4rt9.lXDC4H_93laV1_eHHFT949fUipzkiFOBH3fAiZZUCdYojwUyX2aTonS1aIwMrx6NUIsHfUHSLzjGJFxxl2iAbsXA6iMNHnNlwb_DNsB9YKeLef28ty81sj7Gxcj_6sw7XE3WlUczl2zl9e0cZxr7Ydi0GbeDUBiJ0XV_u8-&format=source",
   "category": "system",
   "tagline": "微软官方效率工具合集（窗口置顶、取色器、批量重命名…）",
+  "taglineEn": "Microsoft's official productivity toolkit (always-on-top, color picker, batch rename and more)",
   "description": "PowerToys 是微软官方出品的 Windows 效率工具合集，免费开源。常用功能：Always On Top 窗口置顶、Color Picker 屏幕取色、PowerRename 批量重命名、FancyZones 窗口布局、Text Extractor 屏幕取字（OCR）、Awake 防止息屏、快捷键指南等。对电教委员来说，讲课时圈重点、整理素材、批量改文件名都非常省事。",
+  "descriptionEn": "PowerToys is Microsoft's free, open-source collection of Windows productivity tools. Common tools include Always On Top, Color Picker, PowerRename, FancyZones, Text Extractor (OCR), Awake and the shortcut guide. For classroom technicians it makes highlighting during lessons, organizing assets and batch-renaming files much easier.",
   "version": "0.102.3101",
   "size": "约 280 MB",
   "system": "Windows 10/11（x64 / ARM64）",
+  "systemEn": "Windows 10/11 (x64 / ARM64)",
   "platforms": [
     "windows"
   ],
@@ -16,6 +19,7 @@
   "author": "microsoft",
   "license": "MIT",
   "notice": "PowerToys 更新非常频繁（基本每月一版），所以这里不写死安装包版本。推荐直接用 Microsoft Store 安装（自动更新），或到官网 / GitHub 下载最新版。",
+  "noticeEn": "PowerToys updates very frequently (roughly monthly), so no fixed package version is listed here. Install it from Microsoft Store for automatic updates, or download the latest build from the official site or GitHub.",
   "store": "https://apps.microsoft.com/detail/xp89dcgq3k6vld",
   "downloads": [
     {

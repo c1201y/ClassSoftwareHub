@@ -1,10 +1,13 @@
 {
   "id": "360-speed-browser",
   "name": "360极速浏览器",
+  "nameEn": "360 Speed Browser",
   "icon": "https://p2.ssl.qhimg.com//dm/72_72_100/t01e07b53460b856918.png",
   "category": "office",
   "tagline": "Chromium 内核的极速浏览器，支持 Chrome 扩展",
+  "taglineEn": "Fast Chromium-based browser with Chrome extension support",
   "description": "360 极速浏览器基于 Chromium 内核，启动速度快、浏览流畅，支持 Chrome 扩展，适合教室大屏日常上网使用。提供 64 位和 32 位版本，按电脑情况选一个装即可。",
+  "descriptionEn": "360 Speed Browser is built on Chromium, starts quickly and supports Chrome extensions, making it suitable for everyday browsing on classroom displays. Both 64-bit and 32-bit builds are provided; pick the one that matches the PC.",
   "version": "23.1.1253.64",
   "size": "144 MB",
   "system": "Windows XP +",

@@ -4,10 +4,13 @@
   "icon": "https://avatars.githubusercontent.com/u/323530639?v=4",
   "category": "system",
   "tagline": "🩵 A free, open-source app store for developers' releases…",
+  "taglineZh": "免费开源的开发者发布应用商店（GitHub / Codeberg / Forgejo）",
   "description": "🩵 A free, open-source app store for developers' releases on GitHub, Codeberg & Forgejo — browse, discover, and install apps with one click. Formerly GitHub Store.",
+  "descriptionZh": "一个免费开源的开发者发布应用商店：在 GitHub、Codeberg 与 Forgejo 上浏览、发现并一键安装应用。原名 GitHub Store。",
   "version": "v1.9.4",
   "size": "",
   "system": "Windows / macOS / Linux / Android",
+  "systemZh": "Windows / macOS / Linux / Android",
   "platforms": [
     "windows",
     "macos",

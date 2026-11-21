@@ -14,8 +14,9 @@ import galleryZhCN from '../文字设置'
 import { initBrowserCache } from './gallery/browserCache'
 import { warmUpDownloadOrigin } from './gallery/githubMirror'
 import { initPwaInstall } from './gallery/pwaInstall'
+import { bootLocale } from './gallery/localeSetting'
 
-const i18n = createI18n(navigator.language, {
+const i18n = createI18n(bootLocale(), {
   'en-US': galleryEnUS,
   'zh-CN': galleryZhCN
 })

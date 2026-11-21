@@ -1,10 +1,13 @@
 {
   "id": "musicfree",
   "name": "MusicFree移动端",
+  "nameEn": "MusicFree Mobile",
   "icon": "https://musicfree.catcat.work/",
   "category": "media",
   "tagline": "插件化、定制化、无广告的免费音乐播放器",
+  "taglineEn": "Plugin-based, customizable, ad-free free music player",
   "description": "插件化、定制化、无广告的免费音乐播放器\n需要导入音源",
+  "descriptionEn": "A plugin-based, customizable, ad-free free music player. Audio sources must be imported.",
   "version": "v0.6.2",
   "size": "",
   "system": "Android",

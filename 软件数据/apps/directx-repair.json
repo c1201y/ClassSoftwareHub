@@ -1,13 +1,17 @@
 {
   "id": "directx-repair",
   "name": "DirectX 修复工具",
+  "nameEn": "DirectX Repair",
   "icon": "https://res.callmysoft.com/wc/image/2025-07/f32eed17110e554b.png",
   "category": "system",
   "tagline": "一键检测修复 DirectX / C++ 运行库缺失",
+  "taglineEn": "One-click detection and repair for DirectX and C++ runtimes",
   "description": "DirectX 修复工具（DirectX Repair）由国内作者 VBcom 开发，是解决「缺少 d3dx9_43.dll 等 dll 导致程序无法启动」「游戏提示缺少 DirectX 组件」等问题的常用工具。可一键检测并修复 DirectX 组件，同时支持 C++ 运行库的检测与安装。推荐下载「增强版」：体积比标准版小，且自带离线数据包，断网也能完成修复。压缩包解压后运行其中的 exe 即可，纯绿色免安装。",
+  "descriptionEn": "DirectX Repair, by Chinese developer VBcom, fixes common startup failures caused by missing DLLs such as d3dx9_43.dll or missing DirectX components. It detects and repairs DirectX in one click and can also detect and install C++ runtimes. The Enhanced edition is recommended: it is smaller than the Standard edition and includes offline data, so repairs work without a network. Extract the archive and run the exe; no installation is needed.",
   "version": "4.4.0.36953",
   "size": "116 MB（7z）/ 198 MB（zip）",
   "system": "Windows XP ~ 11（32 / 64 位）",
+  "systemEn": "Windows XP ~ 11 (32 / 64-bit)",
   "platforms": ["windows"],
   "website": "https://www.zysoftware.top/post/10.html",
   "downloads": [

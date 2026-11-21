@@ -1,13 +1,17 @@
 {
   "id": "huorong-security",
   "name": "火绒安全软件",
+  "nameEn": "Huorong Security",
   "icon": "https://images-eds-ssl.xboxlive.com/image?url=4rt9.lXDC4H_93laV1_eHM0OYfiFeMI2p9MWie0CvL99U4GA1gf6_kayTt_kBblFwHwo8BW8JXlqfnYxKPmmBcroYGWjOABlhKf2AVUi0WZ9KDmMjsPpPVSOyV6XCwMSy3166ItTkU_VT5s2cwTPeEHuCqaPdlw9P7j94tTzKto-&format=source&h=134",
   "category": "system",
   "tagline": "轻量无弹窗的安全软件，教室大屏防护首选",
+  "taglineEn": "Lightweight, ad-free security suite — a top choice for classroom displays",
   "description": "火绒安全软件把反病毒、主动防御和防火墙三大模块整合在一起，占用资源极低、没有广告弹窗，还能有效拦截流氓软件和各种弹窗推广。给教室大屏装一个，既安静又省心。",
+  "descriptionEn": "Huorong Security combines antivirus, proactive defense and a firewall in one low-resource suite with no ad pop-ups. It also blocks bundled junkware and promotional pop-ups, keeping classroom PCs quiet and manageable.",
   "version": "6.0.13.1",
   "size": "约 68 MB",
   "system": "Windows 7+",
+  "systemEn": "Windows 7+",
   "website": "https://www.huorong.cn/",
   "author": "火绒",
   "downloads": [

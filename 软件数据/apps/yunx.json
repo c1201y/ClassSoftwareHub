@@ -1,10 +1,13 @@
 {
   "id": "yunx",
   "name": "云析",
+  "nameEn": "YunX",
   "icon": "https://pic.appskong.com/up/202608/10_1786339703329.webp",
   "category": "network",
   "tagline": "✨一个安卓网盘解析下载app✨",
+  "taglineEn": "Android cloud-drive link parser and downloader",
   "description": "粘贴分享链接，直接高速下载 —— 一个开源的 Android 网盘解析下载应用\n\n识别夸克 / UC / 迅雷 / 百度 / 139 / 123 / 115 / 光鸭 / 蓝奏云 / 蓝奏云优享版 分享链接，自动匹配提取码，Range 分片并发 + 断点续传。",
+  "descriptionEn": "Paste a share link and download at high speed — an open-source Android app that parses and downloads cloud-drive shares.\n\nIt recognizes Quark / UC / Thunder / Baidu / 139 / 123 / 115 / Guangya / Lanzou / Lanzou Premium links, matches extraction codes automatically, and uses Range-based parallel chunks with resumable downloads.",
   "version": "v1.3.1",
   "system": "Android",
   "github": "https://github.com/CYQawa/YunX",

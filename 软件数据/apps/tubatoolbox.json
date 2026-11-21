@@ -1,13 +1,17 @@
 {
   "id": "tubatoolbox",
   "name": "图吧工具箱（WinUI3 版）",
+  "nameEn": "Tuba Toolbox (WinUI 3)",
   "icon": "https://cdn.jsdelivr.net/gh/luolangaga/tubatools@master/StoreAssets/AppTileIcon_300x300.png",
   "category": "system",
   "tagline": "硬件检测 / 系统维护工具箱，经典「图吧工具箱」的 WinUI3 重制版",
+  "taglineEn": "Hardware diagnostics and system maintenance toolbox, rebuilt with WinUI 3",
   "description": "图吧工具箱 CE 是经典装机工具「图吧工具箱」的 WinUI3 现代化重制版，开源免费、界面清爽。内置 CPU-Z、GPU-Z、AIDA64、CrystalDiskInfo、CrystalDiskMark、MemTest、HWiNFO 等数十款常用硬件检测与系统维护工具，还可直接从社区工具库下载更多插件，适合装机验机、排查硬件故障。安装版自带完整工具集，便携版解压即用。",
+  "descriptionEn": "Tuba Toolbox CE is a modern WinUI 3 remake of the classic PC-building toolbox, open source, free and clean. It bundles dozens of hardware and system tools such as CPU-Z, GPU-Z, AIDA64, CrystalDiskInfo, CrystalDiskMark, MemTest and HWiNFO, and can download more plugins from the community library. It is suitable for build validation and hardware troubleshooting. The installer includes the full tool set; the portable build runs after extraction.",
   "version": "1.9.1",
   "size": "226 MB ~ 418 MB",
   "system": "Windows 10/11（x64 / ARM64）",
+  "systemEn": "Windows 10/11 (x64 / ARM64)",
   "platforms": [
     "windows"
   ],
@@ -16,6 +20,7 @@
   "author": "luolangaga",
   "license": "GPL-3.0",
   "notice": "该软件更新较频繁，建议用 Microsoft Store 版本（装完自动更新，不用手动找新版）；下面的 GitHub 直链是当前版本 1.6.1。",
+  "noticeEn": "Updates frequently; the Microsoft Store version is recommended (automatic updates). The GitHub direct link below is version 1.6.1.",
   "store": "https://apps.microsoft.com/detail/9p15095x7mgb",
   "downloads": [
     {
