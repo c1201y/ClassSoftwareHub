@@ -73,19 +73,19 @@ const AI导航文本: AiNavText = {
       color: '#1667FF'
     },
     {
-      name: '通义千问',
-      nameEn: 'Tongyi Qianwen',
-      desc: '阿里出品，长文档和办公处理强',
-      descEn: 'Alibaba\'s model, strong on long documents and office work',
-      url: 'https://www.tongyi.com/',
+      name: '千问',
+      nameEn: 'Qwen',
+      desc: '阿里 Qwen 官方入口：搜索、长文、PPT、生图与录音纪要',
+      descEn: 'Alibaba\'s official Qwen entry: search, long documents, slides, images and meeting notes',
+      url: 'https://www.qianwen.com/',
       color: '#615CED'
     },
     {
-      name: '文心一言',
-      nameEn: 'ERNIE Bot',
-      desc: '百度出品，中文理解和写作',
-      descEn: 'Baidu\'s model for Chinese comprehension and writing',
-      url: 'https://yiyan.baidu.com/',
+      name: '文心助手',
+      nameEn: 'ERNIE Assistant',
+      desc: '百度文心：对话、写作、PPT、知识库与定时任务',
+      descEn: 'Baidu ERNIE for chat, writing, slides, knowledge base and scheduled tasks',
+      url: 'https://wenxin.baidu.com/',
       color: '#2932E1'
     },
     {
@@ -152,13 +152,21 @@ const AI导航文本: AiNavText = {
       url: 'https://chat.intern-ai.org.cn/',
       color: '#2E7D6F'
     },
+    {
+      name: '小艺',
+      nameEn: 'Xiaoyi',
+      desc: '华为自研，问答、写作、读文档、识图都能做',
+      descEn: 'Huawei\'s assistant for Q&A, writing, documents and images',
+      url: 'https://xiaoyi.huawei.com/chat/',
+      color: '#CF0A2C'
+    },
 
     // ── AI 搜索 / 学习 ────────────────────────────────────────
     {
       name: '知乎直答',
       nameEn: 'Zhihu Direct Answer',
-      desc: '知乎出品，答案带真实来源',
-      descEn: 'From Zhihu; answers come with real sources',
+      desc: '知乎出品，答案带真实来源（需登录知乎）',
+      descEn: 'From Zhihu; answers come with real sources (Zhihu login required)',
       url: 'https://zhida.zhihu.com/',
       color: '#0084FF'
     },
@@ -171,11 +179,11 @@ const AI导航文本: AiNavText = {
       color: '#8B5CF6'
     },
     {
-      name: '纳米 AI 搜索',
-      nameEn: 'Nano AI Search',
-      desc: '360 出品，一次聚合多种大模型',
-      descEn: 'From 360; queries several large models at once',
-      url: 'https://www.n.cn/',
+      name: '纳米 AI',
+      nameEn: 'Nano AI',
+      desc: '360 多智能体搜索，能出报告、PPT 与视频',
+      descEn: '360 Nano AI: multi-agent search that produces reports, slides and video',
+      url: 'https://bot.n.cn/',
       color: '#00B85C'
     },
     {
