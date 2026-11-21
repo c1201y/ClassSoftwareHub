@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-11-18T16:52:59.975Z",
-  "_原始ID冲突": false,
   "id": "sumatra-pdf",
   "name": "SumatraPDF",
   "icon": "https://submit.132614.xyz/api/icon?k=icon%2F2026%2F11%2Fmwmcqhlw-l65cn6-1.ico",
@@ -15,7 +13,7 @@
   "downloads": [
     {
       "platform": "Windows x64 安装版",
-      "url": "oss://upload/2026/11/mwmcudv6-cwptkr-SumatraPDF-3.6.1-64-install.exe"
+      "url": "oss://releases/2026/11/mwmcudv6-cwptkr-SumatraPDF-3.6.1-64-install.exe"
     },
     {
       "platform": "Windows x86 安装版",
@@ -35,5 +33,7 @@
     }
   ],
   "sort": 25,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBKSlBvcVlaMS9aRUpEQXhG\nTXVGT1RtWGdsaXRwZ091S0RTYTVDM1ZkbVhjCkgyMklXckNhRGthaXRzdEFiZzZs\nNFlCVnBjZHJvalhxWC9HRlZ5RTNKMm8KLS0tIGJQUHhqZ0Q1RUdFZGpTU3F3azNz\nRXFzZHpjN29OWUhzRU9Hak9QNU9HbHMKEjmek+D+nuXqkbSj5P2FbqmMkNoscLHp\nDaDMKhhCf4cg3/3wXA5BSdbb\n-----END AGE ENCRYPTED FILE-----"
+  "platforms": [
+    "windows"
+  ]
 }
