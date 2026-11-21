@@ -512,3 +512,65 @@ html.theme-dark .detail-category-badge {
     max-width: none;
   }
 }
+
+/* ── 兼容性提示条 ──────────────────────────────────────────────────
+   三档：ok（绿）/ no（红）/ unknown（灰）。
+   用左侧色条 + 图标区分，不靠背景色铺满，避免与上方标题抢注意力。 */
+.detail-compat {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 14px 0 4px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border-left: 3px solid var(--text-tertiary, #888);
+  background: var(--subtle-fill, rgba(0, 0, 0, 0.04));
+}
+
+.detail-compat.is-ok {
+  border-left-color: #107C10;
+  background: rgba(16, 124, 16, 0.08);
+}
+
+.detail-compat.is-no {
+  border-left-color: #C42B1C;
+  background: rgba(196, 43, 28, 0.08);
+}
+
+.detail-compat-icon {
+  flex: none;
+  font-family: 'WinUIOnWebIcons';
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.detail-compat.is-ok .detail-compat-icon { color: #107C10; }
+.detail-compat.is-no .detail-compat-icon { color: #C42B1C; }
+
+.detail-compat-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.detail-compat-title {
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.detail-compat-sub {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.detail-compat-device {
+  flex: none;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-tertiary, var(--text-secondary));
+  white-space: nowrap;
+}

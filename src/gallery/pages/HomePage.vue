@@ -134,6 +134,17 @@
               DisplayMemberPath="name"
               v-model:SelectedIndex="platformIndex" />
             <span class="filter-count">{{ countText }}</span>
+            <!-- 选择分享：和筛选器放一起 —— 都是「在这堆软件里挑」的动作。
+                 进入后卡片右上角出现勾选，选完整条链接发出去。 -->
+            <button
+              type="button"
+              class="home-pick-btn"
+              :class="{ 'is-active': pickMode }"
+              :title="t('collection.pick-hint')"
+              @click="togglePickMode">
+              <span class="home-pick-icon" aria-hidden="true">{{ pickMode ? '\uE711' : '\uE72D' }}</span>
+              <span>{{ pickMode ? t('collection.exit-pick') : t('collection.enter-pick') }}</span>
+            </button>
           </div>
         </div>
 
@@ -164,9 +175,10 @@
               :key="app.id"
               type="button"
               class="control-item download-card"
+              :class="{ 'is-picked': pickMode && isPicked(app.id) }"
               @mouseenter="prefetchRoute('download-detail')"
               @focus="prefetchRoute('download-detail')"
-              @click="openDetail(app)">
+              @click="onCardClick(app)">
               <span class="control-item-surface">
                 <span class="download-app-icon">
                   <!-- 图标：本地优先，失败回退首字 -->
@@ -188,6 +200,10 @@
                     TextWrapping="NoWrap" />
                 </span>
                 <span class="category-badge">{{ categoryName(app.category, locale) }}</span>
+                <!-- 挑选模式下的勾选角标 -->
+                <span v-if="pickMode" class="pick-mark" aria-hidden="true">
+                  {{ isPicked(app.id) ? '\uE73E' : '\uE710' }}
+                </span>
               </span>
             </button>
           </div>
@@ -195,12 +211,72 @@
       </div>
     </div>
   </WinScrollViewer>
+    <!-- 挑选分享：底部悬浮栏 -->
+    <div v-if="pickMode" class="pick-bar" role="region" :aria-label="t('collection.pick-bar-label')">
+      <span class="pick-bar-count">{{ t('collection.picked-count', { count: picked.length, max: COLLECTION_MAX }) }}</span>
+      <span class="pick-bar-names">{{ pickedNames }}</span>
+      <span class="pick-bar-actions">
+        <WinButton
+          Style="AccentButtonStyle"
+          FontSize="13"
+          Padding="12,0,12,0"
+          :Content="t('collection.share')"
+          :IsEnabled="picked.length > 0"
+          @Click="openPickShare" />
+        <WinButton
+          FontSize="13"
+          Padding="10,0,10,0"
+          :Content="t('collection.clear')"
+          :IsEnabled="picked.length > 0"
+          @Click="clearPicked" />
+      </span>
+    </div>
+
+    <!-- 分享结果面板 -->
+    <div v-if="pickShareOpen && picked.length" class="pick-share-mask" @click.self="pickShareOpen = false">
+      <div class="pick-share" role="dialog" aria-modal="true">
+        <div class="pick-share-head">
+          <span class="pick-share-title">{{ t('collection.share-title') }}</span>
+          <button type="button" class="pick-share-x" :aria-label="t('collection.close')" @click="pickShareOpen = false">×</button>
+        </div>
+        <div class="pick-share-body">
+          <div class="pick-share-left">
+            <span class="tool-label">{{ t('collection.share-text-label') }}</span>
+            <textarea class="pick-share-text" :value="pickShareText" readonly rows="7" @focus="selectAll" />
+            <div class="pick-share-btns">
+              <WinButton
+                Style="AccentButtonStyle"
+                FontSize="13"
+                Padding="10,0,10,0"
+                :Content="pickCopyState === 'text' ? t('collection.copied') : t('collection.copy-text')"
+                @Click="copyPickShare('text')" />
+              <WinButton
+                FontSize="13"
+                Padding="10,0,10,0"
+                :Content="pickCopyState === 'link' ? t('collection.copied') : t('collection.copy-link')"
+                @Click="copyPickShare('link')" />
+              <WinButton
+                FontSize="13"
+                Padding="10,0,10,0"
+                :Content="t('collection.open')"
+                @Click="openPickPage" />
+            </div>
+          </div>
+          <div class="pick-share-qr">
+            <span class="tool-label">{{ t('collection.qr-label') }}</span>
+            <div class="pick-share-qr-img" v-html="pickQrSvg" />
+            <span class="tool-hint pick-share-qr-tip">{{ t('collection.qr-tip') }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
 </template>
 
 <script setup lang="ts">
 import { computed, inject, onMounted, ref } from 'vue';
 import type { Ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { prefetchRoute } from '../router';
 import type { HolidayTheme } from '../holidayTheme';
 import WinScrollViewer from '../../components/WinScrollViewer.vue';
@@ -214,6 +290,15 @@ import { applyUpdate, checkForUpdate } from '../appUpdate';
 import { apps, categories, categoryName, platformName, platforms, appName, appTagline } from '../data';
 import type { SoftwareApp } from '../data';
 import { appIconUrlSafe, markIconBroken } from '../appIcons';
+import {
+  COLLECTION_MAX,
+  buildCollectionText,
+  buildCollectionUrl,
+  decodeIds,
+  readDraft,
+  saveDraft
+} from '../collection';
+import { buildQrSvg } from '../share';
 import '../styles/home-page.css';
 // 软件清单模板：与根目录 软件数据/apps/_模板.json 保持同源（打包时内联进单文件）
 import softwareTemplateRaw from '../../../软件数据/apps/_模板.json?raw';
@@ -275,6 +360,104 @@ const showIwbCard = computed(
     Boolean(t('home.iwb-card-desc')?.trim()) &&
     Boolean(t('home.iwb-card-url')?.trim())
 );
+
+/* ── 选择分享 ───────────────────────────────────────────────────
+   在首页就地勾选软件，生成一条可分享的清单链接。 */
+
+const pickMode = ref(false);
+
+const route = useRoute();
+
+/** 打开时带 ?ids= 就是别人分享来的清单：直接进挑选模式并勾好 */
+const incoming = decodeIds(String(route.query.ids ?? ''));
+const picked = ref<string[]>(incoming.length ? incoming : readDraft());
+if (incoming.length) pickMode.value = true;
+
+const pickShareOpen = ref(false);
+const pickCopyState = ref<'' | 'text' | 'link'>('');
+
+const isPicked = (id: string) => picked.value.includes(id);
+
+/** 底部悬浮栏里的已选名字（最多 6 个） */
+const pickedNames = computed(() => {
+  const names = picked.value
+    .map((id) => {
+      const found = apps.find((a) => a.id === id);
+      return found ? appName(found, locale) : '';
+    })
+    .filter(Boolean);
+  if (!names.length) return '';
+  const head = names.slice(0, 6).join('、');
+  return names.length > 6 ? `${head} 等 ${names.length} 个` : head;
+});
+
+const togglePickMode = () => {
+  pickMode.value = !pickMode.value;
+  if (!pickMode.value) pickShareOpen.value = false;
+};
+
+const togglePick = (id: string) => {
+  const list = [...picked.value];
+  const at = list.indexOf(id);
+  if (at >= 0) list.splice(at, 1);
+  else if (list.length < COLLECTION_MAX) list.push(id);
+  else return;
+  picked.value = list;
+  saveDraft(list);
+};
+
+const clearPicked = () => {
+  picked.value = [];
+  saveDraft([]);
+  pickShareOpen.value = false;
+};
+
+/** 挑选模式下点卡片是勾选，否则照旧进详情页 */
+const onCardClick = (app: SoftwareApp) => {
+  if (pickMode.value) {
+    togglePick(app.id);
+    return;
+  }
+  openDetail(app);
+};
+
+const pickShareUrl = computed(() => buildCollectionUrl(picked.value));
+const pickShareText = computed(() => {
+  const names = picked.value
+    .map((id) => {
+      const found = apps.find((a) => a.id === id);
+      return found ? appName(found, locale) : '';
+    })
+    .filter(Boolean);
+  return buildCollectionText(names, pickShareUrl.value);
+});
+const pickQrSvg = computed(() => (pickShareUrl.value ? buildQrSvg(pickShareUrl.value) : ''));
+
+const openPickShare = () => {
+  if (picked.value.length) pickShareOpen.value = true;
+};
+
+const copyPickShare = async (kind: 'text' | 'link') => {
+  const value = kind === 'text' ? pickShareText.value : pickShareUrl.value;
+  if (!value) return;
+  try {
+    await navigator.clipboard.writeText(value);
+    pickCopyState.value = kind;
+    window.setTimeout(() => {
+      if (pickCopyState.value === kind) pickCopyState.value = '';
+    }, 2000);
+  } catch {
+    // 剪贴板不可用：textarea 可手动复制
+  }
+};
+
+const openPickPage = () => {
+  if (pickShareUrl.value) window.open(pickShareUrl.value, '_blank', 'noopener,noreferrer');
+};
+
+const selectAll = (e: Event) => {
+  (e.target as HTMLTextAreaElement | null)?.select();
+};
 
 const openDetail = (app: SoftwareApp) => {
   void router.push({ name: 'download-detail', params: { id: app.id } });

@@ -774,3 +774,204 @@ html.theme-dark .category-badge {
 .home-update-bar {
   margin: 0 0 16px;
 }
+
+/* 选择分享按钮：放在分类筛选条右侧，和平台下拉、软件计数同一行 ——
+   它们都是「在这堆软件里挑」的动作，放一起比塞进页头按钮区更顺。
+   比筛选条上的小字略大一档，但仍是次级按钮（不是主操作）。 */
+.home-pick-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 4px;
+  border: 1px solid var(--ctrl-border, rgba(0, 0, 0, 0.22));
+  background: var(--ctrl-fill-default, rgba(255, 255, 255, 0.7));
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 83ms linear, border-color 83ms linear;
+}
+
+.home-pick-btn:hover {
+  background: var(--ctrl-fill-secondary, rgba(0, 0, 0, 0.05));
+}
+
+.home-pick-btn.is-active {
+  border-color: var(--accent-base, #0067C0);
+  background: color-mix(in srgb, var(--accent-base, #0067C0) 16%, transparent);
+  color: var(--accent-base, #0067C0);
+}
+
+.home-pick-icon {
+  font-family: 'WinUIOnWebIcons';
+  font-size: 12px;
+  line-height: 1;
+}
+
+.pick-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: min(920px, calc(100vw - 32px));
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--card-stroke, var(--ctrl-border, rgba(0, 0, 0, 0.12)));
+  background: var(--dialog-background, var(--card-bg, #fff));
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.32);
+}
+
+.pick-bar-count {
+  flex: none;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pick-bar-names {
+  min-width: 0;
+  flex: 1 1 auto;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pick-bar-actions {
+  flex: none;
+  display: flex;
+  gap: 8px;
+}
+
+/* 分享面板 */
+.pick-share-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.pick-share {
+  width: min(620px, 100%);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--card-stroke, var(--ctrl-border, rgba(0, 0, 0, 0.12)));
+  background: var(--dialog-background, var(--card-bg, #fff));
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.pick-share-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pick-share-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.pick-share-x {
+  border: none;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.pick-share-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: start;
+}
+
+.pick-share-left {
+  min-width: 0;
+}
+
+.pick-share-text {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 9px 11px;
+  border-radius: 6px;
+  border: 1px solid var(--ctrl-border, rgba(0, 0, 0, 0.22));
+  background: var(--ctrl-fill-default, rgba(255, 255, 255, 0.7));
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.pick-share-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.pick-share-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.pick-share-qr-img {
+  width: 148px;
+  height: 148px;
+  padding: 6px;
+  border-radius: 8px;
+  background: #fff;
+  line-height: 0;
+}
+
+.pick-share-qr-img svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.pick-share-qr-tip {
+  max-width: 150px;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .pick-bar {
+    left: 8px;
+    right: 8px;
+    bottom: 12px;
+    transform: none;
+    max-width: none;
+    flex-wrap: wrap;
+  }
+
+  .pick-bar-names {
+    display: none;
+  }
+
+  .pick-share-body {
+    grid-template-columns: 1fr;
+  }
+}

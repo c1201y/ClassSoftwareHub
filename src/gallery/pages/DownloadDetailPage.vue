@@ -32,6 +32,19 @@
           </div>
         </div>
 
+        <!-- 兼容性提示：用浏览器能识别的系统信息判断「这台电脑能不能装」。
+             拿不准时明确说「无法确定」，不编答案 —— 浏览器读不到真实硬件。 -->
+        <div v-if="compat" class="detail-compat" :class="'is-' + compat.verdict">
+          <span class="detail-compat-icon" aria-hidden="true">{{ compatIcon }}</span>
+          <span class="detail-compat-text">
+            <span class="detail-compat-title">{{ t(compat.reasonKey, compat.reasonParams) }}</span>
+            <span v-if="compat.verdict !== 'ok' && supportedNames.length" class="detail-compat-sub">
+              {{ t('compat.supported', { list: supportedNames.join(' / ') }) }}
+            </span>
+          </span>
+          <span class="detail-compat-device">{{ deviceLabel }}</span>
+        </div>
+
         <!-- 分享：文案 + 链接 + 二维码 -->
         <div v-if="shareOpen" class="detail-share-panel">
           <div class="detail-share-main">
@@ -265,6 +278,7 @@ import {
 } from '../data';
 import type { DownloadItem } from '../data';
 import { appIconUrlSafe, markIconBroken } from '../appIcons';
+import { checkCompat, detectDevice, platformNames, type CompatResult, type DeviceProfile } from '../compatibility';
 import { isSafeNavigateUrl, kindOf, triggerDownload } from '../downloadLink';
 import { OssDownloadError, ossKeyOf, resolveDownloadDetail } from '../ossDownload';
 import {
@@ -478,6 +492,37 @@ const onMirrorClick = (download: DownloadItem, channel: MirrorChannel) => {
   rememberChannel(channel.id);
   mirrorOpenUrl.value = '';
 };
+
+/* ── 兼容性判断 ───────────────────────────────────────────────────
+   浏览器能识别系统族（Windows / macOS / …）和架构，但**读不到**真实硬件，
+   也分不清 Win10 与 Win11（UA 从 Win10 起就冻结在 NT 10.0）。
+   所以这里只在有把握时给结论，拿不准就显示「无法确定」。 */
+
+const device: DeviceProfile = detectDevice();
+
+const deviceLabel = computed(() => {
+  if (!device.label) return '';
+  return device.arch && device.family === 'windows'
+    ? `${device.label} · ${device.arch === 'arm64' ? 'ARM64' : 'x64'}`
+    : device.label;
+});
+
+const compat = computed<CompatResult | null>(() => {
+  const value = app.value;
+  if (!value) return null;
+  return checkCompat(value.platforms, device);
+});
+
+const supportedNames = computed(() => platformNames(app.value?.platforms));
+
+/** 三种结论各用一个字形：对勾 / 禁止 / 问号（均已实测过形状） */
+const compatIcon = computed(() => {
+  switch (compat.value?.verdict) {
+    case 'ok': return '\uE73E';
+    case 'no': return '\uE711';
+    default: return '\uE897';
+  }
+});
 
 /* ── 分享（逻辑在 src/gallery/share.ts，这里只管交互状态）────────── */
 

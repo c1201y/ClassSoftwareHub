@@ -117,6 +117,7 @@ import {
   removeSearchHistory,
   suggestedTerms
 } from './searchHistory';
+import { recordHit } from './searchRank';
 
 const props = defineProps<{
   /** 是否显示结果下拉 */
@@ -246,6 +247,8 @@ const moveActive = (step: number) => {
 };
 
 const activate = (hit: GlobalHit) => {
+  // 记录「真的点开了」—— 搜索结果同分时常用项会靠前（见 searchRank.ts）
+  recordHit(hit.key);
   if (hit.url) {
     // AI 导航为站外站点：新标签页打开，关闭下拉（当前页面不跳转）
     window.open(hit.url, '_blank', 'noopener,noreferrer');

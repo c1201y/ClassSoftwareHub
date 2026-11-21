@@ -17,6 +17,15 @@ export interface ToolDef {
 
 export const TOOLS: ToolDef[] = [
   {
+    // 离线词典：词条按首字母分块放在 public/dict/，查到才下载
+    id: 'dict',
+    nameKey: 'tool.dict.name',
+    descKey: 'tool.dict.desc',
+    icon: '\uE82D',
+    groupKey: 'tool.group.classroom',
+    load: () => import('./DictTool.vue')
+  },
+  {
     id: 'announce',
     nameKey: 'tool.announce.name',
     descKey: 'tool.announce.desc',

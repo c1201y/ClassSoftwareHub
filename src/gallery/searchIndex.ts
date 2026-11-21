@@ -2,6 +2,7 @@ import { apps, categoryName, appName, appTagline, appDescription } from './data'
 import type { Locale } from '../components/i18n/index';
 import { TOOLS } from './tools';
 import aiNav from '../../AI导航文本';
+import { reorderByHits } from './searchRank';
 
 /** 结果类别 */
 export type GlobalHitKind = 'app' | 'tool' | 'ai' | 'page';
@@ -236,10 +237,13 @@ export const searchApps = (query: string, locale: Locale = 'zh-CN', limit = 5): 
     }
   }
   // 相关度高的在前；同分按数据里的 sort 顺序（apps 已按 sort 排好，稳定排序保持它）
+  // 相关度高的在前；**同分时常用的排前面**（见 searchRank.ts）
   const byScore = (a: { score: number }, b: { score: number }) => b.score - a.score;
-  return [...nameHits.sort(byScore), ...introHits.sort(byScore)]
-    .slice(0, limit)
-    .map((entry) => entry.hit);
+  const ranked = [
+    ...reorderByHits(nameHits.sort(byScore), (x) => x.score, (x) => x.hit.key),
+    ...reorderByHits(introHits.sort(byScore), (x) => x.score, (x) => x.hit.key)
+  ];
+  return ranked.slice(0, limit).map((entry) => entry.hit);
 };
 
 /** ② 内置工具：工具名 / 说明 / 分组名（名称命中优先，组内按相关度排序） */
@@ -272,9 +276,11 @@ export const searchTools = (
     }
   }
   const byScore = (a: { score: number }, b: { score: number }) => b.score - a.score;
-  return [...nameHits.sort(byScore), ...otherHits.sort(byScore)]
-    .slice(0, limit)
-    .map((entry) => entry.hit);
+  const ranked = [
+    ...reorderByHits(nameHits.sort(byScore), (x) => x.score, (x) => x.hit.key),
+    ...reorderByHits(otherHits.sort(byScore), (x) => x.score, (x) => x.hit.key)
+  ];
+  return ranked.slice(0, limit).map((entry) => entry.hit);
 };
 
 /** ③ AI 导航：站点名 / 说明 / 域名（名称命中优先，组内按相关度排序） */
