@@ -1,0 +1,109 @@
+{
+ "total": 29417,
+ "blocks": {
+  "a": {
+   "file": "a.txt.gz",
+   "count": 1815
+  },
+  "b": {
+   "file": "b.txt.gz",
+   "count": 1573
+  },
+  "c": {
+   "file": "c.txt.gz",
+   "count": 2785
+  },
+  "d": {
+   "file": "d.txt.gz",
+   "count": 1815
+  },
+  "e": {
+   "file": "e.txt.gz",
+   "count": 1263
+  },
+  "f": {
+   "file": "f.txt.gz",
+   "count": 1323
+  },
+  "g": {
+   "file": "g.txt.gz",
+   "count": 912
+  },
+  "h": {
+   "file": "h.txt.gz",
+   "count": 1098
+  },
+  "i": {
+   "file": "i.txt.gz",
+   "count": 1403
+  },
+  "j": {
+   "file": "j.txt.gz",
+   "count": 272
+  },
+  "k": {
+   "file": "k.txt.gz",
+   "count": 220
+  },
+  "l": {
+   "file": "l.txt.gz",
+   "count": 964
+  },
+  "m": {
+   "file": "m.txt.gz",
+   "count": 1555
+  },
+  "n": {
+   "file": "n.txt.gz",
+   "count": 607
+  },
+  "o": {
+   "file": "o.txt.gz",
+   "count": 745
+  },
+  "p": {
+   "file": "p.txt.gz",
+   "count": 2320
+  },
+  "q": {
+   "file": "q.txt.gz",
+   "count": 127
+  },
+  "r": {
+   "file": "r.txt.gz",
+   "count": 1646
+  },
+  "s": {
+   "file": "s.txt.gz",
+   "count": 3272
+  },
+  "t": {
+   "file": "t.txt.gz",
+   "count": 1425
+  },
+  "u": {
+   "file": "u.txt.gz",
+   "count": 853
+  },
+  "v": {
+   "file": "v.txt.gz",
+   "count": 480
+  },
+  "w": {
+   "file": "w.txt.gz",
+   "count": 796
+  },
+  "x": {
+   "file": "x.txt.gz",
+   "count": 13
+  },
+  "y": {
+   "file": "y.txt.gz",
+   "count": 97
+  },
+  "z": {
+   "file": "z.txt.gz",
+   "count": 38
+  }
+ }
+}
