@@ -1,0 +1,44 @@
+{
+  "_提交时间": "2026-11-22T08:17:16.183Z",
+  "_原始ID冲突": false,
+  "id": "shiroha-quiz",
+  "name": "Shiroha Quiz",
+  "icon": "https://avatars.githubusercontent.com/u/93467189?v=4",
+  "category": "utility",
+  "tagline": "支持自定义题库导入、练习刷题、模拟考试与错题复习的轻量级刷题应用（现已支持AI核对、AI解析）",
+  "description": "Shiroha Quiz 是一个轻量、开源的刷题工具，支持自导入题库、练习、考试与多端使用。\n\n你手里有 Word、Excel、TXT、JSON，或者题目和答案分开的文件。Shiroha Quiz 尝试把这些内容自动识别成可练习、可考试、可复盘的个人题库。",
+  "version": "v2.8.12.1-beta",
+  "size": "",
+  "system": "Android 8 / 9 / 10 / 其他 / 网页版",
+  "website": "https://reiqr.github.io/shiroha-quiz",
+  "github": "https://github.com/reiqr/shiroha-quiz",
+  "downloads": [
+    {
+      "platform": "Android（APK）",
+      "note": "Shiroha-Quiz-v0.9.16.1-native-release.apk",
+      "size": "6.3 MB",
+      "url": "https://github.com/reiqr/shiroha-quiz/releases/download/v2.8.12.1-beta/Shiroha-Quiz-v0.9.16.1-native-release.apk"
+    },
+    {
+      "platform": "其他 压缩包",
+      "note": "shiroha-quiz-web-v0.8.9.1-alpha.zip",
+      "size": "1.1 MB",
+      "url": "https://github.com/reiqr/shiroha-quiz/releases/download/v2.8.12.1-beta/shiroha-quiz-web-v0.8.9.1-alpha.zip"
+    }
+  ],
+  "sort": 99,
+  "platforms": [
+    "android",
+    "web"
+  ],
+  "_提交指纹": "26504d37c8be2837",
+  "_系统版本": {
+    "android": [
+      "8",
+      "9",
+      "10",
+      "other"
+    ]
+  },
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBwYlllT0NneDg2N045ZGhh\nblBJSFdKb0ZSMmpUbkJkSW1YL3BXeWlZWlJZClgzRElyeU9lMEgvNkJrREovUHkz\nSEhHRERERzJQcWxEUVlzdmNKaFBVYkUKLS0tIE5YWWZnM1N4a3pmNUJ5ekdlNXZl\nQlpMWjNrQXY1QXluWE40SWlxdXh0bGMKrzR1P/ft8cNj+Uf5ehgZNbrR/NcCV/wF\nDTPz/dzd+cAcqnCwBnalYcpkjBvN\n-----END AGE ENCRYPTED FILE-----"
+}
