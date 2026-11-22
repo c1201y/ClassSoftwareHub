@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-11-16T13:27:43.963Z",
-  "_原始ID冲突": false,
   "id": "notepad-plus-plus",
   "name": "Notepad",
   "icon": "https://avatars.githubusercontent.com/u/12589084?s=60&v=4",
@@ -21,5 +19,7 @@
     }
   ],
   "sort": 99,
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBvcmtvWDJPTExBb2RwZGF5\nTHRFcVV3a2twZ1JpcWZ0Mi81dm5FbXZXOUE4CitJOTBqMDQ1dllwLzFxOUpRL0lt\ndzYxa3dDVEttNzJLc0xOV3prWGsweDQKLS0tIHBKbnR0cXByN2NOSGpJOGhTQlRL\nVnBaeGZ1am5GNGtIbGljSUxLWHppV28KB/nUZw5vJyMgFV/O02mXQoxClQQtN9M9\nzx9hWmoy8WO1xaUcXaZc5faJ45Hz9fNIWwyjgfhNLA==\n-----END AGE ENCRYPTED FILE-----"
+  "platforms": [
+    "windows"
+  ]
 }
