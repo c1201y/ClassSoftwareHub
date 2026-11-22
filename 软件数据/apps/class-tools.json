@@ -1,0 +1,23 @@
+{
+  "id": "class-tools",
+  "name": "希沃桌面3.0",
+  "icon": "",
+  "category": "teaching",
+  "tagline": "希沃出品的侧边栏常驻小工具",
+  "description": "没有课程表的小瓦工，只有批注截图等功能\n可以打开类似希沃白板的东西",
+  "version": "8.1.0.30",
+  "size": "",
+  "system": "Windows10+",
+  "website": "",
+  "github": "",
+  "downloads": [
+    {
+      "platform": "",
+      "url": "oss://releases/2026/11/mwlmlm4j-puuup3-SEEWO桌面.8.1.0.30.exe"
+    }
+  ],
+  "sort": 9,
+  "platforms": [
+    "windows"
+  ]
+}
