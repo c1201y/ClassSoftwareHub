@@ -812,6 +812,64 @@ html.theme-dark .category-badge {
   line-height: 1;
 }
 
+/* ── 分享清单横幅 ──────────────────────────────────────────────────
+   别人发来的组合：顶部一条说明 + 两个动作，下面只列清单里的软件。
+   用左侧强调色条而非整块底色，和页面其它 info 条保持同一套语言。 */
+.share-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 6px 0 18px;
+  padding: 14px 18px;
+  border-radius: 8px;
+  border-left: 3px solid var(--accent-base, #0067C0);
+  background: color-mix(in srgb, var(--accent-base, #0067C0) 10%, transparent);
+}
+
+.share-banner-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1 1 320px;
+}
+
+.share-banner-badge {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent-base, #0067C0);
+}
+
+.share-banner-title {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.share-banner-sub {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.share-banner-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .share-banner {
+    padding: 12px 14px;
+  }
+
+  .share-banner-title {
+    font-size: 15px;
+  }
+}
+
 .pick-bar {
   position: fixed;
   left: 50%;
@@ -834,6 +892,76 @@ html.theme-dark .category-badge {
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+/* 选到上限：计数文字变红，配合文案说明「点不动」的原因 */
+.pick-bar-count.is-limit {
+  color: #C42B1C;
+}
+
+/* ── 卡片的勾选状态 ────────────────────────────────────────────────
+   未选：右上角灰色「＋」
+   已选：卡片描边 + 实心对勾 + 「已选」小标签
+   教室投影下远看也能分辨，不靠一个细小的字符差异。 */
+.download-card {
+  position: relative;
+}
+
+.download-card.is-picked .control-item-surface {
+  outline: 2px solid var(--accent-base, #0067C0);
+  outline-offset: -2px;
+  border-radius: inherit;
+}
+
+.download-card.is-picked {
+  background: color-mix(in srgb, var(--accent-base, #0067C0) 8%, transparent);
+}
+
+.pick-mark {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-tertiary, var(--text-secondary));
+  pointer-events: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pick-mark-icon {
+  font-family: 'WinUIOnWebIcons';
+  font-size: 13px;
+  line-height: 1;
+}
+
+.pick-mark.is-on {
+  background: var(--accent-base, #0067C0);
+  color: #fff;
+}
+
+.pick-mark-text {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* 刚选中时闪一下边框 —— 手指点下去要有即时反馈 */
+.download-card.just-picked {
+  animation: pick-flash 0.7s ease-out;
+}
+
+@keyframes pick-flash {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-base, #0067C0) 60%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
 }
 
 .pick-bar-names {

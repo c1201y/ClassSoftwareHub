@@ -117,8 +117,33 @@
           </button>
         </div>
 
-        <!-- 分类筛选条 + 收录数量 -->
-        <div class="filter-row">
+        <!-- 分享清单：别人发来的组合。只显示清单里的软件，
+             并给出「全部安装」「改这份清单」两个真有用的动作。 -->
+        <div v-if="shareView" class="share-banner">
+          <div class="share-banner-main">
+            <span class="share-banner-badge">{{ t('collection.share-badge') }}</span>
+            <span class="share-banner-title">{{ t('collection.share-heading', { count: filteredApps.length }) }}</span>
+            <span class="share-banner-sub">{{ t('collection.share-sub') }}</span>
+          </div>
+          <div class="share-banner-actions">
+            <WinButton
+              Style="AccentButtonStyle"
+              FontSize="13"
+              Padding="12,0,12,0"
+              :Content="t('collection.share-edit')"
+              @Click="editSharedList" />
+            <WinButton
+              FontSize="13"
+              Padding="10,0,10,0"
+              :Content="t('collection.share-exit')"
+              @Click="exitShareView" />
+          </div>
+        </div>
+
+        <!-- 分类筛选条 + 收录数量。
+             分享视图下不显示：清单就那几个软件，筛选没有意义，
+             留着反而让人以为还能「筛出更多」。 -->
+        <div v-if="!shareView" class="filter-row">
           <WinSelectorBar
             class="filter-bar token-filter-bar"
             :class="{ 'is-cjk-locale': locale === 'zh-CN' }"
@@ -175,7 +200,10 @@
               :key="app.id"
               type="button"
               class="control-item download-card"
-              :class="{ 'is-picked': pickMode && isPicked(app.id) }"
+              :class="{
+                'is-picked': pickMode && isPicked(app.id),
+                'just-picked': justPickedId === app.id
+              }"
               @mouseenter="prefetchRoute('download-detail')"
               @focus="prefetchRoute('download-detail')"
               @click="onCardClick(app)">
@@ -200,9 +228,16 @@
                     TextWrapping="NoWrap" />
                 </span>
                 <span class="category-badge">{{ categoryName(app.category, locale) }}</span>
-                <!-- 挑选模式下的勾选角标 -->
-                <span v-if="pickMode" class="pick-mark" aria-hidden="true">
-                  {{ isPicked(app.id) ? '\uE73E' : '\uE710' }}
+                <!-- 挑选模式下的勾选角标。
+                     未选中是灰色「＋」，选中变成实心对勾 + 「已选」两个字 ——
+                     只换一个字符的话，教室投影下几乎看不出来选没选。 -->
+                <span
+                  v-if="pickMode"
+                  class="pick-mark"
+                  :class="{ 'is-on': isPicked(app.id) }"
+                  aria-hidden="true">
+                  <span class="pick-mark-icon">{{ isPicked(app.id) ? '\uE73E' : '\uE710' }}</span>
+                  <span v-if="isPicked(app.id)" class="pick-mark-text">{{ t('collection.picked-tag') }}</span>
                 </span>
               </span>
             </button>
@@ -213,7 +248,9 @@
   </WinScrollViewer>
     <!-- 挑选分享：底部悬浮栏 -->
     <div v-if="pickMode" class="pick-bar" role="region" :aria-label="t('collection.pick-bar-label')">
-      <span class="pick-bar-count">{{ t('collection.picked-count', { count: picked.length, max: COLLECTION_MAX }) }}</span>
+      <span class="pick-bar-count" :class="{ 'is-limit': pickLimitHit }">
+        {{ pickLimitHit ? t('collection.limit-hit', { max: COLLECTION_MAX }) : t('collection.picked-count', { count: picked.length, max: COLLECTION_MAX }) }}
+      </span>
       <span class="pick-bar-names">{{ pickedNames }}</span>
       <span class="pick-bar-actions">
         <WinButton
@@ -331,14 +368,27 @@ const platformItems = computed(() => [
 const platformIndex = ref(0);
 const activePlatform = computed(() => platformItems.value[platformIndex.value]?.key ?? 'all');
 
-/** 分类与系统是「且」的关系；没写 platforms 的软件只在「全部系统」下出现 */
-const filteredApps = computed(() =>
-  apps.filter(
+/**
+ * 列表里显示的软件。
+ *
+ * 分类与系统是「且」的关系；没写 platforms 的软件只在「全部系统」下出现。
+ *
+ * ⚠️ 分享视图下**只显示清单里的那几个**（顺序按清单）。
+ * 原来的做法是「进挑选模式 + 仍然显示全部软件」，收链接的人要在
+ * 一百多个软件里自己找对方挑的是哪几个 —— 这就是分享链接「没用」的原因。
+ */
+const filteredApps = computed(() => {
+  if (shareView.value) {
+    return picked.value
+      .map((id) => apps.find((a) => a.id === id))
+      .filter((a): a is (typeof apps)[number] => !!a);
+  }
+  return apps.filter(
     (app) =>
       (activeFilter.value === 'all' || app.category === activeFilter.value) &&
       (activePlatform.value === 'all' || app.platforms?.includes(activePlatform.value))
-  )
-);
+  );
+});
 
 const countText = computed(() =>
   activeFilter.value === 'all' && activePlatform.value === 'all'
@@ -368,15 +418,66 @@ const pickMode = ref(false);
 
 const route = useRoute();
 
-/** 打开时带 ?ids= 就是别人分享来的清单：直接进挑选模式并勾好 */
+/**
+ * 打开时带 ?ids= 就是别人分享来的清单。
+ *
+ * 两种视图分开：
+ *   · shareView  —— 看别人的清单：只显示那几个软件 + 清单标题 + 「全部安装/编辑」入口
+ *   · pickMode   —— 自己挑：显示全部软件，卡片可勾选
+ *
+ * 原来的实现把这两件事混成一件（带 ids 就进挑选模式），
+ * 结果分享链接打开后看到的仍是一百多个软件，等于没起作用。
+ */
 const incoming = decodeIds(String(route.query.ids ?? ''));
+
+/** true = 正在看别人的分享清单 */
+const shareView = ref(incoming.length > 0);
+
 const picked = ref<string[]>(incoming.length ? incoming : readDraft());
-if (incoming.length) pickMode.value = true;
 
 const pickShareOpen = ref(false);
 const pickCopyState = ref<'' | 'text' | 'link'>('');
 
+/** 选到 30 个上限时给一条明确提示（否则用户只看到点了没反应） */
+const pickLimitHit = ref(false);
+let pickLimitTimer = 0;
+
 const isPicked = (id: string) => picked.value.includes(id);
+
+/**
+ * 刚被点中的那个软件 id。
+ *
+ * 用途：让刚选中的卡片闪一下边框 —— 勾选角标本身很小，
+ * 手指点下去如果没有即时反馈，会让人怀疑「到底选上没有」。
+ * 动画结束后自动清空（见 togglePick）。
+ */
+const justPickedId = ref('');
+let justPickedTimer = 0;
+
+const flashPicked = (id: string) => {
+  justPickedId.value = id;
+  window.clearTimeout(justPickedTimer);
+  justPickedTimer = window.setTimeout(() => {
+    justPickedId.value = '';
+  }, 700);
+};
+
+/** 从「看别人的清单」切到「编辑这份清单」：全部软件重新出现，清单保持勾选 */
+const editSharedList = () => {
+  shareView.value = false;
+  pickMode.value = true;
+};
+
+/** 退出分享视图：回到完整列表，并清掉 URL 里的 ids（否则刷新又回来） */
+const exitShareView = () => {
+  shareView.value = false;
+  pickMode.value = false;
+  picked.value = [];
+  saveDraft([]);
+  if (route.query.ids) {
+    void router.replace({ name: 'home' });
+  }
+};
 
 /** 底部悬浮栏里的已选名字（最多 6 个） */
 const pickedNames = computed(() => {
@@ -400,8 +501,19 @@ const togglePick = (id: string) => {
   const list = [...picked.value];
   const at = list.indexOf(id);
   if (at >= 0) list.splice(at, 1);
-  else if (list.length < COLLECTION_MAX) list.push(id);
-  else return;
+  else if (list.length < COLLECTION_MAX) {
+    list.push(id);
+    // 选中时闪一下 —— 取消选中不闪（避免「刚点掉又亮」的错觉）
+    flashPicked(id);
+  } else {
+    // 到上限了：告诉用户为什么点不动，而不是静默忽略
+    pickLimitHit.value = true;
+    window.clearTimeout(pickLimitTimer);
+    pickLimitTimer = window.setTimeout(() => {
+      pickLimitHit.value = false;
+    }, 2400);
+    return;
+  }
   picked.value = list;
   saveDraft(list);
 };
