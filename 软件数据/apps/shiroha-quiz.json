@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-11-22T08:17:16.183Z",
-  "_原始ID冲突": false,
   "id": "shiroha-quiz",
   "name": "Shiroha Quiz",
   "icon": "https://avatars.githubusercontent.com/u/93467189?v=4",
@@ -30,15 +28,5 @@
   "platforms": [
     "android",
     "web"
-  ],
-  "_提交指纹": "26504d37c8be2837",
-  "_系统版本": {
-    "android": [
-      "8",
-      "9",
-      "10",
-      "other"
-    ]
-  },
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBwYlllT0NneDg2N045ZGhh\nblBJSFdKb0ZSMmpUbkJkSW1YL3BXeWlZWlJZClgzRElyeU9lMEgvNkJrREovUHkz\nSEhHRERERzJQcWxEUVlzdmNKaFBVYkUKLS0tIE5YWWZnM1N4a3pmNUJ5ekdlNXZl\nQlpMWjNrQXY1QXluWE40SWlxdXh0bGMKrzR1P/ft8cNj+Uf5ehgZNbrR/NcCV/wF\nDTPz/dzd+cAcqnCwBnalYcpkjBvN\n-----END AGE ENCRYPTED FILE-----"
+  ]
 }
