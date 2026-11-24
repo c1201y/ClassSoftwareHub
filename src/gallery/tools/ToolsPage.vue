@@ -15,9 +15,9 @@
         Foreground="var(--TextFillColorSecondaryBrush, var(--text-secondary))"
         TextWrapping="Wrap"
         :Text="t('tools.subtitle')" />
-      <!-- 搜索已并入 Ctrl+K，此处仅入口与总数 -->
+      <!-- 底部一行：只在右侧给工具总数。
+           「按 Ctrl+K 搜索」原来是单独一行小字，占高度又不常看，去掉。 -->
       <div class="tools-meta-row">
-        <span class="tools-meta-hint">{{ t('search.tools-hint') }}</span>
         <span class="tools-meta-count">{{ t('search.tools-count', { count: totalCount }) }}</span>
       </div>
     </div>
@@ -139,8 +139,11 @@ const totalCount = TOOLS.length;
 
 .tools-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 10px;
+  /* 同一行的卡片拉成等高：说明压成一行后，卡片内容高度本来就一样，
+     这样看起来才是一排整齐的块，而不是一块块高低不一 */
+  align-items: stretch;
 }
 
 /* ── 工具卡片 ─────────────────────────────────────────────── */
@@ -149,9 +152,11 @@ const totalCount = TOOLS.length;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  column-gap: 14px;
+  column-gap: 12px;
   width: 100%;
-  padding: 14px 16px;
+  /* 固定最小高度，让单行/双行说明的卡片视觉高度一致 */
+  min-height: 62px;
+  padding: 10px 14px;
   text-align: left;
   border: 1px solid var(--card-stroke, var(--ctrl-border, rgba(0, 0, 0, 0.12)));
   border-radius: 8px;
@@ -179,17 +184,17 @@ const totalCount = TOOLS.length;
 
 .tools-card-icon {
   flex: 0 0 auto;
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: 9px;
   border: 1px solid color-mix(in srgb, var(--accent-base, #0067C0) 25%, transparent);
   background: color-mix(in srgb, var(--accent-base, #0067C0) 12%, transparent);
   color: var(--accent-base, #0067C0);
   font-family: 'WinUIOnWebIcons';
-  font-size: 22px;
+  font-size: 19px;
   line-height: 1;
 }
 
@@ -197,30 +202,32 @@ const totalCount = TOOLS.length;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 
 .tools-card-title {
   font-size: 15px;
   font-weight: 600;
-  line-height: 21px;
+  line-height: 20px;
 }
 
+/* 说明只给一行。之前是两行 + 长句，把页面撑得很长，
+   而且每张卡高度不等，看起来乱。一句能讲清做什么就够了。 */
 .tools-card-desc {
-  font-size: 13px;
-  line-height: 19px;
+  font-size: 12.5px;
+  line-height: 18px;
   color: var(--text-secondary);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tools-card-arrow {
   flex: 0 0 auto;
   font-family: 'WinUIOnWebIcons';
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-tertiary, var(--text-secondary));
+  opacity: 0.6;
 }
 
 @media (max-width: 640px) {
