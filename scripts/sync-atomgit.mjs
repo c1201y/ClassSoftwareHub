@@ -595,7 +595,17 @@ async function syncRelease(component, release, inventory) {
   const known = inventory?.get(atomgitTag)?.assets ?? null;
 
   const body = buildBody(component, release, atomgitTag);
-  await ensureAtomgitRelease(component, release, atomgitTag, body);
+  /**
+   * ⚠️ 必须先建 Release 才能传资产（upload_url 以 Release 存在为前提），
+   * 但「先建后传」有个副作用：资产全部失败时会留下一个只有校验文件、没有安装包的
+   * 「空壳 Release」。前端判断某版本「有没有」只看清单里有没有这个 tag，
+   * 于是会把用户导到一个 404 直链 —— 比完全没有这个版本更糟。
+   * 本地实测已踩出 8 个这样的空壳。
+   *
+   * 对策是**回滚**：记录这个 tag 是不是本轮新建的，如果本轮一个资产都没传成，
+   * 就把刚建的 Release 撤掉（删 tag 会连带删掉 Release），让这个版本回到「还没出现」。
+   */
+  const isNewRelease = (await ensureAtomgitRelease(component, release, atomgitTag, body)) === 'created';
 
   const uploaded = [];
   const skipped = [];
@@ -666,10 +676,33 @@ async function syncRelease(component, release, inventory) {
   }
 
   if (failures.length) {
+    // 本轮新建的 Release 一个资产都没传成 → 撤掉，别留空壳（见上面 isNewRelease 的注释）
+    if (isNewRelease && !uploaded.length) {
+      await rollbackRelease(atomgitTag);
+    }
     throw new Error(`${failures.length} 个资产失败：${failures.join('；')}`);
   }
 
   return { tag: atomgitTag, uploaded, skipped, status: uploaded.length ? 'synced' : 'up-to-date' };
+}
+
+/**
+ * 撤销一个「空壳」Release。
+ * AtomGit 没有删除 Release 的接口（DELETE /releases/:tag 返回 405），
+ * 但删掉同名 tag 会连带删掉挂在它上面的 Release，所以走删 tag。
+ */
+async function rollbackRelease(atomgitTag) {
+  const removed = await atomgit(
+    'DELETE',
+    `/repos/${ATOMGIT_OWNER}/${ATOMGIT_REPO}/tags/${encodeURIComponent(atomgitTag)}?access_token=${encodeURIComponent(atomgitToken())}`,
+    null,
+    `撤销空壳 Release ${atomgitTag}`
+  );
+  if (removed.status === 200 || removed.status === 204) {
+    warn(`已撤销空壳 Release ${atomgitTag}（本轮没有任何资产传成功，避免前端指向 404）`);
+  } else {
+    warn(`撤销空壳 Release ${atomgitTag} 失败：HTTP ${removed.status}`);
+  }
 }
 
 /* ── 主流程 ───────────────────────────────────────────────────────── */
