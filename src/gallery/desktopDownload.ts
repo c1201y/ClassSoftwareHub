@@ -2,6 +2,14 @@
 import { fetchSelfSignedUrl, mirrorUrl, orderedChannels, rememberChannel, usableChannels } from './githubMirror';
 import type { MirrorChannel } from './githubMirror';
 import { noteAcceleratedDownload } from './downloadFeedback';
+import {
+  ATOM_GIT_CHANNEL_ID,
+  atomgitAvailability,
+  atomgitDownloadUrl,
+  atomgitRevision,
+  ensureAtomGitIndex
+} from './atomgitChannel';
+import { gt } from './localize';
 
 /** 桌面版仓库（安装包由该仓库发布，与本站主仓库相互独立） */
 const REPO = 'c1201y/ClassSoftwareHub-Desktop';
@@ -64,6 +72,8 @@ export interface DesktopBuild {
   url: string;
   /** 该版本的 Release 页（镜像不可用时的兜底） */
   releaseUrl: string;
+  /** 发布该包的 GitHub 仓库（owner/repo）—— AtomGit 分发通道按它换算 tag 前缀 */
+  repo?: string;
   /** 文件体积（字节），用于按「MB」显示 */
   size?: number;
   /** 该版本 Release 的更新说明（Markdown 原文，可能为空） */
@@ -100,7 +110,8 @@ function buildOf(channel: DesktopChannel, tag: string, name: string, repo?: stri
     tag,
     name,
     url: `https://github.com/${owner}/releases/download/${tag}/${name}`,
-    releaseUrl: `https://github.com/${owner}/releases/tag/${tag}`
+    releaseUrl: `https://github.com/${owner}/releases/tag/${tag}`,
+    repo: owner
   };
 }
 const FALLBACK: DesktopBuilds = {
@@ -143,7 +154,8 @@ function pickBuild(releases: RawRelease[], channel: DesktopChannel): DesktopBuil
       tag: release.tag_name,
       name: exe.name,
       url: exe.browser_download_url,
-      releaseUrl: `https://github.com/${repo}/releases/tag/${release.tag_name}`
+      releaseUrl: `https://github.com/${repo}/releases/tag/${release.tag_name}`,
+      repo
     };
   }
   return null;
@@ -167,7 +179,8 @@ function pickAsset(
       releaseUrl: `https://github.com/${repo}/releases/tag/${release.tag_name}`,
       size: asset.size,
       changelog: release.body || '',
-      publishedAt: release.published_at || ''
+      publishedAt: release.published_at || '',
+      repo
     };
   }
   return null;
@@ -495,33 +508,152 @@ function triggerDownload(url: string): void {
 
 /* ── 下载页：让用户自己选线路 ────────────────────────────────────── */
 export { SELF_CHANNEL_ID } from './githubMirror';
+export { ATOM_GIT_CHANNEL_ID };
+
+/** GitHub 官方源的标识（既不镜像也不中转，直接走 github.com） */
+export const OFFICIAL_CHANNEL_ID = 'github';
+
+/** 下载线路下拉框里的一项 */
+export interface SourceChoice {
+  id: string;
+  name: string;
+  /** 本站自建节点（换票据下载），文案与提示单独处理 */
+  self?: boolean;
+}
+
+/**
+ * 下载线路清单：AtomGit 固定排第一并作为默认选项。
+ * 后面依次是本站自建节点、各公益镜像，最后是 GitHub 官方源。
+ * AtomGit 排首位的原因：它托管在国内，实测下载速度是 GitHub 直链的数倍到数十倍，
+ * 而且不需要像自建节点那样换票据（少一次接口往返）。
+ */
+export function sourceChoices(): SourceChoice[] {
+  const mirrors = mirrorChoices();
+  return [
+    { id: ATOM_GIT_CHANNEL_ID, name: gt('mirror.channel-atomgit') },
+    ...mirrors.map((channel) => ({ id: channel.id, name: channel.name, self: channel.self })),
+    { id: OFFICIAL_CHANNEL_ID, name: 'GitHub' }
+  ];
+}
+
 export function mirrorChoices(): MirrorChannel[] {
   const usable = usableChannels();
   const self = usable.find((channel) => channel.self);
   return self ? [self, ...usable.filter((channel) => channel !== self)] : usable;
 }
-export const OFFICIAL_CHANNEL_ID = 'github';
-export async function downloadBuildVia(
-  build: DesktopBuild,
-  channelId: string
-): Promise<DesktopDownloadResult | 'failed'> {
-  const channel =
-    mirrorChoices().find((item) => item.id === channelId) ??
-    mirrorChoices()[0];
-  if (!channel) return 'failed';
 
-  let href = '';
-  if (channel.self) {
-    const signed = await fetchSelfSignedUrl(build.url);
-    href = signed || mirrorUrl(build.url, channel);
-    if (signed) noteAcceleratedDownload({ target: build.url });
-  } else {
-    href = mirrorUrl(build.url, channel);
+/**
+ * AtomGit 能不能服务这个版本。
+ * 只有接口明确说「没有」才返回 false；接口没取到时返回 true（直链是拼出来的，照用）。
+ * 页面据此决定默认线路，以及要不要提示「已改走本站节点」。
+ */
+export function atomGitAvailable(build: DesktopBuild | null): boolean {
+  if (!build) return false;
+  return atomgitAvailability(build.repo, build.tag, build.name) !== 'no';
+}
+
+/** 预取 AtomGit 版本清单（进下载页时调用，失败也不影响下载） */
+export async function warmUpAtomGit(): Promise<void> {
+  await ensureAtomGitIndex();
+}
+
+/**
+ * 清单版本号（响应式）。
+ * 清单本身是模块级普通变量，页面里的 computed 读不到它的变化；
+ * 在 computed 开头调一次这个函数，清单到达后提示条与校验值链接才会重算。
+ */
+export { atomgitRevision };
+
+/**
+ * 「校验值」链接的目标：默认走 AtomGit，和主下载按钮保持同一条线路
+ * —— 主按钮能从 AtomGit 下、校验文件却指向 GitHub 的话，国内用户点校验值就打不开了。
+ *
+ * 三条分支，按「能不能确定」排列：
+ *   1. 清单里明确有 → 用 AtomGit 的地址
+ *   2. 清单里明确没有（如安卓包本来就不带 .md5）→ 退回 GitHub 原地址，不造 404
+ *   3. 清单没取到 → 仍用 AtomGit 拼接地址：与默认线路保持一致，拼不出东西的产物页面本来就不显示这一项
+ */
+export function checksumUrlOf(build: DesktopBuild): string {
+  const name = `${build.name}.md5`;
+  const atomGit = atomgitDownloadUrl(build.repo, build.tag, name);
+  if (!atomGit) return `${build.url}.md5`;
+  const availability = atomgitAvailability(build.repo, build.tag, build.name);
+  const checksumAvailability = atomgitAvailability(build.repo, build.tag, name);
+  if (checksumAvailability === 'yes') return atomGit;
+  if (checksumAvailability === 'no' && availability !== 'unknown') return `${build.url}.md5`;
+  return atomGit;
+}
+
+/** 这个产物有没有校验文件可点（接口明确说没有时不显示，避免死链） */
+export function hasChecksum(build: DesktopBuild | null): boolean {
+  if (!build) return false;
+  return atomgitAvailability(build.repo, build.tag, `${build.name}.md5`) !== 'no';
+}
+
+export interface SourceDownloadOutcome {
+  /** 实际用了哪条线路 */
+  via: 'atomgit' | 'self' | 'mirror' | 'github' | 'release';
+  /** 选的是 AtomGit，但它没有这个文件，于是自动改走本站节点 */
+  fellBack?: boolean;
+}
+
+/** 走本站自建节点：先换签名直链，换不到就用前缀式地址兜底 */
+async function useSelfChannel(build: DesktopBuild): Promise<string | null> {
+  const self = mirrorChoices().find((channel) => channel.self);
+  if (!self) return null;
+  const signed = await fetchSelfSignedUrl(build.url);
+  if (signed) {
+    noteAcceleratedDownload({ target: build.url });
+    return signed;
   }
-  if (!href) return 'failed';
+  return mirrorUrl(build.url, self);
+}
+
+/**
+ * 按选定的线路下载一个产物。
+ * AtomGit 优先；接口明确说「这个版本没推过去」时，自动改走本站节点而不是直接报错
+ * —— 用户点「下载」的意图是拿到文件，不是必须走某一条线路。
+ */
+export async function downloadViaSource(
+  build: DesktopBuild,
+  sourceId: string
+): Promise<SourceDownloadOutcome | null> {
+  if (sourceId === OFFICIAL_CHANNEL_ID) {
+    downloadBuildDirect(build);
+    return { via: 'github' };
+  }
+
+  if (sourceId === ATOM_GIT_CHANNEL_ID) {
+    await ensureAtomGitIndex();
+    const href = atomgitDownloadUrl(build.repo, build.tag, build.name);
+    if (href && atomGitAvailable(build)) {
+      triggerDownload(href);
+      noteAcceleratedDownload({ target: build.url });
+      return { via: 'atomgit' };
+    }
+    const self = await useSelfChannel(build);
+    if (self) {
+      triggerDownload(self);
+      return { via: 'self', fellBack: true };
+    }
+    // 连本站节点都用不了：AtomGit 直链仍比没有强，照发
+    if (href) {
+      triggerDownload(href);
+      noteAcceleratedDownload({ target: build.url });
+      return { via: 'atomgit' };
+    }
+    return null;
+  }
+
+  const channel = mirrorChoices().find((item) => item.id === sourceId);
+  if (!channel) return null;
+  const href = channel.self
+    ? await useSelfChannel(build)
+    : mirrorUrl(build.url, channel);
+  if (!href) return null;
   triggerDownload(href);
   rememberChannel(channel.id);
-  return 'mirror';
+  return { via: channel.self ? 'self' : 'mirror' };
 }
 
 /** 直接走 GitHub 官方源下载（不走任何镜像） */
@@ -529,15 +661,25 @@ export function downloadBuildDirect(build: DesktopBuild): void {
   triggerDownload(build.url);
 }
 
-export type DesktopDownloadResult = 'mirror' | 'release';
+export type DesktopDownloadResult = SourceDownloadOutcome['via'];
 async function downloadBuild(build: DesktopBuild): Promise<DesktopDownloadResult> {
+  // 1. AtomGit：能下就直接下，最快
+  await ensureAtomGitIndex();
+  const atomGit = atomgitDownloadUrl(build.repo, build.tag, build.name);
+  if (atomGit && atomGitAvailable(build)) {
+    triggerDownload(atomGit);
+    noteAcceleratedDownload({ target: build.url });
+    return 'atomgit';
+  }
+
+  // 2. 本站自建节点 / 公益镜像
   const working = await pickWorkingMirror(build.url);
   if (working) {
     triggerDownload(working);
     return 'mirror';
   }
 
-  // 镜像全部不可用：退到该版本的 Release 页。新标签页被拦截时改为当前页跳转，确保到达。
+  // 3. 全都不通：退到该版本的 Release 页。新标签页被拦截时改为当前页跳转，确保到达。
   // 同时携带 noopener —— releaseUrl 虽为内部拼接的 GitHub 地址，但不依赖 open() 的返回值做隔离。
   const opened = window.open(build.releaseUrl, '_blank', 'noopener,noreferrer');
   if (opened) opened.opener = null;

@@ -276,6 +276,25 @@ caused failures:
     3. Download one small file in full and compare its sha256 with the official one — proves the
        relay is not tampering with the payload.
     Anything answering `30x` or `text/html` is a dead or hijacked domain: drop it.
+- **AtomGit is the default channel on the desktop download page** (`#/desktop`, `DesktopPage.vue`),
+  and it is deliberately *not* one of the mirrors above: mirrors prepend a prefix to a GitHub URL,
+  whereas AtomGit hosts its **own copy** of the same artifacts in a separate repository
+  (`2501_93857730/ClassSoftwareHub`). See `src/gallery/atomgitChannel.ts`.
+  - The link is **composed, not discovered**:
+    `https://atomgit.com/2501_93857730/ClassSoftwareHub/releases/download/<prefix><GitHub tag>/<file name>`.
+    `<prefix>` comes from `TAG_PREFIX` (`desktop-` / `win7-` / `android-`) and exists because all three
+    products share one AtomGit repository, where the raw tags (`dv1.2.2` on two of them) would collide.
+  - The releases API (`api.atomgit.com`) is used **only** to answer "has this version been pushed yet" —
+    it is rate-limited (429s are common) and CORS-enabled. It never gates the download: if the list is
+    unavailable the composed URL is still used (`atomgitAvailability()` returns `unknown`, not `no`).
+    Only an explicit "the list loaded and this tag/file is absent" falls back to the site node, and the
+    page then shows the info bar `desktop.atomgit-fallback`.
+  - **Publishing a new version means pushing it to AtomGit too**, or the desktop page will fall back
+    and tell users so. Tags there must keep the `<prefix><GitHub tag>` shape and the asset file names
+    must match GitHub's byte for byte — the checksum link (`.md5`) is composed the same way.
+  - The channel is additive: the `#/desktop` source list still offers the site node, every mirror above,
+    and GitHub official. `#/desktop` is the only page using it; `DownloadDetailPage.vue` (per-app
+    downloads) keeps using `MIRROR_CHANNELS` only.
 - The submit flow falls back the same way; **the working endpoint is remembered in
   `localStorage['csh-submit-endpoint']`**. Per-endpoint timeout is **10 s**, and a failed submission is
   saved to `localStorage['csh-submit-draft']`.

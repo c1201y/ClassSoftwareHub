@@ -113,6 +113,7 @@ export default {
       "desktop.download": "下载",
       "desktop.downloading": "连接中…",
       "desktop.download-failed": "这条线路没走通，换一条再试，或选「GitHub」走官方源。",
+      "desktop.atomgit-fallback": "这个版本还没同步到 AtomGit，已自动改用本站加速节点。",
       "desktop.open-releases": "打开 Releases 页",
       "desktop.history": "全部版本",
       "desktop.docs": "使用文档",
@@ -129,7 +130,7 @@ export default {
       "desktop.history-show-more": "显示更多",
       "desktop.row-file": "文件",
       "desktop.coming-soon-short": "即将支持",
-      "desktop.mirror-note": "安装包由各仓库的 GitHub Releases 发布；镜像只做转发、不改动文件，线路不通时换一条即可。每个包都附带同名 .md5 校验文件。",
+      "desktop.mirror-note": "安装包由各仓库的 GitHub Releases 发布，AtomGit 与各镜像只做分发、不改动文件，线路不通时换一条即可。每个包都附带同名 .md5 校验文件。",
       "desktop.web-label": "网页端",
       "desktop.channel-stable": "正式版",
       "desktop.channel-insider": "预览版",
@@ -1136,6 +1137,7 @@ export default {
       "chem.sample.photosynthesis": "光合作用",
 
       "mirror.channel-self": "本站加速节点",
+      "mirror.channel-atomgit": "AtomGit（推荐）",
 
       "data.issue.json-incomplete": "文件不完整：可能漏了结尾的 } 或 ]，或末尾多了逗号",
       "data.issue.unterminated-string": "引号没闭合：字符串少了一个英文双引号 \"",

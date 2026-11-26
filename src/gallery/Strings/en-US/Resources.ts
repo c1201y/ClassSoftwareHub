@@ -408,6 +408,7 @@ export default {
   "desktop.download": "Download",
   "desktop.downloading": "Connecting\u2026",
   "desktop.download-failed": "This source did not work. Try another one, or pick “GitHub” for the official link.",
+  "desktop.atomgit-fallback": "This version is not on AtomGit yet, so the site's accelerator node was used instead.",
   "desktop.open-releases": "Open the Releases page",
   "desktop.history": "All releases",
   "desktop.docs": "Documentation",
@@ -423,7 +424,7 @@ export default {
   "desktop.history-show-more": "Show more",
   "desktop.row-file": "File",
   "desktop.coming-soon-short": "Coming soon",
-  "desktop.mirror-note": "Installers are published to each repository's GitHub Releases; mirrors only relay the file unmodified — switch to another source if one does not work. Every package ships a matching .md5 file.",
+  "desktop.mirror-note": "Installers are published to each repository's GitHub Releases; AtomGit and the mirrors only distribute the file unmodified — switch to another source if one does not work. Every package ships a matching .md5 file.",
   "desktop.web-label": "Web",
   "desktop.channel-stable": "Stable",
   "desktop.channel-insider": "Insider",
@@ -1127,6 +1128,7 @@ export default {
   "chem.sample.photosynthesis": "Photosynthesis",
 
   "mirror.channel-self": "This site's accelerator node",
+  "mirror.channel-atomgit": "AtomGit (recommended)",
 
   "data.issue.json-incomplete": "Incomplete file: a closing } or ] may be missing, or there is a trailing comma",
   "data.issue.unterminated-string": "Unterminated string: a double quote is missing",

@@ -29,6 +29,11 @@
         </div>
       </div>
 
+      <!-- AtomGit 缺这个版本时自动改走本站节点：说清楚，免得用户以为选错了 -->
+      <div v-if="showAtomGitFallback" class="dl-notice is-info">
+        <span class="dl-notice-text">{{ t('desktop.atomgit-fallback') }}</span>
+      </div>
+
       <div v-if="loading" class="dl-state">
         <span class="dl-state-icon dl-spin" aria-hidden="true">&#xE895;</span>
         <span>{{ t('desktop.loading') }}</span>
@@ -94,7 +99,7 @@
                     :Content="busy === row.id ? t('desktop.downloading') : t('desktop.download')"
                     @Click="download(row.id)" />
                   <WinHyperlinkButton
-                    v-if="row.build"
+                    v-if="row.build && hasChecksum(row.build)"
                     class="btn-compact"
                     :Content="t('desktop.md5')"
                     :NavigateUri="md5Of(row.build)"
@@ -193,14 +198,17 @@ import {
   ANDROID_RELEASES_URL,
   DESKTOP_RELEASES_URL,
   DOCS_URL,
-  OFFICIAL_CHANNEL_ID,
   WIN7_RELEASES_URL,
-  downloadBuildDirect,
-  downloadBuildVia,
+  atomGitAvailable,
+  atomgitRevision,
+  checksumUrlOf,
+  downloadViaSource,
   entryOf,
   fetchReleaseHistory,
-  mirrorChoices,
-  resolveDownloadEntries
+  hasChecksum,
+  resolveDownloadEntries,
+  sourceChoices,
+  warmUpAtomGit
 } from '../desktopDownload';
 import type { DesktopBuild, DownloadEntries, DownloadId, ReleaseHistoryItem } from '../desktopDownload';
 import { WIN7_REPO } from '../desktopDownload';
@@ -217,6 +225,8 @@ type ChannelId = 'stable' | 'insider';
 const loading = ref(true);
 const busy = ref('');
 const downloadFailed = ref(false);
+/** 选了 AtomGit、但它没有这个版本，已自动改走本站节点 */
+const atomGitFallback = ref(false);
 const entries = ref<DownloadEntries | null>(null);
 const activeChannel = ref<ChannelId>('stable');
 
@@ -240,13 +250,30 @@ const onChannelChanged = (sender: { SelectedItem?: { Tag?: string } } | null) =>
 
 /* ── 下载线路 ─────────────────────────────────────────────────────── */
 
-const channels = mirrorChoices();
-const sourceOptions = computed(() => [
-  ...channels.map((ch) => ({ name: ch.name, id: ch.id })),
-  { name: 'GitHub', id: OFFICIAL_CHANNEL_ID }
-]);
+const sourceOptions = sourceChoices();
 const sourceIndex = ref(0);
-const selectedSourceId = computed(() => sourceOptions.value[sourceIndex.value]?.id ?? '');
+const selectedSourceId = computed(() => sourceOptions[sourceIndex.value]?.id ?? '');
+
+/**
+ * 当前这一屏的产物是不是都推到了 AtomGit。
+ * 只看**当前通道真正显示**的那几条 —— 隐藏的预览版条目没同步过去不该弹提示，
+ * 否则切到正式版也会看到「已改走本站节点」，而实际上没有任何一项回退过。
+ */
+const atomGitCoversEverything = computed(() => {
+  void atomgitRevision();
+  const visible = editions.value
+    .filter((edition) => !edition.soon)
+    .flatMap((edition) => edition.rows)
+    .map((row) => row.build)
+    .filter((build): build is DesktopBuild => Boolean(build));
+  if (!visible.length) return true;
+  return visible.every((build) => atomGitAvailable(build));
+});
+
+/** 提示条：要么提前知道有版本没同步，要么刚才真的回退过 */
+const showAtomGitFallback = computed(
+  () => Boolean(entries.value) && (!atomGitCoversEverything.value || atomGitFallback.value)
+);
 
 /* ── 版本卡片数据 ─────────────────────────────────────────────────── */
 
@@ -478,7 +505,7 @@ const formatSize = (bytes?: number) => {
   return mb >= 1 ? `${mb.toFixed(1)} MB` : `${(bytes / 1024).toFixed(0)} KB`;
 };
 
-const md5Of = (build: DesktopBuild) => `${build.url}.md5`;
+const md5Of = (build: DesktopBuild) => checksumUrlOf(build);
 
 /* ── 下载 ─────────────────────────────────────────────────────────── */
 
@@ -488,24 +515,27 @@ const download = async (id: DownloadId) => {
   if (!build) return;
   busy.value = id;
   downloadFailed.value = false;
+  atomGitFallback.value = false;
   try {
-    if (selectedSourceId.value === OFFICIAL_CHANNEL_ID) {
-      downloadBuildDirect(build);
-    } else {
-      const r = await downloadBuildVia(build, selectedSourceId.value);
-      if (r === 'failed') downloadFailed.value = true;
-    }
+    const outcome = await downloadViaSource(build, selectedSourceId.value);
+    if (!outcome) downloadFailed.value = true;
+    else if (outcome.fellBack) atomGitFallback.value = true;
   } finally {
     busy.value = '';
   }
 };
 
 onMounted(async () => {
+  // AtomGit 清单与版本清单并行取：清单只影响提示条，慢一点不挡首屏
+  const atomGitReady = warmUpAtomGit();
+
   try {
     entries.value = await resolveDownloadEntries();
   } finally {
     loading.value = false;
   }
+
+  await atomGitReady;
 
   // 历史版本是次要信息：不参与上面的 loading 态，拿到再渲染。
   // 接口挂了就返回空数组，页面底部那一段直接不显示，不影响下载。
