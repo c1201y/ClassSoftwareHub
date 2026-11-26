@@ -453,12 +453,49 @@ async function ensureAtomgitRelease(component, release, atomgitTag, atomgitBody)
     );
   };
 
+  /**
+   * AtomGit 的两个坑，都必须处理，否则会留一堆空壳：
+   *
+   * ① 整仓最多只能有 20 个 release 标为 pre-release
+   *    （400 `At most 20 pre-release versions can be marked.`），而 GitHub 上预览版有 36 个。
+   *
+   * ② 更要命的是：**返回 400 的同时，release 其实已经建好了**（只是没标记状态）。
+   *    所以不能「去掉标记再建一次」—— 第二次会撞 409 Release already exists，
+   *    本来只是标记失败的版本就变成整轮失败，那个已建好的 release 则成了空壳。
+   *    正确做法是回查一次：tag 已经存在就直接用，需要的话 PATCH 把状态补成 none。
+   */
   let created = await attempt(release.prerelease ? 'pre' : 'none');
 
-  // 预发布名额满了：去掉标记重建（tag 没建成，直接重试是安全的）
   if (created.status === 400 && /pre-release/i.test(created.text)) {
     warn(`AtomGit 的预发布名额已满，${atomgitTag} 改以普通版本发布（产物照常可下载）`);
-    created = await attempt('none');
+    // 400 时 release 通常已经建好，先回查
+    const check = await atomgit(
+      'GET',
+      `/repos/${ATOMGIT_OWNER}/${ATOMGIT_REPO}/releases/tags/${encodeURIComponent(atomgitTag)}`,
+      null,
+      `回查 ${atomgitTag}`
+    );
+    if (check.status === 200) {
+      created = { status: 200, ok: true, json: check.json, text: '' };
+      // 状态没落上，补一次 none（PATCH 不受 20 个名额限制）
+      const patched = await atomgit(
+        'PATCH',
+        `/repos/${ATOMGIT_OWNER}/${ATOMGIT_REPO}/releases/${encodeURIComponent(atomgitTag)}?access_token=${encodeURIComponent(atomgitToken())}`,
+        {
+          tag_name: atomgitTag,
+          name: atomgitName(component, release, atomgitTag),
+          body: atomgitBody,
+          release_status: 'none'
+        },
+        `补正 ${atomgitTag} 的状态`
+      );
+      if (patched.status !== 200) {
+        warn(`${atomgitTag} 状态补正失败：HTTP ${patched.status}（不影响资产上传）`);
+      }
+    } else {
+      // 没建成才是真的没有，这时重试一次不带状态
+      created = await attempt(undefined);
+    }
   }
 
   if (created.status !== 200) {
