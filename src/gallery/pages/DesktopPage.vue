@@ -210,6 +210,7 @@ import {
   sourceChoices,
   warmUpAtomGit
 } from '../desktopDownload';
+import { atomgitAvailability, atomgitDownloadUrl } from '../atomgitChannel';
 import type { DesktopBuild, DownloadEntries, DownloadId, ReleaseHistoryItem } from '../desktopDownload';
 import { WIN7_REPO } from '../desktopDownload';
 import siteIconUrl from '../../assets/AppIcon-512.png';
@@ -434,6 +435,13 @@ const buildColumn = (
     total: all.length
   };
 };
+/**
+ * 历史版本的下载链接。
+ *
+ * ⚠️ 原先一律拼 `github.com/...`。下载页的默认线路是 AtomGit，主按钮早就不走 GitHub 了，
+ * 而历史版本这一段却仍然把用户送到 GitHub 直链 —— 国内大概率打不开。
+ * 现在与主按钮保持一致：AtomGit 有就优先用它，接口明确说没有才退回 GitHub。
+ */
 const assetUrl = (
   item: ReleaseHistoryItem,
   repo: string,
@@ -442,11 +450,12 @@ const assetUrl = (
 ): HistoryKind | null => {
   const name = item.assetNames.find((n) => pattern.test(n));
   if (!name) return null;
-  return {
-    labelKey,
-    size: 0,
-    url: `https://github.com/${repo}/releases/download/${item.tag}/${name}`
-  };
+  const atomGit = atomgitDownloadUrl(repo, item.tag, name);
+  const url =
+    atomGit && atomgitAvailability(repo, item.tag, name) !== 'no'
+      ? atomGit
+      : `https://github.com/${repo}/releases/download/${item.tag}/${name}`;
+  return { labelKey, size: 0, url };
 };
 
 /** 每列默认显示几条 */
@@ -460,6 +469,8 @@ const showMore = (key: string) => {
 };
 
 const columns = computed<HistoryColumn[]>(() => {
+  // 读一下清单版本号：历史链接要看 AtomGit 有没有这个版本，清单到达后必须重算
+  void atomgitRevision();
   const h = history.value;
   if (!h) return [];
   const isPre = activeChannel.value === 'insider';

@@ -63,11 +63,35 @@ const COMPONENTS = [
 const RETRY_DELAYS_MS = [2000, 5000, 10000, 20000, 30000];
 
 /**
- * 同时进行的资产数。
- * AtomGit 的上传是服务端带宽瓶颈：实测单条 92 KB/s、4 条聚合 207 KB/s、8 条聚合 205 KB/s
- * —— 再往上加没有收益，4 是比较稳的拐点。回填历史版本时这点并发能把几小时压到一小时级。
+ * 全局上传并发上限。
+ *
+ * 必须是**一个全局闸门**，不能分两层各自限流。
+ * 本项目曾经同时有「版本级并发 4」和「资产级并发 4」，两者相乘等于最多 16 个上传同时进行
+ * —— 远超实测拐点（8 条并发与 4 条相比已无收益），只会互相抢带宽、拖长单条耗时，
+ * 也更容易撞上 OBS 的超时。
+ *
+ * 实测 AtomGit 的上传受服务端带宽限制：单条 92 KB/s、4 条聚合 207 KB/s、8 条聚合 205 KB/s，
+ * 所以全局 4 是性价比最高的点。版本级并发仍然保留 —— 它让多个版本同时处在
+ * 「下载 → 校验 → 上传」的不同阶段，把等待时间重叠起来。
  */
-const ASSET_CONCURRENCY = 4;
+const MAX_UPLOADS = 4;
+
+/** 简易信号量：把同时进行的上传卡在 MAX_UPLOADS 以内 */
+let activeUploads = 0;
+const uploadWaiters = [];
+async function withUploadSlot(fn) {
+  while (activeUploads >= MAX_UPLOADS) {
+    await new Promise((resolve) => uploadWaiters.push(resolve));
+  }
+  activeUploads += 1;
+  try {
+    return await fn();
+  } finally {
+    activeUploads -= 1;
+    const next = uploadWaiters.shift();
+    if (next) next();
+  }
+}
 
 /** 下载资产的临时目录 */
 const WORK_DIR = join(tmpdir(), 'csh-atomgit-sync');
@@ -100,12 +124,12 @@ const ONLY_REPO = flagValue('repo');
 const ONLY_TAG = flagValue('tag');
 
 /**
- * 并发处理多少个版本。默认 4。
+ * 同时处理多少个版本。默认 4。
  *
- * 实测 AtomGit 的 OBS 单连接上传约 50 KB/s，6 路并发能到 ~180 KB/s（约 3.6 倍），
- * 再往上收益就不明显了。回填 4 GB 历史时这是能不能在一晚上跑完的关键。
- * 并发的是**不同版本**，同一个版本内的资产仍逐个上传 —— AtomGit 不接受同名覆盖，
- * 同版本并发会在「先删后传」那里互相踩。
+ * 它**不控制上传并发** —— 真正的上传闸门是 MAX_UPLOADS（全局 4）。
+ * 这里的作用是让多个版本同时处在「下载 → 校验 → 上传」的不同阶段，
+ * 把下载等待与上传排队重叠起来。设太大只会让多个版本争抢同一批上传槽位，
+ * 反而把内存里同时缓存的产物数量推高（每个最大约 95 MB）。
  */
 const CONCURRENCY = Math.max(1, Math.min(8, Number(flagValue('concurrency')) || 4));
 /**
@@ -602,43 +626,44 @@ async function syncRelease(component, release, inventory) {
   }
 
   /**
-   * 并发处理待传资产。
+   * 处理待传资产。
+   *
+   * 这里**不再自己开并发池**：真正的限流在全局闸门 withUploadSlot 里，
+   * 版本级并发负责把多个版本的重叠起来。两层池子相乘会把并发放大到 16，
+   * 远超实测拐点；只留一层闸门，语义也更清楚。
+   *
    * 单个资产失败只记失败、不影响同一批其它资产 —— 历史回填动辄几十个文件，
    * 一个坏包不该把整轮拖停。失败会在汇总里体现，下一轮自动重试。
    */
   const failures = [];
-  let cursor = 0;
-  const worker = async () => {
-    while (cursor < pending.length) {
-      const { asset, existingSize } = pending[cursor++];
-      const dest = join(WORK_DIR, `${component.key}__${atomgitTag}__${asset.name}`);
-      try {
-        log(`    下载 ${asset.name}（${mb(asset.size)}）…`);
-        await downloadAsset(asset, dest);
 
-        // 体积对得上不代表内容对得上：GitHub 给了 digest 就必须核一遍
-        const digest = verifyDigest(asset, dest);
-        if (digest.checked) log(`    内容校验通过（sha256 与 GitHub 一致）`);
+  for (const { asset, existingSize } of pending) {
+    const dest = join(WORK_DIR, `${component.key}__${atomgitTag}__${asset.name}`);
+    try {
+      log(`    下载 ${asset.name}（${mb(asset.size)}）…`);
+      await downloadAsset(asset, dest);
 
-        // AtomGit 不允许同名覆盖，体积对不上时必须先删再传
+      // 体积对得上不代表内容对得上：GitHub 给了 digest 就必须核一遍
+      const digest = verifyDigest(asset, dest);
+      if (digest.checked) log(`    内容校验通过（sha256 与 GitHub 一致）`);
+
+      // 删除 + 上传在同一把锁里完成：同名文件必须先删后传，
+      // 中间若被别的版本插进来抢到同名位置就会互相踩。
+      const sent = await withUploadSlot(async () => {
         if (existingSize !== undefined) await deleteAsset(atomgitTag, asset.name);
-
         log(`    上传 ${asset.name} …`);
-        const sent = await uploadAsset(atomgitTag, asset, dest);
-        uploaded.push(asset.name);
-        log(`    ✓ ${asset.name} 已上传（${mb(sent)}）`);
-      } catch (error) {
-        failures.push(`${asset.name}: ${error.message}`);
-        warn(`${asset.name} 失败：${error.message}`);
-      } finally {
-        // 大文件不留在临时目录里占空间
-        if (existsSync(dest)) rmSync(dest, { force: true });
-      }
+        return uploadAsset(atomgitTag, asset, dest);
+      });
+      uploaded.push(asset.name);
+      log(`    ✓ ${asset.name} 已上传（${mb(sent)}）`);
+    } catch (error) {
+      failures.push(`${asset.name}: ${error.message}`);
+      warn(`${asset.name} 失败：${error.message}`);
+    } finally {
+      // 大文件不留在临时目录里占空间
+      if (existsSync(dest)) rmSync(dest, { force: true });
     }
-  };
-
-  const workers = Array.from({ length: Math.min(ASSET_CONCURRENCY, pending.length) }, worker);
-  await Promise.all(workers);
+  }
 
   if (failures.length) {
     throw new Error(`${failures.length} 个资产失败：${failures.join('；')}`);
