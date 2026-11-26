@@ -103,6 +103,13 @@ const ASSET_TIMEOUT_MS = 10 * 60 * 1000;
 const UPLOAD_TIMEOUT_MS = 10 * 60 * 1000;
 
 /**
+ * 上传返回 203（OBS 回调失败）后，回查实际状态的等待梯度（毫秒）。
+ * 回调是异步的：文件已经写进 OBS，但元数据登记可能晚几秒到几十秒。
+ * 立刻查会把「其实已经传好」误判成失败，所以要等，并查几次。
+ */
+const CALLBACK_SETTLE_DELAYS_MS = [2000, 5000, 10000, 20000, 30000];
+
+/**
  * GitHub 一次请求最多能取多少条（GitHub 的 per_page 上限就是 100）。
  * ⚠️ 这里曾经是 30，而桌面版仓库已经有 35 个 Release —— 用 --all 同步时会**静默漏掉**
  * 最早的 5 个，日志里看不出任何异常。取满上限，并在取回数量达到上限时提醒分页。
@@ -605,14 +612,23 @@ async function uploadAsset(atomgitTag, asset, localPath) {
   if (putResponse.status !== 200) {
     const detail = await putResponse.text().catch(() => '');
     /**
-     * 203 是 OBS 回调失败（最常见的原因：同名文件已存在，AtomGit 不接受覆盖）。
-     * 这不一定意味着推送失败 —— 文件可能早就传上去了，只是这一轮没认出来
-     * （比如上一轮清单没取到）。所以先回查一次实际状态，对得上就当成功，
-     * 避免把「其实已经好了」记成失败、把工作流刷红。
+     * 203 = OBS 回调失败。两种成因，处理方式不同：
+     *
+     *   · 「同名文件已存在」——文件早就在了，只是这一轮没认出来（比如清单没取到）。
+     *   · 「Fail to call origin / obs_callback」——AtomGit 侧的回调超时，**文件其实已经写进 OBS**，
+     *     只是元数据没登记完。并发上传时很常见（实测 4 路并发就会零星出现）。
+     *
+     * 两种都不该直接把版本判死：先回查一次实际状态。但回调是异步的，可能还没登记完，
+     * 所以要等一会再查，并重试几次 —— 立刻查多半还是查不到，会把「其实已传好」误判成失败。
      */
-    if (putResponse.status === 203 && (await assetMatches(atomgitTag, asset.name, size))) {
-      log(`    （${asset.name} 在 AtomGit 上已存在且体积一致，跳过）`);
-      return size;
+    if (putResponse.status === 203) {
+      for (let i = 0; i < CALLBACK_SETTLE_DELAYS_MS.length; i++) {
+        await sleep(CALLBACK_SETTLE_DELAYS_MS[i]);
+        if (await assetMatches(atomgitTag, asset.name, size)) {
+          log(`    （${asset.name} 已写入 AtomGit，回调稍晚登记，按成功处理）`);
+          return size;
+        }
+      }
     }
     throw new Error(`上传 ${asset.name} 失败：HTTP ${putResponse.status} ${detail.slice(0, 200)}`);
   }
