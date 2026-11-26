@@ -408,6 +408,18 @@ function readEntriesCache(): DownloadEntries | null {
     const parsed = JSON.parse(raw) as { at?: number; entries?: DownloadEntries };
     if (!parsed.entries) return null;
     if (typeof parsed.at !== 'number' || Date.now() - parsed.at > ENTRIES_TTL) return null;
+
+    /**
+     * 老缓存没有 `repo` 字段（它是随 AtomGit 通道一起加进来的）。
+     * 直接复用的话，atomgitTagOf(undefined) 会返回 null、可用性被判成 'no'，
+     * 页面会错误地告诉用户「这个版本还没同步到 AtomGit」并全程走慢线路。
+     * 缓存只是加速手段，字段对不上就整份丢弃重取，比逐条修补简单也安全。
+     */
+    const builds = Object.values(parsed.entries).filter(
+      (item): item is DesktopBuild => Boolean(item)
+    );
+    if (builds.some((build) => !build.repo)) return null;
+
     return parsed.entries;
   } catch {
     return null;
@@ -558,8 +570,12 @@ export function mirrorChoices(): MirrorChannel[] {
  * AtomGit 能不能服务这个版本。
  * 只有接口明确说「没有」才返回 false；接口没取到时返回 true（直链是拼出来的，照用）。
  * 页面据此决定默认线路，以及要不要提示「已改走本站节点」。
+ *
+ * 这里主动读一次 atomgitRevision()：让任何把它写进 computed 的调用方
+ * 都能在清单到达后自动重算，而不是依赖调用方自己记得先读一次。
  */
 export function atomGitAvailable(build: DesktopBuild | null): boolean {
+  void atomgitRevision();
   if (!build) return false;
   return atomgitAvailability(build.repo, build.tag, build.name) !== 'no';
 }
@@ -577,29 +593,34 @@ export async function warmUpAtomGit(): Promise<void> {
 export { atomgitRevision };
 
 /**
- * 「校验值」链接的目标：默认走 AtomGit，和主下载按钮保持同一条线路
+ * 「校验值」要不要显示。
+ *
+ * 两条判据叠加：
+ *   ① 发布流程的固定约定 —— 桌面版与 Win7 版的每个产物都随包带同名 .md5，安卓 APK 从来没有。
+ *      原先只看 AtomGit 清单里「有没有说没有」，于是接口限流（unknown）时安卓也会冒出
+ *      一个校验值按钮，点了必然 404。
+ *   ② 清单明确说这个版本没有 .md5（同步时漏推了校验文件）时也藏起来，避免死链。
+ */
+export function hasChecksum(build: DesktopBuild | null): boolean {
+  if (!build) return false;
+  if (/\.apk$/i.test(build.name)) return false;
+  return atomgitAvailability(build.repo, build.tag, `${build.name}.md5`) !== 'no';
+}
+
+/**
+ * 「校验值」链接的目标：优先 AtomGit，和主下载按钮保持同一条线路
  * —— 主按钮能从 AtomGit 下、校验文件却指向 GitHub 的话，国内用户点校验值就打不开了。
  *
- * 三条分支，按「能不能确定」排列：
- *   1. 清单里明确有 → 用 AtomGit 的地址
- *   2. 清单里明确没有（如安卓包本来就不带 .md5）→ 退回 GitHub 原地址，不造 404
- *   3. 清单没取到 → 仍用 AtomGit 拼接地址：与默认线路保持一致，拼不出东西的产物页面本来就不显示这一项
+ * 只有清单**明确说 AtomGit 上没有**这个 .md5 时才退回 GitHub 原地址
+ * （比如某个版本同步时漏推了校验文件）；清单没取到（unknown）时仍走 AtomGit，
+ * 与主按钮在同样情形下的选择保持一致。
  */
 export function checksumUrlOf(build: DesktopBuild): string {
   const name = `${build.name}.md5`;
   const atomGit = atomgitDownloadUrl(build.repo, build.tag, name);
   if (!atomGit) return `${build.url}.md5`;
-  const availability = atomgitAvailability(build.repo, build.tag, build.name);
-  const checksumAvailability = atomgitAvailability(build.repo, build.tag, name);
-  if (checksumAvailability === 'yes') return atomGit;
-  if (checksumAvailability === 'no' && availability !== 'unknown') return `${build.url}.md5`;
+  if (atomgitAvailability(build.repo, build.tag, name) === 'no') return `${build.url}.md5`;
   return atomGit;
-}
-
-/** 这个产物有没有校验文件可点（接口明确说没有时不显示，避免死链） */
-export function hasChecksum(build: DesktopBuild | null): boolean {
-  if (!build) return false;
-  return atomgitAvailability(build.repo, build.tag, `${build.name}.md5`) !== 'no';
 }
 
 export interface SourceDownloadOutcome {

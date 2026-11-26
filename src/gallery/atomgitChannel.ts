@@ -117,7 +117,7 @@ export function atomgitDownloadUrl(
 
 /** 某个 release 在 AtomGit 的页面 */
 export function atomgitReleaseUrl(atomgitTag: string): string {
-  return `https://atomgit.com/${OWNER}/${REPO}/releases/tag/${atomgitTag}`;
+  return `https://atomgit.com/${OWNER}/${REPO}/releases/tag/${encodeURIComponent(atomgitTag)}`;
 }
 
 function parseIndex(data: unknown): AtomGitIndex {
@@ -163,22 +163,27 @@ function writeCache(index: AtomGitIndex): void {
 /** 打接口取一次版本清单；失败返回 null 并记下状态 */
 async function loadIndex(): Promise<AtomGitIndex | null> {
   state = 'loading';
-  const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
   try {
     const merged: AtomGitIndex = {};
     for (let page = 1; page <= MAX_PAGES; page++) {
-      // 不带自定义请求头，保持「简单请求」，不触发 CORS 预检
-      const response = await fetch(`${API_BASE}/releases?per_page=${PER_PAGE}&page=${page}`, {
-        cache: 'no-store',
-        signal: controller.signal
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const batch = await response.json();
-      if (!Array.isArray(batch) || !batch.length) break;
-      Object.assign(merged, parseIndex(batch));
-      // 不满一页就是最后一页
-      if (batch.length < PER_PAGE) break;
+      // 超时按页重置：多页共用一个预算的话，页数一多后面的页会被前面的页耗光时间而误判失败
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+      try {
+        // 不带自定义请求头，保持「简单请求」，不触发 CORS 预检
+        const response = await fetch(`${API_BASE}/releases?per_page=${PER_PAGE}&page=${page}`, {
+          cache: 'no-store',
+          signal: controller.signal
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const batch = await response.json();
+        if (!Array.isArray(batch) || !batch.length) break;
+        Object.assign(merged, parseIndex(batch));
+        // 不满一页就是最后一页
+        if (batch.length < PER_PAGE) break;
+      } finally {
+        window.clearTimeout(timer);
+      }
     }
     if (!Object.keys(merged).length) throw new Error('清单为空');
     writeCache(merged);
@@ -191,8 +196,6 @@ async function loadIndex(): Promise<AtomGitIndex | null> {
     state = 'failed';
     memoryIndex = null;
     return null;
-  } finally {
-    window.clearTimeout(timer);
   }
 }
 

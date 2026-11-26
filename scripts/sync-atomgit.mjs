@@ -811,6 +811,9 @@ async function main() {
   // 没有令牌时（只加 --dry-run、没配 secret 的场景）退回 null，按「全都没传过」估个上限。
   const inventory = atomgitToken() ? await fetchAtomgitInventory() : null;
 
+  // 记下开跑前谁被标成 latest，跑完还原（见 restoreLatestFlag 的注释）
+  if (atomgitToken()) PRE_RUN_LATEST = await captureLatest();
+
   const results = [];
   for (const component of components) {
     component.label = labelOf(component.key);
@@ -909,6 +912,63 @@ async function main() {
   }
 
   if (DRY_RUN) log('\n（预演结束，未改动 AtomGit）');
+  else await restoreLatestFlag();
+}
+
+/**
+ * 把 AtomGit 的「最新版本」标记还原到本该属于它的那条。
+ *
+ * ⚠️ 为什么需要：AtomGit 的 `GET /releases/latest` **不读 release_status**，
+ * 而是按创建时间取最新的一条。回填历史版本时，最后建的那条（比如某个 insider 预览版）
+ * 会顶掉正式版成为「最新」，AtomGit 首页就指向一个预览版。
+ *
+ * 对策：记下开跑前谁被标成 latest（并确认它确实存在），跑完再把那条 PATCH 一次。
+ * PATCH 会刷新它的状态标记，实测能让 /latest 回到正确的那条。
+ * 找不到原 latest 时不动 —— 宁可不修，也不猜一个「最新」出来。
+ */
+async function restoreLatestFlag() {
+  if (!PRE_RUN_LATEST) return;
+  const { tag, name, body } = PRE_RUN_LATEST;
+  const current = await atomgit(
+    'GET',
+    `/repos/${ATOMGIT_OWNER}/${ATOMGIT_REPO}/releases/latest`,
+    null,
+    '读取当前 latest'
+  ).catch(() => null);
+  if (current && current.json?.tag_name === tag) {
+    log(`\nlatest 仍指向 ${tag}，无需恢复`);
+    return;
+  }
+  const patched = await atomgit(
+    'PATCH',
+    `/repos/${ATOMGIT_OWNER}/${ATOMGIT_REPO}/releases/${encodeURIComponent(tag)}?access_token=${encodeURIComponent(atomgitToken())}`,
+    { tag_name: tag, name, body, release_status: 'latest' },
+    `恢复 latest 标记到 ${tag}`
+  ).catch((error) => {
+    warn(`恢复 latest 标记失败：${error.message}（不影响资产，下次同步会再试）`);
+    return null;
+  });
+  if (patched && patched.status === 200) log(`\n已把 latest 标记恢复到 ${tag}`);
+}
+
+/**
+ * 开跑前被标成 latest 的那条（tag / name / body），跑完用来还原。
+ * 取不到就是 null，restoreLatestFlag 会直接跳过 —— 不猜一个「最新」出来。
+ */
+let PRE_RUN_LATEST = null;
+
+async function captureLatest() {
+  const latest = await atomgit(
+    'GET',
+    `/repos/${ATOMGIT_OWNER}/${ATOMGIT_REPO}/releases/latest`,
+    null,
+    '记录开跑前的 latest'
+  ).catch(() => null);
+  const tag = latest?.json?.tag_name;
+  if (!tag) return null;
+  // 只在它确实被标成 latest 时才接管：否则说明本来就没有明确的「最新」，不该由我们指定
+  if (latest.json?.release_status && latest.json.release_status !== 'latest') return null;
+  return { tag, name: latest.json.name || tag, body: latest.json.body || '' };
 }
 
 function labelOf(key) {

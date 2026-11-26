@@ -246,7 +246,11 @@ const channelItems = computed(() => [
 const selectedChannelItem = computed(() => channelItems.value.find((i) => i.Tag === activeChannel.value));
 const onChannelChanged = (sender: { SelectedItem?: { Tag?: string } } | null) => {
   const tag = sender?.SelectedItem?.Tag as ChannelId | undefined;
-  if (tag) activeChannel.value = tag;
+  if (!tag) return;
+  activeChannel.value = tag;
+  // 换通道等于换了一批产物，上一条回退提示已经不再适用
+  atomGitFallback.value = false;
+  downloadFailed.value = false;
 };
 
 /* ── 下载线路 ─────────────────────────────────────────────────────── */
@@ -537,8 +541,13 @@ const download = async (id: DownloadId) => {
 };
 
 onMounted(async () => {
-  // AtomGit 清单与版本清单并行取：清单只影响提示条，慢一点不挡首屏
+  // 三件事互相不依赖，全部并行：AtomGit 清单、当前产物清单、历史版本。
+  // 历史版本过去被排在两个 await 之后，最坏要多等十几秒才出。
   const atomGitReady = warmUpAtomGit();
+  const historyReady = Promise.all([
+    fetchReleaseHistory(DESKTOP_REPO),
+    fetchReleaseHistory(WIN7_REPO)
+  ]);
 
   try {
     entries.value = await resolveDownloadEntries();
@@ -550,10 +559,7 @@ onMounted(async () => {
 
   // 历史版本是次要信息：不参与上面的 loading 态，拿到再渲染。
   // 接口挂了就返回空数组，页面底部那一段直接不显示，不影响下载。
-  const [desktopHist, win7Hist] = await Promise.all([
-    fetchReleaseHistory(DESKTOP_REPO),
-    fetchReleaseHistory(WIN7_REPO)
-  ]);
+  const [desktopHist, win7Hist] = await historyReady;
   history.value = { desktop: desktopHist, win7: win7Hist };
 });
 </script>
