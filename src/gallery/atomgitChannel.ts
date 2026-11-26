@@ -31,6 +31,18 @@ const TAG_PREFIX: Record<string, string> = {
 /** 接口超时：取不到就按「有镜像」处理，不让用户等 */
 const REQUEST_TIMEOUT = 8000;
 
+/** 一次请求取多少条（AtomGit 的 per_page 上限是 100） */
+const PER_PAGE = 100;
+
+/**
+ * 最多翻几页。
+ * ⚠️ 这里曾经写死 `per_page=30` 且不翻页。回填历史版本后分发仓库已经有 49 个 release，
+ * 前 30 条之外的（也就是更早的正式版）全被当成「AtomGit 上没有」，历史版本那一栏
+ * 会退回到 GitHub 直链 —— 而回填的意义正是让它们走 AtomGit。
+ * 现在取满上限并翻页，页数上限只是防御（49 条远未到）。
+ */
+const MAX_PAGES = 10;
+
 /** 版本清单小时级变化，缓存 30 分钟，减少对接口的调用（接口有全局限流） */
 const CACHE_KEY = 'csh-atomgit-index';
 const CACHE_TTL = 30 * 60 * 1000;
@@ -154,18 +166,26 @@ async function loadIndex(): Promise<AtomGitIndex | null> {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
   try {
-    // 不带自定义请求头，保持「简单请求」，不触发 CORS 预检
-    const response = await fetch(`${API_BASE}/releases?per_page=30`, {
-      cache: 'no-store',
-      signal: controller.signal
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const index = parseIndex(await response.json());
-    writeCache(index);
-    memoryIndex = index;
+    const merged: AtomGitIndex = {};
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      // 不带自定义请求头，保持「简单请求」，不触发 CORS 预检
+      const response = await fetch(`${API_BASE}/releases?per_page=${PER_PAGE}&page=${page}`, {
+        cache: 'no-store',
+        signal: controller.signal
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const batch = await response.json();
+      if (!Array.isArray(batch) || !batch.length) break;
+      Object.assign(merged, parseIndex(batch));
+      // 不满一页就是最后一页
+      if (batch.length < PER_PAGE) break;
+    }
+    if (!Object.keys(merged).length) throw new Error('清单为空');
+    writeCache(merged);
+    memoryIndex = merged;
     state = 'ready';
     indexRevision.value += 1;
-    return index;
+    return merged;
   } catch {
     // 限流 / 断网 / CORS：不写缓存，下次进页面重试
     state = 'failed';
