@@ -106,11 +106,11 @@
           </div>
           <div v-if="app.github" class="detail-info-row">
             <span class="detail-info-label">{{ t('detail.github') }}</span>
-            <WinHyperlinkButton
-              class="detail-info-link"
-              :Content="app.github"
-              :NavigateUri="app.github"
-              TargetName="_blank" />
+            <button
+              type="button"
+              class="detail-info-link detail-github-embed"
+              :title="locale === 'en-US' ? 'Open this GitHub page inside the site' : '在本站内嵌打开该 GitHub 页面'"
+              @click="openGithubEmbed">{{ app.github }}</button>
           </div>
           <!-- 开发者与开源协议：都是选填字段，投稿时由提交者自己填（见 SubmitPage.vue）。
                没有就不显示这一行 —— 大多数商业软件查不到作者，硬写「未知」反而像漏填。 -->
@@ -245,6 +245,11 @@
         <!-- 软件仅有商店一个入口时：本机未安装商店会形成循环提示（商店引导安装商店），
              故补充「如何恢复商店」的说明 —— wsreset -i 是 Windows 内置的静默重装开关 -->
         <p v-if="storeLink && !otherDownloads.length" class="detail-store-nostore">{{ t('detail.store-nostore') }}</p>
+
+        <GithubEmbedModal
+          v-model:open="githubEmbedOpen"
+          :github-url="app.github || ''"
+          :app-name="app.name" />
       </template>
 
       <p v-else class="detail-not-found">{{ t('detail.not-found') }}</p>
@@ -259,6 +264,7 @@ import WinScrollViewer from '../../components/WinScrollViewer.vue';
 import WinHyperlinkButton from '../../components/WinHyperlinkButton.vue';
 import WinInfoBar from '../../components/WinInfoBar.vue';
 import WinButton from '../../components/WinButton.vue';
+import GithubEmbedModal from '../../components/GithubEmbedModal.vue';
 import { useI18n } from '../../components/i18n/index';
 import {
   findAppById,
@@ -297,6 +303,16 @@ import { buildShareText, buildShareUrl, buildQrSvg, isShareableUrl } from '../sh
 
 const { t, locale } = useI18n();
 const route = useRoute();
+const githubEmbedOpen = ref(false);
+
+function openGithubEmbed() {
+  const url = String(app.value?.github || '');
+  if (!/^https:\/\/(?:www\.)?github\.com\/[^/]+\/[^/]+/i.test(url)) {
+    if (isSafeNavigateUrl(url)) window.open(url, '_blank', 'noopener');
+    return;
+  }
+  githubEmbedOpen.value = true;
+}
 
 /** 网址 #/download/<id> 里的 id 对应的软件 */
 const app = computed(() => findAppById(String(route.params.id ?? '')));

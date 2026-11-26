@@ -574,3 +574,22 @@ html.theme-dark .detail-category-badge {
   color: var(--text-tertiary, var(--text-secondary));
   white-space: nowrap;
 }
+
+/* GitHub 一栏：点击后由站内签名 iframe 打开，不直接跳站外 */
+.detail-github-embed {
+  color: var(--accent-base);
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  text-decoration: none;
+  word-break: break-all;
+}
+.detail-github-embed:hover {
+  text-decoration: underline;
+}
+.detail-github-embed:focus-visible {
+  outline: 2px solid var(--accent-base);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
