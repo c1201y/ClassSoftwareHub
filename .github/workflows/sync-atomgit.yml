@@ -1,0 +1,112 @@
+name: 同步产物到 AtomGit
+
+# ══════════════════════════════════════════════════════════════════════
+#  把三个产品仓库（桌面版 / Win7 版 / 安卓）的 Release 产物同步到 AtomGit 分发仓库。
+#
+#  为什么放在**主仓库**而不是三个产品仓库各放一份：
+#    ① 单一真理。tag 前缀（desktop- / win7- / android-）必须与
+#       src/gallery/atomgitChannel.ts 的 TAG_PREFIX 完全一致，那份代码在主仓库，
+#       脚本也放这里，改一处就不会漏改另一处。
+#    ② 自愈。定时跑，谁漏了就补谁 —— 不依赖任何一个产品仓库的发版工作流成功。
+#       产品仓库的 token 权限出问题、Actions 挂了，下一轮这里照样能补上。
+#    ③ 三个仓库不用各存一份几乎相同的 YAML 与脚本，避免三份实现各自漂移。
+#
+#  下载页（#/desktop）默认走 AtomGit，该通道按约定拼直链；AtomGit 上缺版本时
+#  页面会自动回退到本站节点并提示用户 —— 同步漏了不会让站点挂掉，但默认通道会失效。
+#  所以这个工作流失败值得看一眼，不必惊慌。
+#
+#  幂等：以「AtomGit 上已有同名 tag 且资产体积一致」为已同步，可反复运行。
+# ══════════════════════════════════════════════════════════════════════
+
+on:
+  schedule:
+    # 每周一、周四 01:00 UTC（北京时间 09:00）：产品发版不频繁，两天一次足够补漏
+    - cron: '0 1 * * 1,4'
+  workflow_dispatch:
+    inputs:
+      component:
+        description: '只同步某一个组件'
+        required: false
+        type: choice
+        options: ['全部', 'desktop', 'win7', 'android']
+        default: '全部'
+      tag:
+        description: '只同步某个 tag（留空 = 每个仓库最新版；需配合上面的组件）'
+        required: false
+        default: ''
+      all_releases:
+        description: '同步每个仓库的全部 Release（默认只同步最新版）'
+        required: false
+        type: boolean
+        default: false
+      dry_run:
+        description: '只报告要做什么，不写 AtomGit'
+        required: false
+        type: boolean
+        default: false
+
+# 只读本仓库代码，不写任何仓库内容；产物写的是 AtomGit，走 token
+permissions:
+  contents: read
+
+# 同一时间只跑一个：两个并发实例会同时给同一个 release 建 tag / 传同名资产
+concurrency:
+  group: sync-atomgit
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: 同步到 AtomGit
+    runs-on: ubuntu-latest
+    steps:
+      - name: 取出源码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # 脚本只用到 Node 内置的 fetch / fs / crypto，不需要 npm ci
+      - name: 同步产物
+        env:
+          # AtomGit 访问令牌（分发仓库的写入权限）
+          ATOMGIT_TOKEN: ${{ secrets.ATOMGIT_TOKEN }}
+          # 读 GitHub Release 与下载资产；用内置 token 避免匿名 60 次/小时的限流
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_COMPONENT: ${{ inputs.component }}
+          INPUT_TAG: ${{ inputs.tag }}
+          INPUT_ALL: ${{ inputs.all_releases }}
+          INPUT_DRY: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+
+          ARGS=()
+          if [ -n "${INPUT_COMPONENT:-}" ] && [ "${INPUT_COMPONENT}" != "全部" ]; then
+            ARGS+=("--repo=${INPUT_COMPONENT}")
+          fi
+          if [ -n "${INPUT_TAG:-}" ]; then
+            ARGS+=("--tag=${INPUT_TAG}")
+          fi
+          if [ "${INPUT_ALL:-false}" = "true" ]; then
+            ARGS+=("--all")
+          fi
+          if [ "${INPUT_DRY:-false}" = "true" ]; then
+            ARGS+=("--dry-run")
+          fi
+
+          echo "参数：${ARGS[*]:-（无，全量同步最新版）}"
+          node scripts/sync-atomgit.mjs "${ARGS[@]:-}"
+
+      - name: 汇总写入 Job Summary
+        if: always()
+        run: |
+          {
+            echo '## AtomGit 分发同步'
+            echo ''
+            echo '下载页 `#/desktop` 的默认线路是 AtomGit。同步漏掉的版本会自动回退到本站节点并提示用户，'
+            echo '所以这一步失败不会让站点不可用，但会让默认通道失效。'
+            echo ''
+            echo '- 同步范围：`desktop-` / `win7-` / `android-` 三个前缀'
+            echo '- 已是最新的资产按体积判断，重复运行不会重传'
+          } >> "$GITHUB_STEP_SUMMARY"
