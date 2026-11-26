@@ -39,6 +39,12 @@ on:
         required: false
         type: boolean
         default: false
+      channel:
+        description: '只同步某一类版本（补历史版本时分轮跑，免得单个任务超时）'
+        required: false
+        type: choice
+        options: ['全部通道', '仅正式版', '仅预览版']
+        default: '全部通道'
       dry_run:
         description: '只报告要做什么，不写 AtomGit'
         required: false
@@ -58,6 +64,9 @@ jobs:
   sync:
     name: 同步到 AtomGit
     runs-on: ubuntu-latest
+    # 回填历史版本是 GB 量级，AtomGit 上传吞吐只有 ~200 KB/s（实测单条 92、4 条 207、8 条 205），
+    # 全量补齐会超过默认的 6 小时上限。放宽到上限值，并靠分轮（channel 输入）保证单轮跑得完。
+    timeout-minutes: 350
     steps:
       - name: 取出源码
         uses: actions/checkout@v4
@@ -77,6 +86,7 @@ jobs:
           INPUT_COMPONENT: ${{ inputs.component }}
           INPUT_TAG: ${{ inputs.tag }}
           INPUT_ALL: ${{ inputs.all_releases }}
+          INPUT_CHANNEL: ${{ inputs.channel }}
           INPUT_DRY: ${{ inputs.dry_run }}
         run: |
           set -euo pipefail
@@ -90,6 +100,11 @@ jobs:
           fi
           if [ "${INPUT_ALL:-false}" = "true" ]; then
             ARGS+=("--all")
+          fi
+          if [ "${INPUT_CHANNEL:-}" = "仅正式版" ]; then
+            ARGS+=("--stable-only")
+          elif [ "${INPUT_CHANNEL:-}" = "仅预览版" ]; then
+            ARGS+=("--prerelease-only")
           fi
           if [ "${INPUT_DRY:-false}" = "true" ]; then
             ARGS+=("--dry-run")

@@ -179,6 +179,11 @@ async function loadIndex(): Promise<AtomGitIndex | null> {
 /**
  * 取版本清单（内存 → 缓存 → 接口），永不 reject。
  * 返回 null 表示「接口没取到」，此时直链照用、不判缺失。
+ *
+ * ⚠️ inFlight 用完必须清空。曾经写成 `inFlight ??= loadIndex()` 之后不再置 null，
+ * 于是**一次失败会被永久记住**：整页生命周期内所有后续调用都拿到同一个已完成的
+ * Promise（结果仍是 null），用户在网络恢复后重进下载页也只能看到回退提示。
+ * 这是「一次性失败」被放大成「本次会话永远失败」的典型写法。
  */
 export function ensureAtomGitIndex(): Promise<AtomGitIndex | null> {
   if (memoryIndex) return Promise.resolve(memoryIndex);
@@ -189,7 +194,12 @@ export function ensureAtomGitIndex(): Promise<AtomGitIndex | null> {
     indexRevision.value += 1;
     return Promise.resolve(cached);
   }
-  inFlight ??= loadIndex();
+  if (!inFlight) {
+    inFlight = loadIndex().finally(() => {
+      // 无论成败都放开，让下一次调用能重新尝试
+      inFlight = null;
+    });
+  }
   return inFlight;
 }
 
@@ -212,12 +222,4 @@ export function atomgitAvailability(
   if (!atomgitTag) return 'no';
   if (!memoryIndex) return 'unknown';
   return memoryIndex[atomgitTag]?.[name] ? 'yes' : 'no';
-}
-
-/** 该版本在 AtomGit 是否整版可用（任一附件在清单里即算） */
-export function atomgitHasRelease(repo: string | undefined, tag: string): boolean {
-  void indexRevision.value;
-  const atomgitTag = atomgitTagOf(repo, tag);
-  if (!atomgitTag || !memoryIndex) return false;
-  return Boolean(memoryIndex[atomgitTag]);
 }

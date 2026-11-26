@@ -16,9 +16,15 @@
 // 用法：
 //   node scripts/sync-atomgit.mjs                 # 全量：检查三个仓库的最新版
 //   node scripts/sync-atomgit.mjs --all           # 全量：检查每个仓库的全部 Release
+//   node scripts/sync-atomgit.mjs --all --stable-only      # 只补历史正式版
+//   node scripts/sync-atomgit.mjs --all --prerelease-only  # 只补历史预览版
 //   node scripts/sync-atomgit.mjs --repo=android  # 只处理某一个组件
 //   node scripts/sync-atomgit.mjs --tag=dv1.2.2   # 只处理某个 tag（配合 --repo）
 //   node scripts/sync-atomgit.mjs --dry-run       # 只报告要做什么，不动远端
+//
+// ⚠️ 补历史版本前先看体积：桌面版 35 个版本共 2.4 GB，Win7 版 13 个共 1.7 GB。
+//    AtomGit 实测上传吞吐约 90–200 KB/s，全量补齐要跑好几个小时，建议按
+//    --stable-only / --prerelease-only 分轮，或交给 CI 定时任务慢慢跑。
 //
 // 环境变量：
 //   GITHUB_TOKEN   读 GitHub Release / 下载资产（公开仓库可省，但会被限流到 60 次/小时）
@@ -56,6 +62,13 @@ const COMPONENTS = [
 /** 接口重试：AtomGit 的限流很紧（429），退避后重试 */
 const RETRY_DELAYS_MS = [2000, 5000, 10000, 20000, 30000];
 
+/**
+ * 同时进行的资产数。
+ * AtomGit 的上传是服务端带宽瓶颈：实测单条 92 KB/s、4 条聚合 207 KB/s、8 条聚合 205 KB/s
+ * —— 再往上加没有收益，4 是比较稳的拐点。回填历史版本时这点并发能把几小时压到一小时级。
+ */
+const ASSET_CONCURRENCY = 4;
+
 /** 下载资产的临时目录 */
 const WORK_DIR = join(tmpdir(), 'csh-atomgit-sync');
 
@@ -65,8 +78,12 @@ const ASSET_TIMEOUT_MS = 10 * 60 * 1000;
 /** 上传单个资产的超时（毫秒）：同理给足，避免把慢当失败 */
 const UPLOAD_TIMEOUT_MS = 10 * 60 * 1000;
 
-/** GitHub 上一个 Release 最多取多少条（每个仓库发版不频繁，30 足够覆盖） */
-const GITHUB_RELEASE_LIMIT = 30;
+/**
+ * GitHub 一次请求最多能取多少条（GitHub 的 per_page 上限就是 100）。
+ * ⚠️ 这里曾经是 30，而桌面版仓库已经有 35 个 Release —— 用 --all 同步时会**静默漏掉**
+ * 最早的 5 个，日志里看不出任何异常。取满上限，并在取回数量达到上限时提醒分页。
+ */
+const GITHUB_RELEASE_LIMIT = 100;
 
 /* ── 命令行参数 ───────────────────────────────────────────────────── */
 
@@ -81,6 +98,23 @@ const DRY_RUN = hasFlag('dry-run');
 const SYNC_ALL = hasFlag('all');
 const ONLY_REPO = flagValue('repo');
 const ONLY_TAG = flagValue('tag');
+
+/**
+ * 并发处理多少个版本。默认 4。
+ *
+ * 实测 AtomGit 的 OBS 单连接上传约 50 KB/s，6 路并发能到 ~180 KB/s（约 3.6 倍），
+ * 再往上收益就不明显了。回填 4 GB 历史时这是能不能在一晚上跑完的关键。
+ * 并发的是**不同版本**，同一个版本内的资产仍逐个上传 —— AtomGit 不接受同名覆盖，
+ * 同版本并发会在「先删后传」那里互相踩。
+ */
+const CONCURRENCY = Math.max(1, Math.min(8, Number(flagValue('concurrency')) || 4));
+/**
+ * 只同步某一类版本。
+ * 历史版本一次性推完是 4 GB 量级，按 AtomGit 实测的上传吞吐要跑好几个小时，
+ * 单个 CI 任务有 6 小时上限 —— 所以允许按通道拆开分轮跑。
+ */
+const ONLY_STABLE = hasFlag('stable-only');
+const ONLY_PRERELEASE = hasFlag('prerelease-only');
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
 
@@ -183,29 +217,42 @@ async function github(path, label, accept = 'application/vnd.github+json') {
  * 取 AtomGit 上已有的 tag → 资产体积表。
  * 取不到（限流等）时返回 null，调用方据此退化为「逐个存在性检查」而不是「认为全都没有」——
  * 否则一次限流就会导致整轮都去重建 release。
+ *
+ * ⚠️ 必须翻页。只取第一页的话，一旦分发仓库的 release 超过一页（回填历史版本后就会），
+ * 第二页往后的全被当成「不存在」，于是每轮都去重建 release、重传全部资产。
+ * 而且这种错误不报错，只是慢 —— 是最难发现的一类。
  */
 async function fetchAtomgitInventory() {
-  const { status, json } = await atomgit(
-    'GET',
-    `/repos/${ATOMGIT_OWNER}/${ATOMGIT_REPO}/releases?per_page=100`,
-    null,
-    '读取 AtomGit 现有 Release'
-  );
-  if (status !== 200 || !Array.isArray(json)) {
-    warn(`读不到 AtomGit 现有 Release（HTTP ${status}），本轮改为逐个检查`);
-    return null;
-  }
   const inventory = new Map();
-  for (const release of json) {
-    if (!release.tag_name) continue;
-    const assets = new Map();
-    for (const asset of release.assets ?? []) {
-      // AtomGit 会自动给每个 release 附源码包，标记为 source，不是我们推的
-      if (asset.type === 'source') continue;
-      assets.set(asset.name, asset.size ?? 0);
+  const PER_PAGE = 100;
+
+  for (let page = 1; page <= 50; page++) {
+    const { status, json } = await atomgit(
+      'GET',
+      `/repos/${ATOMGIT_OWNER}/${ATOMGIT_REPO}/releases?per_page=${PER_PAGE}&page=${page}`,
+      null,
+      `读取 AtomGit 现有 Release（第 ${page} 页）`
+    );
+    if (status !== 200 || !Array.isArray(json)) {
+      warn(`读不到 AtomGit 现有 Release（HTTP ${status}，第 ${page} 页）`);
+      // 第一页就失败 → 完全没有清单，调用方按 null 处理
+      // 后续页失败 → 保留已拿到的部分，宁可多查也不要误判「全都没有」
+      return page === 1 ? null : inventory;
     }
-    inventory.set(release.tag_name, { assets, prerelease: Boolean(release.prerelease) });
+    for (const release of json) {
+      if (!release.tag_name) continue;
+      const assets = new Map();
+      for (const asset of release.assets ?? []) {
+        // AtomGit 会自动给每个 release 附源码包，标记为 source，不是我们推的
+        if (asset.type === 'source') continue;
+        assets.set(asset.name, asset.size ?? 0);
+      }
+      inventory.set(release.tag_name, { assets, prerelease: Boolean(release.prerelease) });
+    }
+    // 不满一页就是最后一页
+    if (json.length < PER_PAGE) break;
   }
+
   return inventory;
 }
 
@@ -220,7 +267,12 @@ async function listGithubReleases(repo) {
   const releases = await response.json();
   if (!Array.isArray(releases)) throw new Error(`${repo} 的 Release 列表不是数组`);
   // draft 还没发布，没有稳定 URL 也没有可靠资产，跳过
-  return releases.filter((r) => !r.draft && r.tag_name);
+  const live = releases.filter((r) => !r.draft && r.tag_name);
+  // 取满上限通常意味着还有更早的没拿到；不静默，让人知道该分页了
+  if (releases.length >= GITHUB_RELEASE_LIMIT) {
+    warn(`${repo} 的 Release 已达单次上限 ${GITHUB_RELEASE_LIMIT} 条，更早的版本本轮未纳入`);
+  }
+  return live;
 }
 
 /**
@@ -287,6 +339,21 @@ function sha256Of(path) {
   return createHash('sha256').update(readFileSync(path)).digest('hex');
 }
 
+/**
+ * 校验下载到的文件与 GitHub 记录的 sha256 一致。
+ * GitHub 的 release asset 自带 `digest: "sha256:..."`（体积对得上不一定内容对得上）。
+ * 接口没给 digest 的老资产就跳过校验 —— 不能因为缺字段就判失败。
+ */
+function verifyDigest(asset, localPath) {
+  const expected = (asset.digest || '').replace(/^sha256:/, '').toLowerCase();
+  if (!expected) return { checked: false };
+  const actual = sha256Of(localPath);
+  if (actual !== expected) {
+    throw new Error(`内容校验失败：本地 ${actual.slice(0, 16)}… ≠ GitHub ${expected.slice(0, 16)}…`);
+  }
+  return { checked: true };
+}
+
 /* ── 同步一个 Release ─────────────────────────────────────────────── */
 
 /** 建或更新 AtomGit 上的 Release（同一个 tag 重复调用是安全的） */
@@ -299,9 +366,17 @@ async function ensureAtomgitRelease(component, release, atomgitTag, atomgitBody)
   );
 
   if (existing.status === 200) {
-    // 已存在：只更新正文与预发布标记，资产在下一步按体积补齐
+    /**
+     * 已存在：更新标题与正文，**但保留它当前的 release_status**。
+     *
+     * ⚠️ 这里曾经无条件写 `pre` / `none`，后果是每次同步都会把 `latest` 标记冲掉：
+     * 分发仓库里被标为「最新版本」的那条（目前是 desktop-dv1.2.2）在 AtomGit 首页的
+     * 徽章会消失，而日志里只写「已更新 Release」，看不出任何异常。
+     * 「谁是最新」是发布者的判断，不是同步脚本该决定的事。
+     */
+    const currentStatus = existing.json?.release_status || 'none';
     if (DRY_RUN) {
-      log(`    [dry-run] 将更新 AtomGit Release ${atomgitTag}`);
+      log(`    [dry-run] 将更新 AtomGit Release ${atomgitTag}（保留 status=${currentStatus}）`);
       return 'exists';
     }
     const patched = await atomgit(
@@ -311,14 +386,14 @@ async function ensureAtomgitRelease(component, release, atomgitTag, atomgitBody)
         tag_name: atomgitTag,
         name: atomgitName(component, release, atomgitTag),
         body: atomgitBody,
-        release_status: release.prerelease ? 'pre' : 'none'
+        release_status: currentStatus
       },
       `更新 AtomGit Release ${atomgitTag}`
     );
     if (patched.status !== 200) {
       throw new Error(`更新 AtomGit Release ${atomgitTag} 失败：HTTP ${patched.status} ${patched.text.slice(0, 200)}`);
     }
-    log(`    已更新 Release ${atomgitTag}`);
+    log(`    已更新 Release ${atomgitTag}（status=${currentStatus}）`);
     return 'exists';
   }
 
@@ -501,6 +576,8 @@ async function syncRelease(component, release, inventory) {
   const uploaded = [];
   const skipped = [];
 
+  // 先分类：能跳过的直接记账，剩下的才进并发队列
+  const pending = [];
   for (const asset of assets) {
     const existingSize = known?.get(asset.name);
     if (existingSize === asset.size) {
@@ -521,22 +598,50 @@ async function syncRelease(component, release, inventory) {
       continue;
     }
 
-    const dest = join(WORK_DIR, `${component.key}__${atomgitTag}__${asset.name}`);
-    try {
-      log(`    下载 ${asset.name}（${mb(asset.size)}）…`);
-      await downloadAsset(asset, dest);
+    pending.push({ asset, existingSize });
+  }
 
-      // AtomGit 不允许同名覆盖，体积对不上时必须先删再传
-      if (existingSize !== undefined) await deleteAsset(atomgitTag, asset.name);
+  /**
+   * 并发处理待传资产。
+   * 单个资产失败只记失败、不影响同一批其它资产 —— 历史回填动辄几十个文件，
+   * 一个坏包不该把整轮拖停。失败会在汇总里体现，下一轮自动重试。
+   */
+  const failures = [];
+  let cursor = 0;
+  const worker = async () => {
+    while (cursor < pending.length) {
+      const { asset, existingSize } = pending[cursor++];
+      const dest = join(WORK_DIR, `${component.key}__${atomgitTag}__${asset.name}`);
+      try {
+        log(`    下载 ${asset.name}（${mb(asset.size)}）…`);
+        await downloadAsset(asset, dest);
 
-      log(`    上传 ${asset.name} …`);
-      const sent = await uploadAsset(atomgitTag, asset, dest);
-      uploaded.push(asset.name);
-      log(`    ✓ ${asset.name} 已上传（${mb(sent)}）`);
-    } finally {
-      // 大文件不留在临时目录里占空间
-      if (existsSync(dest)) rmSync(dest, { force: true });
+        // 体积对得上不代表内容对得上：GitHub 给了 digest 就必须核一遍
+        const digest = verifyDigest(asset, dest);
+        if (digest.checked) log(`    内容校验通过（sha256 与 GitHub 一致）`);
+
+        // AtomGit 不允许同名覆盖，体积对不上时必须先删再传
+        if (existingSize !== undefined) await deleteAsset(atomgitTag, asset.name);
+
+        log(`    上传 ${asset.name} …`);
+        const sent = await uploadAsset(atomgitTag, asset, dest);
+        uploaded.push(asset.name);
+        log(`    ✓ ${asset.name} 已上传（${mb(sent)}）`);
+      } catch (error) {
+        failures.push(`${asset.name}: ${error.message}`);
+        warn(`${asset.name} 失败：${error.message}`);
+      } finally {
+        // 大文件不留在临时目录里占空间
+        if (existsSync(dest)) rmSync(dest, { force: true });
+      }
     }
+  };
+
+  const workers = Array.from({ length: Math.min(ASSET_CONCURRENCY, pending.length) }, worker);
+  await Promise.all(workers);
+
+  if (failures.length) {
+    throw new Error(`${failures.length} 个资产失败：${failures.join('；')}`);
   }
 
   return { tag: atomgitTag, uploaded, skipped, status: uploaded.length ? 'synced' : 'up-to-date' };
@@ -562,7 +667,13 @@ async function main() {
 
   log('AtomGit 分发同步');
   log(`  组件：${components.map((c) => c.key).join(', ')}`);
-  log(`  范围：${ONLY_TAG ? `tag ${ONLY_TAG}` : SYNC_ALL ? '全部 Release' : '每个仓库最新版'}`);
+  const scope = ONLY_TAG
+    ? `tag ${ONLY_TAG}`
+    : SYNC_ALL
+      ? '全部 Release'
+      : '每个仓库最新版';
+  const channel = ONLY_STABLE ? '（仅正式版）' : ONLY_PRERELEASE ? '（仅预览版）' : '';
+  log(`  范围：${scope}${channel}`);
   log(`  模式：${DRY_RUN ? '预演（不改远端）' : '实际写入'}`);
 
   // 先一次性取回 AtomGit 现状：省掉每个资产一次查询，也顺带把限流风险集中到一处。
@@ -598,13 +709,55 @@ async function main() {
       }
     } else if (!SYNC_ALL) {
       target = releases.slice(0, 1);
+      // 通道过滤在「取最新一条」之后 —— 否则 --stable-only 时最新那条若是预览版，
+      // 会被过滤成空列表，看起来像「这个仓库没有版本」。
+      if (ONLY_STABLE) target = target.filter((r) => !r.prerelease);
+      if (ONLY_PRERELEASE) target = target.filter((r) => r.prerelease);
+      if (!target.length) {
+        warn(`${component.repo} 在所选通道下没有版本`);
+        continue;
+      }
+    } else {
+      /**
+       * 回填历史（--all）。先同步正式版、再同步预发布版：
+       * 总量很大（三端合计约 4 GB），中途被打断时先拿到手的是能直接给用户装的正式版，
+       * 而不是一堆 insider 预览包。
+       */
+      target = [...releases].sort((a, b) => Number(a.prerelease) - Number(b.prerelease));
+      if (ONLY_STABLE) target = target.filter((r) => !r.prerelease);
+      if (ONLY_PRERELEASE) target = target.filter((r) => r.prerelease);
+      if (!target.length) {
+        warn(`${component.repo} 在所选通道下没有版本`);
+        continue;
+      }
     }
 
-    for (const release of target) {
-      try {
-        results.push({ component: component.key, ...(await syncRelease(component, release, inventory)) });
-      } catch (error) {
-        fail(`同步 ${component.key} ${release.tag_name} 失败：${error.message}`);
+    // 并发跑多个版本（见 CONCURRENCY 的注释）。每个版本内部仍是串行的，
+    // 所以不会出现「同一个 release 里先删后传互相踩」。
+    if (CONCURRENCY > 1 && target.length > 1) {
+      log(`  并发 ${CONCURRENCY} 个版本`);
+      const queue = [...target];
+      const workers = Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
+        for (;;) {
+          const release = queue.shift();
+          if (!release) return;
+          try {
+            results.push({ component: component.key, ...(await syncRelease(component, release, inventory)) });
+          } catch (error) {
+            // 单个版本失败不中断整轮：历史回填动辄几十个版本，一个坏版本不该让后面全停下
+            fail(`同步 ${component.key} ${release.tag_name} 失败：${error.message}`);
+          }
+        }
+      });
+      await Promise.all(workers);
+    } else {
+      for (const release of target) {
+        try {
+          results.push({ component: component.key, ...(await syncRelease(component, release, inventory)) });
+        } catch (error) {
+          // 单个版本失败不中断整轮：历史回填动辄几十个版本，一个坏版本不该让后面全停下
+          fail(`同步 ${component.key} ${release.tag_name} 失败：${error.message}`);
+        }
       }
     }
   }

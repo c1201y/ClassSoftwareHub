@@ -331,7 +331,13 @@ export async function resolveDesktopBuilds(): Promise<DesktopBuilds> {
     memoryBuilds = cached;
     return cached;
   }
-  inFlight ??= loadBuilds();
+  // 同上：inFlight 用完必须清空。loadBuilds 失败时也 resolve（返回兜底版本），
+  // 不清空的话兜底结果会被永久缓存，本次会话内刷新页面都拿不到真实版本。
+  if (!inFlight) {
+    inFlight = loadBuilds().finally(() => {
+      inFlight = null;
+    });
+  }
   const grace = new Promise<DesktopBuilds>((resolve) => {
     window.setTimeout(() => resolve(FALLBACK), RESOLVE_GRACE);
   });
@@ -414,7 +420,13 @@ export async function resolveDownloadEntries(): Promise<DownloadEntries> {
     memoryEntries = cached;
     return cached;
   }
-  entriesInFlight ??= loadEntries();
+  // 同 atomgitChannel.ensureAtomGitIndex：inFlight 用完必须清空，
+  // 否则一次失败会被永久记住，本次会话内再也没有重试的机会。
+  if (!entriesInFlight) {
+    entriesInFlight = loadEntries().finally(() => {
+      entriesInFlight = null;
+    });
+  }
   return entriesInFlight;
 }
 
