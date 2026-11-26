@@ -430,18 +430,37 @@ async function ensureAtomgitRelease(component, release, atomgitTag, atomgitBody)
     return 'created';
   }
 
-  const created = await atomgit(
-    'POST',
-    `/repos/${ATOMGIT_OWNER}/${ATOMGIT_REPO}/releases?access_token=${encodeURIComponent(atomgitToken())}`,
-    {
+  /**
+   * AtomGit 限制：整仓最多只能有 20 个 release 标为 pre-release
+   * （400 `At most 20 pre-release versions can be marked.`），而 GitHub 上光预览版就有 36 个。
+   * 超出时不能整轮失败 —— 预览版的历史产物仍然要能下载，只是不挂「预发布」标记。
+   * 所以撞到这个错误就退一步：不带 release_status 重建一次，标题里已写明是预览版，
+   * 页面上依然分得清。
+   */
+  const attempt = async (status) => {
+    const payload = {
       tag_name: atomgitTag,
       name: atomgitName(component, release, atomgitTag),
       body: atomgitBody,
-      target_commitish: 'main',
-      release_status: release.prerelease ? 'pre' : 'none'
-    },
-    `新建 AtomGit Release ${atomgitTag}`
-  );
+      target_commitish: 'main'
+    };
+    if (status) payload.release_status = status;
+    return atomgit(
+      'POST',
+      `/repos/${ATOMGIT_OWNER}/${ATOMGIT_REPO}/releases?access_token=${encodeURIComponent(atomgitToken())}`,
+      payload,
+      `新建 AtomGit Release ${atomgitTag}`
+    );
+  };
+
+  let created = await attempt(release.prerelease ? 'pre' : 'none');
+
+  // 预发布名额满了：去掉标记重建（tag 没建成，直接重试是安全的）
+  if (created.status === 400 && /pre-release/i.test(created.text)) {
+    warn(`AtomGit 的预发布名额已满，${atomgitTag} 改以普通版本发布（产物照常可下载）`);
+    created = await attempt('none');
+  }
+
   if (created.status !== 200) {
     throw new Error(`新建 AtomGit Release ${atomgitTag} 失败：HTTP ${created.status} ${created.text.slice(0, 300)}`);
   }
