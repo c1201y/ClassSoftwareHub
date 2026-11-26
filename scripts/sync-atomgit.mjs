@@ -25,7 +25,7 @@
 //   ATOMGIT_TOKEN  AtomGit 访问令牌（必需，除非 --dry-run）
 
 import { createHash } from 'node:crypto';
-import { mkdirSync, createWriteStream, createReadStream, existsSync, statSync, rmSync, readFileSync } from 'node:fs';
+import { mkdirSync, createWriteStream, existsSync, statSync, rmSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
@@ -58,6 +58,12 @@ const RETRY_DELAYS_MS = [2000, 5000, 10000, 20000, 30000];
 
 /** 下载资产的临时目录 */
 const WORK_DIR = join(tmpdir(), 'csh-atomgit-sync');
+
+/** 单个资产下载的超时（毫秒）：产物最大约 95 MB，慢链路上也可能要几分钟 */
+const ASSET_TIMEOUT_MS = 10 * 60 * 1000;
+
+/** 上传单个资产的超时（毫秒）：同理给足，避免把慢当失败 */
+const UPLOAD_TIMEOUT_MS = 10 * 60 * 1000;
 
 /** GitHub 上一个 Release 最多取多少条（每个仓库发版不频繁，30 足够覆盖） */
 const GITHUB_RELEASE_LIMIT = 30;
@@ -105,12 +111,16 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * 带重试的请求。
  * 只对「可重试」的失败重试：网络错误、429、5xx。
  * 4xx（除 429）是参数问题，重试没有意义，直接抛出。
+ *
+ * `options.timeoutMs` 为单次尝试的超时（默认 120 s）。调用方传大文件的上传/下载时放宽，
+ * 否则慢链路会被误判成失败 —— 但也不能不设，否则一次挂起的连接会卡住整轮同步。
  */
 async function request(url, options = {}, label = '') {
+  const { timeoutMs = 120000, ...init } = options;
   let lastError;
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
     try {
-      const response = await fetch(url, options);
+      const response = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
       if (response.status === 429 || response.status >= 500) {
         // 读掉响应体，避免连接泄漏
         await response.text().catch(() => {});
@@ -230,27 +240,47 @@ function assetsOf(release) {
 
 /* ── 下载与校验 ───────────────────────────────────────────────────── */
 
+/**
+ * 下载一个资产到本地，并把「读到一半超时」也算进重试。
+ *
+ * ⚠️ 这里不能直接用 request()：它返回的是响应头到手那一刻的 Response，
+ * 而 `AbortSignal.timeout` 的计时覆盖整个响应体读取过程。也就是说超时通常发生在
+ * pipeline 落盘阶段，那时早已出了 request() 的 try 块，异常不会被它捕获、不会重试。
+ * 所以整个「取响应 + 落盘 + 校验体积」必须一起放进重试循环。
+ */
 async function downloadAsset(asset, destPath) {
-  const response = await request(
-    asset.url,
-    {
-      headers: {
-        'User-Agent': 'csh-atomgit-sync',
-        Accept: 'application/octet-stream',
-        ...(GITHUB_TOKEN ? { Authorization: `token ${GITHUB_TOKEN}` } : {})
+  let lastError;
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    try {
+      const response = await fetch(asset.url, {
+        headers: {
+          'User-Agent': 'csh-atomgit-sync',
+          Accept: 'application/octet-stream',
+          ...(GITHUB_TOKEN ? { Authorization: `token ${GITHUB_TOKEN}` } : {})
+        },
+        // 大文件给足时间；OBS/CDN 慢的时候 12 MB 也可能要几分钟
+        signal: AbortSignal.timeout(ASSET_TIMEOUT_MS)
+      });
+      if (!response.ok || !response.body) {
+        throw new Error(`HTTP ${response.status}`);
       }
-    },
-    `下载 ${asset.name}`
-  );
-  if (!response.ok || !response.body) {
-    throw new Error(`下载 ${asset.name} 失败：HTTP ${response.status}`);
+      await pipeline(Readable.fromWeb(response.body), createWriteStream(destPath));
+      const actual = statSync(destPath).size;
+      if (actual !== asset.size) {
+        throw new Error(`不完整：得到 ${actual} 字节，应为 ${asset.size} 字节`);
+      }
+      return actual;
+    } catch (error) {
+      lastError = error;
+      // 半成品留着会让下一次追加而不是覆盖，先清掉
+      if (existsSync(destPath)) rmSync(destPath, { force: true });
+      if (attempt === RETRY_DELAYS_MS.length) break;
+      const delay = RETRY_DELAYS_MS[attempt];
+      warn(`下载 ${asset.name} 失败（${error.message}），${delay / 1000}s 后重试`);
+      await sleep(delay);
+    }
   }
-  await pipeline(Readable.fromWeb(response.body), createWriteStream(destPath));
-  const actual = statSync(destPath).size;
-  if (actual !== asset.size) {
-    throw new Error(`${asset.name} 下载不完整：得到 ${actual} 字节，应为 ${asset.size} 字节`);
-  }
-  return actual;
+  throw new Error(`下载 ${asset.name} 重试耗尽：${lastError?.message}`);
 }
 
 function sha256Of(path) {
@@ -402,9 +432,19 @@ async function uploadAsset(atomgitTag, asset, localPath) {
   // AtomGit 给的是 OBS 预签名 PUT：请求头必须原样带上，另外补 Content-Length
   const putHeaders = { ...headers, 'Content-Length': String(size) };
 
+  /**
+   * 一次性读进内存再 PUT，不用流。
+   * 两个理由：① 流是「一次性」的，重试时那个流已经消耗完，第二次请求会直接抛
+   * `Response body object should not be disturbed or locked` —— 一次网络抖动就会
+   * 把整轮同步判死；Buffer 可以安全重放。② 实测用流 PUT 时 OBS 会挂很久（12 MB
+   * 走了 11 分钟才回 502），换成 Buffer 后是秒级。
+   * 产物最大约 95 MB，CI runner 内存足够。
+   */
+  const body = readFileSync(localPath);
+
   const putResponse = await request(
     url,
-    { method: 'PUT', headers: putHeaders, body: createReadStream(localPath), duplex: 'half' },
+    { method: 'PUT', headers: putHeaders, body, timeoutMs: UPLOAD_TIMEOUT_MS },
     `上传 ${asset.name}`
   );
   if (putResponse.status !== 200) {
