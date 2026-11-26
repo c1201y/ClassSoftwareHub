@@ -220,25 +220,24 @@ onBeforeUnmount(cleanup);
 .csh-gh-embed-mask {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 2147483000;
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(0, 0, 0, 0.38);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.55);
 }
 
 .csh-gh-embed-card {
-  width: min(1400px, 96vw);
-  height: min(90vh, 1000px);
+  width: min(1280px, 92vw);
+  height: min(86vh, 900px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid var(--card-stroke, rgba(128, 128, 128, 0.28));
-  border-radius: 12px;
-  background: var(--card-bg, #fff);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 10px;
+  background: #f6f6f6;
+  color: #1b1b1b;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.45);
 }
 
 .csh-gh-embed-head {
@@ -248,7 +247,8 @@ onBeforeUnmount(cleanup);
   justify-content: space-between;
   gap: 14px;
   padding: 10px 14px;
-  border-bottom: 1px solid var(--card-stroke, rgba(128, 128, 128, 0.24));
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  background: #f6f6f6;
 }
 
 .csh-gh-embed-title {
@@ -301,7 +301,7 @@ onBeforeUnmount(cleanup);
 
 .csh-gh-embed-timer {
   font-size: 12px;
-  color: var(--text-secondary, #666);
+  color: #5f5f5f;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -309,17 +309,17 @@ onBeforeUnmount(cleanup);
 .csh-gh-embed-btn {
   height: 30px;
   padding: 0 11px;
-  border: 1px solid var(--card-stroke, rgba(128, 128, 128, 0.3));
+  border: 1px solid rgba(0, 0, 0, 0.18);
   border-radius: 6px;
-  background: transparent;
-  color: var(--text-primary, #222);
+  background: #fff;
+  color: #1b1b1b;
   font: inherit;
   font-size: 12px;
   cursor: pointer;
 }
 
 .csh-gh-embed-btn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--text-primary, #000) 6%, transparent);
+  background: #ececec;
 }
 
 .csh-gh-embed-btn:disabled {
@@ -334,14 +334,14 @@ onBeforeUnmount(cleanup);
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: var(--text-secondary, #666);
+  color: #555;
   font: 20px/1 system-ui, sans-serif;
   cursor: pointer;
 }
 
 .csh-gh-embed-close:hover {
-  background: color-mix(in srgb, var(--text-primary, #000) 8%, transparent);
-  color: var(--text-primary, #222);
+  background: #e6e6e6;
+  color: #111;
 }
 
 .csh-gh-embed-body {
@@ -369,7 +369,7 @@ onBeforeUnmount(cleanup);
   justify-content: center;
   gap: 12px;
   padding: 24px;
-  color: var(--text-secondary, #666);
+  color: #555;
   font-size: 13px;
   text-align: center;
 }
@@ -396,8 +396,9 @@ onBeforeUnmount(cleanup);
 .csh-gh-embed-foot {
   flex: none;
   padding: 7px 14px;
-  border-top: 1px solid var(--card-stroke, rgba(128, 128, 128, 0.24));
-  color: var(--text-secondary, #777);
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  background: #f6f6f6;
+  color: #5f5f5f;
   font-size: 11.5px;
 }
 
