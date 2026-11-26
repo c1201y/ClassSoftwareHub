@@ -510,7 +510,12 @@ async function syncRelease(component, release, inventory) {
     }
 
     if (DRY_RUN) {
-      const why = existingSize === undefined ? '尚不存在' : `体积不符（${mb(existingSize)} → ${mb(asset.size)}）`;
+      const why =
+        existingSize === undefined
+          ? inventory
+            ? 'AtomGit 上还没有'
+            : '无法确认（未取到 AtomGit 清单）'
+          : `体积不符（${mb(existingSize)} → ${mb(asset.size)}）`;
       log(`    [dry-run] 将上传 ${asset.name}（${mb(asset.size)}，${why}）`);
       uploaded.push(asset.name);
       continue;
@@ -560,8 +565,10 @@ async function main() {
   log(`  范围：${ONLY_TAG ? `tag ${ONLY_TAG}` : SYNC_ALL ? '全部 Release' : '每个仓库最新版'}`);
   log(`  模式：${DRY_RUN ? '预演（不改远端）' : '实际写入'}`);
 
-  // 先一次性取回 AtomGit 现状：省掉每个资产一次查询，也顺带把限流风险集中到一处
-  const inventory = DRY_RUN ? null : await fetchAtomgitInventory();
+  // 先一次性取回 AtomGit 现状：省掉每个资产一次查询，也顺带把限流风险集中到一处。
+  // 预演也要取 —— 不取的话「已同步」会被误报成「尚不存在」，预演就失去了意义。
+  // 没有令牌时（只加 --dry-run、没配 secret 的场景）退回 null，按「全都没传过」估个上限。
+  const inventory = atomgitToken() ? await fetchAtomgitInventory() : null;
 
   const results = [];
   for (const component of components) {
