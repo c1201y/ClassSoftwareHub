@@ -59,6 +59,7 @@ export default {
       "text.mica": "Mica",
       "text.navigation-pane-position": "导航窗格位置",
       "text.open-code-repository": "打开代码仓库",
+      "embed.accelerator-hint": "经自建加速站",
       "about.author-home": "作者首页",
       "about.author-home-url": "https://space.bilibili.com/1274920807",
       "about.echo-cave": "回声洞",

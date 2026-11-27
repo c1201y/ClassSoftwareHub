@@ -110,7 +110,7 @@
               type="button"
               class="detail-info-link detail-github-embed"
               :title="locale === 'en-US' ? 'Open this GitHub page inside the site' : '在本站内嵌打开该 GitHub 页面'"
-              @click="openGithubEmbed">{{ app.github }}</button>
+              @click="openGithubEmbed">{{ app.github }}<span class="detail-github-hint"> · {{ t('embed.accelerator-hint') }}</span></button>
           </div>
           <!-- 开发者与开源协议：都是选填字段，投稿时由提交者自己填（见 SubmitPage.vue）。
                没有就不显示这一行 —— 大多数商业软件查不到作者，硬写「未知」反而像漏填。 -->

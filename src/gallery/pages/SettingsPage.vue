@@ -120,6 +120,7 @@
                 <WinButton
                   @Click="openRepository"
                   :Content="$t('text.open-code-repository')" />
+                <span class="about-repo-hint">· {{ $t('embed.accelerator-hint') }}</span>
                 <WinTextBlock
                   :Text="versionText"
                   FontSize="14.4"
@@ -762,4 +763,6 @@ onBeforeUnmount(() => {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+
+.about-repo-hint { font-size: 11px; color: var(--text-secondary, #666); margin-left: 6px; }
 </style>

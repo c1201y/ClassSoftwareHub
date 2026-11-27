@@ -59,6 +59,7 @@ export default {
     "text.mica": "Mica",
     "text.navigation-pane-position": "Navigation pane position",
     "text.open-code-repository": "Open code repository",
+    "embed.accelerator-hint": "Via self-hosted accelerator",
     "about.author-home": "Author Home",
     "about.author-home-url": "https://space.bilibili.com/1274920807",
     "about.echo-cave": "Echo Cave",
