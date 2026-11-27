@@ -1,4 +1,3 @@
-
 /** 分组：开发团队 / 赞助人员 */
 type CreditGroup = "dev" | "sponsor";
 
@@ -42,12 +41,15 @@ const credits: {
   people: [
     // ── 开发团队 ──────────────────────────────────────────────
     { group: "dev", name: "Tiny-Nick", note: "前期网站制作，现在致力于Windows桌面端开发", noteEn: "Built the early website; now focused on the Windows desktop app", url: "https://space.bilibili.com/1274920807" },
-    { group: "dev", name: "椰汁cyan", nameEn: "Yezhi cyan", note: "提供网站搭建和现网站维护更新，同时负责Win7桌面端开发", noteEn: "Set up the site and maintains it today; also develops the Windows 7 desktop app", url: "https://github.com/c1201y" },
+    { group: "dev", name: "椰汁", nameEn: "cyan", note: "提供网站搭建和现网站维护更新，同时负责Win7桌面端、安卓端开发", noteEn: "Provide website construction and ongoing maintenance and updates, as well as development for Windows 7 desktop and Android platforms", url: "https://github.com/c1201y" },
     { group: "dev", name: "HelloCHLdev", note: "现致力于Linux（跨平台）平台桌面端应用的开发", noteEn: "Now focused on Linux (cross-platform) desktop development", url: "https://github.com/HelloCHLdev" },
-    { group: "dev", name: "凭舟吟", nameEn: "Pingzhou Yin", note: "提供GitHub加速节点，OSS 存储桶，服务器和 cn 域名等服务", noteEn: "Provides the GitHub acceleration node, OSS bucket, servers and the .cn domain" },
+    { group: "dev", name: "凭舟吟", nameEn: "Pingzhou Yin", note: "网页维护者，并提供GitHub下载与全站加速节点、OSS存储、服务器和cn域名等服务", noteEn: "Provides the GitHub acceleration node, OSS bucket, servers and the .cn domain", url: "https://github.com/pang-zhengyang" },
+    { group: "dev", name: "假装", nameEn: "Jia Zhuang", note: "各版本安全测试与漏洞查找", noteEn: "Security testing and bug hunting for all versions" },
+    
     // ── 赞助人员 ──────────────────────────────────────────────
-    { group: "sponsor", name: "开心的阿罗娜（热心QQ群友）", nameEn: "Happy Arona (QQ group member)", note: "赞助桌面端开发与网站服务器搭建", noteEn: "Sponsors desktop development and site hosting", url: "https://ifdian.net/a/TinyNickCSHub?tab=home" },
-    { group: "sponsor", name: "Xr080606", note: "赞助桌面端开发与网站服务器搭建", noteEn: "Sponsors desktop development and site hosting" },
+    { group: "sponsor", name: "开心的阿罗娜（热心QQ群友）", nameEn: "Happy Arona (QQ group member)", note: "赞助桌面端开发及网站托管", noteEn: "Sponsors desktop development and site hosting", url: "https://ifdian.net/a/TinyNickCSHub?tab=home" },
+    { group: "sponsor", name: "远方有猿", nameEn: "Wusi Yuan", note: "赞助桌面端开发及网站托管", noteEn: "Sponsors desktop development and site hosting", url: "https://ifdian.net/a/TinyNickCSHub?tab=home" },
+    { group: "sponsor", name: "Xr080606", note: "赞助桌面端开发及网站托管", noteEn: "Sponsors desktop development and site hosting" },
   ],
   empty: "（待补充）",
   emptyEn: "(To be added)",
