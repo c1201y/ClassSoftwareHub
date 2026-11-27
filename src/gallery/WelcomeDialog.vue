@@ -21,7 +21,7 @@
         <button
           type="button"
           class="welcome-dialog-link-btn"
-          @click="openRepositoryEmbed">{{ t('welcome.repository') }} · {{ t('embed.accelerator-hint') }}</button>
+          @click="openRepositoryEmbed">{{ t('welcome.repository') }}<span class="welcome-dialog-link-hint"> · {{ t('embed.accelerator-hint') }}</span></button>
         <span class="welcome-dialog-link-sep" aria-hidden="true">·</span>
         <WinHyperlinkButton
           :NavigateUri="t('about.author-home-url')"
@@ -183,4 +183,5 @@ const openLegal = (key: string) => {
   cursor: pointer;
 }
 .welcome-dialog-link-btn:hover { text-decoration: underline; }
+.welcome-dialog-link-hint { font-size: 11px; color: var(--text-secondary, #666); }
 </style>

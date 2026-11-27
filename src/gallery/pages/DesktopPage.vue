@@ -113,7 +113,7 @@
                 type="button"
                 class="card-link card-link-btn"
                 @click="openRepoEmbed(ed.repoUrl, t(ed.titleKey))">
-                {{ t('desktop.history') }} · {{ t('embed.accelerator-hint') }}
+                {{ t('desktop.history') }}<span class="card-link-hint"> · {{ t('embed.accelerator-hint') }}</span>
                 <span class="icon-glyph" aria-hidden="true">&#xE8A7;</span>
               </button>
             </div>
@@ -181,7 +181,7 @@
         <div class="web-links">
           <span class="web-links-label">{{ t('desktop.web-label') }}</span>
           <a :href="DOCS_URL" target="_blank" rel="noopener noreferrer">{{ t('desktop.docs') }}</a>
-          <button type="button" class="web-link-btn" @click="openRepoEmbed(REPO_URL, 'ClassSoftwareHub')">GitHub · {{ t('embed.accelerator-hint') }}</button>
+          <button type="button" class="web-link-btn" @click="openRepoEmbed(REPO_URL, 'ClassSoftwareHub')">GitHub<span class="web-link-hint"> · {{ t('embed.accelerator-hint') }}</span></button>
         </div>
 
         <p class="dl-footnote">{{ t('desktop.mirror-note') }}</p>

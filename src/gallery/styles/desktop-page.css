@@ -532,3 +532,5 @@
 .web-link-btn:hover {
   text-decoration: underline;
 }
+
+.card-link-hint, .web-link-hint { font-size: 11px; color: var(--text-secondary, #666); }
