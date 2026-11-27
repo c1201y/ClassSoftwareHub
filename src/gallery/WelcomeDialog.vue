@@ -18,11 +18,10 @@
       <WinImage class="welcome-dialog-sticker" :Source="sticker" Width="140" />
       <WinTextBlock class="welcome-dialog-intro" :Text="t('welcome.intro')" FontSize="15" />
       <div class="welcome-dialog-links">
-        <WinHyperlinkButton
-          :NavigateUri="t('about.repository-url')"
-          TargetName="_blank"
-          :Content="t('welcome.repository')"
-          FontSize="14" />
+        <button
+          type="button"
+          class="welcome-dialog-link-btn"
+          @click="openRepositoryEmbed">{{ t('welcome.repository') }}</button>
         <span class="welcome-dialog-link-sep" aria-hidden="true">·</span>
         <WinHyperlinkButton
           :NavigateUri="t('about.author-home-url')"
@@ -64,6 +63,10 @@
       </div>
     </div>
   </WinContentDialog>
+  <GithubEmbedModal
+    v-model:open="repoEmbedOpen"
+    :github-url="t('about.repository-url')"
+    app-name="ClassSoftwareHub" />
 </template>
 
 <script setup lang="ts">
@@ -71,6 +74,8 @@ import WinContentDialog from '../components/WinContentDialog.vue';
 import WinTextBlock from '../components/WinTextBlock.vue';
 import WinImage from '../components/WinImage.vue';
 import WinHyperlinkButton from '../components/WinHyperlinkButton.vue';
+import GithubEmbedModal from '../components/GithubEmbedModal.vue';
+import { ref } from 'vue';
 import { useI18n } from '../components/i18n/index';
 import sticker from '../assets/welcome-sticker.gif';
 // 法律三件套：内容与标题都在根目录「法律文本.ts」，改文案去那个文件
@@ -83,6 +88,13 @@ const emit = defineEmits(['update:open']);
 
 const { t, locale } = useI18n();
 const router = useRouter();
+const repoEmbedOpen = ref(false);
+
+/** 仓库入口走站内 8083 内嵌，不直接跳 GitHub */
+const openRepositoryEmbed = () => {
+  emit('update:open', false);
+  repoEmbedOpen.value = true;
+};
 
 /** 弹窗被其它途径关闭（Esc/点遮罩等）→ 同步状态给父组件 */
 const onOpenChange = (value: boolean) => {
@@ -160,4 +172,15 @@ const openLegal = (key: string) => {
 .welcome-legal-link:hover {
   text-decoration: underline;
 }
+
+.welcome-dialog-link-btn {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-base, #0067c0);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.welcome-dialog-link-btn:hover { text-decoration: underline; }
 </style>

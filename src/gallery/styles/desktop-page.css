@@ -512,3 +512,23 @@
     padding: 1rem;
   }
 }
+
+/* 仓库入口：按钮伪装成原有链接，点击后走站内 8083 内嵌 */
+.card-link-btn,
+.web-link-btn {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.card-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.card-link-btn:hover,
+.web-link-btn:hover {
+  text-decoration: underline;
+}

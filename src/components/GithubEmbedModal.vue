@@ -13,6 +13,7 @@ const emit = defineEmits<{
 }>();
 
 const frameSrc = ref('');
+const frameLoading = ref(false);
 const loading = ref(false);
 const error = ref('');
 const timerText = ref('');
@@ -92,6 +93,7 @@ async function requestToken(): Promise<{ url: string; grantExpiresAt?: number } 
 
 async function launch() {
   loading.value = true;
+  frameLoading.value = true;
   error.value = '';
   frameSrc.value = '';
   stopTick();
@@ -100,12 +102,14 @@ async function launch() {
   if (!props.open) return;
   loading.value = false;
   if (!token) {
+    frameLoading.value = false;
     timerText.value = '';
-    error.value = '暂时无法获取内嵌签名，请稍后重试或使用新标签页打开。';
+    error.value = '暂时无法获取内嵌签名，请关闭后重新打开。';
     return;
   }
   expiresAt.value = token.grantExpiresAt ?? Date.now() + 15 * 60 * 1000;
   frameSrc.value = token.url;
+  frameLoading.value = true;
   startTick();
 }
 
@@ -133,6 +137,7 @@ function openExternal() {
 function cleanup() {
   stopTick();
   frameSrc.value = '';
+  frameLoading.value = false;
   loading.value = false;
   error.value = '';
   timerText.value = '';
@@ -182,13 +187,14 @@ onBeforeUnmount(cleanup);
             </div>
           </div>
           <div class="csh-gh-embed-actions">
+            <span class="csh-gh-embed-readonly">仅查看</span>
             <span class="csh-gh-embed-timer">{{ timerText }}</span>
-            <button type="button" class="csh-gh-embed-btn" :disabled="loading" @click="launch">重新签名</button>
             <button type="button" class="csh-gh-embed-btn" :disabled="loading" @click="openExternal">新标签页</button>
             <button ref="closeBtn" type="button" class="csh-gh-embed-close" aria-label="关闭" @click="close">×</button>
           </div>
         </header>
         <div class="csh-gh-embed-body">
+          <div v-if="frameLoading" class="csh-gh-embed-progress" aria-hidden="true"><i></i></div>
           <iframe
             v-if="frameSrc"
             class="csh-gh-embed-frame"
@@ -197,11 +203,11 @@ onBeforeUnmount(cleanup);
             sandbox="allow-scripts allow-same-origin"
             referrerpolicy="no-referrer"
             loading="eager"
+            @load="frameLoading = false"
           />
           <div v-else class="csh-gh-embed-state">
             <span v-if="loading" class="csh-gh-embed-spinner" aria-hidden="true" />
             <p>{{ error || '正在向本站申请内嵌签名…' }}</p>
-            <button v-if="error" type="button" class="csh-gh-embed-btn" @click="launch">重试</button>
           </div>
         </div>
         <footer class="csh-gh-embed-foot">
@@ -414,5 +420,49 @@ onBeforeUnmount(cleanup);
   .csh-gh-embed-timer { display: none; }
   .csh-gh-embed-btn { padding: 0 8px; }
   .csh-gh-embed-foot { display: none; }
+}
+
+.csh-gh-embed-readonly {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(0, 103, 192, 0.12);
+  color: #005a9e;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.csh-gh-embed-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  overflow: hidden;
+  background: rgba(0, 103, 192, 0.12);
+  z-index: 2;
+}
+.csh-gh-embed-progress i {
+  display: block;
+  width: 38%;
+  height: 100%;
+  border-radius: 2px;
+  background: #0067c0;
+  animation: csh-gh-embed-loading 1.1s ease-in-out infinite;
+}
+.csh-gh-embed-body { position: relative; }
+@keyframes csh-gh-embed-loading {
+  0% { transform: translateX(-110%); }
+  60% { transform: translateX(160%); }
+  100% { transform: translateX(280%); }
+}
+.csh-gh-embed-card { animation: csh-gh-embed-in 180ms var(--ease-decel, cubic-bezier(0.1, 0.9, 0.2, 1)); }
+.csh-gh-embed-mask { animation: csh-gh-embed-fade 140ms ease-out; }
+@keyframes csh-gh-embed-in { from { opacity: 0; transform: scale(0.985); } to { opacity: 1; transform: none; } }
+@keyframes csh-gh-embed-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .csh-gh-embed-card, .csh-gh-embed-mask, .csh-gh-embed-progress i { animation: none; }
 }
 </style>

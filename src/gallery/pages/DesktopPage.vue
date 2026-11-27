@@ -108,10 +108,14 @@
                 <p v-if="row.build && !row.build.size" class="row-hint">{{ t(row.noteKey) }}</p>
               </div>
 
-              <a v-if="ed.repoUrl" class="card-link" :href="ed.repoUrl" target="_blank" rel="noopener noreferrer">
+              <button
+                v-if="ed.repoUrl"
+                type="button"
+                class="card-link card-link-btn"
+                @click="openRepoEmbed(ed.repoUrl, t(ed.titleKey))">
                 {{ t('desktop.history') }}
                 <span class="icon-glyph" aria-hidden="true">&#xE8A7;</span>
-              </a>
+              </button>
             </div>
 
             <p v-else class="edition-empty">{{ t('desktop.no-builds') }}</p>
@@ -177,13 +181,17 @@
         <div class="web-links">
           <span class="web-links-label">{{ t('desktop.web-label') }}</span>
           <a :href="DOCS_URL" target="_blank" rel="noopener noreferrer">{{ t('desktop.docs') }}</a>
-          <a :href="REPO_URL" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <button type="button" class="web-link-btn" @click="openRepoEmbed(REPO_URL, 'ClassSoftwareHub')">GitHub</button>
         </div>
 
         <p class="dl-footnote">{{ t('desktop.mirror-note') }}</p>
       </template>
     </div>
   </WinScrollViewer>
+  <GithubEmbedModal
+    v-model:open="repoEmbedOpen"
+    :github-url="repoEmbedUrl"
+    :app-name="repoEmbedName" />
 </template>
 
 <script setup lang="ts">
@@ -191,6 +199,7 @@ import { computed, onMounted, ref } from 'vue';
 import WinScrollViewer from '../../components/WinScrollViewer.vue';
 import WinButton from '../../components/WinButton.vue';
 import WinHyperlinkButton from '../../components/WinHyperlinkButton.vue';
+import GithubEmbedModal from '../../components/GithubEmbedModal.vue';
 import WinComboBox from '../../components/WinComboBox.vue';
 import WinSelectorBar from '../../components/WinSelectorBar.vue';
 import { useI18n } from '../../components/i18n/index';
@@ -219,6 +228,15 @@ import '../styles/desktop-page.css';
 const { t } = useI18n();
 const siteIcon = siteIconUrl;
 const REPO_URL = 'https://github.com/c1201y/ClassSoftwareHub';
+const repoEmbedOpen = ref(false);
+const repoEmbedUrl = ref('');
+const repoEmbedName = ref('');
+const openRepoEmbed = (url: string, name: string) => {
+  if (!url) return;
+  repoEmbedUrl.value = url;
+  repoEmbedName.value = name;
+  repoEmbedOpen.value = true;
+};
 
 type PlatformId = 'win10' | 'win7' | 'android';
 type ChannelId = 'stable' | 'insider';

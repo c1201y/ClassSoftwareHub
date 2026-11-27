@@ -214,6 +214,10 @@
       </div>
     </WinScrollViewer>
   </WinGrid>
+  <GithubEmbedModal
+    v-model:open="repoEmbedOpen"
+    :github-url="repositoryUrl"
+    :app-name="appTitle" />
 </template>
 
 <script setup lang="ts">
@@ -226,6 +230,7 @@ import WinToggleSwitch from '../../components/WinToggleSwitch.vue';
 import WinTextBlock from '../../components/WinTextBlock.vue';
 import WinButton from '../../components/WinButton.vue';
 import WinHyperlinkButton from '../../components/WinHyperlinkButton.vue';
+import GithubEmbedModal from '../../components/GithubEmbedModal.vue';
 import WinGrid from '../../components/WinGrid.vue';
 import WinScrollViewer from '../../components/WinScrollViewer.vue';
 import VisitorCounter from '../VisitorCounter.vue';
@@ -354,9 +359,11 @@ const copyrightText = computed(() =>
   })
 );
 const versionText = t(appManifest.version ?? 'app.version');
+const repoEmbedOpen = ref(false);
+const repositoryUrl = computed(() => String(t('about.repository-url') || ''));
 const openRepository = () => {
-  const url = t('about.repository-url');
-  if (url) window.open(url, '_blank', 'noopener,noreferrer');
+  if (!repositoryUrl.value) return;
+  repoEmbedOpen.value = true;
 };
 
 // ── 法律三件套（#/agreement）：带 ?doc= 让条款页直接定位到对应文档 ──
