@@ -465,4 +465,122 @@ onBeforeUnmount(cleanup);
 @media (prefers-reduced-motion: reduce) {
   .csh-gh-embed-card, .csh-gh-embed-mask, .csh-gh-embed-progress i { animation: none; }
 }
+
+/* 主题与设备适配：边框/卡片/按钮随站点明暗切换 */
+.csh-gh-embed-mask {
+  --embed-bg: #f6f6f6;
+  --embed-text: #1b1b1b;
+  --embed-muted: #5f5f5f;
+  --embed-border: rgba(0, 0, 0, 0.18);
+  --embed-divider: rgba(0, 0, 0, 0.12);
+  --embed-btn: #ffffff;
+  --embed-btn-hover: #ececec;
+  --embed-close-hover: #e6e6e6;
+  background: rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(12px) saturate(125%);
+  -webkit-backdrop-filter: blur(12px) saturate(125%);
+}
+:global(html.theme-dark) .csh-gh-embed-mask {
+  --embed-bg: #292929;
+  --embed-text: #f2f2f2;
+  --embed-muted: #b8b8b8;
+  --embed-border: rgba(255, 255, 255, 0.16);
+  --embed-divider: rgba(255, 255, 255, 0.10);
+  --embed-btn: #363636;
+  --embed-btn-hover: #444444;
+  --embed-close-hover: #3e3e3e;
+  background: rgba(0, 0, 0, 0.55);
+}
+@media (prefers-color-scheme: dark) {
+  :global(html:not(.theme-light)) .csh-gh-embed-mask {
+    --embed-bg: #292929;
+    --embed-text: #f2f2f2;
+    --embed-muted: #b8b8b8;
+    --embed-border: rgba(255, 255, 255, 0.16);
+    --embed-divider: rgba(255, 255, 255, 0.10);
+    --embed-btn: #363636;
+    --embed-btn-hover: #444444;
+    --embed-close-hover: #3e3e3e;
+    background: rgba(0, 0, 0, 0.55);
+  }
+}
+.csh-gh-embed-card {
+  background: var(--embed-bg);
+  color: var(--embed-text);
+  border-color: var(--embed-border);
+}
+.csh-gh-embed-head { background: var(--embed-bg); border-bottom-color: var(--embed-divider); }
+.csh-gh-embed-foot { background: var(--embed-bg); border-top-color: var(--embed-divider); color: var(--embed-muted); }
+.csh-gh-embed-labels span,
+.csh-gh-embed-timer,
+.csh-gh-embed-state { color: var(--embed-muted); }
+.csh-gh-embed-btn {
+  background: var(--embed-btn);
+  color: var(--embed-text);
+  border-color: var(--embed-border);
+}
+.csh-gh-embed-btn:hover:not(:disabled) { background: var(--embed-btn-hover); }
+.csh-gh-embed-close { color: var(--embed-muted); }
+.csh-gh-embed-close:hover { background: var(--embed-close-hover); color: var(--embed-text); }
+.csh-gh-embed-readonly { background: color-mix(in srgb, #0067c0 16%, transparent); color: color-mix(in srgb, #0067c0 86%, var(--embed-text)); }
+
+/* 大屏：随视口提升宽度和内容高度 */
+@media (min-width: 1600px) {
+  .csh-gh-embed-mask { padding: 32px; }
+  .csh-gh-embed-card { width: min(1500px, 91vw); height: min(88vh, 1050px); border-radius: 12px; }
+}
+@media (min-width: 1920px) {
+  .csh-gh-embed-card { width: min(1760px, 89vw); height: min(90vh, 1180px); }
+}
+@media (min-width: 2560px) {
+  .csh-gh-embed-card { width: min(2080px, 85vw); height: min(92vh, 1400px); }
+}
+@media (min-width: 3200px) {
+  .csh-gh-embed-card { width: min(2400px, 82vw); height: min(92vh, 1600px); }
+}
+
+/* 平板与触控：按钮不小于 40px，标题栏允许换行 */
+@media (max-width: 1100px) {
+  .csh-gh-embed-mask { padding: 16px; }
+  .csh-gh-embed-card { width: 96vw; height: 90vh; height: 90dvh; }
+}
+@media (pointer: coarse), (max-width: 900px) {
+  .csh-gh-embed-head { flex-wrap: wrap; row-gap: 8px; }
+  .csh-gh-embed-actions { margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+  .csh-gh-embed-btn { height: 40px; padding: 0 14px; font-size: 13px; }
+  .csh-gh-embed-close { width: 40px; height: 40px; font-size: 22px; }
+  .csh-gh-embed-readonly { height: 26px; padding: 0 10px; }
+}
+@media (max-width: 720px) {
+  .csh-gh-embed-mask { padding: 0; }
+  .csh-gh-embed-card {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+  }
+  .csh-gh-embed-head {
+    padding-top: calc(8px + env(safe-area-inset-top, 0px));
+    padding-left: max(10px, env(safe-area-inset-left, 0px));
+    padding-right: max(10px, env(safe-area-inset-right, 0px));
+  }
+  .csh-gh-embed-title { flex: 1 1 100%; }
+  .csh-gh-embed-actions { flex: 1 1 100%; margin-left: 0; justify-content: flex-end; }
+  .csh-gh-embed-timer { display: none; }
+  .csh-gh-embed-foot {
+    display: block;
+    padding-bottom: calc(7px + env(safe-area-inset-bottom, 0px));
+    font-size: 10.5px;
+  }
+}
+@media (max-height: 560px) and (pointer: coarse) {
+  .csh-gh-embed-foot { display: none; }
+  .csh-gh-embed-head { padding-top: 6px; padding-bottom: 6px; }
+  .csh-gh-embed-btn, .csh-gh-embed-close { height: 36px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .csh-gh-embed-mask { backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
 </style>
