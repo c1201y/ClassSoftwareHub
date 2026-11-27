@@ -587,7 +587,7 @@ html.theme-dark .detail-category-badge {
 }
 .detail-github-hint {
   display: inline-block;
-  margin-left: 8px;
+  margin-left: 4px;
   padding: 1px 6px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--accent-base) 10%, transparent);

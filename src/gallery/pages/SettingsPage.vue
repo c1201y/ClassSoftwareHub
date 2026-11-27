@@ -120,7 +120,7 @@
                 <WinButton
                   @Click="openRepository"
                   :Content="$t('text.open-code-repository')" />
-                <span class="about-repo-hint">{{ $t('embed.accelerator-hint') }}</span>
+                <span class="about-repo-hint">· {{ $t('embed.accelerator-hint') }}</span>
                 <WinTextBlock
                   :Text="versionText"
                   FontSize="14.4"
