@@ -119,7 +119,7 @@
               <template #HeaderControls>
                 <WinButton
                   @Click="openRepository"
-                  :Content="$t('text.open-code-repository')" />
+                  :Content="`${$t('text.open-code-repository')} · ${$t('embed.accelerator-hint')}`" />
                 <WinTextBlock
                   :Text="versionText"
                   FontSize="14.4"

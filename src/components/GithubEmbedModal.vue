@@ -122,7 +122,7 @@ async function launch() {
   if (!token) {
     frameLoading.value = false;
     timerText.value = '';
-    error.value = '暂时无法获取内嵌签名，请关闭后重新打开。';
+    error.value = '签名获取失败，请关闭后重试。';
     return;
   }
   expiresAt.value = token.grantExpiresAt ?? Date.now() + 15 * 60 * 1000;
@@ -209,7 +209,7 @@ onBeforeUnmount(() => {
             </div>
           </div>
           <div class="csh-gh-embed-actions">
-            <span class="csh-gh-embed-readonly">仅查看</span>
+            <span class="csh-gh-embed-readonly">只读</span>
             <span class="csh-gh-embed-timer">{{ timerText }}</span>
             <button type="button" class="csh-gh-embed-btn" :disabled="loading" @click="openExternal">新标签页</button>
             <button ref="closeBtn" type="button" class="csh-gh-embed-close" aria-label="关闭" @click="close">×</button>
@@ -233,7 +233,7 @@ onBeforeUnmount(() => {
           </div>
         </div>
         <footer class="csh-gh-embed-foot">
-          通过 8083 加速加载 · 一次性签名，15 分钟有效 · 页面内不能跳转站外或提交表单
+          经自建加速站加载 · 一次性签名 15 分钟 · 只读
         </footer>
       </section>
     </div>

@@ -21,7 +21,7 @@
         <button
           type="button"
           class="welcome-dialog-link-btn"
-          @click="openRepositoryEmbed">{{ t('welcome.repository') }}</button>
+          @click="openRepositoryEmbed">{{ t('welcome.repository') }} · {{ t('embed.accelerator-hint') }}</button>
         <span class="welcome-dialog-link-sep" aria-hidden="true">·</span>
         <WinHyperlinkButton
           :NavigateUri="t('about.author-home-url')"
@@ -90,7 +90,7 @@ const { t, locale } = useI18n();
 const router = useRouter();
 const repoEmbedOpen = ref(false);
 
-/** 仓库入口走站内 8083 内嵌，不直接跳 GitHub */
+/** 仓库入口走自建加速站内嵌，不直接跳 GitHub */
 const openRepositoryEmbed = () => {
   emit('update:open', false);
   repoEmbedOpen.value = true;

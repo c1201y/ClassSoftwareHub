@@ -585,6 +585,18 @@ html.theme-dark .detail-category-badge {
   text-decoration: none;
   word-break: break-all;
 }
+.detail-github-hint {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-base) 10%, transparent);
+  color: var(--accent-base);
+  font-size: 11px;
+  font-weight: 500;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
 .detail-github-embed:hover {
   text-decoration: underline;
 }
