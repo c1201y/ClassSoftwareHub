@@ -7,11 +7,13 @@
   "taglineEn": "Graphical deployment and installation tool for Microsoft Office",
   "description": "Office Tool Plus 把微软官方的 Office 部署工具（ODT）做成了图形界面，可以自由选择 Office 版本、组件和语言下载安装，也提供多种激活相关的管理功能。给教室电脑装 Office 时不用去啃一堆命令行，点几下就完事。",
   "descriptionEn": "Office Tool Plus wraps Microsoft's Office Deployment Tool (ODT) in a graphical interface. Choose the Office version, components and languages to download and install, and use the included activation management features. Installing Office on classroom PCs no longer requires memorizing command lines.",
-  "version": "v11.8.50.0",
+  "version": "v11.9.15.0",
   "size": "10 MB ~ 78 MB",
   "system": "Windows 7+",
   "systemEn": "Windows 7+",
-  "platforms": ["windows"],
+  "platforms": [
+    "windows"
+  ],
   "website": "https://www.officetool.plus/zh-cn/",
   "github": "https://github.com/YerongAI/Office-Tool",
   "author": "YerongAI",
@@ -22,16 +24,16 @@
       "note": "自带 .NET 运行时，解压即用；官网另有 7z 版与其它镜像源",
       "size": "77.7 MB",
       "kind": "file",
-      "hash": "0741aaa0e11a880d9ee3d82dc56c785184d1fd09e8af05d3c8ccc0f850e87498",
-      "url": "https://github.com/YerongAI/Office-Tool/releases/download/v11.8.50.0/Office_Tool_with_runtime_v11.8.50.0_x64.zip"
+      "hash": "91fa23e06334836b6864d0df26390264792baf9bfc74b78a34ec36292f213250",
+      "url": "https://github.com/YerongAI/Office-Tool/releases/download/v11.9.15.0/Office_Tool_with_runtime_v11.9.15.0_x64.zip"
     },
     {
       "platform": "Windows x64 精简版",
       "note": "不含运行时，体积小；系统若已有 .NET 选这个",
       "size": "10.3 MB",
       "kind": "file",
-      "hash": "e1f22e79ffd565a9a8341012b094c80167058f12d95c6c5d3fa8201b3db8213a",
-      "url": "https://github.com/YerongAI/Office-Tool/releases/download/v11.8.50.0/Office_Tool_v11.8.50.0_x64.zip"
+      "hash": "58a359104d99f39f001adeb7aec4c92f998250b3fc176c5fa3622f610b6ac19d",
+      "url": "https://github.com/YerongAI/Office-Tool/releases/download/v11.9.15.0/Office_Tool_v11.9.15.0_x64.zip"
     },
     {
       "platform": "官网介绍 / 下载页",

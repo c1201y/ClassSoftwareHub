@@ -7,10 +7,12 @@
   "taglineEn": "Experimental Bilibili music player for mobile",
   "description": "移动端的抽象b站音乐播放器",
   "descriptionEn": "An experimental Bilibili music player for mobile devices.",
-  "version": "v4.3.3",
+  "version": "v4.4.3",
   "size": "",
   "system": "Android",
-  "platforms": ["android"],
+  "platforms": [
+    "android"
+  ],
   "website": "https://azusa-player-mobile.vercel.app/",
   "github": "https://github.com/lovegaoshi/azusa-player-mobile",
   "author": "lovegaoshi",
@@ -18,8 +20,8 @@
   "downloads": [
     {
       "platform": "Android ARM64（APK）",
-      "size": "89 MB",
-      "url": "https://github.com/lovegaoshi/azusa-player-mobile/releases/download/v4.3.3/app-arm64-v8a-release.apk",
+      "size": "106.3 MB",
+      "url": "https://github.com/lovegaoshi/azusa-player-mobile/releases/download/v4.4.3/app-arm64-v8a-release.apk",
       "kind": "file"
     }
   ],

@@ -7,7 +7,7 @@
   "taglineEn": "Modern desktop shell for the DeepSeek Harness (DSH) plugin ecosystem",
   "description": "为 DeepSeek Harness (DSH) 插件生态打造的现代化桌面端解决方案。万物皆「插件」，桌面本身也是「插件」。",
   "descriptionEn": "A modern desktop solution for the DeepSeek Harness (DSH) plugin ecosystem. Everything is a plugin — including the desktop itself.",
-  "version": "v2.0.22-next",
+  "version": "v2.0.24-next",
   "size": "",
   "system": "Windows / macOS / Linux",
   "platforms": [
@@ -22,33 +22,33 @@
   "downloads": [
     {
       "platform": "Linux x64（.deb）",
-      "note": "DSH-NEXT-2.0.17-next-amd64.deb",
-      "size": "321 MB",
-      "url": "https://github.com/anywhere-labs/dsh-desktop/releases/download/v2.0.22-next/DSH-NEXT-2.0.22-next-amd64.deb"
+      "note": "DSH-NEXT-2.0.24-next-amd64.deb",
+      "size": "332.6 MB",
+      "url": "https://github.com/anywhere-labs/dsh-desktop/releases/download/v2.0.24-next/DSH-NEXT-2.0.24-next-amd64.deb"
     },
     {
       "platform": "Linux x64 压缩包",
-      "note": "DSH-NEXT-2.0.17-next-linux-x64.tar.gz",
-      "size": "411 MB",
-      "url": "https://github.com/anywhere-labs/dsh-desktop/releases/download/v2.0.22-next/DSH-NEXT-2.0.22-next-linux-x64.tar.gz"
+      "note": "DSH-NEXT-2.0.24-next-linux-x64.tar.gz",
+      "size": "428.8 MB",
+      "url": "https://github.com/anywhere-labs/dsh-desktop/releases/download/v2.0.24-next/DSH-NEXT-2.0.24-next-linux-x64.tar.gz"
     },
     {
       "platform": "macOS（磁盘映像）",
-      "note": "DSH-NEXT-2.0.17-next-universal.dmg",
-      "size": "733 MB",
-      "url": "https://github.com/anywhere-labs/dsh-desktop/releases/download/v2.0.22-next/DSH-NEXT-2.0.22-next-universal.dmg"
+      "note": "DSH-NEXT-2.0.24-next-x64.dmg",
+      "size": "445.4 MB",
+      "url": "https://github.com/anywhere-labs/dsh-desktop/releases/download/v2.0.24-next/DSH-NEXT-2.0.24-next-x64.dmg"
     },
     {
       "platform": "Windows x64 安装版",
-      "note": "DSH-NEXT-2.0.17-next-x64-Setup.exe",
-      "size": "319 MB",
-      "url": "https://github.com/anywhere-labs/dsh-desktop/releases/download/v2.0.22-next/DSH-NEXT-2.0.22-next-x64-Setup.exe"
+      "note": "DSH-NEXT-2.0.24-next-x64-Setup.exe",
+      "size": "335.9 MB",
+      "url": "https://github.com/anywhere-labs/dsh-desktop/releases/download/v2.0.24-next/DSH-NEXT-2.0.24-next-x64-Setup.exe"
     },
     {
       "platform": "Linux x64（AppImage）",
-      "note": "DSH-NEXT-2.0.17-next-x86_64.AppImage",
-      "size": "374 MB",
-      "url": "https://github.com/anywhere-labs/dsh-desktop/releases/download/v2.0.22-next/DSH-NEXT-2.0.22-next-x86_64.AppImage"
+      "note": "DSH-NEXT-2.0.24-next-x86_64.AppImage",
+      "size": "391.1 MB",
+      "url": "https://github.com/anywhere-labs/dsh-desktop/releases/download/v2.0.24-next/DSH-NEXT-2.0.24-next-x86_64.AppImage"
     }
   ],
   "sort": 100

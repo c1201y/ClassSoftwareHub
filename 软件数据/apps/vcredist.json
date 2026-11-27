@@ -9,11 +9,13 @@
   "taglineEn": "Installs VC++ 2005–2026 runtimes in one go — fixes missing msvcp140.dll errors",
   "description": "装软件或玩游戏时常见的「缺少 msvcp140.dll」「找不到 VCRUNTIME140.dll」，基本都是系统里的 Visual C++ 运行库没装全。这个合集（AIO Repack）把 VC++ 2005 / 2008 / 2010 / 2012 / 2013 / 2022 / 2026 的 x86、x64 版本打包在一起，一次装完；安装前会自动清理已有的旧版运行库，避免版本打架。\n注意：这是第三方重打包版，不是微软官方安装包；Win7 / 8.1 上装的是 2022 版运行库，只有 Win10 / 11 才支持 2026 版。",
   "descriptionEn": "Errors such as “msvcp140.dll is missing” or “VCRUNTIME140.dll not found” usually mean the Visual C++ runtimes are incomplete. This AIO Repack bundles the x86 and x64 versions of VC++ 2005 / 2008 / 2010 / 2012 / 2013 / 2022 / 2026 and installs them together, cleaning up old versions first to avoid conflicts. Note: this is a third-party repack, not a Microsoft installer; Windows 7/8.1 receive the 2022 runtimes, and only Windows 10/11 support the 2026 runtimes.",
-  "version": "v0.106.0",
+  "version": "v0.107.0",
   "size": "约 30 MB（x64 安装版）",
   "system": "Windows 7 / 8 / 8.1 / 10 / 11（x86 / x64 / ARM64）",
   "systemEn": "Windows 7 / 8 / 8.1 / 10 / 11 (x86 / x64 / ARM64)",
-  "platforms": ["windows"],
+  "platforms": [
+    "windows"
+  ],
   "github": "https://github.com/abbodi1406/vcredist",
   "author": "abbodi1406",
   "license": "Unlicense",
@@ -23,25 +25,25 @@
     {
       "platform": "Windows ARM64 安装版",
       "size": "19.3 MB",
-      "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.106.0/VisualCppRedist_AIO-arm64.exe",
+      "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.107.0/VisualCppRedist_AIO-arm64.exe",
       "kind": "file"
     },
     {
       "platform": "Windows x86 安装版",
-      "size": "18 MB",
-      "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.106.0/VisualCppRedist_AIO_x86only.exe",
+      "size": "18.1 MB",
+      "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.107.0/VisualCppRedist_AIO_x86only.exe",
       "kind": "file"
     },
     {
       "platform": "Windows x64 安装版",
       "size": "31.1 MB",
-      "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.106.0/VisualCppRedist_AIO_x86_x64.exe",
+      "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.107.0/VisualCppRedist_AIO_x86_x64.exe",
       "kind": "file"
     },
     {
       "platform": "其他 x64 压缩包",
       "size": "31.1 MB",
-      "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.106.0/VisualCppRedist_AIO_x86_x64_106.zip",
+      "url": "https://github.com/abbodi1406/vcredist/releases/download/v0.107.0/VisualCppRedist_AIO_x86_x64_107.zip",
       "kind": "file"
     }
   ],

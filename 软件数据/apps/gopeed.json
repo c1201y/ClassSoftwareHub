@@ -7,10 +7,16 @@
   "taglineEn": "Fast open-source downloader supporting HTTP, BT, magnet and ed2k",
   "description": "Gopeed 是一款开源免费的高速下载器，采用 Golang + Flutter 构建，支持 HTTP(S)、BitTorrent、磁力链、ed2k 等多种协议，跨平台、界面简洁、无广告无捆绑。",
   "descriptionEn": "Gopeed is a free, open-source, high-speed downloader built with Golang + Flutter. It supports HTTP(S), BitTorrent, magnet links, ed2k and more, is cross-platform, and has a clean ad-free, bundle-free interface.",
-  "version": "v1.9.3",
+  "version": "v2.0.0",
   "system": "Windows / macOS / Linux / Android / iOS",
   "systemEn": "Windows / macOS / Linux / Android / iOS",
-  "platforms": ["windows", "macos", "linux", "android", "ios"],
+  "platforms": [
+    "windows",
+    "macos",
+    "linux",
+    "android",
+    "ios"
+  ],
   "website": "https://gopeed.com",
   "github": "https://github.com/GopeedLab/gopeed",
   "author": "GopeedLab",
@@ -18,19 +24,19 @@
   "downloads": [
     {
       "platform": "Windows EXE amd64",
-      "url": "https://gopeed.com/api/download?tpl=Gopeed-v1.9.3-windows-amd64.zip"
+      "url": "https://gopeed.com/api/download?tpl=Gopeed-v2.0.0-windows-amd64.zip"
     },
     {
       "platform": "Windows EXE arm64",
-      "url": "https://gopeed.com/api/download?tpl=Gopeed-v1.9.3-windows-arm64.zip"
+      "url": "https://gopeed.com/api/download?tpl=Gopeed-v2.0.0-windows-arm64.zip"
     },
     {
       "platform": "Windows Portable amd64",
-      "url": "https://gopeed.com/api/download?tpl=Gopeed-v1.9.3-windows-amd64-portable.zip"
+      "url": "https://gopeed.com/api/download?tpl=Gopeed-v2.0.0-windows-amd64-portable.zip"
     },
     {
       "platform": "Windows Portable arm64",
-      "url": "https://gopeed.com/api/download?tpl=Gopeed-v1.9.3-windows-arm64-portable.zip"
+      "url": "https://gopeed.com/api/download?tpl=Gopeed-v2.0.0-windows-arm64-portable.zip"
     }
   ],
   "sort": 115
