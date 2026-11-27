@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { SUBMIT_TIMEOUT_MS, orderedEndpoints, rememberEndpoint } from '../gallery/submitEndpoints';
 
 const props = defineProps<{
@@ -18,6 +18,7 @@ const loading = ref(false);
 const error = ref('');
 const timerText = ref('');
 const expiresAt = ref(0);
+const isDark = ref(false);
 const closeBtn = ref<HTMLButtonElement | null>(null);
 let tickTimer: number | undefined;
 let keyHandler: ((event: KeyboardEvent) => void) | undefined;
@@ -25,6 +26,23 @@ let keyHandler: ((event: KeyboardEvent) => void) | undefined;
 const repoLabel = computed(() => {
   const parsed = parseGithubUrl(props.githubUrl);
   return parsed ? parsed.repo : props.githubUrl;
+});
+
+let themeObserver: MutationObserver | undefined;
+let themeMedia: MediaQueryList | undefined;
+function syncTheme() {
+  const html = document.documentElement;
+  isDark.value = html.classList.contains('theme-dark')
+    || (!html.classList.contains('theme-light') && !!window.matchMedia?.('(prefers-color-scheme: dark)').matches);
+}
+const onSystemTheme = () => syncTheme();
+
+onMounted(() => {
+  syncTheme();
+  themeMedia = window.matchMedia?.('(prefers-color-scheme: dark)');
+  themeMedia?.addEventListener?.('change', onSystemTheme);
+  themeObserver = new MutationObserver(syncTheme);
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 });
 
 function parseGithubUrl(raw: string): { repo: string } | null {
@@ -167,12 +185,16 @@ watch(
   { immediate: true }
 );
 
-onBeforeUnmount(cleanup);
+onBeforeUnmount(() => {
+  cleanup();
+  themeObserver?.disconnect();
+  themeMedia?.removeEventListener?.('change', onSystemTheme);
+});
 </script>
 
 <template>
   <Teleport to="body">
-    <div v-if="open" class="csh-gh-embed-mask" @click.self="close">
+    <div v-if="open" class="csh-gh-embed-mask" :class="{ 'is-dark': isDark }" style="backdrop-filter: blur(12px) saturate(125%); -webkit-backdrop-filter: blur(12px) saturate(125%)" @click.self="close">
       <section class="csh-gh-embed-card" role="dialog" aria-modal="true" aria-label="GitHub 页面">
         <header class="csh-gh-embed-head">
           <div class="csh-gh-embed-title">
@@ -480,7 +502,7 @@ onBeforeUnmount(cleanup);
   backdrop-filter: blur(12px) saturate(125%);
   -webkit-backdrop-filter: blur(12px) saturate(125%);
 }
-:global(html.theme-dark) .csh-gh-embed-mask {
+.csh-gh-embed-mask.is-dark {
   --embed-bg: #292929;
   --embed-text: #f2f2f2;
   --embed-muted: #b8b8b8;
@@ -491,19 +513,7 @@ onBeforeUnmount(cleanup);
   --embed-close-hover: #3e3e3e;
   background: rgba(0, 0, 0, 0.55);
 }
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.theme-light)) .csh-gh-embed-mask {
-    --embed-bg: #292929;
-    --embed-text: #f2f2f2;
-    --embed-muted: #b8b8b8;
-    --embed-border: rgba(255, 255, 255, 0.16);
-    --embed-divider: rgba(255, 255, 255, 0.10);
-    --embed-btn: #363636;
-    --embed-btn-hover: #444444;
-    --embed-close-hover: #3e3e3e;
-    background: rgba(0, 0, 0, 0.55);
-  }
-}
+
 .csh-gh-embed-card {
   background: var(--embed-bg);
   color: var(--embed-text);
