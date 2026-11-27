@@ -7,7 +7,7 @@
   "taglineEn": "Modern photo viewer built with PyQt5 + PyQt-Fluent-Widgets, runs on Windows 7",
   "description": "基于 PyQt5 + PyQt-Fluent-Widgets 的现代风格照片查看器。且能在Win7系统运行",
   "descriptionEn": "A modern photo viewer built with PyQt5 + PyQt-Fluent-Widgets that also runs on Windows 7.",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "size": "80MB",
   "system": "Windows",
   "platforms": [
@@ -20,14 +20,14 @@
     {
       "platform": "Windows便携版",
       "note": "FluentView-v1.5.0-x64.exe",
-      "size": "55 MB",
-      "url": "https://github.com/minecraft-os/FluentView/releases/download/1.6.1/FluentView-v1.6.1-x64.exe"
+      "size": "152 MB",
+      "url": "https://github.com/minecraft-os/FluentView/releases/download/1.6.2/FluentView-v1.6.2-x64.exe"
     },
     {
       "platform": "Windows 安装版",
       "note": "FluentView_Setup.exe",
-      "size": "141 MB",
-      "url": "https://github.com/minecraft-os/FluentView/releases/download/1.6.1/FluentView_Setup.exe"
+      "size": "206 MB",
+      "url": "https://github.com/minecraft-os/FluentView/releases/download/1.6.2/FluentView_Setup.exe"
     }
   ],
   "sort": 91

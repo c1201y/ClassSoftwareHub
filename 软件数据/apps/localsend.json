@@ -7,11 +7,16 @@
   "taglineEn": "Open-source cross-platform file sharing for everyone",
   "description": "LocalSend 是一个跨平台应用程序，使用 REST API 和 HTTPS 加密实现设备之间的安全通信。与依赖外部服务器的其他消息应用程序不同，LocalSend 不需要互联网连接或第三方服务器，因此成为本地通信的快速可靠解决方案。",
   "descriptionEn": "LocalSend is a cross-platform app that uses a REST API and HTTPS encryption for secure device-to-device communication. Unlike messaging apps that rely on external servers, LocalSend needs no internet connection or third-party server, making local transfers fast and reliable.",
-  "version": "v1.18.2",
+  "version": "v1.19.0",
   "size": "",
   "system": "Windows / macOS / Linux / Android",
   "systemEn": "Windows / macOS / Linux / Android",
-  "platforms": ["windows", "macos", "linux", "android"],
+  "platforms": [
+    "windows",
+    "macos",
+    "linux",
+    "android"
+  ],
   "website": "https://localsend.org",
   "github": "https://github.com/localsend/localsend",
   "author": "localsend",
@@ -20,32 +25,32 @@
     {
       "platform": "Android ARM64（APK）",
       "note": "LocalSend-1.18.2-android-arm64v8.apk",
-      "size": "44.4 MB",
-      "url": "https://github.com/localsend/localsend/releases/download/v1.18.2/LocalSend-1.18.2-android-arm64v8.apk"
+      "size": "45 MB",
+      "url": "https://github.com/localsend/localsend/releases/download/v1.19.0/LocalSend-1.19.0-android-arm64v8.apk"
     },
     {
       "platform": "Linux x64（.deb）",
       "note": "LocalSend-1.18.2-linux-x86-64.deb",
-      "size": "23.5 MB",
-      "url": "https://github.com/localsend/localsend/releases/download/v1.18.2/LocalSend-1.18.2-linux-x86-64.deb"
+      "size": "23 MB",
+      "url": "https://github.com/localsend/localsend/releases/download/v1.19.0/LocalSend-1.19.0-linux-x86-64.deb"
     },
     {
       "platform": "Windows x64 安装版",
       "note": "LocalSend-1.18.2-windows-x86-64.exe",
-      "size": "19.0 MB",
-      "url": "https://github.com/localsend/localsend/releases/download/v1.18.2/LocalSend-1.18.2-windows-x86-64.exe"
+      "size": "19 MB",
+      "url": "https://github.com/localsend/localsend/releases/download/v1.19.0/LocalSend-1.19.0-windows-x86-64.exe"
     },
     {
       "platform": "macOS",
       "note": "LocalSend-1.18.2.dmg",
-      "size": "50.0 MB",
-      "url": "https://github.com/localsend/localsend/releases/download/v1.18.2/LocalSend-1.18.2.dmg"
+      "size": "50 MB",
+      "url": "https://github.com/localsend/localsend/releases/download/v1.19.0/LocalSend-1.19.0.dmg"
     },
     {
       "platform": "windows-arm-64.zip",
       "note": "LocalSend-1.18.2-windows-arm-64.zip",
-      "size": "23.3 MB",
-      "url": "https://github.com/localsend/localsend/releases/download/v1.18.2/LocalSend-1.18.2-windows-arm-64.zip"
+      "size": "23 MB",
+      "url": "https://github.com/localsend/localsend/releases/download/v1.19.0/LocalSend-1.19.0-windows-arm-64.zip"
     }
   ],
   "sort": 78

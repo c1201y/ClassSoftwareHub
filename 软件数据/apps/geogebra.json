@@ -8,7 +8,7 @@
   "taglineEn": "Free open-source math tool for functions, geometry, statistics and 3D",
   "description": "GeoGebra 是面向数学教学的免费开源动态数学软件，把几何、代数、表格、图形、统计和微积分整合在一起。画函数图像、做几何演示、动态验证定理都很方便，还支持 3D 绘图与在线课件（GeoGebra 资源站有大量现成课件可直接用）。支持 Windows / macOS / Linux / 网页 / 手机端。",
   "descriptionEn": "GeoGebra is free, open-source dynamic mathematics software for teaching. It combines geometry, algebra, spreadsheets, graphing, statistics and calculus. Plot functions, demonstrate geometry and verify theorems dynamically, with 3D graphing and online materials (the GeoGebra site has many ready-made applets). Available for Windows, macOS, Linux, web and mobile.",
-  "version": "6.0.936.0",
+  "version": "6.0.937.0",
   "size": "68 MB ~ 134 MB",
   "system": "Windows / macOS / Linux，另有网页版与手机版",
   "systemEn": "Windows / macOS / Linux, plus web and mobile",

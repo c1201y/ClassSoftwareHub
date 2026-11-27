@@ -7,18 +7,20 @@
   "taglineEn": "Official QQ for Windows",
   "description": "QQ Windows 版官方安装包，支持消息、文件传输、屏幕共享、远程协助等功能。教室里收发课件、传大文件都很方便，遇到老师电脑出问题还能用远程协助应急帮一把。",
   "descriptionEn": "The official QQ installer for Windows, supporting messaging, file transfer, screen sharing and remote assistance. It is convenient for sending lesson files and large files in class, and remote assistance can help when a teacher's PC has problems.",
-  "version": "9.9.33.52230",
+  "version": "9.9.37.54395",
   "size": "未知",
   "system": "Windows 7+",
-  "platforms": ["windows"],
+  "platforms": [
+    "windows"
+  ],
   "website": "https://im.qq.com/index/#/",
   "author": "腾讯",
   "downloads": [
     {
       "platform": "Windows 安装版",
-      "url": "https://qqdl.gtimg.cn/qqfile/QQNT/9.9.33/release/497e2f1f/QQ_9.9.33_260813_x64_01.exe",
+      "url": "https://qqdl.gtimg.cn/qqfile/QQNT/9.9.37/beta/a2ca1b61/QQ9.9.37.54395_x64.exe",
       "kind": "file",
-      "size": "300 MB"
+      "size": "319 MB"
     }
   ],
   "sort": 38,

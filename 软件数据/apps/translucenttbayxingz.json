@@ -7,11 +7,13 @@
   "taglineEn": "Make the Windows taskbar transparent or acrylic with almost no resource use",
   "description": "TranslucentTB 能把 Windows 任务栏改成完全透明、毛玻璃或纯色，还能根据状态自动切换 —— 比如回到桌面时变透明、有窗口最大化时恢复不透明，看着清爽又不影响辨认。它常驻系统托盘、内存占用极小，设成开机自启之后就完全不用管。适合想让教室电脑桌面更干净的人。注意：仅支持 Windows 10/11；便携版解压即用，商店版需要系统自带微软商店。",
   "descriptionEn": "TranslucentTB can make the Windows taskbar fully transparent, acrylic or a solid color, and switch automatically based on state — for example transparent on the desktop and opaque when a window is maximized. It lives in the system tray, uses very little memory and can start with Windows. Note: Windows 10/11 only; the portable build needs no install, while the Store build requires Microsoft Store.",
-  "version": "2026.2",
+  "version": "2026.4",
   "size": "约 2 MB（x64 便携版）",
   "system": "Windows 10 / 11（x64 / ARM64）",
   "systemEn": "Windows 10 / 11 (x64 / ARM64)",
-  "platforms": ["windows"],
+  "platforms": [
+    "windows"
+  ],
   "website": "https://translucenttb.github.io",
   "github": "https://github.com/TranslucentTB/TranslucentTB",
   "author": "TranslucentTB",
@@ -20,26 +22,26 @@
     {
       "platform": "其他 MSIXBUNDLE",
       "note": "bundle.msixbundle",
-      "size": "4.0 MB",
-      "url": "https://github.com/TranslucentTB/TranslucentTB/releases/download/2026.2/bundle.msixbundle"
+      "size": "4.1 MB",
+      "url": "https://github.com/TranslucentTB/TranslucentTB/releases/download/2026.4/bundle.msixbundle"
     },
     {
       "platform": "其他 ARM64 便携版",
       "note": "TranslucentTB-portable-arm64.zip",
-      "size": "1.6 MB",
-      "url": "https://github.com/TranslucentTB/TranslucentTB/releases/download/2026.2/TranslucentTB-portable-arm64.zip"
+      "size": "1.7 MB",
+      "url": "https://github.com/TranslucentTB/TranslucentTB/releases/download/2026.4/TranslucentTB-portable-arm64.zip"
     },
     {
       "platform": "其他 x64 便携版",
       "note": "TranslucentTB-portable-x64.zip",
       "size": "1.7 MB",
-      "url": "https://github.com/TranslucentTB/TranslucentTB/releases/download/2026.2/TranslucentTB-portable-x64.zip"
+      "url": "https://github.com/TranslucentTB/TranslucentTB/releases/download/2026.4/TranslucentTB-portable-x64.zip"
     },
     {
       "platform": "其他 APPINSTALLER",
       "note": "TranslucentTB.appinstaller",
       "size": "2.5 KB",
-      "url": "https://github.com/TranslucentTB/TranslucentTB/releases/download/2026.2/TranslucentTB.appinstaller"
+      "url": "https://github.com/TranslucentTB/TranslucentTB/releases/download/2026.4/TranslucentTB.appinstaller"
     }
   ],
   "sort": 96

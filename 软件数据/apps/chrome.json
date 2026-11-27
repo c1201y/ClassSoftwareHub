@@ -7,7 +7,7 @@
   "taglineEn": "Offline installer for Google Chrome",
   "description": "Google Chrome 官方浏览器的离线安装包下载入口。网络环境不好、或者要给一批电脑装机时，用离线包比在线安装省事得多。Chrome 兼容性好、扩展丰富，是教室电脑上的常用浏览器。",
   "descriptionEn": "Official offline installer for Google Chrome. An offline package is much easier when the network is poor or when setting up a batch of PCs. Chrome has excellent compatibility and a rich extension ecosystem, making it a common choice for classroom computers.",
-  "version": "158.0.8127.37",
+  "version": "158.0.8127.89",
   "size": "约 12 MB ~ 159 MB",
   "system": "Windows 10+",
   "platforms": [
