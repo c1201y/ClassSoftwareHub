@@ -5,8 +5,8 @@
   "category": "classroom",
   "tagline": "公平随机点名 / 抽签 / 分组，让抽取告别争议",
   "taglineEn": "Fair random roll call, drawing and grouping without arguments",
-  "description": "SecRandom 是一款基于「动态权重」的公平随机抽取工具，专门面向课堂点名、抽签、分组等场景，由 SECTL 开发并开源（GPL-3.0）。它支持按名单范围、小组、性别、人数进行点名，提供「奖池」和「名单」两种抽签模式，还有悬浮窗「闪抽」让抽取几乎不打断课堂节奏；摄像头就绪的教室还可以开启可选的人脸抽取。名单与分组支持完整导入导出，每次抽取都有历史记录可复盘，结果可语音播报，并支持通过 IPC / URL 被脚本或外部工具调用。安全与数据方面提供密码、TOTP、USB 等多重验证，以及备份与恢复。v3.0.0 起新增插件系统与插件市场、Omni TTS 语音（可接 OpenAI、小米 MiMo 等，支持音色克隆）以及倒计时 / 秒表 / 时钟计时器；v3.1.5 起插件能力进一步扩展，并支持接入自部署集控。",
-  "descriptionEn": "SecRandom is a fair random picker based on dynamic weights, designed for classroom roll call, drawing and grouping. Developed and open-sourced by SECTL (GPL-3.0), it supports picking by roster range, group, gender or count; provides pool and roster modes; and offers a floating quick-pick window that barely interrupts class. Classrooms with cameras can optionally use face-based picking. Rosters and groups can be imported and exported, every draw is logged, results can be spoken, and external scripts can call it via IPC or URL. Security features include password, TOTP and USB verification, plus backup and restore. v3.0.0 added a plugin system and marketplace, Omni TTS (OpenAI, Xiaomi MiMo and others, with voice cloning) and countdown/stopwatch/clock timers; v3.1.5 expands plugins and supports self-hosted control.",
+  "description": "SecRandom 是一款基于「动态权重」的公平随机抽取工具，专门面向课堂点名、抽签、分组等场景，由 SECTL 开发并开源（GPL-3.0）。它支持按名单范围、小组、性别、人数进行点名，提供「奖池」和「名单」两种抽签模式，还有悬浮窗「闪抽」让抽取几乎不打断课堂节奏；摄像头就绪的教室还可以开启可选的人脸抽取。名单与分组支持完整导入导出，每次抽取都有历史记录可复盘，结果可语音播报，并支持通过 IPC / URL 被脚本或外部工具调用。安全与数据方面提供密码、TOTP、USB 等多重验证，以及备份与恢复。v3.0.0 起新增插件系统与插件市场、Omni TTS 语音（可接 OpenAI、小米 MiMo 等，支持音色克隆）以及倒计时 / 秒表 / 时钟计时器；v3.1.5 起插件能力进一步扩展，并支持接入自部署集控；v3.2.0 进一步加入编排模式、随机数模式、简洁模式、全屏与浮窗通知渠道、独立计时器、数据位置可迁移，以及可被外部程序调用的集成 SDK。",
+  "descriptionEn": "SecRandom is a fair random picker based on dynamic weights, designed for classroom roll call, drawing and grouping. Developed and open-sourced by SECTL (GPL-3.0), it supports picking by roster range, group, gender or count; provides pool and roster modes; and offers a floating quick-pick window that barely interrupts class. Classrooms with cameras can optionally use face-based picking. Rosters and groups can be imported and exported, every draw is logged, results can be spoken, and external scripts can call it via IPC or URL. Security features include password, TOTP and USB verification, plus backup and restore. v3.0.0 added a plugin system and marketplace, Omni TTS (OpenAI, Xiaomi MiMo and others, with voice cloning) and countdown/stopwatch/clock timers; v3.1.5 expands plugins and supports self-hosted control; v3.2.0 adds a choreography mode, random-number mode, a minimal mode, full-screen and floating notification channels, a standalone timer, relocatable data storage, and an integration SDK for external programs.",
   "version": "v3.2.0",
   "size": "90 MB ~ 254 MB（视平台）",
   "system": "Windows 10/11（x86 / x64 / ARM64）、Linux、macOS、Android、iOS",
@@ -22,8 +22,8 @@
   "github": "https://github.com/SECTL/SecRandom",
   "author": "SECTL",
   "license": "GPL-3.0",
-  "notice": "当前提供的是 v3.1.5 正式版（2026-10-07 发布，可直接用于日常教学等正式场景）。下载链接走 SECTL 官方 GitHub 加速通道（ghproxy.sectl.top），国内下载更快，文件与 GitHub 官方发布完全一致，可对照下方 SHA512 校验。",
-  "noticeEn": "This is the v3.1.5 stable release (published 2026-10-07), suitable for everyday teaching. Downloads use SECTL's official GitHub acceleration endpoint (ghproxy.sectl.top) for faster access in China; files are identical to the official GitHub release and can be checked against the SHA512 below.",
+  "notice": "当前提供的是 v3.2.0 正式版（2026-11-22 发布，可直接用于日常教学等正式场景）。下载链接走 SECTL 官方 GitHub 加速通道（ghproxy.sectl.top），国内下载更快，文件与 GitHub 官方发布完全一致，可对照下方 SHA512 校验。",
+  "noticeEn": "This is the v3.2.0 stable release (published 2026-11-22), suitable for everyday teaching. Downloads use SECTL's official GitHub acceleration endpoint (ghproxy.sectl.top) for faster access in China; files are identical to the official GitHub release and can be checked against the SHA512 below.",
   "downloads": [
     {
       "platform": "Windows x64 安装版",
@@ -109,5 +109,5 @@
     }
   ],
   "sort": 13,
-  "维护备注": "信息采集于 2026-10-11。官网 https://secrandom.sectl.top/；GitHub SECTL/SecRandom（GPL-3.0，默认分支 master）。站内版本 v3.1.5 为 2026-10-07 发布的正式版。下载链接 = SECTL 官方 GitHub 加速 ghproxy.sectl.top（形式 https://ghproxy.sectl.top/https://github.com/SECTL/SecRandom/releases/download/<tag>/<文件名>，直连 GitHub 实时同步）。⚠️ 思拓创联镜像 stk.sectl.cn（OpenList，目录 /SecRandom/思拓创联 Gihub 镜像源/）为人工/滞后同步，2026-10-11 时只到 v3.0.0，切回镜像前先核对它是否已收录目标 tag；「/d/」是镜像的下载端点，不带会返回网页壳；目录名「Gihub」是官方拼写，勿改。体积与 SHA512 取自官方 SecRandom-update-manifest.json（GitHub release 资产，其 sha256 已实测经 ghproxy 通道下载校验一致）；若版本升级，改 TAG 并重新取 manifest 即可。图标取自仓库 SecRandom/Assets/AppLogo.png。"
+  "维护备注": "信息采集于 2026-10-11，2026-11-27 随 v3.2.0 更新。官网 https://secrandom.sectl.top/；GitHub SECTL/SecRandom（GPL-3.0，默认分支 master）。站内版本 v3.2.0 为 2026-11-22 发布的正式版。下载链接 = SECTL 官方 GitHub 加速 ghproxy.sectl.top（形式 https://ghproxy.sectl.top/https://github.com/SECTL/SecRandom/releases/download/<tag>/<文件名>，直连 GitHub 实时同步）。⚠️ 思拓创联镜像 stk.sectl.cn（OpenList，目录 /SecRandom/思拓创联 Gihub 镜像源/）为人工/滞后同步，2026-10-11 时只到 v3.0.0，切回镜像前先核对它是否已收录目标 tag；「/d/」是镜像的下载端点，不带会返回网页壳；目录名「Gihub」是官方拼写，勿改。体积与 SHA512 取自官方 SecRandom-update-manifest.json（GitHub release 资产，其 sha256 已实测经 ghproxy 通道下载校验一致）；若版本升级，改 TAG 并重新取 manifest 即可。图标取自仓库 SecRandom/Assets/AppLogo.png。"
 }
