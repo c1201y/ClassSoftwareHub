@@ -1,6 +1,4 @@
 {
-  "_提交时间": "2026-11-24T02:25:32.361Z",
-  "_原始ID冲突": false,
   "id": "mycomputermanager",
   "name": "MyComputerManager",
   "icon": "https://submit.132614.xyz/api/icon?k=icon%2F2026%2F11%2Fmwu2oa54-ko1sam-csh-icon-8acba109d0cc49bbb8273764600fddad.png",
@@ -22,5 +20,7 @@
   ],
   "sort": 99,
   "notice": "软件日期2022-可能不支持win7及其他旧版系统-请验证后使用",
-  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBPS0lybDl5bUlSZnR5Znh3\nRlBpQTF1bHB1WVFmb0pKZXNvdy93UFhKY2hjCmVoVGRoYURmVXB5WFZVOGs2RDdS\nTXJDWE81dXdNQ3kybmhXMFJWdzZxNmMKLS0tIGRVaFNKMldzZjk2RGc0Zk9SVGN2\nV3hkMGM2WUMxUGVqaEw3ODdWelRBK0EKaJRO/2rY4HFIsqjrBYoIgnnbS03noLL8\nsFDN04Anc17rlkyZtszvIzb38xJJQxobIbW8Zw==\n-----END AGE ENCRYPTED FILE-----"
+  "platforms": [
+    "windows"
+  ]
 }
