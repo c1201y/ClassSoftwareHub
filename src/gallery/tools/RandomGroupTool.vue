@@ -5,37 +5,42 @@
     <div class="tool-grid-2">
       <div class="tool-panel">
         <span class="tool-section-title">{{ t('random-group.names') }}</span>
-        <textarea
-          v-model="namesText"
-          class="tool-textarea rg-names"
-          :placeholder="t('random-group.names-placeholder')"
-          spellcheck="false" />
+        <WinTextBox
+          AcceptsReturn
+          MinHeight="180"
+          :IsSpellCheckEnabled="false"
+          :PlaceholderText="t('random-group.names-placeholder')"
+          v-model:Text="namesText" />
         <div class="tool-row rg-meta">
           <span class="tool-hint">{{ t('random-group.count', { n: names.length }) }}</span>
-          <button type="button" class="tool-btn small" @click="fillSample">{{ t('random-group.sample') }}</button>
-          <button type="button" class="tool-btn small" :disabled="!namesText" @click="namesText = ''">{{ t('common.clear') }}</button>
+          <div class="tool-row">
+            <WinButton :Content="t('random-group.sample')" @Click="fillSample" />
+            <WinButton :Content="t('common.clear')" :IsEnabled="!!namesText" @Click="clearNames" />
+          </div>
         </div>
 
         <div class="rg-options">
-          <label class="tool-label" for="rg-mode">{{ t('random-group.mode') }}</label>
-          <select id="rg-mode" v-model="mode" class="tool-select">
-            <option value="groups">{{ t('random-group.mode.groups') }}</option>
-            <option value="per">{{ t('random-group.mode.per') }}</option>
-          </select>
+          <WinComboBox
+            :Header="t('random-group.mode')"
+            Width="100%"
+            :ItemsSource="modeItems"
+            DisplayMemberPath="label"
+            SelectedValuePath="value"
+            v-model:SelectedValue="mode" />
           <div class="tool-row rg-countrow">
             <template v-if="mode === 'groups'">
               <span class="tool-hint">{{ t('random-group.groups') }}</span>
-              <input v-model.number="groupCount" class="tool-input rg-num" type="number" min="1" max="99" />
+              <WinNumberBox class="rg-num" :Width="88" :Minimum="1" :Maximum="99" :SmallChange="1" v-model:Value="groupCount" />
             </template>
             <template v-else>
               <span class="tool-hint">{{ t('random-group.per-group') }}</span>
-              <input v-model.number="perGroup" class="tool-input rg-num" type="number" min="1" max="99" />
+              <WinNumberBox class="rg-num" :Width="88" :Minimum="1" :Maximum="99" :SmallChange="1" v-model:Value="perGroup" />
             </template>
           </div>
         </div>
 
         <div class="rg-actions">
-          <button type="button" class="tool-btn accent rg-main" @click="makeGroups">{{ t('random-group.group') }}</button>
+          <WinButton class="rg-main" Style="AccentButtonStyle" :Content="t('random-group.group')" @Click="makeGroups" />
         </div>
         <div v-if="error" class="rg-error">{{ error }}</div>
       </div>
@@ -44,8 +49,8 @@
         <div class="rg-result-head">
           <span class="tool-section-title">{{ t('random-group.result') }}</span>
           <div class="tool-row">
-            <button type="button" class="tool-btn small" :disabled="!groups.length" @click="copyGroups">{{ t('random-group.copy-groups') }}</button>
-            <button type="button" class="tool-btn small" :disabled="!groups.length" @click="exportGroupsCsv">{{ t('random-group.csv') }}</button>
+            <WinButton :Content="t('random-group.copy-groups')" :IsEnabled="groups.length > 0" @Click="copyGroups" />
+            <WinButton :Content="t('random-group.csv')" :IsEnabled="groups.length > 0" @Click="exportGroupsCsv" />
           </div>
         </div>
         <div v-if="groups.length" class="rg-groups">
@@ -66,15 +71,15 @@
       <div class="rg-result-head">
         <span class="tool-section-title">{{ t('random-group.seat-title') }}</span>
         <div class="tool-row">
-          <button type="button" class="tool-btn small" :disabled="!seats.length" @click="copySeats">{{ t('random-group.seat-copy') }}</button>
+          <WinButton :Content="t('random-group.seat-copy')" :IsEnabled="seats.length > 0" @Click="copySeats" />
         </div>
       </div>
       <div class="tool-row rg-seatopts">
         <span class="tool-hint">{{ t('random-group.rows') }}</span>
-        <input v-model.number="rows" class="tool-input rg-num" type="number" min="1" max="30" />
+        <WinNumberBox class="rg-num" :Width="88" :Minimum="1" :Maximum="30" :SmallChange="1" v-model:Value="rows" />
         <span class="tool-hint">{{ t('random-group.cols') }}</span>
-        <input v-model.number="cols" class="tool-input rg-num" type="number" min="1" max="30" />
-        <button type="button" class="tool-btn" @click="makeSeats">{{ t('random-group.seat') }}</button>
+        <WinNumberBox class="rg-num" :Width="88" :Minimum="1" :Maximum="30" :SmallChange="1" v-model:Value="cols" />
+        <WinButton :Content="t('random-group.seat')" @Click="makeSeats" />
       </div>
       <div class="tool-hint rg-seat-hint">{{ t('random-group.seat-hint') }}</div>
       <div v-if="seatError" class="rg-error">{{ seatError }}</div>
@@ -94,6 +99,10 @@ import { computed, ref, watch } from 'vue';
 import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
 import { useI18n } from '../../components/i18n/index';
+import WinButton from '../../components/WinButton.vue';
+import WinComboBox from '../../components/WinComboBox.vue';
+import WinNumberBox from '../../components/WinNumberBox.vue';
+import WinTextBox from '../../components/WinTextBox.vue';
 
 const NAMES_KEY = 'tool.random-group.names';
 
@@ -137,6 +146,15 @@ const cols = ref(6);
 const seats = ref<string[]>([]);
 const seatCols = ref(6);
 const seatError = ref('');
+
+const modeItems = computed(() => [
+  { value: 'groups', label: t('random-group.mode.groups') },
+  { value: 'per', label: t('random-group.mode.per') }
+]);
+
+const clearNames = () => {
+  namesText.value = '';
+};
 
 const randInt = (n: number) => {
   if (!(n >= 1)) return 0;
@@ -252,10 +270,6 @@ const fillSample = () => {
 </script>
 
 <style scoped>
-.rg-names {
-  min-height: 180px;
-}
-
 .rg-meta {
   margin-top: 8px;
   justify-content: space-between;
@@ -270,8 +284,7 @@ const fillSample = () => {
 }
 
 .rg-num {
-  width: 88px !important;
-  flex: 0 0 88px;
+  flex: 0 0 auto;
 }
 
 .rg-actions {

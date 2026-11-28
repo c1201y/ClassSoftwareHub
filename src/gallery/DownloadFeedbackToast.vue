@@ -10,14 +10,21 @@
         @keydown.esc="dismiss">
         <header class="dlfb-head">
           <span class="dlfb-title">{{ t('dlfb.title') }}</span>
-          <button type="button" class="dlfb-close" :aria-label="t('dlfb.close')" @click="dismiss">✕</button>
+          <WinButton
+            Style="SubtleButtonStyle"
+            Width="32"
+            Height="32"
+            Padding="0"
+            FontSize="14"
+            :aria-label="t('dlfb.close')"
+            @Click="dismiss">✕</WinButton>
         </header>
 
         <template v-if="step === 'ask'">
           <p class="dlfb-question">{{ t('dlfb.question') }}</p>
           <div class="dlfb-choices">
-            <button type="button" class="dlfb-choice" @click="pick('good')">{{ t('dlfb.good') }}</button>
-            <button type="button" class="dlfb-choice" @click="pick('bad')">{{ t('dlfb.bad') }}</button>
+            <WinButton class="dlfb-choice" :Content="t('dlfb.good')" @Click="pick('good')" />
+            <WinButton class="dlfb-choice" :Content="t('dlfb.bad')" @Click="pick('bad')" />
           </div>
         </template>
 
@@ -25,29 +32,28 @@
           <p class="dlfb-question">
             {{ rating === 'good' ? t('dlfb.good-prompt') : t('dlfb.bad-prompt') }}
           </p>
-          <textarea
-            v-model="detail"
-            class="dlfb-textarea"
-            rows="3"
-            maxlength="800"
-            :placeholder="rating === 'good' ? t('dlfb.good-placeholder') : t('dlfb.bad-placeholder')" />
-          <input
-            v-model="contact"
-            class="dlfb-input"
-            type="text"
-            maxlength="120"
-            :placeholder="t('dlfb.contact-placeholder')" />
+          <WinTextBox
+            class="dlfb-field"
+            AcceptsReturn
+            MinHeight="76"
+            :MaxLength="800"
+            :IsSpellCheckEnabled="false"
+            :PlaceholderText="rating === 'good' ? t('dlfb.good-placeholder') : t('dlfb.bad-placeholder')"
+            v-model:Text="detail" />
+          <WinTextBox
+            class="dlfb-field"
+            :MaxLength="120"
+            :PlaceholderText="t('dlfb.contact-placeholder')"
+            v-model:Text="contact" />
           <p class="dlfb-note">{{ t('dlfb.contact-note') }}</p>
           <p v-if="error" class="dlfb-error" role="alert">{{ t('dlfb.failed') }}</p>
           <div class="dlfb-actions">
-            <button type="button" class="dlfb-btn" @click="dismiss">{{ t('dlfb.cancel') }}</button>
-            <button
-              type="button"
-              class="dlfb-btn primary"
-              :disabled="!canSubmit || busy"
-              @click="submit">
-              {{ t('dlfb.submit') }}
-            </button>
+            <WinButton :Content="t('dlfb.cancel')" @Click="dismiss" />
+            <WinButton
+              Style="AccentButtonStyle"
+              :Content="t('dlfb.submit')"
+              :IsEnabled="canSubmit && !busy"
+              @Click="submit" />
           </div>
         </template>
 
@@ -60,6 +66,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from '../components/i18n/index';
+import WinButton from '../components/WinButton.vue';
+import WinTextBox from '../components/WinTextBox.vue';
 import {
   DOWNLOAD_FEEDBACK_EVENT,
   submitDownloadFeedback,
@@ -169,19 +177,6 @@ onBeforeUnmount(() => {
   font-weight: 600;
   font-size: 13px;
 }
-.dlfb-close {
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 12px;
-  line-height: 1;
-  padding: 4px 6px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.dlfb-close:hover {
-  background: var(--subtle-secondary);
-}
 .dlfb-question {
   margin: 0 0 10px;
   color: var(--text-secondary);
@@ -192,37 +187,11 @@ onBeforeUnmount(() => {
 }
 .dlfb-choice {
   flex: 1;
-  padding: 8px 0;
-  border: 1px solid var(--SurfaceStrokeColorDefaultBrush);
-  border-radius: 5px;
-  background: var(--subtle-secondary);
-  color: var(--text-primary);
-  font-size: 13px;
-  cursor: pointer;
+  min-width: 0;
 }
-.dlfb-choice:hover {
-  border-color: var(--accent);
-  background: rgba(0, 103, 192, 0.08);
-}
-.dlfb-textarea,
-.dlfb-input {
-  box-sizing: border-box;
+.dlfb-field {
   width: 100%;
   margin-bottom: 8px;
-  padding: 6px 8px;
-  border: 1px solid var(--SurfaceStrokeColorDefaultBrush);
-  border-bottom-color: rgba(0, 0, 0, 0.36);
-  border-radius: 4px;
-  background: var(--dialog-content-bg);
-  color: var(--text-primary);
-  font: inherit;
-  resize: vertical;
-}
-.dlfb-textarea:focus,
-.dlfb-input:focus {
-  outline: none;
-  border-bottom-color: var(--accent);
-  box-shadow: inset 0 -2px 0 var(--accent);
 }
 .dlfb-note {
   margin: 0 0 8px;
@@ -238,24 +207,6 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-}
-.dlfb-btn {
-  padding: 5px 14px;
-  border: 1px solid var(--SurfaceStrokeColorDefaultBrush);
-  border-radius: 4px;
-  background: var(--subtle-secondary);
-  color: var(--text-primary);
-  font-size: 12.5px;
-  cursor: pointer;
-}
-.dlfb-btn.primary {
-  border-color: transparent;
-  background: var(--accent);
-  color: #fff;
-}
-.dlfb-btn.primary:disabled {
-  background: var(--accent-fill-disabled);
-  cursor: default;
 }
 .dlfb-thanks {
   margin: 4px 0 2px;

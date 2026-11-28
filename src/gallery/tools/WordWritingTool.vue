@@ -87,23 +87,21 @@
         <div class="ww-board-head">
           <span class="tool-section-title">{{ t('word-writing.board-title') }}</span>
           <div class="tool-row ww-board-tools">
-            <button
+            <WinButton
               v-for="p in PENS"
               :key="p.id"
-              type="button"
               class="ww-pen"
               :class="{ 'is-active': tool === 'pen' && penId === p.id }"
               :style="{ '--pen-color': p.color }"
               :title="t(p.nameKey)"
               :aria-label="t(p.nameKey)"
-              @click="pickPen(p.id)"><span class="ww-pen-dot" /></button>
-            <button
-              type="button"
-              class="ww-eraser"
-              :class="{ 'is-active': tool === 'eraser' }"
+              @Click="pickPen(p.id)"><span class="ww-pen-dot" /></WinButton>
+            <WinToggleButton
+              FontSize="12"
+              :Content="t('word-writing.eraser')"
+              :IsChecked="tool === 'eraser'"
               :title="t('word-writing.eraser')"
-              :aria-label="t('word-writing.eraser')"
-              @click="tool = 'eraser'">{{ t('word-writing.eraser') }}</button>
+              @Click="tool = 'eraser'" />
             <span class="ww-board-sep" aria-hidden="true" />
             <WinButton FontSize="12" Padding="8,0,8,0" :Content="t('word-writing.prev-page')" :IsEnabled="page > 0" @Click="prevPage" />
             <span class="ww-page-info">{{ page + 1 }} / {{ pageCount }}</span>
@@ -179,16 +177,25 @@
       <div class="ww-dialog" role="dialog" aria-modal="true" aria-labelledby="ww-dialog-title">
         <div class="ww-dialog-head">
           <span id="ww-dialog-title" class="ww-dialog-title">{{ t('word-writing.import') }}</span>
-          <button type="button" class="ww-dialog-x" :aria-label="t('word-writing.close')" @click="importOpen = false">×</button>
+          <WinButton
+            Style="SubtleButtonStyle"
+            Width="32"
+            Height="32"
+            Padding="0"
+            FontSize="18"
+            :title="t('word-writing.close')"
+            :aria-label="t('word-writing.close')"
+            @Click="importOpen = false">×</WinButton>
         </div>
         <p class="ww-dialog-desc">
           {{ t('word-writing.import-desc') }}
         </p>
-        <textarea
-          v-model="importText"
-          class="ww-dialog-text"
-          rows="10"
-          :placeholder="t('word-writing.import-placeholder')" />
+        <WinTextBox
+          AcceptsReturn
+          MinHeight="200"
+          :IsSpellCheckEnabled="false"
+          :PlaceholderText="t('word-writing.import-placeholder')"
+          v-model:Text="importText" />
         <div class="ww-dialog-foot">
           <WinButton
             FontSize="13"
@@ -215,6 +222,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } 
 import ToolShell from './ToolShell.vue';
 import WinButton from '../../components/WinButton.vue';
 import WinTextBox from '../../components/WinTextBox.vue';
+import WinToggleButton from '../../components/WinToggleButton.vue';
 import WinComboBox from '../../components/WinComboBox.vue';
 import { useI18n } from '../../components/i18n/index';
 
@@ -858,19 +866,16 @@ onBeforeUnmount(() => {
 .ww-pen {
   width: 28px;
   height: 28px;
-  padding: 0;
-  border-radius: 50%;
-  border: 1px solid var(--ctrl-border, rgba(0, 0, 0, 0.22));
-  background: transparent;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 0;
+  --ButtonPadding: 0;
+  --ButtonCornerRadius: 50%;
 }
 
 .ww-pen.is-active {
-  border-color: var(--accent-base, #0067C0);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-base, #0067C0) 30%, transparent);
+  --ButtonBorderBrush: var(--accent-base, #0067C0);
+  --ButtonBorderBrushTop: var(--accent-base, #0067C0);
+  --ButtonBorderBrushBottom: var(--accent-base, #0067C0);
+  --ButtonBorderThemeThickness: 2px;
 }
 
 .ww-pen-dot {
@@ -878,23 +883,6 @@ onBeforeUnmount(() => {
   height: 16px;
   border-radius: 50%;
   background: var(--pen-color);
-}
-
-.ww-eraser {
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 4px;
-  border: 1px solid var(--ctrl-border, rgba(0, 0, 0, 0.22));
-  background: var(--ctrl-fill-default, rgba(255, 255, 255, 0.7));
-  color: var(--text-primary);
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.ww-eraser.is-active {
-  border-color: var(--accent-base, #0067C0);
-  background: color-mix(in srgb, var(--accent-base, #0067C0) 14%, transparent);
 }
 
 .ww-board-sep {
@@ -1104,35 +1092,11 @@ onBeforeUnmount(() => {
   font-weight: 600;
 }
 
-.ww-dialog-x {
-  border: none;
-  background: none;
-  font-size: 22px;
-  line-height: 1;
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
 .ww-dialog-desc {
   margin: 0;
   font-size: 13px;
   line-height: 1.6;
   color: var(--text-secondary);
-}
-
-.ww-dialog-text {
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 200px;
-  padding: 10px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--ctrl-border, rgba(0, 0, 0, 0.22));
-  background: var(--ctrl-fill-default, rgba(255, 255, 255, 0.7));
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 1.7;
-  resize: vertical;
 }
 
 .ww-dialog-foot {

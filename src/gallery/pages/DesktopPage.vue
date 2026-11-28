@@ -108,14 +108,15 @@
                 <p v-if="row.build && !row.build.size" class="row-hint">{{ t(row.noteKey) }}</p>
               </div>
 
-              <button
+              <WinHyperlinkButton
                 v-if="ed.repoUrl"
-                type="button"
-                class="card-link card-link-btn"
-                @click="openRepoEmbed(ed.repoUrl, t(ed.titleKey))">
+                class="card-link"
+                FontSize="12"
+                Padding="0"
+                @Click="openRepoEmbed(ed.repoUrl, t(ed.titleKey))">
                 {{ t('desktop.history') }}<span class="card-link-hint"> · {{ t('embed.accelerator-hint') }}</span>
                 <span class="icon-glyph" aria-hidden="true">&#xE8A7;</span>
-              </button>
+              </WinHyperlinkButton>
             </div>
 
             <p v-else class="edition-empty">{{ t('desktop.no-builds') }}</p>
@@ -165,13 +166,13 @@
                 </div>
               </details>
 
-              <button
+              <WinButton
                 v-if="col.total > col.items.length"
-                type="button"
                 class="history-more"
-                @click="showMore(col.key)">
-                {{ t('desktop.history-show-more') }}
-              </button>
+                Style="SubtleButtonStyle"
+                FontSize="12"
+                :Content="t('desktop.history-show-more')"
+                @Click="showMore(col.key)" />
 
               <p v-if="!col.items.length" class="history-empty">{{ t('desktop.history-none') }}</p>
             </div>
@@ -181,7 +182,11 @@
         <div class="web-links">
           <span class="web-links-label">{{ t('desktop.web-label') }}</span>
           <a :href="DOCS_URL" target="_blank" rel="noopener noreferrer">{{ t('desktop.docs') }}</a>
-          <button type="button" class="web-link-btn" @click="openRepoEmbed(REPO_URL, 'ClassSoftwareHub')">GitHub<span class="web-link-hint"> · {{ t('embed.accelerator-hint') }}</span></button>
+          <WinHyperlinkButton
+            class="web-link-btn"
+            FontSize="13"
+            Padding="0"
+            @Click="openRepoEmbed(REPO_URL, 'ClassSoftwareHub')">GitHub<span class="web-link-hint"> · {{ t('embed.accelerator-hint') }}</span></WinHyperlinkButton>
         </div>
 
         <p class="dl-footnote">{{ t('desktop.mirror-note') }}</p>
@@ -581,3 +586,12 @@ onMounted(async () => {
   history.value = { desktop: desktopHist, win7: win7Hist };
 });
 </script>
+
+<style scoped>
+/* 链接式按钮贴进原有小字行：去掉控件默认 32px 行高，避免把相邻 <a> 顶开 */
+.card-link,
+.web-link-btn {
+  min-height: 0;
+  gap: 6px;
+}
+</style>

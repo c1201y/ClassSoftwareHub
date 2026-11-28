@@ -18,10 +18,11 @@
       <WinImage class="welcome-dialog-sticker" :Source="sticker" Width="140" />
       <WinTextBlock class="welcome-dialog-intro" :Text="t('welcome.intro')" FontSize="15" />
       <div class="welcome-dialog-links">
-        <button
-          type="button"
+        <WinHyperlinkButton
           class="welcome-dialog-link-btn"
-          @click="openRepositoryEmbed">{{ t('welcome.repository') }}<span class="welcome-dialog-link-hint"> · {{ t('embed.accelerator-hint') }}</span></button>
+          FontSize="14"
+          Padding="0"
+          @Click="openRepositoryEmbed">{{ t('welcome.repository') }}<span class="welcome-dialog-link-hint"> · {{ t('embed.accelerator-hint') }}</span></WinHyperlinkButton>
         <span class="welcome-dialog-link-sep" aria-hidden="true">·</span>
         <WinHyperlinkButton
           :NavigateUri="t('about.author-home-url')"
@@ -48,18 +49,20 @@
           FontSize="14" />
       </div>
 
-      <!-- 法律三件套入口：站内 hash 路由不能用 WinHyperlinkButton（SAFE_URI_RE 白名单只认
-           http(s)，见设置页同名注释），用普通按钮 + router.push；点击后先关闭弹窗再跳转 -->
+      <!-- 法律三件套入口：站内 hash 路由不能走 NavigateUri（SAFE_URI_RE 白名单只认
+           http(s)，见设置页同名注释），但不带 NavigateUri 的 WinHyperlinkButton 会退化成
+           真正的 <button> 并发出 Click，正好用来走 router.push；点击后先关闭弹窗再跳转 -->
       <div class="welcome-dialog-legal">
         <span class="welcome-legal-text">{{ t('welcome.legal-note') }}</span>
-        <button
+        <WinHyperlinkButton
           v-for="doc in legalDocs"
           :key="doc.key"
-          type="button"
           class="welcome-legal-link"
-          @click="openLegal(doc.key)">
+          FontSize="12"
+          Padding="0"
+          @Click="openLegal(doc.key)">
           {{ locale === 'zh-CN' ? `《${doc.zh.title}》` : doc.en.title }}
-        </button>
+        </WinHyperlinkButton>
       </div>
     </div>
   </WinContentDialog>
@@ -160,28 +163,13 @@ const openLegal = (key: string) => {
 }
 
 .welcome-legal-link {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 12px;
+  min-height: 0;
   line-height: 20px;
-  color: var(--AccentFillColorDefaultBrush, #005fb8);
-  cursor: pointer;
-}
-
-.welcome-legal-link:hover {
-  text-decoration: underline;
 }
 
 .welcome-dialog-link-btn {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--accent-base, #0067c0);
-  font: inherit;
-  font-size: 14px;
-  cursor: pointer;
+  min-height: 0;
+  gap: 0;
 }
-.welcome-dialog-link-btn:hover { text-decoration: underline; }
 .welcome-dialog-link-hint { font-size: 11px; color: var(--text-secondary, #666); }
 </style>

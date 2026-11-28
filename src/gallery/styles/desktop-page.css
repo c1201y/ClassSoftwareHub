@@ -289,18 +289,10 @@
   flex: 1;
 }
 
+/* 仓库入口：只留排版，颜色与悬停反馈交给 WinHyperlinkButton */
 .card-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
   margin-top: 0.9rem;
   font-size: 0.76rem;
-  text-decoration: none;
-  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
-}
-
-.card-link:hover {
-  color: var(--accent, var(--AccentTextFillColorPrimaryBrush));
 }
 
 .edition-empty {
@@ -436,7 +428,6 @@
 
 .history-more {
   margin-top: 0.2rem;
-  font-size: 0.78rem;
 }
 
 .history-empty {
@@ -511,26 +502,6 @@
   .edition-card {
     padding: 1rem;
   }
-}
-
-/* 仓库入口：按钮伪装成原有链接，点击后走自建加速站内嵌 */
-.card-link-btn,
-.web-link-btn {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-}
-.card-link-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.card-link-btn:hover,
-.web-link-btn:hover {
-  text-decoration: underline;
 }
 
 .card-link-hint, .web-link-hint { font-size: 11px; color: var(--text-secondary, #666); }

@@ -107,9 +107,6 @@ export default {
     "home.update-action": "Update",
     "pwa.screenshot-home": "Home: browse apps by category",
     "pwa.screenshot-settings": "Settings and version updates",
-    "home.download-template": "⬇ Download software-list template",
-    "home.download-template-tip": "Let's build it together! The template for adding software",
-    "home.download-template-filename": "software-list-template.json",
     "home.iwb-card-title": "Looking for more teaching software? Check out Awesome IWB",
     "home.iwb-card-desc": "A curated collection of interactive-whiteboard software: whiteboard tools, classroom management, class timetables, random name pickers and more.",
     "home.iwb-card-action": "Open Awesome IWB",
@@ -1156,6 +1153,5 @@ export default {
   "visitor.unique-visitors": "Visitors",
 
   "share.name-line": "[{name}]",
-  "share.download-line": "Download: {url}",
-  "home.download-template-failed": "Download failed: {error}"
+  "share.download-line": "Download: {url}"
   };

@@ -440,17 +440,7 @@ html.theme-dark .detail-category-badge {
 }
 
 .detail-share-text {
-  box-sizing: border-box;
   width: 100%;
-  padding: 9px 11px;
-  border-radius: 6px;
-  border: 1px solid var(--card-border, var(--CardStrokeColorDefaultBrush));
-  background: var(--subtle-fill, var(--SubtleFillColorSecondaryBrush));
-  color: var(--text-primary, var(--TextFillColorPrimaryBrush));
-  font-family: inherit;
-  font-size: 13px;
-  line-height: 1.6;
-  resize: vertical;
 }
 
 .detail-share-actions {
@@ -514,75 +504,31 @@ html.theme-dark .detail-category-badge {
 }
 
 /* ── 兼容性提示条 ──────────────────────────────────────────────────
-   三档：ok（绿）/ no（红）/ unknown（灰）。
-   用左侧色条 + 图标区分，不靠背景色铺满，避免与上方标题抢注意力。 */
+   底色、图标、描边、亮暗档全交给 WinInfoBar 的 Severity（它用的是系统语义色），
+   这里只剩两件事：与上下文的间距，以及把本机信息推到右端。 */
 .detail-compat {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
   margin: 14px 0 4px;
-  padding: 10px 14px;
-  border-radius: 6px;
-  border-left: 3px solid var(--text-tertiary, #888);
-  background: var(--subtle-fill, rgba(0, 0, 0, 0.04));
 }
 
-.detail-compat.is-ok {
-  border-left-color: #107C10;
-  background: rgba(16, 124, 16, 0.08);
+/* 组件默认把 ActionButton 区左对齐（那是给"重试"这类按钮准备的）；
+   这里放的是只读的本机系统信息，贴右端才和左侧结论分得开。 */
+.detail-compat.win-infobar .win-infobar-panel:not(.is-vertical) .win-infobar-action {
+  justify-items: end;
 }
 
-.detail-compat.is-no {
-  border-left-color: #C42B1C;
-  background: rgba(196, 43, 28, 0.08);
-}
-
-.detail-compat-icon {
-  flex: none;
-  font-family: 'WinUIOnWebIcons';
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--text-secondary);
-}
-
-.detail-compat.is-ok .detail-compat-icon { color: #107C10; }
-.detail-compat.is-no .detail-compat-icon { color: #C42B1C; }
-
-.detail-compat-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.detail-compat-title {
-  font-size: 13px;
-  line-height: 1.5;
-  font-weight: 500;
-}
-
-.detail-compat-sub {
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--text-secondary);
+.detail-compat.win-infobar .win-infobar-panel.is-vertical .win-infobar-action {
+  margin-left: auto;
 }
 
 .detail-compat-device {
-  flex: none;
-  margin-left: auto;
-  font-size: 12px;
   color: var(--text-tertiary, var(--text-secondary));
   white-space: nowrap;
+  font-size: 12px;
 }
 
-/* GitHub 一栏：点击后由站内签名 iframe 打开，不直接跳站外 */
+/* GitHub 一栏：点击后由站内签名 iframe 打开，不直接跳站外（观感由 WinHyperlinkButton 提供） */
 .detail-github-embed {
-  color: var(--accent-base);
-  cursor: pointer;
-  font: inherit;
-  font-size: 14px;
   text-align: left;
-  text-decoration: none;
   word-break: break-all;
 }
 .detail-github-hint {
@@ -596,12 +542,4 @@ html.theme-dark .detail-category-badge {
   font-weight: 500;
   vertical-align: 1px;
   white-space: nowrap;
-}
-.detail-github-embed:hover {
-  text-decoration: underline;
-}
-.detail-github-embed:focus-visible {
-  outline: 2px solid var(--accent-base);
-  outline-offset: 2px;
-  border-radius: 3px;
 }

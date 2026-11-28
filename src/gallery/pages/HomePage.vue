@@ -24,26 +24,6 @@
               :Text="t('home.subtitle')"
               FontSize="18" />
           </div>
-          <div class="home-offline-download">
-            <!-- 模板下载：与 软件数据/apps/_模板.json 同源 -->
-            <span class="home-download-template-line">
-              <button
-                type="button"
-                class="home-download-html-btn"
-                @click="downloadSoftwareTemplate">
-                {{ t('home.download-template') }}
-              </button>
-              <span class="home-download-html-tip">{{ t('home.download-template-tip') }}</span>
-              <!-- QQ 群入口：复用 about.qq-group-url -->
-              <a
-                class="home-download-html-btn home-qq-group-btn"
-                :href="t('about.qq-group-url')"
-                target="_blank"
-                rel="noopener noreferrer">
-                {{ t('about.qq-group') }}
-              </a>
-            </span>
-          </div>
         </section>
 
         <!-- 更新提示：可关闭 InfoBar，单行高度 -->
@@ -74,12 +54,12 @@
             <span class="home-desktop-promo-desc">{{ desktopPromo.desc }}</span>
           </span>
           <span class="home-desktop-promo-actions">
-            <button
-              type="button"
-              class="home-desktop-download-btn"
-              @click.stop="openDesktopPage">
-              {{ desktopPromo.enter }}
-            </button>
+            <WinButton
+              Style="AccentButtonStyle"
+              FontSize="13"
+              Padding="14,0,14,0"
+              :Content="desktopPromo.enter"
+              @Click.stop="openDesktopPage" />
             <span class="home-desktop-promo-action">
               {{ desktopPromo.allVersions }}
               <span class="home-desktop-promo-link-icon" aria-hidden="true">&#xE8A7;</span>
@@ -161,15 +141,15 @@
             <span class="filter-count">{{ countText }}</span>
             <!-- 选择分享：和筛选器放一起 —— 都是「在这堆软件里挑」的动作。
                  进入后卡片右上角出现勾选，选完整条链接发出去。 -->
-            <button
-              type="button"
+            <WinToggleButton
               class="home-pick-btn"
-              :class="{ 'is-active': pickMode }"
+              FontSize="13"
+              :IsChecked="pickMode"
               :title="t('collection.pick-hint')"
-              @click="togglePickMode">
+              @Click="togglePickMode">
               <span class="home-pick-icon" aria-hidden="true">{{ pickMode ? '\uE711' : '\uE72D' }}</span>
               <span>{{ pickMode ? t('collection.exit-pick') : t('collection.enter-pick') }}</span>
-            </button>
+            </WinToggleButton>
           </div>
         </div>
 
@@ -274,12 +254,27 @@
       <div class="pick-share" role="dialog" aria-modal="true">
         <div class="pick-share-head">
           <span class="pick-share-title">{{ t('collection.share-title') }}</span>
-          <button type="button" class="pick-share-x" :aria-label="t('collection.close')" @click="pickShareOpen = false">×</button>
+          <WinButton
+            Style="SubtleButtonStyle"
+            Width="32"
+            Height="32"
+            Padding="0"
+            FontSize="14"
+            :aria-label="t('collection.close')"
+            @Click="pickShareOpen = false">✕</WinButton>
         </div>
         <div class="pick-share-body">
           <div class="pick-share-left">
             <span class="tool-label">{{ t('collection.share-text-label') }}</span>
-            <textarea class="pick-share-text" :value="pickShareText" readonly rows="7" @focus="selectAll" />
+            <WinTextBox
+              ref="pickShareBox"
+              class="pick-share-text"
+              AcceptsReturn
+              IsReadOnly
+              MinHeight="150"
+              :IsSpellCheckEnabled="false"
+              :Text="pickShareText"
+              @GotFocus="selectAll" />
             <div class="pick-share-btns">
               <WinButton
                 Style="AccentButtonStyle"
@@ -322,6 +317,8 @@ import WinSelectorBar from '../../components/WinSelectorBar.vue';
 import WinComboBox from '../../components/WinComboBox.vue';
 import WinInfoBar from '../../components/WinInfoBar.vue';
 import WinButton from '../../components/WinButton.vue';
+import WinTextBox from '../../components/WinTextBox.vue';
+import WinToggleButton from '../../components/WinToggleButton.vue';
 import { useI18n } from '../../components/i18n/index';
 import { applyUpdate, checkForUpdate } from '../appUpdate';
 import { apps, categories, categoryName, platformName, platforms, appName, appTagline } from '../data';
@@ -337,8 +334,6 @@ import {
 } from '../collection';
 import { buildQrSvg } from '../share';
 import '../styles/home-page.css';
-// 软件清单模板：与根目录 软件数据/apps/_模板.json 保持同源（打包时内联进单文件）
-import softwareTemplateRaw from '../../../软件数据/apps/_模板.json?raw';
 // AI 导航入口卡片的文字：根目录 AI导航文本.ts（和导航页共用同一份，方便改）
 import aiNav from '../../../AI导航文本';
 
@@ -567,8 +562,9 @@ const openPickPage = () => {
   if (pickShareUrl.value) window.open(pickShareUrl.value, '_blank', 'noopener,noreferrer');
 };
 
-const selectAll = (e: Event) => {
-  (e.target as HTMLTextAreaElement | null)?.select();
+const pickShareBox = ref<InstanceType<typeof WinTextBox> | null>(null);
+const selectAll = () => {
+  pickShareBox.value?.SelectAll();
 };
 
 const openDetail = (app: SoftwareApp) => {
@@ -669,19 +665,5 @@ const openTools = () => {
 /** 首页「AI 导航」入口卡片：文字来自根目录 AI导航文本.ts */
 const openAiNav = () => {
   void router.push({ name: 'ai' });
-};
-const downloadSoftwareTemplate = () => {
-  try {
-    const blob = new Blob([softwareTemplateRaw], { type: 'application/json;charset=utf-8' });
-    const anchor = document.createElement('a');
-    anchor.href = URL.createObjectURL(blob);
-    anchor.download = t('home.download-template-filename');
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-    window.setTimeout(() => URL.revokeObjectURL(anchor.href), 1000);
-  } catch (error) {
-    window.alert(t('home.download-template-failed', { error: String(error) }));
-  }
 };
 </script>

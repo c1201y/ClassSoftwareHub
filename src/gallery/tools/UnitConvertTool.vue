@@ -4,27 +4,41 @@
     :subtitle="t('tool.unit-convert.subtitle')">
     <div class="tool-grid-2">
       <div class="tool-panel">
-        <label class="tool-label" for="uc-cat">{{ t('unit-convert.category') }}</label>
-        <select id="uc-cat" v-model="catId" class="tool-select">
-          <option v-for="category in CATS" :key="category.id" :value="category.id">{{ t(`unit-convert.cat.${category.id}`) }}</option>
-        </select>
+        <WinComboBox
+          :Header="t('unit-convert.category')"
+          Width="100%"
+          :ItemsSource="catItems"
+          DisplayMemberPath="label"
+          SelectedValuePath="id"
+          v-model:SelectedValue="catId" />
 
-        <label class="tool-label uc-value-label" for="uc-value">{{ t('unit-convert.value') }}</label>
-        <input id="uc-value" v-model="input" class="tool-input mono" inputmode="decimal" spellcheck="false" />
+        <WinTextBox
+          class="uc-value"
+          :Header="t('unit-convert.value')"
+          FontFamily="Consolas, 'Courier New', monospace"
+          InputScope="Decimal"
+          :IsSpellCheckEnabled="false"
+          v-model:Text="input" />
 
         <div class="uc-fromto">
           <div class="uc-unit">
-            <span class="tool-label">{{ t('unit-convert.from') }}</span>
-            <select v-model="fromId" class="tool-select">
-              <option v-for="unit in cat.units" :key="unit.id" :value="unit.id">{{ unit.id }}</option>
-            </select>
+            <WinComboBox
+              :Header="t('unit-convert.from')"
+              Width="100%"
+              :ItemsSource="cat.units"
+              DisplayMemberPath="id"
+              SelectedValuePath="id"
+              v-model:SelectedValue="fromId" />
           </div>
-          <button type="button" class="tool-btn small uc-swap" :title="t('unit-convert.swap')" @click="swap">⇄</button>
+          <WinButton class="uc-swap" :title="t('unit-convert.swap')" Content="⇄" @Click="swap" />
           <div class="uc-unit">
-            <span class="tool-label">{{ t('unit-convert.to') }}</span>
-            <select v-model="toId" class="tool-select">
-              <option v-for="unit in cat.units" :key="unit.id" :value="unit.id">{{ unit.id }}</option>
-            </select>
+            <WinComboBox
+              :Header="t('unit-convert.to')"
+              Width="100%"
+              :ItemsSource="cat.units"
+              DisplayMemberPath="id"
+              SelectedValuePath="id"
+              v-model:SelectedValue="toId" />
           </div>
         </div>
 
@@ -68,6 +82,9 @@ import { computed, ref, watch } from 'vue';
 import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
 import { useI18n } from '../../components/i18n/index';
+import WinButton from '../../components/WinButton.vue';
+import WinComboBox from '../../components/WinComboBox.vue';
+import WinTextBox from '../../components/WinTextBox.vue';
 
 interface Unit {
   id: string;
@@ -223,6 +240,7 @@ const toId = ref('km');
 const input = ref('1');
 
 const cat = computed(() => CATS.find((item) => item.id === catId.value) ?? CATS[0]);
+const catItems = computed(() => CATS.map((item) => ({ id: item.id, label: t(`unit-convert.cat.${item.id}`) })));
 const from = computed(() => cat.value.units.find((unit) => unit.id === fromId.value) ?? cat.value.units[0]);
 const to = computed(() => cat.value.units.find((unit) => unit.id === toId.value) ?? cat.value.units[1] ?? cat.value.units[0]);
 
@@ -269,7 +287,7 @@ const copyRow = (row: { id: string; value: number }) => {
   font-family: Consolas, 'Courier New', monospace;
 }
 
-.uc-value-label {
+.uc-value {
   margin-top: 14px;
 }
 
@@ -286,7 +304,7 @@ const copyRow = (row: { id: string; value: number }) => {
 }
 
 .uc-swap {
-  margin-bottom: 0;
+  min-width: 40px;
 }
 
 .uc-result {

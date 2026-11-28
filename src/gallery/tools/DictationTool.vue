@@ -5,51 +5,78 @@
     <div class="tool-grid-2">
       <div class="tool-panel">
         <span class="tool-section-title">{{ t('dictation.list') }}</span>
-        <textarea
-          v-model="listText"
-          class="tool-textarea dt-list"
-          :placeholder="t('dictation.list-placeholder')"
-          :disabled="running"
-          spellcheck="false" />
+        <WinTextBox
+          AcceptsReturn
+          MinHeight="200"
+          :IsEnabled="!running"
+          :IsSpellCheckEnabled="false"
+          :PlaceholderText="t('dictation.list-placeholder')"
+          v-model:Text="listText" />
         <div class="tool-row dt-meta">
           <span class="tool-hint">{{ t('dictation.count', { n: words.length }) }}</span>
-          <button type="button" class="tool-btn small" :disabled="running" @click="fillSample">{{ t('random-group.sample') }}</button>
+          <WinButton :Content="t('random-group.sample')" :IsEnabled="!running" @Click="fillSample" />
         </div>
 
         <div class="dt-options">
-          <label class="dt-field">
-            <span class="tool-label">{{ t('dictation.interval') }}</span>
-            <input v-model.number="intervalSec" class="tool-input" type="number" min="1" max="60" step="1" />
-          </label>
-          <label class="dt-field">
-            <span class="tool-label">{{ t('dictation.repeat') }}</span>
-            <input v-model.number="repeatCount" class="tool-input" type="number" min="1" max="5" step="1" />
-          </label>
-          <label class="dt-field">
-            <span class="tool-label">{{ t('dictation.rate') }}</span>
-            <input v-model.number="rate" class="tool-input" type="number" min="0.5" max="1.5" step="0.05" />
-          </label>
-          <label class="dt-field">
-            <span class="tool-label">{{ t('dictation.voice') }}</span>
-            <select v-model="voiceUri" class="tool-select">
-              <option value="">{{ t('dictation.voice-default') }}</option>
-              <option v-for="voice in voices" :key="voice.voiceURI" :value="voice.voiceURI">{{ voice.name }}</option>
-            </select>
-          </label>
+          <WinNumberBox
+            class="dt-field"
+            :Header="t('dictation.interval')"
+            Width="100%"
+            :Minimum="1"
+            :Maximum="60"
+            :SmallChange="1"
+            :IsEnabled="!running"
+            v-model:Value="intervalSec" />
+          <WinNumberBox
+            class="dt-field"
+            :Header="t('dictation.repeat')"
+            Width="100%"
+            :Minimum="1"
+            :Maximum="5"
+            :SmallChange="1"
+            :IsEnabled="!running"
+            v-model:Value="repeatCount" />
+          <WinNumberBox
+            class="dt-field"
+            :Header="t('dictation.rate')"
+            Width="100%"
+            :Minimum="0.5"
+            :Maximum="1.5"
+            :SmallChange="0.05"
+            :IsEnabled="!running"
+            v-model:Value="rate" />
+          <WinComboBox
+            class="dt-field"
+            :Header="t('dictation.voice')"
+            Width="100%"
+            :ItemsSource="voiceItems"
+            DisplayMemberPath="name"
+            SelectedValuePath="voiceURI"
+            :IsEnabled="!running"
+            v-model:SelectedValue="voiceUri" />
         </div>
 
         <div class="tool-row dt-checks">
-          <label class="dt-check"><input v-model="shuffleOrder" type="checkbox" />{{ t('dictation.shuffle') }}</label>
-          <label class="dt-check"><input v-model="showMeaning" type="checkbox" />{{ t('dictation.meaning') }}</label>
+          <WinCheckBox :Content="t('dictation.shuffle')" :IsEnabled="!running" v-model:IsChecked="shuffleOrder" />
+          <WinCheckBox :Content="t('dictation.meaning')" v-model:IsChecked="showMeaning" />
         </div>
 
         <div class="tool-row dt-actions">
-          <button v-if="phase === 'idle' || phase === 'done'" type="button" class="tool-btn accent dt-main" :disabled="!supported" @click="start">
-            {{ phase === 'done' ? t('dictation.restart') : t('dictation.start') }}
-          </button>
-          <button v-else-if="phase === 'playing'" type="button" class="tool-btn accent dt-main" @click="pause">{{ t('dictation.pause') }}</button>
-          <button v-else type="button" class="tool-btn accent dt-main" @click="resume">{{ t('dictation.resume') }}</button>
-          <button v-if="running" type="button" class="tool-btn" @click="stop">{{ t('dictation.stop') }}</button>
+          <WinButton
+            v-if="phase === 'idle' || phase === 'done'"
+            class="dt-main"
+            Style="AccentButtonStyle"
+            :IsEnabled="supported"
+            :Content="phase === 'done' ? t('dictation.restart') : t('dictation.start')"
+            @Click="start" />
+          <WinButton
+            v-else-if="phase === 'playing'"
+            class="dt-main"
+            Style="AccentButtonStyle"
+            :Content="t('dictation.pause')"
+            @Click="pause" />
+          <WinButton v-else class="dt-main" Style="AccentButtonStyle" :Content="t('dictation.resume')" @Click="resume" />
+          <WinButton v-if="running" :Content="t('dictation.stop')" @Click="stop" />
         </div>
         <div v-if="!supported" class="dt-error">{{ t('dictation.unsupported') }}</div>
         <div class="tool-hint dt-hint">{{ t('dictation.hint') }}</div>
@@ -91,6 +118,11 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
 import { useI18n } from '../../components/i18n/index';
+import WinButton from '../../components/WinButton.vue';
+import WinCheckBox from '../../components/WinCheckBox.vue';
+import WinComboBox from '../../components/WinComboBox.vue';
+import WinNumberBox from '../../components/WinNumberBox.vue';
+import WinTextBox from '../../components/WinTextBox.vue';
 
 interface Word {
   en: string;
@@ -141,6 +173,10 @@ const shuffleOrder = ref(true);
 const showMeaning = ref(true);
 const voiceUri = ref('');
 const voices = ref<SpeechSynthesisVoice[]>([]);
+const voiceItems = computed(() => [
+  { voiceURI: '', name: t('dictation.voice-default') },
+  ...voices.value.map((voice) => ({ voiceURI: voice.voiceURI, name: voice.name }))
+]);
 
 const phase = ref<'idle' | 'playing' | 'paused' | 'done'>('idle');
 const running = computed(() => phase.value === 'playing' || phase.value === 'paused');
@@ -314,10 +350,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.dt-list {
-  min-height: 200px;
-}
-
 .dt-meta {
   margin-top: 8px;
   justify-content: space-between;
@@ -331,27 +363,12 @@ onBeforeUnmount(() => {
 }
 
 .dt-field {
-  display: block;
   min-width: 0;
-}
-
-.dt-field .tool-input,
-.dt-field .tool-select {
-  width: 100%;
 }
 
 .dt-checks {
   margin-top: 14px;
   gap: 18px;
-}
-
-.dt-check {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  user-select: none;
 }
 
 .dt-actions {

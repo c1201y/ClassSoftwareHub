@@ -5,11 +5,23 @@
     <div class="tool-grid-2">
       <div class="tool-panel">
         <span class="tool-section-title">{{ t('text-diff.left') }}</span>
-        <textarea v-model="left" class="tool-textarea td-box" :placeholder="t('text-diff.placeholder')" spellcheck="false" />
+        <WinTextBox
+          AcceptsReturn
+          MinHeight="180"
+          FontFamily="Consolas, 'Courier New', monospace"
+          :IsSpellCheckEnabled="false"
+          :PlaceholderText="t('text-diff.placeholder')"
+          v-model:Text="left" />
       </div>
       <div class="tool-panel">
         <span class="tool-section-title">{{ t('text-diff.right') }}</span>
-        <textarea v-model="right" class="tool-textarea td-box" :placeholder="t('text-diff.placeholder')" spellcheck="false" />
+        <WinTextBox
+          AcceptsReturn
+          MinHeight="180"
+          FontFamily="Consolas, 'Courier New', monospace"
+          :IsSpellCheckEnabled="false"
+          :PlaceholderText="t('text-diff.placeholder')"
+          v-model:Text="right" />
       </div>
     </div>
 
@@ -17,9 +29,9 @@
       <div class="td-head">
         <span class="tool-section-title">{{ t('common.result') }}</span>
         <div class="tool-row td-options">
-          <label class="td-check"><input v-model="ignoreCase" type="checkbox" />{{ t('text-diff.ignore-case') }}</label>
-          <label class="td-check"><input v-model="ignoreSpace" type="checkbox" />{{ t('text-diff.ignore-space') }}</label>
-          <button type="button" class="tool-btn small" :disabled="!result.rows.length" @click="copyDiff">{{ t('text-diff.copy') }}</button>
+          <WinCheckBox :Content="t('text-diff.ignore-case')" v-model:IsChecked="ignoreCase" />
+          <WinCheckBox :Content="t('text-diff.ignore-space')" v-model:IsChecked="ignoreSpace" />
+          <WinButton :Content="t('text-diff.copy')" :IsEnabled="result.rows.length > 0" @Click="copyDiff" />
         </div>
       </div>
 
@@ -50,6 +62,9 @@ import { computed, ref } from 'vue';
 import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
 import { useI18n } from '../../components/i18n/index';
+import WinButton from '../../components/WinButton.vue';
+import WinCheckBox from '../../components/WinCheckBox.vue';
+import WinTextBox from '../../components/WinTextBox.vue';
 
 interface Row {
   type: 'equal' | 'add' | 'del';
@@ -160,10 +175,6 @@ const copyDiff = () => {
 </script>
 
 <style scoped>
-.td-box {
-  min-height: 180px;
-}
-
 .td-result {
   margin-top: 16px;
 }
@@ -182,15 +193,6 @@ const copyDiff = () => {
 
 .td-options {
   gap: 14px;
-}
-
-.td-check {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  user-select: none;
 }
 
 .td-stats {

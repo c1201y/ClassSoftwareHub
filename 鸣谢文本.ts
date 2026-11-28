@@ -45,6 +45,7 @@ const credits: {
     { group: "dev", name: "HelloCHLdev", note: "现致力于Linux（跨平台）平台桌面端应用的开发", noteEn: "Now focused on Linux (cross-platform) desktop development", url: "https://github.com/HelloCHLdev" },
     { group: "dev", name: "凭舟吟", nameEn: "Pingzhou Yin", note: "网页维护者，并提供GitHub下载与全站加速节点、OSS存储、服务器和cn域名等服务", noteEn: "Provides the GitHub acceleration node, OSS bucket, servers and the .cn domain", url: "https://github.com/pang-zhengyang" },
     { group: "dev", name: "假装", nameEn: "Jia Zhuang", note: "各版本安全测试与漏洞查找", noteEn: "Security testing and bug hunting for all versions" },
+    { group: "dev", name: "离职荷包蛋", note: "辅助ClassSoftwareHub不同领域开发", noteEn: "Assists with development across different areas of ClassSoftwareHub" },
     
     // ── 赞助人员 ──────────────────────────────────────────────
     { group: "sponsor", name: "开心的阿罗娜（热心QQ群友）", nameEn: "Happy Arona (QQ group member)", note: "赞助桌面端开发及网站托管", noteEn: "Sponsors desktop development and site hosting", url: "https://ifdian.net/a/TinyNickCSHub?tab=home" },

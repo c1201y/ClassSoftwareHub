@@ -26,37 +26,50 @@
     @PaneToggleRequested="onTopBarToggle">
     <!-- 搜索框：标题栏里唯一、可直接输入的真输入框，结果就地下拉
          （软件 / 内置工具 / AI 站点 / 页面），快捷键 Ctrl + K 聚焦 -->
-    <div
-      ref="searchContainerRef"
-      class="gallery-titlebar-search"
-      :class="{ 'is-open': searchOpen }"
-      @click="onSearchContainerClick">
-      <span class="gallery-titlebar-search-icon" aria-hidden="true">&#xE721;</span>
-      <input
-        ref="searchInputRef"
-        class="gallery-titlebar-search-input"
-        type="text"
-        role="searchbox"
-        autocomplete="off"
-        autocapitalize="off"
-        spellcheck="false"
-        :value="searchQuery"
-        :placeholder="t('search.titlebar')"
-        :aria-label="t('text.search')"
-        @input="onSearchInput"
-        @focus="onSearchFocus"
-        @keydown="onSearchKeydown" />
-      <button
-        v-if="searchQuery"
-        type="button"
-        class="gallery-titlebar-search-clear"
-        :aria-label="t('search.clear')"
-        v-bind="{ 'tooltipservice.tooltip': t('search.clear') }"
-        @click="clearSearch">
-        <span aria-hidden="true">&#xE711;</span>
-      </button>
-      <span v-else class="gallery-titlebar-search-kbd" aria-hidden="true">Ctrl K</span>
-    </div>
+    <!-- @vue-expect-error 上游 WinTitleBar 未导出插槽类型，运行时正常 -->
+    <template #Content>
+      <div
+        ref="searchContainerRef"
+        class="gallery-titlebar-search"
+        :class="{ 'is-open': searchOpen }"
+        @click="onSearchContainerClick">
+        <span class="gallery-titlebar-search-icon" aria-hidden="true">&#xE721;</span>
+        <input
+          ref="searchInputRef"
+          class="gallery-titlebar-search-input"
+          type="text"
+          role="searchbox"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          :value="searchQuery"
+          :placeholder="t('search.titlebar')"
+          :aria-label="t('text.search')"
+          @input="onSearchInput"
+          @focus="onSearchFocus"
+          @keydown="onSearchKeydown" />
+        <button
+          v-if="searchQuery"
+          type="button"
+          class="gallery-titlebar-search-clear"
+          :aria-label="t('search.clear')"
+          v-bind="{ 'tooltipservice.tooltip': t('search.clear') }"
+          @click="clearSearch">
+          <span aria-hidden="true">&#xE711;</span>
+        </button>
+        <span v-else class="gallery-titlebar-search-kbd" aria-hidden="true">Ctrl K</span>
+      </div>
+    </template>
+    <!-- QQ 群入口：从首页搬到这里，与标题栏同行、各页面常驻 -->
+    <!-- @vue-expect-error 上游 WinTitleBar 未导出插槽类型，运行时正常 -->
+    <template #RightHeader>
+      <WinHyperlinkButton
+        class="gallery-titlebar-qq"
+        FontSize="13"
+        :Content="t('about.qq-group')"
+        :NavigateUri="t('about.qq-group-url')"
+        TargetName="_blank" />
+    </template>
   </WinTitleBar>
   <div class="gallery-app-content" :class="{ 'has-titlebar': isHostedInUwpWebView, 'wco-titlebar': !isHostedInUwpWebView }">
     <div class="gallery-nav-host">
@@ -110,6 +123,7 @@ import type { Ref } from 'vue';
 import WinTitleBar from '../components/WinTitleBar.vue';
 import WinNavigationView from '../components/WinNavigationView.vue';
 import WinToolTipService from '../components/WinToolTipService.vue';
+import WinHyperlinkButton from '../components/WinHyperlinkButton.vue';
 import WelcomeDialog from './WelcomeDialog.vue';
 import DownloadFeedbackToast from './DownloadFeedbackToast.vue';
 import GlobalSearch from './GlobalSearch.vue';
@@ -696,6 +710,12 @@ watch(materialSetting, (value) => postUwpSetting('material', value));
     line-height: 14px;
   }
 
+  /* QQ 群入口：标题栏右侧，观感交给 WinHyperlinkButton，这里只压行高、防换行 */
+  .gallery-titlebar-qq {
+    min-height: 0;
+    white-space: nowrap;
+  }
+
   /* 标题栏实际宽度过窄 / 内容放不下时（WinTitleBar 按自身宽度打 is-narrow/is-compact
      标记，不依赖视口媒体查询，PWA/WebView2 下同样生效）收成 40px 的图标按钮 */
   .gallery-titlebar.is-narrow .gallery-titlebar-search,
@@ -727,7 +747,9 @@ watch(materialSetting, (value) => postUwpSetting('material', value));
   .gallery-titlebar.is-narrow .gallery-titlebar-search-kbd,
   .gallery-titlebar.is-compact .gallery-titlebar-search-kbd,
   .gallery-titlebar.is-narrow .gallery-titlebar-search-clear,
-  .gallery-titlebar.is-compact .gallery-titlebar-search-clear {
+  .gallery-titlebar.is-compact .gallery-titlebar-search-clear,
+  .gallery-titlebar.is-narrow .gallery-titlebar-qq,
+  .gallery-titlebar.is-compact .gallery-titlebar-qq {
     display: none;
   }
 

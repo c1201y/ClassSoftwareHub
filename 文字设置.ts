@@ -252,9 +252,6 @@ export default {
       "home.update-action": "更新",
       "pwa.screenshot-home": "首页：按分类浏览软件",
       "pwa.screenshot-settings": "设置与版本更新",
-      "home.download-template": "下载软件添加模板【开发者】",
-      "home.download-template-tip": "共创！添加软件使用的模板",
-      "home.download-template-filename": "模板.json",
       "home.iwb-card-title": "想找更多教学软件？去 Awesome IWB 逛逛",
       "home.iwb-card-desc": "班级一体机 / 交互白板软件合集：希沃白板工具、课堂管理、课表看板、随机点名…… 都是开源好物",
       "home.iwb-card-action": "打开 Awesome IWB",
@@ -1165,6 +1162,5 @@ export default {
       "visitor.unique-visitors": "访客数",
 
       "share.name-line": "【{name}】",
-      "share.download-line": "下载：{url}",
-      "home.download-template-failed": "下载失败：{error}"
+      "share.download-line": "下载：{url}"
     };

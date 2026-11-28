@@ -48,9 +48,12 @@
             <div v-if="historyTerms.length" class="gs-suggest-block">
               <div class="gs-suggest-head">
                 <span class="gs-suggest-title">{{ t('search.history-title') }}</span>
-                <button type="button" class="gs-suggest-clear" @click="clearHistory">
-                  {{ t('search.history-clear') }}
-                </button>
+                <WinHyperlinkButton
+                  class="gs-suggest-clear"
+                  FontSize="12"
+                  Padding="0"
+                  :Content="t('search.history-clear')"
+                  @Click="clearHistory" />
               </div>
               <div class="gs-suggest-chips">
                 <span v-for="term in historyTerms" :key="term" class="gs-chip-wrap">
@@ -108,6 +111,7 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from '../components/i18n/index';
+import WinHyperlinkButton from '../components/WinHyperlinkButton.vue';
 import { searchGlobal, type GlobalHit, type GlobalHitKind } from './searchIndex';
 import {
   clearSearchHistory,
@@ -533,16 +537,7 @@ onBeforeUnmount(unbindWindowListeners);
 }
 
 .gs-suggest-clear {
-  border: none;
-  background: none;
-  padding: 0;
-  font-size: 12px;
-  color: var(--text-tertiary, var(--TextFillColorTertiaryBrush));
-  cursor: pointer;
-}
-
-.gs-suggest-clear:hover {
-  color: var(--accent, var(--AccentTextFillColorPrimaryBrush));
+  min-height: 0;
 }
 
 .gs-suggest-chips {

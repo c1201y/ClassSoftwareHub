@@ -29,13 +29,15 @@
 
           <div class="ec-flyout-body" role="dialog" :aria-label="t('echo-cave.submit-title')">
             <div class="ec-flyout-title">{{ t('echo-cave.submit-title') }}</div>
-            <textarea
-              v-model="draftText"
+            <WinTextBox
               class="ec-input"
-              rows="3"
-              maxlength="200"
-              :placeholder="t('echo-cave.submit-placeholder')"
-              @keydown.enter.exact.prevent="submit"></textarea>
+              AcceptsReturn
+              MinHeight="72"
+              :MaxLength="200"
+              :IsSpellCheckEnabled="false"
+              :PlaceholderText="t('echo-cave.submit-placeholder')"
+              v-model:Text="draftText"
+              @keydown.enter.exact.prevent="submit" />
             <p
               v-if="flyoutStatus"
               class="ec-flyout-status"
@@ -68,6 +70,7 @@
 import { onBeforeUnmount, ref } from 'vue';
 import WinExpander from '../components/WinExpander.vue';
 import WinButton from '../components/WinButton.vue';
+import WinTextBox from '../components/WinTextBox.vue';
 import WinFlyout from '../components/WinFlyout.vue';
 import WinHyperlinkButton from '../components/WinHyperlinkButton.vue';
 import { useI18n } from '../components/i18n/index';
@@ -347,29 +350,7 @@ onBeforeUnmount(() => {
 }
 
 .ec-input {
-  box-sizing: border-box;
   width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--ControlStrokeColorDefaultBrush, var(--card-stroke, rgba(128, 128, 128, 0.4)));
-  border-bottom-color: var(--ControlStrokeColorSecondaryBrush, rgba(128, 128, 128, 0.6));
-  border-radius: 4px;
-  background: var(--ControlFillColorDefaultBrush, var(--card-bg, rgba(255, 255, 255, 0.04)));
-  color: var(--TextFillColorPrimaryBrush, var(--text-primary, #1f1f1f));
-  font: inherit;
-  font-size: 13px;
-  line-height: 20px;
-  resize: vertical;
-  min-height: 64px;
-}
-
-.ec-input:focus {
-  outline: none;
-  border-bottom-width: 2px;
-  border-bottom-color: var(--accent, #0078d4);
-}
-
-.ec-input::placeholder {
-  color: var(--TextFillColorSecondaryBrush, var(--text-secondary, #5f5f5f));
 }
 
 .ec-flyout-status {

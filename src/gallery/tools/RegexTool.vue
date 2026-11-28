@@ -5,20 +5,29 @@
     <div class="tool-grid-2">
       <div class="tool-panel">
         <span class="tool-section-title">{{ t('regex.pattern') }}</span>
-        <input v-model="pattern" class="tool-input mono" :placeholder="t('regex.pattern-placeholder')" spellcheck="false" />
+        <WinTextBox
+          FontFamily="Consolas, 'Courier New', monospace"
+          :IsSpellCheckEnabled="false"
+          :PlaceholderText="t('regex.pattern-placeholder')"
+          v-model:Text="pattern" />
         <div class="rx-flags">
-          <label class="rx-flag"><input v-model="flags.g" type="checkbox" />{{ t('regex.flag.g') }}</label>
-          <label class="rx-flag"><input v-model="flags.i" type="checkbox" />{{ t('regex.flag.i') }}</label>
-          <label class="rx-flag"><input v-model="flags.m" type="checkbox" />{{ t('regex.flag.m') }}</label>
-          <label class="rx-flag"><input v-model="flags.s" type="checkbox" />{{ t('regex.flag.s') }}</label>
-          <label class="rx-flag"><input v-model="flags.u" type="checkbox" />{{ t('regex.flag.u') }}</label>
-          <label class="rx-flag"><input v-model="flags.y" type="checkbox" />{{ t('regex.flag.y') }}</label>
+          <WinCheckBox :Content="t('regex.flag.g')" v-model:IsChecked="flags.g" />
+          <WinCheckBox :Content="t('regex.flag.i')" v-model:IsChecked="flags.i" />
+          <WinCheckBox :Content="t('regex.flag.m')" v-model:IsChecked="flags.m" />
+          <WinCheckBox :Content="t('regex.flag.s')" v-model:IsChecked="flags.s" />
+          <WinCheckBox :Content="t('regex.flag.u')" v-model:IsChecked="flags.u" />
+          <WinCheckBox :Content="t('regex.flag.y')" v-model:IsChecked="flags.y" />
         </div>
         <div v-if="compiled.error" class="rx-error">{{ t('regex.error', { message: compiled.error }) }}</div>
         <div v-else-if="pattern" class="rx-ok">{{ t('regex.status-ok') }}</div>
 
         <span class="tool-section-title rx-text-title">{{ t('regex.text') }}</span>
-        <textarea v-model="text" class="tool-textarea rx-text" spellcheck="false" />
+        <WinTextBox
+          AcceptsReturn
+          MinHeight="200"
+          FontFamily="Consolas, 'Courier New', monospace"
+          :IsSpellCheckEnabled="false"
+          v-model:Text="text" />
       </div>
 
       <div class="tool-panel">
@@ -54,12 +63,22 @@
         <div v-else class="tool-hint rx-empty">{{ pattern ? t('regex.no-match') : t('regex.empty') }}</div>
 
         <span class="tool-section-title rx-replace-title">{{ t('regex.replace') }}</span>
-        <input v-model="replacement" class="tool-input mono" :placeholder="t('regex.replace-placeholder')" spellcheck="false" />
+        <WinTextBox
+          FontFamily="Consolas, 'Courier New', monospace"
+          :IsSpellCheckEnabled="false"
+          :PlaceholderText="t('regex.replace-placeholder')"
+          v-model:Text="replacement" />
         <div class="rx-replace-head">
           <span class="tool-hint">{{ t('regex.replace-result') }}</span>
-          <button type="button" class="tool-btn small" :disabled="!replaceResult" @click="copyReplace">{{ t('common.copy') }}</button>
+          <WinButton :Content="t('common.copy')" :IsEnabled="!!replaceResult" @Click="copyReplace" />
         </div>
-        <textarea class="tool-textarea rx-replace" readonly :value="replaceResult" />
+        <WinTextBox
+          class="rx-replace"
+          AcceptsReturn
+          IsReadOnly
+          MinHeight="96"
+          FontFamily="Consolas, 'Courier New', monospace"
+          :Text="replaceResult" />
       </div>
     </div>
 
@@ -72,6 +91,9 @@ import { computed, reactive, ref } from 'vue';
 import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
 import { useI18n } from '../../components/i18n/index';
+import WinButton from '../../components/WinButton.vue';
+import WinCheckBox from '../../components/WinCheckBox.vue';
+import WinTextBox from '../../components/WinTextBox.vue';
 
 interface MatchItem {
   index: number;
@@ -179,15 +201,6 @@ const copyReplace = () => {
   gap: 14px;
 }
 
-.rx-flag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  user-select: none;
-}
-
 .rx-error {
   margin-top: 10px;
   font-size: 13px;
@@ -204,10 +217,6 @@ const copyReplace = () => {
 .rx-text-title,
 .rx-replace-title {
   margin-top: 18px;
-}
-
-.rx-text {
-  min-height: 200px;
 }
 
 .rx-head {
@@ -319,6 +328,5 @@ const copyReplace = () => {
 
 .rx-replace {
   margin-top: 8px;
-  min-height: 96px;
 }
 </style>

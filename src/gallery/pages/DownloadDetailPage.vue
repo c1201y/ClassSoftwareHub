@@ -33,29 +33,36 @@
         </div>
 
         <!-- 兼容性提示：用浏览器能识别的系统信息判断「这台电脑能不能装」。
-             拿不准时明确说「无法确定」，不编答案 —— 浏览器读不到真实硬件。 -->
-        <div v-if="compat" class="detail-compat" :class="'is-' + compat.verdict">
-          <span class="detail-compat-icon" aria-hidden="true">{{ compatIcon }}</span>
-          <span class="detail-compat-text">
-            <span class="detail-compat-title">{{ t(compat.reasonKey, compat.reasonParams) }}</span>
-            <span v-if="compat.verdict !== 'ok' && supportedNames.length" class="detail-compat-sub">
-              {{ t('compat.supported', { list: supportedNames.join(' / ') }) }}
-            </span>
-          </span>
-          <span class="detail-compat-device">{{ deviceLabel }}</span>
-        </div>
+             拿不准时明确说「无法确定」，不编答案 —— 浏览器读不到真实硬件。
+             底色/图标/描边全部交给 WinInfoBar 的 Severity，不再自己写死绿红。 -->
+        <WinInfoBar
+          v-if="compat"
+          class="detail-compat"
+          :IsOpen="true"
+          :Severity="compatSeverity"
+          :IsClosable="false"
+          :Title="t(compat.reasonKey, compat.reasonParams)"
+          :Message="compatSupported">
+          <!-- @vue-expect-error 上游 WinInfoBar 未导出插槽类型，运行时正常 -->
+          <template #ActionButton>
+            <span class="detail-compat-device">{{ deviceLabel }}</span>
+          </template>
+        </WinInfoBar>
 
         <!-- 分享：文案 + 链接 + 二维码 -->
         <div v-if="shareOpen" class="detail-share-panel">
           <div class="detail-share-main">
             <div class="detail-share-block">
               <span class="detail-share-label">{{ t('share.text-label') }}</span>
-              <textarea
+              <WinTextBox
+                ref="shareBox"
                 class="detail-share-text"
-                :value="shareText"
-                readonly
-                rows="4"
-                @focus="selectAll" />
+                AcceptsReturn
+                IsReadOnly
+                MinHeight="88"
+                :IsSpellCheckEnabled="false"
+                :Text="shareText"
+                @GotFocus="selectAll" />
               <div class="detail-share-actions">
                 <WinButton
                   Style="AccentButtonStyle"
@@ -106,11 +113,10 @@
           </div>
           <div v-if="app.github" class="detail-info-row">
             <span class="detail-info-label">{{ t('detail.github') }}</span>
-            <button
-              type="button"
+            <WinHyperlinkButton
               class="detail-info-link detail-github-embed"
               :title="locale === 'en-US' ? 'Open this GitHub page inside the site' : '在本站内嵌打开该 GitHub 页面'"
-              @click="openGithubEmbed">{{ app.github }}<span class="detail-github-hint"> · {{ t('embed.accelerator-hint') }}</span></button>
+              @Click="openGithubEmbed">{{ app.github }}<span class="detail-github-hint"> · {{ t('embed.accelerator-hint') }}</span></WinHyperlinkButton>
           </div>
           <!-- 开发者与开源协议：都是选填字段，投稿时由提交者自己填（见 SubmitPage.vue）。
                没有就不显示这一行 —— 大多数商业软件查不到作者，硬写「未知」反而像漏填。 -->
@@ -264,6 +270,7 @@ import WinScrollViewer from '../../components/WinScrollViewer.vue';
 import WinHyperlinkButton from '../../components/WinHyperlinkButton.vue';
 import WinInfoBar from '../../components/WinInfoBar.vue';
 import WinButton from '../../components/WinButton.vue';
+import WinTextBox from '../../components/WinTextBox.vue';
 import GithubEmbedModal from '../../components/GithubEmbedModal.vue';
 import { useI18n } from '../../components/i18n/index';
 import {
@@ -531,13 +538,19 @@ const compat = computed<CompatResult | null>(() => {
 
 const supportedNames = computed(() => platformNames(app.value?.platforms));
 
-/** 三种结论各用一个字形：对勾 / 禁止 / 问号（均已实测过形状） */
-const compatIcon = computed(() => {
+/** 三档结论直接映射到 InfoBar 的 Severity，底色与图标由组件按主题给 */
+const compatSeverity = computed(() => {
   switch (compat.value?.verdict) {
-    case 'ok': return '\uE73E';
-    case 'no': return '\uE711';
-    default: return '\uE897';
+    case 'ok': return 'Success';
+    case 'no': return 'Error';
+    default: return 'Informational';
   }
+});
+
+/** 不能装 / 拿不准时补一行「支持哪些系统」，能装就不多说 */
+const compatSupported = computed(() => {
+  if (compat.value?.verdict === 'ok' || supportedNames.value.length === 0) return '';
+  return t('compat.supported', { list: supportedNames.value.join(' / ') });
 });
 
 /* ── 分享（逻辑在 src/gallery/share.ts，这里只管交互状态）────────── */
@@ -586,9 +599,9 @@ const openSharePage = () => {
 };
 
 /** 点一下 textarea 全选，方便 Ctrl+C */
-const selectAll = (e: Event) => {
-  const el = e.target as HTMLTextAreaElement | null;
-  el?.select();
+const shareBox = ref<InstanceType<typeof WinTextBox> | null>(null);
+const selectAll = () => {
+  shareBox.value?.SelectAll();
 };
 
 // 组件复用时状态不自动重置：切换软件需收起面板

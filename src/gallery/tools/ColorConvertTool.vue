@@ -5,7 +5,6 @@
         <span class="tool-section-title">{{ t('color-convert.color') }}</span>
 
         <div class="cc-hex-row">
-          <input type="color" class="cc-picker" :value="hex" @input="onPicker" :aria-label="t('color-convert.picker')" />
           <WinTextBox
             class="cc-hex"
             :Text="hexText"
@@ -14,6 +13,14 @@
             @update:Text="onHex"
             @LostFocus="onHexBlur" />
         </div>
+
+        <WinColorPicker
+          class="cc-picker"
+          :aria-label="t('color-convert.picker')"
+          IsMoreButtonVisible
+          :IsColorChannelTextInputVisible="false"
+          :Color="hex"
+          @update:Color="onHex" />
 
         <div class="cc-group">
           <span class="tool-label">RGB</span>
@@ -77,6 +84,7 @@ import { useCopy } from './useCopy';
 import { rgbToHsl, hslToRgb, rgbToHex } from '../imageColors';
 import WinTextBox from '../../components/WinTextBox.vue';
 import WinNumberBox from '../../components/WinNumberBox.vue';
+import WinColorPicker from '../../components/WinColorPicker.vue';
 import { useI18n } from '../../components/i18n/index';
 
 const { t } = useI18n();
@@ -113,8 +121,6 @@ const onHex = (value: string) => {
 const onHexBlur = () => {
   if (!parseHex(hexText.value)) hexText.value = hex.value;
 };
-
-const onPicker = (e: Event) => onHex((e.target as HTMLInputElement).value);
 
 const onRgb = (index: 0 | 1 | 2, v: number) => {
   const next = [...rgb.value] as Rgb;
@@ -173,14 +179,13 @@ const harmonies = computed(() => [
 }
 
 .cc-picker {
-  flex: 0 0 auto;
-  width: 44px;
-  height: 34px;
+  --cp-spectrum-size: 148px;
+  --cp-preview-width: 32px;
+  --cp-preview-gap: 8px;
+  min-width: 0;
+  max-width: 100%;
   padding: 0;
-  border: 1px solid var(--ctrl-border, rgba(0, 0, 0, 0.2));
-  border-radius: 4px;
-  background: transparent;
-  cursor: pointer;
+  margin-bottom: 14px;
 }
 
 .cc-hex {

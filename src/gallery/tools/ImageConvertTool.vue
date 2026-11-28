@@ -23,31 +23,51 @@
 
     <div class="tool-panel ic-options">
       <div class="ic-opt">
-        <span class="tool-label">{{ t('image-convert.format') }}</span>
-        <select v-model="format" class="tool-select">
-          <option value="image/jpeg">JPG</option>
-          <option value="image/png">PNG</option>
-          <option value="image/webp">WebP</option>
-        </select>
+        <WinComboBox
+          :Header="t('image-convert.format')"
+          :ItemsSource="formatItems"
+          DisplayMemberPath="label"
+          SelectedValuePath="value"
+          v-model:SelectedValue="format" />
       </div>
       <div class="ic-opt ic-opt-wide">
-        <span class="tool-label">{{ t('image-convert.quality') }} {{ qualityPct }}%</span>
-        <input v-model.number="quality" class="ic-range" type="range" min="0.3" max="1" step="0.01" :disabled="format === 'image/png'" />
+        <WinSlider
+          :Header="`${t('image-convert.quality')} ${qualityPct}%`"
+          Width="100%"
+          :Minimum="30"
+          :Maximum="100"
+          :StepFrequency="1"
+          :IsEnabled="format !== 'image/png'"
+          :ThumbToolTipValueConverter="asPercent"
+          v-model:Value="qualityPct" />
       </div>
       <div class="ic-opt">
-        <span class="tool-label">{{ t('image-convert.max-side') }}</span>
-        <input v-model.number="maxSide" class="tool-input" type="number" min="64" max="8000" step="64" :disabled="keepSize" />
+        <WinNumberBox
+          :Header="t('image-convert.max-side')"
+          Width="100%"
+          :Minimum="64"
+          :Maximum="8000"
+          :SmallChange="64"
+          :IsEnabled="!keepSize"
+          v-model:Value="maxSide" />
       </div>
       <div class="ic-opt ic-opt-check">
-        <label class="ic-check"><input v-model="keepSize" type="checkbox" />{{ t('image-convert.keep-size') }}</label>
+        <WinCheckBox :Content="t('image-convert.keep-size')" v-model:IsChecked="keepSize" />
       </div>
-      <div class="ic-opt" :class="{ 'is-disabled': format === 'image/png' }">
-        <span class="tool-label">{{ t('image-convert.background') }}</span>
-        <input v-model="background" class="ic-color" type="color" :disabled="format === 'image/png'" />
-      </div>
-      <div class="ic-opt ic-opt-actions">
-        <button type="button" class="tool-btn small" :disabled="!doneCount" @click="downloadAll">{{ t('image-convert.download-all') }}</button>
-        <button type="button" class="tool-btn small" :disabled="!items.length" @click="reset">{{ t('common.clear') }}</button>
+      <div class="ic-opt ic-opt-bottom">
+        <div class="ic-opt-color" :class="{ 'is-disabled': format === 'image/png' }">
+          <span class="tool-label">{{ t('image-convert.background') }}</span>
+          <WinColorPicker
+            class="ic-color"
+            :aria-label="t('image-convert.background')"
+            IsMoreButtonVisible
+            :IsColorChannelTextInputVisible="false"
+            v-model:Color="background" />
+        </div>
+        <div class="ic-opt-actions">
+          <WinButton :Content="t('image-convert.download-all')" :IsEnabled="doneCount > 0" @Click="downloadAll" />
+          <WinButton :Content="t('common.clear')" :IsEnabled="items.length > 0" @Click="reset" />
+        </div>
       </div>
     </div>
 
@@ -73,9 +93,10 @@
           <span v-else-if="item.status === 'error'" class="ic-error">{{ item.error }}</span>
         </div>
         <div class="ic-card-actions">
-          <button type="button" class="tool-btn small" :disabled="item.status !== 'done'" @click="downloadItem(item)">
-            {{ t('image-convert.download') }}
-          </button>
+          <WinButton
+            :Content="t('image-convert.download')"
+            :IsEnabled="item.status === 'done'"
+            @Click="downloadItem(item)" />
         </div>
       </div>
     </div>
@@ -92,6 +113,12 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import ToolShell from './ToolShell.vue';
 import { useCopy } from './useCopy';
 import { useI18n } from '../../components/i18n/index';
+import WinButton from '../../components/WinButton.vue';
+import WinCheckBox from '../../components/WinCheckBox.vue';
+import WinColorPicker from '../../components/WinColorPicker.vue';
+import WinComboBox from '../../components/WinComboBox.vue';
+import WinNumberBox from '../../components/WinNumberBox.vue';
+import WinSlider from '../../components/WinSlider.vue';
 
 interface Item {
   id: number;
@@ -123,7 +150,17 @@ const maxSide = ref(1920);
 const keepSize = ref(true);
 const background = ref('#ffffff');
 
-const qualityPct = computed(() => Math.round(quality.value * 100));
+const formatItems = [
+  { label: 'JPG', value: 'image/jpeg' },
+  { label: 'PNG', value: 'image/png' },
+  { label: 'WebP', value: 'image/webp' }
+];
+
+const asPercent = (value: number) => `${Math.round(value)}%`;
+const qualityPct = computed({
+  get: () => Math.round(quality.value * 100),
+  set: (value: number) => { quality.value = value / 100; }
+});
 const doneCount = computed(() => items.value.filter((item) => item.status === 'done').length);
 
 const bitmaps = new Map<number, Source>();
@@ -367,6 +404,18 @@ onBeforeUnmount(() => {
   grid-column: span 2;
 }
 
+.ic-opt-bottom {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ic-opt-color {
+  min-width: 0;
+}
+
 .ic-opt-check {
   display: flex;
   align-items: center;
@@ -379,31 +428,18 @@ onBeforeUnmount(() => {
   justify-content: flex-end;
 }
 
-.ic-opt.is-disabled {
+.ic-opt-color.is-disabled {
   opacity: 0.45;
-}
-
-.ic-check {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.ic-range {
-  width: 100%;
-  accent-color: var(--accent-base, #0067c0);
+  pointer-events: none;
 }
 
 .ic-color {
-  width: 100%;
-  height: 32px;
-  padding: 2px;
-  border: 1px solid var(--ctrl-border, rgba(0, 0, 0, 0.22));
-  border-radius: 4px;
-  background: var(--ctrl-fill-default, rgba(255, 255, 255, 0.7));
+  --cp-spectrum-size: 148px;
+  --cp-preview-width: 32px;
+  --cp-preview-gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0;
 }
 
 .ic-grid {

@@ -32,9 +32,9 @@
       <div class="dt-head">
         <span class="dt-word">{{ exact.word }}</span>
         <span v-if="exact.phonetic" class="dt-phonetic">{{ exact.phonetic }}</span>
-        <button type="button" class="dt-speak" :title="t('dict.speak')" @click="speak(exact.word)">
-          <span aria-hidden="true">&#xE995;</span>
-        </button>
+        <WinButton class="dt-speak" :title="t('dict.speak')" :aria-label="t('dict.speak')" @Click="speak(exact.word)">
+          <span class="dt-speak-icon" aria-hidden="true">&#xE995;</span>
+        </WinButton>
       </div>
       <p class="dt-sense">{{ exact.sense }}</p>
     </div>
@@ -233,20 +233,15 @@ const speak = (word: string) => {
   margin-left: auto;
   width: 34px;
   height: 34px;
-  border-radius: 50%;
-  border: 1px solid var(--ctrl-border, rgba(0, 0, 0, 0.22));
-  background: transparent;
-  color: var(--accent-base, #0067C0);
-  font-family: 'WinUIOnWebIcons';
-  font-size: 16px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 0;
+  --ButtonPadding: 0;
+  --ButtonCornerRadius: 50%;
+  --ButtonForeground: var(--accent-base, #0067C0);
 }
 
-.dt-speak:hover {
-  background: var(--ctrl-fill-secondary, rgba(0, 0, 0, 0.05));
+.dt-speak-icon {
+  font-family: 'WinUIOnWebIcons';
+  font-size: 16px;
 }
 
 .dt-sense {

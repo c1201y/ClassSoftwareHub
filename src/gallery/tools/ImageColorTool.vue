@@ -65,13 +65,17 @@
       <div class="color-hsl-block">
         <span class="tool-label">{{ t('image-color.hsl-copy') }}</span>
         <div class="color-hsl-chips">
-          <button
+          <WinButton
             v-for="variant in palette.variants"
             :key="variant.key"
-            type="button"
             class="color-hsl-copy"
+            Style="SubtleButtonStyle"
+            FontSize="11"
+            FontFamily="Consolas, 'Courier New', monospace"
+            Padding="4,2,4,2"
             :title="t('image-color.hsl-copy-title', { value: hslText(variant.hsl) })"
-            @click="copy(hslText(variant.hsl))">{{ hslShort(variant.hsl) }}</button>
+            :Content="hslShort(variant.hsl)"
+            @Click="copy(hslText(variant.hsl))" />
         </div>
       </div>
 
@@ -399,27 +403,9 @@ onBeforeUnmount(() => {
 }
 
 .color-hsl-copy {
-  box-sizing: border-box;
   width: 100%;
-  padding: 5px 4px;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border: 1px solid var(--card-stroke, rgba(0, 0, 0, 0.12));
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-family: Consolas, 'Courier New', monospace;
-  cursor: pointer;
-  transition: color var(--fast-duration) var(--fast-out-slow-in),
-    border-color var(--fast-duration) var(--fast-out-slow-in);
-}
-
-.color-hsl-copy:hover {
-  color: var(--text-primary);
-  border-color: var(--accent-base, #0067C0);
+  min-width: 0;
+  min-height: 0;
 }
 
 .color-actions {

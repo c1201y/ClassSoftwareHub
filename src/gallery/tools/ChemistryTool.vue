@@ -12,14 +12,13 @@
 
     <div class="chem-samples tool-row">
       <span class="tool-hint">{{ t('chem.samples') }}</span>
-      <button
+      <WinButton
         v-for="s in SAMPLES"
         :key="s.eq"
-        type="button"
-        class="chem-sample"
-        @click="loadSample(s.eq)">
-        {{ s.label }}
-      </button>
+        Style="SubtleButtonStyle"
+        FontSize="12"
+        :Content="s.label"
+        @Click="loadSample(s.eq)" />
     </div>
 
     <div v-if="error" class="chem-error tool-panel">
@@ -40,9 +39,7 @@
         </div>
         <div class="chem-result-meta">
           <span>{{ t('chem.balanced') }}</span>
-          <button type="button" class="chem-copy" @click="copyResult">
-            {{ copied ? t('chem.copied') : t('chem.copy') }}
-          </button>
+          <WinButton FontSize="12" :Content="copied ? t('chem.copied') : t('chem.copy')" @Click="copyResult" />
         </div>
       </div>
 
@@ -406,21 +403,6 @@ balance();
   margin-top: 4px;
 }
 
-.chem-sample {
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--card-border, #d8dde6);
-  background: transparent;
-  color: inherit;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.chem-sample:hover {
-  background: var(--subtle-fill, rgba(0, 0, 0, 0.05));
-}
-
 .chem-error {
   display: flex;
   align-items: center;
@@ -469,16 +451,6 @@ balance();
   margin-top: 12px;
   font-size: 12px;
   color: var(--text-secondary, #6b7484);
-}
-
-.chem-copy {
-  padding: 3px 10px;
-  border-radius: 5px;
-  border: 1px solid var(--card-border, #d8dde6);
-  background: transparent;
-  color: inherit;
-  font-size: 12px;
-  cursor: pointer;
 }
 
 .chem-table-wrap {

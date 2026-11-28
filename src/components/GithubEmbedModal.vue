@@ -152,6 +152,10 @@ function openExternal() {
   });
 }
 
+function openOriginal() {
+  window.open(props.githubUrl, '_blank', 'noopener,noreferrer');
+}
+
 function cleanup() {
   stopTick();
   frameSrc.value = '';
@@ -212,6 +216,9 @@ onBeforeUnmount(() => {
             <span class="csh-gh-embed-readonly">只读</span>
             <span class="csh-gh-embed-timer">{{ timerText }}</span>
             <button type="button" class="csh-gh-embed-btn" :disabled="loading" @click="openExternal">新标签页</button>
+            <!-- 加速站挂了时的逃生口：不走签名、直接开 github.com 原地址。
+                 与上面的"新标签页"不同——那颗仍经自建加速站换取签名。 -->
+            <button type="button" class="csh-gh-embed-btn" @click="openOriginal">跳转至原链接</button>
             <button ref="closeBtn" type="button" class="csh-gh-embed-close" aria-label="关闭" @click="close">×</button>
           </div>
         </header>

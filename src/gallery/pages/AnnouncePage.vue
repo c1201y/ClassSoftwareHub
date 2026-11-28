@@ -35,16 +35,14 @@
 
           <div class="an-field">
             <span class="an-label">{{ t('announce.duration-label') }}</span>
-            <div class="an-duration-row" role="radiogroup" :aria-label="t('announce.duration-label')">
-              <button
+            <div class="an-duration-row" role="group" :aria-label="t('announce.duration-label')">
+              <WinToggleButton
                 v-for="opt in DURATIONS"
                 :key="opt"
-                type="button"
-                class="an-duration-btn"
-                :class="{ 'is-active': duration === opt }"
-                @click="duration = opt">
-                {{ t('announce.seconds', { count: opt }) }}
-              </button>
+                FontSize="13"
+                :Content="t('announce.seconds', { count: opt })"
+                :IsChecked="duration === opt"
+                @Click="duration = opt" />
             </div>
           </div>
         </div>
@@ -88,6 +86,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import WinButton from '../../components/WinButton.vue';
+import WinToggleButton from '../../components/WinToggleButton.vue';
 import WinInfoBar from '../../components/WinInfoBar.vue';
 import WinProgressRing from '../../components/WinProgressRing.vue';
 import WinTextBox from '../../components/WinTextBox.vue';
@@ -304,28 +303,6 @@ function showResult(message: string, kind: 'ok' | 'error') {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-}
-
-.an-duration-btn {
-  border: 1px solid var(--ctrl-border, var(--card-stroke, rgba(128, 128, 128, 0.4)));
-  border-radius: 6px;
-  background: var(--ctrl-fill-default, transparent);
-  color: var(--text-primary, inherit);
-  font: inherit;
-  font-size: 13px;
-  padding: 8px 18px;
-  cursor: pointer;
-  transition: background 0.12s ease, border-color 0.12s ease;
-}
-
-.an-duration-btn:hover {
-  background: var(--ctrl-fill-secondary, rgba(128, 128, 128, 0.08));
-}
-
-.an-duration-btn.is-active {
-  border-color: var(--accent, #0078d4);
-  background: color-mix(in srgb, var(--accent, #0078d4) 14%, transparent);
-  font-weight: 600;
 }
 
 .an-section-divider {
