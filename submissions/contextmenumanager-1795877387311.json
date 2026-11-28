@@ -1,0 +1,29 @@
+{
+  "_提交时间": "2026-11-28T14:49:47.311Z",
+  "_原始ID冲突": false,
+  "id": "contextmenumanager",
+  "name": "ContextMenuManager",
+  "icon": "",
+  "category": "system",
+  "tagline": "🖱️ 一个管理 Windows 右键上下文菜单的程序",
+  "description": "🖱️ 一个纯粹的 Windows 右键菜单管理器，支持 Windows 7 ~ 11",
+  "version": "4.0.0.9",
+  "size": "15.4 MB",
+  "system": "Windows 7 ~ 11",
+  "website": "",
+  "github": "https://github.com/Jack251970/ContextMenuManager",
+  "downloads": [
+    {
+      "platform": "Windows 便携版",
+      "note": "ContextMenuManager.exe",
+      "size": "15.4 MB",
+      "url": "https://github.com/Jack251970/ContextMenuManager/releases/download/4.0.0.9/ContextMenuManager.exe"
+    }
+  ],
+  "sort": 99,
+  "platforms": [
+    "windows"
+  ],
+  "_提交指纹": "2d90ed5fa2d3c2b1",
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBrdnRLMktsdVNSYXB2Mzdq\nbEpKUk1FQlhMamVlZ3oyRS9SM2RaSlIyTGlvCmprTmxqM2dyNHRWRGpKdE9rNXpR\nMWRjV09yQnc5SVYzZ29Jcks2YmhoVDAKLS0tIDhNMTZOYkJPVkpYT1AxMTEvRHp6\nRkR4VzlDNjRNNTdQN2RhZ0NmcEhhZXcKr++iszSfmbkZpELH4t/Z6rRuN8iC8PD5\nh6OfZowU8X61GC4AHaE16dO0\n-----END AGE ENCRYPTED FILE-----"
+}
