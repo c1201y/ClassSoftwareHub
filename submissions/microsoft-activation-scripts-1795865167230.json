@@ -1,0 +1,44 @@
+{
+  "_提交时间": "2026-11-28T11:26:07.230Z",
+  "_原始ID冲突": false,
+  "id": "microsoft-activation-scripts",
+  "name": "Microsoft-Activation-Scripts",
+  "icon": "https://avatars.githubusercontent.com/u/59795046?v=4",
+  "category": "system",
+  "tagline": "开源的 Windows 和 Office 激活脚本",
+  "description": "开源的 Windows 和 Office 激活脚本，支持 HWID、Ohook、TSforge 和 Online KMS 激活方法，并具备高级故障排除功能。",
+  "version": "3.14",
+  "size": "746 KB",
+  "system": "Windows 7 ~ 11",
+  "website": "https://massgrave.dev",
+  "github": "https://github.com/massgravel/Microsoft-Activation-Scripts",
+  "downloads": [
+    {
+      "platform": "官网直接脚本",
+      "size": "746 KB",
+      "kind": "file",
+      "url": "https://dev.azure.com/massgrave/Microsoft-Activation-Scripts/_apis/git/repositories/Microsoft-Activation-Scripts/items?path=/MAS/All-In-One-Version-KL/MAS_AIO.cmd&download=true"
+    },
+    {
+      "platform": "官网压缩包",
+      "note": "如果浏览器阻止了直接脚本的下载",
+      "size": "358 KB",
+      "kind": "file",
+      "url": "https://dev.azure.com/massgrave/Microsoft-Activation-Scripts/_apis/git/repositories/Microsoft-Activation-Scripts/items?$format=zip"
+    },
+    {
+      "platform": "第三方汉化版",
+      "note": "需自行前往下载",
+      "size": "358 KB",
+      "kind": "netdisk",
+      "url": "https://www.423down.com/6707.html"
+    }
+  ],
+  "sort": 99,
+  "notice": "Powershell 下载命令：irm https://get.activated.win | iex",
+  "platforms": [
+    "windows"
+  ],
+  "_提交指纹": "2d90ed5fa2d3c2b1",
+  "_联系方式": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBGeWRFWXo4ajcxUkxXUnkr\nM3BhNXBtSmJ5SVBMdkNEQytsOHpaRFQ2Z204CnEyR2VjRDRiRmFYdHRZaWtCNUZT\nNWtRZFZBUFlJRSs4NkMvdENZM3pKanMKLS0tIGoxSzJRUC9DeHBweWRhUVIyeFFu\na1JrV21HdnJGSWRmRVozRkdGY29PU0UKtT0b/PRjLr3QBlZua6QNvt1NnI4erVKa\nCh9/7T1rpIWrjbIfOnvNE7OK\n-----END AGE ENCRYPTED FILE-----"
+}
